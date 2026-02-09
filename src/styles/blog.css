@@ -1,0 +1,47 @@
+/* Blog Card Image Styles */
+.blog-card-image {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.blog-card-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  transition: transform 0.3s ease;
+}
+
+.sb-card:hover .blog-card-image img {
+  transform: scale(1.02);
+}
+
+/* Mobile responsiveness for blog cards */
+@media (max-width: 768px) {
+  .blog-card-image {
+    margin-bottom: 10px;
+    border-radius: 6px;
+  }
+
+  .blog-card-image img {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-width: 576px) {
+  .sb-card {
+    padding: 16px !important;
+  }
+}
+
+/* Ensure blog listing uses the same max-width as other site sections */
+.sb-section .container {
+  max-width: 1200px;
+}
+
+/* Slightly reduce internal card padding to match other pages visually */
+.sb-card {
+  padding: 20px;
+}
