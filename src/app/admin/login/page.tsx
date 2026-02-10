@@ -35,7 +35,8 @@ export default function LoginPage() {
       } else {
         router.push(callbackUrl);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       setError("An error occurred");
     } finally {
       setLoading(false);

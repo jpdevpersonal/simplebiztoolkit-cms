@@ -5,7 +5,8 @@
 
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { User } from "next-auth";
+import type { User, Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -16,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(
-        credentials: Record<string, any> | undefined,
+        credentials?: { email?: string; password?: string } | undefined,
       ): Promise<User | null> {
         // TODO: Replace this with actual API call to C# backend
         // This is a temporary implementation for development
@@ -51,17 +52,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/admin/login",
   },
   callbacks: {
-    async jwt({ token, user }: { token: any; user: any }) {
+    async jwt({
+      token,
+      user,
+    }: {
+      token: JWT;
+      user?: User | null;
+    }): Promise<JWT> {
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
+        const t = token as JWT & { id?: string; email?: string };
+        t.id = user.id;
+        t.email = user.email;
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
+    async session({
+      session,
+      token,
+    }: {
+      session: Session;
+      token: JWT & { id?: string; email?: string };
+    }): Promise<Session> {
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.email = token.email as string;
+        const u = session.user as Session["user"] & {
+          id?: string;
+          email?: string;
+        };
+        u.id = token.id as string;
+        u.email = token.email as string;
+        session.user = u;
       }
       return session;
     },

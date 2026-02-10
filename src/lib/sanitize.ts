@@ -29,14 +29,7 @@ const ALLOWED_TAGS = [
   "pre",
 ];
 
-const ALLOWED_ATTRIBUTES: Record<string, string[]> = {
-  a: ["href", "title", "target", "rel"],
-  img: ["src", "alt", "width", "height", "loading"],
-  section: ["data-component"],
-  aside: ["data-component", "data-title"],
-  div: ["class"],
-  span: ["class"],
-};
+// Attribute whitelist intentionally omitted until attribute validation is needed
 
 /**
  * Basic HTML sanitization
