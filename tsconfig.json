@@ -18,9 +18,9 @@
       }
     ],
     "ignoreDeprecations": "5.0",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["src/*"]
     },
     "allowJs": true
   },
