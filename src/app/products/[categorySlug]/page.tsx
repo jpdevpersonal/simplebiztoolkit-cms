@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
 import ProductGrid from "@/components/ProductGrid";
-import { categories } from "@/data/products";
+import { apiService } from "@/lib/api";
 import { links } from "@/config/links";
 import { site } from "@/config/site";
 import "@/styles/products.css";
@@ -14,41 +14,64 @@ type Props = {
   params: Promise<{ categorySlug: string }>;
 };
 
+/**
+ * Generate static params for ISR
+ * Pre-renders all category pages at build time
+ */
 export async function generateStaticParams() {
-  return categories.map((c) => ({ categorySlug: c.slug }));
+  const response = await apiService.getProductCategories();
+
+  if (!response.data) {
+    return [];
+  }
+
+  return response.data.map((category) => ({ categorySlug: category.slug }));
 }
 
+/**
+ * Generate metadata for SEO
+ * Fetches category data from API
+ */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
-  const cat = categories.find((c) => c.slug === categorySlug);
-  if (!cat) return {};
+  const response = await apiService.getCategoryBySlug(categorySlug);
 
-  const title = `${cat.name} | Simple Biz Toolkit`;
-  const description = `${cat.summary} Browse templates and then checkout securely on Etsy.`;
+  if (!response.data) return {};
+
+  const category = response.data;
+
+  const title = `${category.name} | Simple Biz Toolkit`;
+  const description = `${category.summary} Browse templates and then checkout securely on Etsy.`;
 
   return {
-    title: cat.name,
+    title: category.name,
     description,
-    alternates: { canonical: `/products/${cat.slug}` },
+    alternates: { canonical: `/products/${category.slug}` },
     openGraph: {
       title,
       description,
-      url: `/products/${cat.slug}`,
+      url: `/products/${category.slug}`,
     },
   };
 }
 
+/**
+ * Category Page Component
+ * Fetches category and products from API with ISR
+ */
 export default async function CategoryPage({ params }: Props) {
   const { categorySlug } = await params;
-  const cat = categories.find((c) => c.slug === categorySlug);
+  const response = await apiService.getCategoryBySlug(categorySlug);
 
-  if (!cat) notFound();
+  if (!response.data) notFound();
+
+  const category = response.data;
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${cat.name} | Simple Biz Toolkit`,
-    url: `https://simplebiztoolkit.com/products/${cat.slug}`,
+    name: `${category.name} | Simple Biz Toolkit`,
+    url: `https://simplebiztoolkit.com/products/${category.slug}`,
   };
 
   const breadcrumbJsonLd = {
@@ -70,8 +93,8 @@ export default async function CategoryPage({ params }: Props) {
       {
         "@type": "ListItem",
         position: 3,
-        name: cat.name,
-        item: `${site.url}/products/${cat.slug}`,
+        name: category.name,
+        item: `${site.url}/products/${category.slug}`,
       },
     ],
   };
@@ -107,8 +130,8 @@ export default async function CategoryPage({ params }: Props) {
 
           <div className="row g-4 align-items-center">
             <div className="col-lg-7">
-              <h1 style={{ fontWeight: 700 }}>{cat.name}</h1>
-              <p className="sb-muted fs-5">{cat.summary}</p>
+              <h1 style={{ fontWeight: 700 }}>{category.name}</h1>
+              <p className="sb-muted fs-5">{category.summary}</p>
 
               <div
                 className="sb-card p-3"
@@ -124,16 +147,16 @@ export default async function CategoryPage({ params }: Props) {
                   How this helps
                 </h2>
                 <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
-                  {cat.howThisHelps}
+                  {category.howThisHelps}
                 </p>
               </div>
             </div>
 
             <div className="col-lg-5">
-              {cat.heroImage ? (
+              {category.heroImage ? (
                 <div className="sb-card p-3">
                   <Image
-                    src={cat.heroImage}
+                    src={category.heroImage}
                     alt=""
                     className="img-fluid rounded-4"
                     width={900}
@@ -146,7 +169,7 @@ export default async function CategoryPage({ params }: Props) {
           </div>
 
           <div id="items" className="mt-4">
-            <ProductGrid products={cat.items} />
+            <ProductGrid products={category.items || []} />
           </div>
           <div className="mt-3 d-flex gap-2 flex-wrap">
             <a

@@ -4,55 +4,51 @@ import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
 import ProductDetailClient from "./ProductDetailClient";
-import { categories } from "@/data/products";
+import { apiService } from "@/lib/api";
 import { site } from "@/config/site";
 
 type Props = {
   params: Promise<{ categorySlug: string; productSlug: string }>;
 };
 
-// Helper to extract slug from productPageUrl
-function getSlugFromUrl(url: string): string {
-  const parts = url.split("/");
-  return parts[parts.length - 1];
-}
-
-// Find product by slug across all categories
-function findProductBySlug(categorySlug: string, productSlug: string) {
-  const category = categories.find((c) => c.slug === categorySlug);
-  if (!category) return null;
-
-  const product = category.items.find(
-    (item) => getSlugFromUrl(item.productPageUrl) === productSlug,
-  );
-
-  if (!product) return null;
-
-  return { category, product };
-}
-
+/**
+ * Generate static params for ISR
+ * Pre-renders all product pages at build time
+ */
 export async function generateStaticParams() {
+  const response = await apiService.getProductCategories();
+
+  if (!response.data) {
+    return [];
+  }
+
   const params: { categorySlug: string; productSlug: string }[] = [];
 
-  for (const category of categories) {
-    for (const item of category.items) {
-      params.push({
-        categorySlug: category.slug,
-        productSlug: getSlugFromUrl(item.productPageUrl),
-      });
+  for (const category of response.data) {
+    if (category.items) {
+      for (const item of category.items) {
+        params.push({
+          categorySlug: category.slug,
+          productSlug: item.slug,
+        });
+      }
     }
   }
 
   return params;
 }
 
+/**
+ * Generate metadata for SEO
+ * Fetches product data from API
+ */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug, productSlug } = await params;
-  const result = findProductBySlug(categorySlug, productSlug);
+  const response = await apiService.getProductBySlug(categorySlug, productSlug);
 
-  if (!result) return {};
+  if (!response.data) return {};
 
-  const { product } = result;
+  const product = response.data;
 
   const title = `${product.title} | Simple Biz Toolkit`;
   const description = `${product.problem} ${product.bullets.join(". ")}.`;
@@ -60,23 +56,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: product.title,
     description,
-    alternates: { canonical: product.productPageUrl },
+    alternates: { canonical: `/products/${categorySlug}/${productSlug}` },
     openGraph: {
       title,
       description,
-      url: product.productPageUrl,
+      url: `/products/${categorySlug}/${productSlug}`,
       images: product.image ? [{ url: product.image }] : undefined,
     },
   };
 }
 
+/**
+ * Product Detail Page Component
+ * Fetches product and category data from API with ISR
+ */
 export default async function ProductDetailPage({ params }: Props) {
   const { categorySlug, productSlug } = await params;
-  const result = findProductBySlug(categorySlug, productSlug);
 
-  if (!result) notFound();
+  // Fetch product and category in parallel
+  const [productResponse, categoryResponse] = await Promise.all([
+    apiService.getProductBySlug(categorySlug, productSlug),
+    apiService.getCategoryBySlug(categorySlug),
+  ]);
 
-  const { category, product } = result;
+  if (!productResponse.data || !categoryResponse.data) notFound();
+
+  const product = productResponse.data;
+  const category = categoryResponse.data;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -86,7 +92,7 @@ export default async function ProductDetailPage({ params }: Props) {
     image: product.image
       ? `https://simplebiztoolkit.com${product.image}`
       : undefined,
-    url: `https://simplebiztoolkit.com${product.productPageUrl}`,
+    url: `https://simplebiztoolkit.com/products/${categorySlug}/${productSlug}`,
     brand: {
       "@type": "Organization",
       name: site.name,
@@ -126,7 +132,7 @@ export default async function ProductDetailPage({ params }: Props) {
         "@type": "ListItem",
         position: 4,
         name: product.title,
-        item: `${site.url}${product.productPageUrl}`,
+        item: `${site.url}/products/${categorySlug}/${productSlug}`,
       },
     ],
   };

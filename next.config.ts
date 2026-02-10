@@ -2,12 +2,30 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: "export", // Static export for Azure Static Web Apps
+  // REMOVED: output: 'export' - Now using dynamic mode with ISR
   trailingSlash: false,
+
   images: {
-    unoptimized: true, // Required for Azure Static Web Apps free tier
+    // Enable image optimization
+    unoptimized: false,
+    // Support remote images from your API/storage
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "simplebiztoolkit.com",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+    ],
   },
-  // Note: redirects are handled in staticwebapp.config.json for static exports
+
+  // Enable experimental features for improved ISR
+  experimental: {
+    // Enables on-demand revalidation
+    isrMemoryCacheSize: 50 * 1024 * 1024, // 50MB
+  },
 };
 
 export default nextConfig;

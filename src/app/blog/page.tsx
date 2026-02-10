@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
 import { site } from "@/config/site";
-import { posts } from "@/data/posts";
+import { apiService } from "@/lib/api";
 import "@/styles/blog.css";
 
 export const metadata: Metadata = {
@@ -27,7 +27,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogIndexPage() {
+/**
+ * Blog Index Page
+ * Fetches published articles from API with ISR
+ */
+export default async function BlogIndexPage() {
+  const response = await apiService.getArticles();
+  const articles = response.data || [];
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -67,15 +73,15 @@ export default function BlogIndexPage() {
           </p>
 
           <div className="row g-3 mt-2">
-            {posts.map((p) => (
-              <div className="col-lg-6" key={p.slug}>
+            {articles.map((article) => (
+              <div className="col-lg-6" key={article.slug}>
                 <div className="sb-card p-3 h-100">
-                  {p.featuredImage && (
+                  {article.featuredImage && (
                     <div className="blog-card-image">
-                      <Link href={`/blog/${p.slug}`}>
+                      <Link href={`/blog/${article.slug}`}>
                         <img
-                          src={p.featuredImage}
-                          alt={p.title}
+                          src={article.featuredImage}
+                          alt={article.title}
                           style={{
                             width: "100%",
                             height: "auto",
@@ -90,10 +96,10 @@ export default function BlogIndexPage() {
                   )}
                   <div className="d-flex justify-content-between gap-2 flex-wrap">
                     <div className="sb-muted" style={{ fontSize: 13 }}>
-                      {p.category}
+                      {article.category}
                     </div>
                     <div className="sb-muted" style={{ fontSize: 13 }}>
-                      {p.readingMinutes} min read
+                      {article.readingMinutes} min read
                     </div>
                   </div>
 
@@ -101,12 +107,15 @@ export default function BlogIndexPage() {
                     className="mt-1"
                     style={{ fontWeight: 900, fontSize: 18 }}
                   >
-                    {p.title}
+                    {article.title}
                   </div>
-                  <div className="sb-muted mt-1">{p.description}</div>
+                  <div className="sb-muted mt-1">{article.description}</div>
 
                   <div className="mt-3">
-                    <Link className="sb-article-link" href={`/blog/${p.slug}`}>
+                    <Link
+                      className="sb-article-link"
+                      href={`/blog/${article.slug}`}
+                    >
                       <span>Read article</span>
                       <svg
                         width="16"

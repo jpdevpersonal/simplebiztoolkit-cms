@@ -17,11 +17,11 @@
         "name": "next"
       }
     ],
+    "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["@testing-library/jest-dom", "vitest/globals"],
     "allowJs": true
   },
   "include": [

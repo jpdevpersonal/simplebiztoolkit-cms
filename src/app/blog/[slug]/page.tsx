@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
-import { posts } from "@/data/posts";
-import { ArticleContent, hasArticleContent } from "../articles";
+import { ContentRenderer } from "@/components/ContentRenderer";
+import { apiService } from "@/lib/api";
 import "@/styles/articleStyle.css";
 import { site } from "@/config/site";
 
@@ -12,54 +12,76 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+/**
+ * Generate static params for ISR
+ * This still pre-renders pages at build time
+ */
 export async function generateStaticParams() {
-  return posts.map((p) => ({ slug: p.slug }));
+  const response = await apiService.getArticles();
+
+  if (!response.data) {
+    return [];
+  }
+
+  return response.data.map((article) => ({ slug: article.slug }));
 }
 
+/**
+ * Generate metadata for SEO
+ * Fetches article data from API
+ */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = posts.find((p) => p.slug === slug);
-  if (!post) return {};
+  const response = await apiService.getArticleBySlug(slug);
 
-  const ogImage = post.featuredImage ?? "/images/hero-image-desk.webp";
+  if (!response.data) return {};
+
+  const article = response.data;
+
+  const ogImage =
+    article.ogImage || article.featuredImage || "/images/hero-image-desk.webp";
 
   return {
-    title: post.title,
-    description: post.description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    title: article.seoTitle || article.title,
+    description: article.seoDescription || article.description,
+    alternates: { canonical: article.canonicalUrl || `/blog/${article.slug}` },
     openGraph: {
       type: "article",
-      title: `${post.title} | Simple Biz Toolkit`,
-      description: post.description,
-      url: `/blog/${post.slug}`,
+      title: `${article.title} | Simple Biz Toolkit`,
+      description: article.description,
+      url: `/blog/${article.slug}`,
       images: [{ url: ogImage }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${post.title} | Simple Biz Toolkit`,
-      description: post.description,
+      title: `${article.title} | Simple Biz Toolkit`,
+      description: article.description,
       images: [ogImage],
     },
   };
 }
 
+/**
+ * Blog Post Page Component
+ * Fetches article content from API with ISR
+ */
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = posts.find((p) => p.slug === slug);
+  const response = await apiService.getArticleBySlug(slug);
 
-  if (!post) notFound();
+  if (!response.data) notFound();
 
-  if (!hasArticleContent(slug)) notFound();
+  const article = response.data;
 
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: post.title,
-    description: post.description,
-    datePublished: post.dateISO,
-    dateModified: post.dateISO,
-    image: post.headerImage
-      ? [`https://simplebiztoolkit.com${post.headerImage}`]
+    headline: article.title,
+    description: article.description,
+    datePublished: article.dateISO,
+    dateModified: article.dateModified || article.dateISO,
+    image: article.headerImage
+      ? [`https://simplebiztoolkit.com${article.headerImage}`]
       : undefined,
     author: { "@type": "Person", name: "Julian (Simple Biz Toolkit)" },
     publisher: {
@@ -98,33 +120,35 @@ export default async function BlogPostPage({ params }: Props) {
 
         <header className="article-header">
           <div className="article-badges">
-            {post.badges?.map((b) => (
+            {article.badges?.map((b) => (
               <span key={b} className="article-badge">
                 {b}
               </span>
             ))}
           </div>
 
-          <h1 className="article-title">{post.title}</h1>
-          {post.subtitle && <p className="article-subtitle">{post.subtitle}</p>}
+          <h1 className="article-title">{article.title}</h1>
+          {article.subtitle && (
+            <p className="article-subtitle">{article.subtitle}</p>
+          )}
 
           <div className="article-meta">
-            <time dateTime={post.dateISO}>Published {post.dateISO}</time>
+            <time dateTime={article.dateISO}>Published {article.dateISO}</time>
             <span> · </span>
-            <span>{post.readingMinutes} min read</span>
+            <span>{article.readingMinutes} min read</span>
           </div>
         </header>
 
         {/* Header Image */}
-        {post.headerImage && (
+        {article.headerImage && (
           <div className="article-header-image">
-            <img src={post.headerImage} alt={post.title} />
+            <img src={article.headerImage} alt={article.title} />
           </div>
         )}
 
-        {/* Article Content */}
+        {/* Article Content - Now renders from database HTML */}
         <article>
-          <ArticleContent slug={slug} />
+          <ContentRenderer html={article.content} />
         </article>
 
         {/* Duplicate breadcrumb at bottom of main content */}
