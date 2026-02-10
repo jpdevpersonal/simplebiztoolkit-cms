@@ -32,17 +32,7 @@ export default async function AdminLayout({
         <div className="container py-4">{children}</div>
       </main>
 
-      <style jsx>{`
-        .admin-layout {
-          min-height: 100vh;
-          background-color: var(--sb-bg-primary);
-        }
-
-        .admin-content {
-          max-width: 1400px;
-          margin: 0 auto;
-        }
-      `}</style>
+      {/* styles moved to global theme.css to keep this component server-safe */}
     </div>
   );
 }

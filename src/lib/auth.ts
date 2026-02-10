@@ -16,13 +16,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(
-        credentials?: { email?: string; password?: string } | undefined,
-      ): Promise<User | null> {
+      async authorize(credentials: unknown): Promise<User | null> {
         // TODO: Replace this with actual API call to C# backend
         // This is a temporary implementation for development
 
-        if (!credentials?.email || !credentials?.password) {
+        const creds = credentials as
+          | { email?: string; password?: string }
+          | undefined;
+        if (!creds?.email || !creds?.password) {
           return null;
         }
 
@@ -34,12 +35,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Temporary hardcoded check (REMOVE IN PRODUCTION)
         if (
-          credentials.email === process.env.ADMIN_EMAIL &&
-          credentials.password === process.env.ADMIN_PASSWORD_HASH
+          creds.email === process.env.ADMIN_EMAIL &&
+          creds.password === process.env.ADMIN_PASSWORD_HASH
         ) {
           return {
             id: "1",
-            email: credentials.email as string,
+            email: creds.email as string,
             name: "Admin User",
           };
         }
@@ -60,9 +61,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       user?: User | null;
     }): Promise<JWT> {
       if (user) {
-        const t = token as JWT & { id?: string; email?: string };
+        const t = token as JWT & { id?: string; email?: string | undefined };
         t.id = user.id;
-        t.email = user.email;
+        t.email = (user.email ?? undefined) as string | undefined;
       }
       return token;
     },
@@ -71,15 +72,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       token,
     }: {
       session: Session;
-      token: JWT & { id?: string; email?: string };
+      token: JWT;
     }): Promise<Session> {
       if (token && session.user) {
+        const te = token as JWT & { id?: string | null; email?: string | null };
         const u = session.user as Session["user"] & {
           id?: string;
-          email?: string;
+          email?: string | undefined;
         };
-        u.id = token.id as string;
-        u.email = token.email as string;
+        u.id = (te.id ?? undefined) as string;
+        u.email = (te.email ?? undefined) as string | undefined;
         session.user = u;
       }
       return session;

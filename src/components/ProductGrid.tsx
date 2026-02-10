@@ -2,15 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
-type Product = {
-  title: string;
-  problem: string;
-  bullets: string[];
-  image: string;
-  etsyUrl: string;
-  productPageUrl: string;
-};
+import type { Product } from "@/types/product";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   return (
@@ -21,7 +13,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
             <article className="template-thumbnail sb-card h-100 product-card">
               <div className="overflow-hidden" style={{ width: "100%" }}>
                 <Link
-                  href={p.productPageUrl}
+                  href={p.productPageUrl || "#"}
                   className="product-thumbnail-clickable"
                   style={{
                     aspectRatio: "3/2",
@@ -46,7 +38,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                       className="img-fluid ledger-thumb"
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      quality={100}
+                      quality={75}
                       loading="lazy"
                       style={{
                         marginTop: "5px",
@@ -89,7 +81,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                     </svg>
                   </span>
                   <a
-                    href={p.productPageUrl}
+                    href={p.productPageUrl || "#"}
                     rel="noopener noreferrer"
                     className="product-card-link"
                   >

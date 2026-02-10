@@ -12,7 +12,7 @@ export type ProductCategory = {
     image: string;
     etsyUrl: string;
     price: string;
-    productPageUrl: string;
+    productPageUrl?: string;
   }>;
 };
 

@@ -519,3 +519,14 @@ h5 {
     transform: scaleX(1);
   }
 }
+
+/* Admin layout styles (moved from server component) */
+.admin-layout {
+  min-height: 100vh;
+  background-color: var(--sb-soft);
+}
+
+.admin-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}

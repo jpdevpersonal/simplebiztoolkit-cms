@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
+import Image from "next/image";
 import { site } from "@/config/site";
 import { apiService } from "@/lib/api";
 import "@/styles/blog.css";
@@ -79,9 +80,13 @@ export default async function BlogIndexPage() {
                   {article.featuredImage && (
                     <div className="blog-card-image">
                       <Link href={`/blog/${article.slug}`}>
-                        <img
+                        <Image
                           src={article.featuredImage}
                           alt={article.title}
+                          width={800}
+                          height={450}
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          loading="lazy"
                           style={{
                             width: "100%",
                             height: "auto",
