@@ -65,7 +65,8 @@ class ApiService {
   private authToken: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
+    console.log(this.baseUrl);
   }
 
   /**
@@ -118,6 +119,7 @@ class ApiService {
         next: tags ? { tags } : undefined,
       };
 
+      console.log(url);
       const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {
@@ -130,9 +132,21 @@ class ApiService {
         };
       }
 
-      const data = await response.json();
+      const json: unknown = await response.json();
+
+      // Some backends return an envelope like { data: ... }
+      // Unwrap that so callers receive the actual payload.
+      let payload: unknown;
+
+      if (json && typeof json === "object" && json !== null && "data" in json) {
+        // Narrow to an object with a `data` property of unknown type
+        payload = (json as { data: unknown }).data;
+      } else {
+        payload = json;
+      }
+
       return {
-        data,
+        data: payload as T,
         statusCode: response.status,
       };
     } catch (error) {
