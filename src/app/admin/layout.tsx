@@ -20,13 +20,9 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  if (!session) {
-    redirect("/admin/login");
-  }
-
   return (
     <div className="admin-layout">
-      <AdminNav userEmail={session.user?.email || ""} />
+      {session ? <AdminNav userEmail={session.user?.email || ""} /> : null}
 
       <main className="admin-content">
         <div className="container py-4">{children}</div>
