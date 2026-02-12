@@ -197,13 +197,15 @@ function parseContentServer(html: string): ContentBlock[] {
   });
 
   // Add any remaining HTML
-  if (lastIndex < html.length) {
-    const remainingHtml = html.substring(lastIndex).trim();
-    if (remainingHtml) {
-      blocks.push({
-        type: "html",
-        content: remainingHtml,
-      });
+  if (html) {
+    if (lastIndex < html.length) {
+      const remainingHtml = html.substring(lastIndex).trim();
+      if (remainingHtml) {
+        blocks.push({
+          type: "html",
+          content: remainingHtml,
+        });
+      }
     }
   }
 
