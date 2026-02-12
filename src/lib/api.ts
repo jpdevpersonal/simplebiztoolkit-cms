@@ -286,6 +286,16 @@ class ApiService {
   }
 
   /**
+   * Get product by ID (admin only)
+   */
+  async getProductById(id: string): Promise<ApiResponse<ProductItem>> {
+    noStore(); // Don't cache in admin
+    return this.fetchApi<ProductItem>(`/api/products/${id}`, {
+      method: "GET",
+    });
+  }
+
+  /**
    * Create product (admin only)
    */
   async createProduct(
