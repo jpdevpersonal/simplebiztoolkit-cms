@@ -6,6 +6,7 @@ type Product = {
   id: string;
   title: string;
   price: string;
+  description?: string;
   status: "draft" | "published";
   categoryId: string;
 };
@@ -13,6 +14,7 @@ type Product = {
 export default function ProductEditor({ product }: { product: Product }) {
   const [title, setTitle] = useState(product.title || "");
   const [price, setPrice] = useState(product.price || "");
+  const [description, setDescription] = useState(product.description || "");
   const [status, setStatus] = useState<Product["status"]>(
     product.status || "draft",
   );
@@ -28,7 +30,7 @@ export default function ProductEditor({ product }: { product: Product }) {
       const res = await fetch(`/api/products/${product.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, price, status }),
+        body: JSON.stringify({ title, price, description, status }),
       });
 
       if (!res.ok) {
@@ -61,6 +63,16 @@ export default function ProductEditor({ product }: { product: Product }) {
           className="form-control"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label">Description</label>
+        <textarea
+          className="form-control"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={6}
         />
       </div>
 

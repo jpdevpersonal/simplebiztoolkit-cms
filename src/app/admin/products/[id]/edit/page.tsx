@@ -13,8 +13,17 @@ type Props = {
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
   const response = await apiService.getProductById(id);
+  let product = response.data;
 
-  if (!response.data) {
+  if (!product) {
+    const categoriesResponse = await apiService.getProductCategories();
+    const categories = categoriesResponse.data || [];
+    product = categories
+      .flatMap((category) => category.items || [])
+      .find((item) => item.id === id);
+  }
+
+  if (!product) {
     notFound();
   }
 
@@ -22,7 +31,7 @@ export default async function EditProductPage({ params }: Props) {
     <div>
       <h1 style={{ fontWeight: 700, marginBottom: "2rem" }}>Edit Product</h1>
       {/* ProductEditor is a client component that handles the form and update */}
-      <ProductEditor product={response.data} />
+      <ProductEditor product={product} />
     </div>
   );
 }
