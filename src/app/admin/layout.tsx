@@ -1,16 +1,11 @@
-/**
- * Admin Layout
- * Provides navigation and authentication check for all admin pages
- */
-
 import React from "react";
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import AdminNav from "./AdminNav";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Admin Dashboard | Simple Biz Toolkit",
-  robots: "noindex, nofollow", // Prevent search engine indexing
+  robots: "noindex, nofollow",
 };
 
 export default async function AdminLayout({
@@ -27,8 +22,6 @@ export default async function AdminLayout({
       <main className="admin-content">
         <div className="container py-4">{children}</div>
       </main>
-
-      {/* styles moved to global theme.css to keep this component server-safe */}
     </div>
   );
 }

@@ -17,9 +17,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials: unknown): Promise<User | null> {
-        // TODO: Replace this with actual API call to C# backend
-        // This is a temporary implementation for development
-
         const creds = credentials as
           | { email?: string; password?: string }
           | undefined;
@@ -27,30 +24,68 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        // In production, verify against C# API:
-        // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        //   method: 'POST',
-        //   body: JSON.stringify({ email: credentials.email, password: credentials.password }),
-        // });
+        try {
+          // Call C# backend API for authentication
+          const apiUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
+          const response = await fetch(`${apiUrl}/api/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: creds.email,
+              password: creds.password,
+            }),
+          });
 
-        // Temporary hardcoded check (REMOVE IN PRODUCTION)
-        if (
-          creds.email === process.env.ADMIN_EMAIL &&
-          creds.password === process.env.ADMIN_PASSWORD_HASH
-        ) {
-          return {
-            id: "1",
-            email: creds.email as string,
-            name: "Admin User",
-          };
+          if (!response.ok) {
+            console.error("Authentication failed:", response.status);
+            return null;
+          }
+
+          const data = await response.json();
+
+          // API returns { token, user: { id, email, name } }
+          if (data.token && data.user) {
+            return {
+              id: data.user.id,
+              email: data.user.email,
+              name: data.user.name,
+              // Store the JWT token in the user object so it can be added to the token
+              token: data.token,
+            } as User & { token: string };
+          }
+
+          return null;
+        } catch (error) {
+          console.error("Authentication error:", error);
+          return null;
         }
-
-        return null;
       },
     }),
   ],
   pages: {
     signIn: "/admin/login",
+  },
+  trustHost: true, // Required for NextAuth v5 and localhost development
+  session: {
+    strategy: "jwt",
+  },
+  // Development-friendly cookie settings for localhost
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.session-token"
+          : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production", // Only secure in production
+      },
+    },
   },
   callbacks: {
     async jwt({
@@ -60,10 +95,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       token: JWT;
       user?: User | null;
     }): Promise<JWT> {
+      console.log("JWT callback called", { hasUser: !!user, token: token });
       if (user) {
-        const t = token as JWT & { id?: string; email?: string | undefined };
+        console.log("JWT callback: storing user  in token", {
+          userId: user.id,
+          email: user.email,
+        });
+        const t = token as JWT & {
+          id?: string;
+          email?: string | undefined;
+          accessToken?: string;
+        };
         t.id = user.id;
         t.email = (user.email ?? undefined) as string | undefined;
+        // Store the JWT token from the backend API
+        t.accessToken = (user as User & { token?: string }).token;
+        console.log("JWT callback: accessToken stored", {
+          hasToken: !!t.accessToken,
+        });
       }
       return token;
     },
@@ -74,15 +123,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session: Session;
       token: JWT;
     }): Promise<Session> {
+      console.log("Session callback called", {
+        token: token,
+        session: session,
+      });
       if (token && session.user) {
-        const te = token as JWT & { id?: string | null; email?: string | null };
+        const te = token as JWT & {
+          id?: string | null;
+          email?: string | null;
+          accessToken?: string;
+        };
         const u = session.user as Session["user"] & {
           id?: string;
           email?: string | undefined;
         };
+        const s = session as Session & { accessToken?: string };
         u.id = (te.id ?? undefined) as string;
         u.email = (te.email ?? undefined) as string | undefined;
+        // Make the backend JWT token available in the session
+        s.accessToken = te.accessToken;
         session.user = u;
+        console.log("Session callback: user set", {
+          userId: u.id,
+          email: u.email,
+        });
       }
       return session;
     },

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Auth Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .info {
+        color: blue;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Admin Authentication & CRUD Test</h1>
+
+    <div class="section">
+      <h2>Step 1: Login</h2>
+      <button onclick="testLogin()">Test Login</button>
+      <div id="login-result"></div>
+    </div>
+
+    <div class="section">
+      <h2>Step 2: Check Session</h2>
+      <button onclick="checkSession()">Check Session</button>
+      <div id="session-result"></div>
+    </div>
+
+    <div class="section">
+      <h2>Step 3: Update Product</h2>
+      <input
+        type="text"
+        id="product-id"
+        placeholder="Product ID"
+        value="063c0604-1016-1865-e627-03e819be08df"
+        style="width: 300px"
+      />
+      <button onclick="updateProduct()">Update Product</button>
+      <div id="update-result"></div>
+    </div>
+
+    <div class="section">
+      <h2>Logs</h2>
+      <button onclick="clearLogs()">Clear Logs</button>
+      <pre id="logs"></pre>
+    </div>
+
+    <script>
+      function log(message, type = "info") {
+        const logs = document.getElementById("logs");
+        const timestamp = new Date().toLocaleTimeString();
+        const className =
+          type === "error" ? "error" : type === "success" ? "success" : "info";
+        logs.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+        logs.scrollTop = logs.scrollHeight;
+      }
+
+      function clearLogs() {
+        document.getElementById("logs").innerHTML = "";
+      }
+
+      async function testLogin() {
+        const resultDiv = document.getElementById("login-result");
+        resultDiv.innerHTML = '<p class="info">Logging in...</p>';
+        log("Starting login test...");
+
+        try {
+          // Get CSRF token
+          log("Fetching CSRF token...");
+          const csrfRes = await fetch("/api/auth/csrf");
+          const { csrfToken } = await csrfRes.json();
+          log(`Got CSRF token: ${csrfToken.substring(0, 20)}...`, "success");
+
+          // Sign in
+          log("Attempting to sign in...");
+          const formData = new URLSearchParams({
+            csrfToken: csrfToken,
+            email: "admin@simplebiztoolkit.com",
+            password: "T0mbraider&1",
+            callbackUrl: "/admin",
+            json: "true",
+          });
+
+          const loginRes = await fetch("/api/auth/callback/credentials", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: formData.toString(),
+            credentials: "include",
+          });
+
+          log(`Login response status: ${loginRes.status}`);
+
+          if (loginRes.ok || loginRes.status === 302) {
+            resultDiv.innerHTML = '<p class="success">✓ Login successful!</p>';
+            log("Login successful!", "success");
+          } else {
+            const errorText = await loginRes.text();
+            resultDiv.innerHTML = `<p class="error">✗ Login failed: ${errorText}</p>`;
+            log(`Login failed: ${errorText}`, "error");
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+          log(`Error during login: ${error.message}`, "error");
+        }
+      }
+
+      async function checkSession() {
+        const resultDiv = document.getElementById("session-result");
+        resultDiv.innerHTML = '<p class="info">Checking session...</p>';
+        log("Checking session...");
+
+        try {
+          const sessionRes = await fetch("/api/auth/session", {
+            credentials: "include",
+          });
+          const session = await sessionRes.json();
+
+          log(
+            `Session response: ${JSON.stringify(session).substring(0, 100)}...`,
+          );
+
+          if (session && session.user) {
+            resultDiv.innerHTML = `
+                        <p class="success">✓ Session active!</p>
+                        <p>User: ${session.user.email}</p>
+                        <p>Has access token: ${session.accessToken ? "YES" : "NO"}</p>
+                        <pre>${JSON.stringify(session, null, 2)}</pre>
+                    `;
+            log(`Session found for user: ${session.user.email}`, "success");
+          } else {
+            resultDiv.innerHTML = '<p class="error">✗ No active session</p>';
+            log("No active session found", "error");
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+          log(`Error checking session: ${error.message}`, "error");
+        }
+      }
+
+      async function updateProduct() {
+        const resultDiv = document.getElementById("update-result");
+        const productId = document.getElementById("product-id").value;
+
+        if (!productId) {
+          resultDiv.innerHTML =
+            '<p class="error">✗ Please enter a product ID</p>';
+          return;
+        }
+
+        resultDiv.innerHTML = '<p class="info">Updating product...</p>';
+        log(`Updating product ${productId}...`);
+
+        try {
+          const updateData = {
+            title: "Test Update " + Date.now(),
+            slug: "test-update",
+            problem: "Test problem",
+            description: "Test description",
+            bullets: ["Feature 1", "Feature 2"],
+            image: "/test.jpg",
+            etsyUrl: "https://etsy.com/test",
+            price: "$19.99",
+            categoryId: "99e25874-1333-976d-6330-a885b1a94287",
+            status: "draft",
+          };
+
+          log(`Sending PUT request to /api/products/${productId}`);
+          const updateRes = await fetch(`/api/products/${productId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(updateData),
+          });
+
+          log(`Update response status: ${updateRes.status}`);
+
+          if (updateRes.ok) {
+            const result = await updateRes.json();
+            resultDiv.innerHTML = `
+                        <p class="success">✓ Product updated successfully!</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+            log("Product updated successfully!", "success");
+          } else {
+            const errorText = await updateRes.text();
+            resultDiv.innerHTML = `
+                        <p class="error">✗ Update failed (${updateRes.status})</p>
+                        <pre>${errorText}</pre>
+                    `;
+            log(`Update failed (${updateRes.status}): ${errorText}`, "error");
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+          log(`Error updating product: ${error.message}`, "error");
+        }
+      }
+
+      // Auto-check session on page load
+      window.addEventListener("load", () => {
+        log("Page loaded. Ready to test.");
+        checkSession();
+      });
+    </script>
+  </body>
+</html>
