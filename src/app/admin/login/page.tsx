@@ -48,13 +48,16 @@ export default function LoginPage() {
       style={{
         minHeight: "100vh",
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
+        paddingTop: "5rem",
         backgroundColor: "var(--sb-bg-primary)",
       }}
     >
       <div className="sb-card p-4" style={{ width: "100%", maxWidth: "400px" }}>
-        <h1 style={{ fontWeight: 700, marginBottom: "1.5rem" }}>Admin Login</h1>
+        <h1 style={{ fontWeight: 700, marginBottom: "1.5rem" }}>
+          Portal Login
+        </h1>
 
         {error && (
           <div
@@ -69,7 +72,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: "1rem" }}>
             <label
-              htmlFor="email"
+              htmlFor="User Name"
               style={{ display: "block", marginBottom: "0.5rem" }}
             >
               Email
@@ -89,7 +92,7 @@ export default function LoginPage() {
 
           <div style={{ marginBottom: "1.5rem" }}>
             <label
-              htmlFor="password"
+              htmlFor="Password"
               style={{ display: "block", marginBottom: "0.5rem" }}
             >
               Password

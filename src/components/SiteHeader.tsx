@@ -3,12 +3,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import SiteNavigation from "./SiteNavigation";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 
 export default function SiteHeader() {
   const headerRef = useRef<HTMLElement | null>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin");
 
   useEffect(() => {
     function updateHeight() {
@@ -53,19 +56,20 @@ export default function SiteHeader() {
             />
             <div>
               <div className="sb-brand-title">Simple Biz Toolkit</div>
-              <div className="sb-muted" style={{ fontSize: "0.75rem" }}>
-                Templates & Tools for Small Business
-              </div>
             </div>
           </Link>
 
-          <div className="order-3 order-lg-2 d-flex align-items-center">
-            <SiteNavigation />
-          </div>
+          {!isAdmin && (
+            <>
+              <div className="order-3 order-lg-2 d-flex align-items-center">
+                <SiteNavigation />
+              </div>
 
-          <div className="d-flex align-items-center gap-2 sb-site-header-actions order-2 order-lg-3">
-            <EtsyCtaButton className="d-none d-xl-inline-flex" />
-          </div>
+              <div className="d-flex align-items-center gap-2 sb-site-header-actions order-2 order-lg-3">
+                <EtsyCtaButton className="d-none d-xl-inline-flex" />
+              </div>
+            </>
+          )}
         </div>
       </header>
 

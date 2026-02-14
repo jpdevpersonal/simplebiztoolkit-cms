@@ -9,6 +9,7 @@ import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "./BootstrapClient";
+import AuthProvider from "@/components/AuthProvider";
 import Script from "next/script";
 
 export const metadata: Metadata = {
@@ -113,18 +114,20 @@ gtag('config', '${gaId}');`}
         </Script>
       </head>
       <body>
-        <BootstrapClient />
+        <AuthProvider>
+          <BootstrapClient />
 
-        <JsonLd json={websiteJsonLd} />
+          <JsonLd json={websiteJsonLd} />
 
-        <a className="sb-skip-link" href="#content">
-          Skip to content
-        </a>
+          <a className="sb-skip-link" href="#content">
+            Skip to content
+          </a>
 
-        <SiteHeader />
-        <main id="content">{children}</main>
-        <SiteFooter />
-        <StickyMobileCta />
+          <SiteHeader />
+          <main id="content">{children}</main>
+          <SiteFooter />
+          <StickyMobileCta />
+        </AuthProvider>
       </body>
     </html>
   );

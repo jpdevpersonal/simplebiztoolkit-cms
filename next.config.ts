@@ -23,11 +23,12 @@ const nextConfig: NextConfig = {
 
   async rewrites() {
     // Proxy API requests to the backend, but exclude NextAuth endpoints
+    // and our own API routes (products, categories, revalidate)
     // so they are handled by the Next app itself.
     return [
       {
-        // Match any /api/* path that does NOT start with /api/auth
-        source: "/api/:path((?!auth/).*)",
+        // Match /api/* paths that do NOT start with /api/auth, /api/products, or /api/revalidate
+        source: "/api/:path((?!auth/|products|revalidate).*)",
         destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path`,
       },
     ];

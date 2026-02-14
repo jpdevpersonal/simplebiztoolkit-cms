@@ -2,44 +2,43 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ProductItem, ProductCategory } from "@/lib/api";
+import type { ProductCategory } from "@/lib/api";
 
-type ProductEditorProps = {
-  product: ProductItem;
-  categories?: ProductCategory[];
+type NewProductFormProps = {
+  categories: ProductCategory[];
 };
 
-export default function ProductEditor({
-  product,
-  categories = [],
-}: ProductEditorProps) {
+export default function NewProductForm({ categories }: NewProductFormProps) {
   const router = useRouter();
-  const [title, setTitle] = useState(product.title || "");
-  const [slug, setSlug] = useState(product.slug || "");
-  const [problem, setProblem] = useState(product.problem || "");
-  const [description, setDescription] = useState(product.description || "");
-  const [bullets, setBullets] = useState(
-    (product.bullets || []).join("\n") || "",
-  );
-  const [image, setImage] = useState(product.image || "");
-  const [etsyUrl, setEtsyUrl] = useState(product.etsyUrl || "");
-  const [productPageUrl, setProductPageUrl] = useState(
-    product.productPageUrl || "",
-  );
-  const [price, setPrice] = useState(product.price || "");
-  const [categoryId, setCategoryId] = useState(product.categoryId || "");
-  const [status, setStatus] = useState<"draft" | "published">(
-    product.status || "draft",
-  );
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
+  const [problem, setProblem] = useState("");
+  const [description, setDescription] = useState("");
+  const [bullets, setBullets] = useState("");
+  const [image, setImage] = useState("");
+  const [etsyUrl, setEtsyUrl] = useState("");
+  const [price, setPrice] = useState("");
+  const [productPageUrl, setProductPageUrl] = useState("");
+  const [categoryId, setCategoryId] = useState(categories[0]?.id || "");
+  const [status, setStatus] = useState<"draft" | "published">("draft");
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-generate slug from title
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    if (!slug) {
+      const autoSlug = value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      setSlug(autoSlug);
+    }
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    setMessage(null);
     setError(null);
 
     try {
@@ -57,14 +56,14 @@ export default function ProductEditor({
         bullets: bulletsArray,
         image: image || undefined,
         etsyUrl: etsyUrl || undefined,
-        productPageUrl: productPageUrl || undefined,
         price: price || undefined,
+        productPageUrl: productPageUrl || undefined,
         categoryId,
         status,
       };
 
-      const res = await fetch(`/api/products/${product.id}`, {
-        method: "PUT",
+      const res = await fetch("/api/products", {
+        method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
@@ -73,45 +72,16 @@ export default function ProductEditor({
       if (!res.ok) {
         const err = await res.text().catch(() => res.statusText);
         setError(`Error: ${err}`);
-      } else {
-        setMessage("Product saved successfully!");
-        router.refresh();
+        setSaving(false);
+        return;
       }
+
+      // Redirect to products list on success
+      router.push("/admin/products");
+      router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this product?")) {
-      return;
-    }
-
-    setDeleting(true);
-    setMessage(null);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/products/${product.id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const err = await res.text().catch(() => res.statusText);
-        setError(`Error: ${err}`);
-        setDeleting(false);
-      } else {
-        setMessage("Product deleted!");
-        // Redirect to products list
-        router.push("/admin/products");
-        router.refresh();
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-      setDeleting(false);
     }
   }
 
@@ -123,7 +93,7 @@ export default function ProductEditor({
           <input
             className="form-control"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => handleTitleChange(e.target.value)}
             required
           />
         </div>
@@ -138,23 +108,21 @@ export default function ProductEditor({
           />
         </div>
 
-        {categories.length > 0 && (
-          <div className="col-md-6">
-            <label className="form-label">Category *</label>
-            <select
-              className="form-select"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              required
-            >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="col-md-6">
+          <label className="form-label">Category *</label>
+          <select
+            className="form-select"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            required
+          >
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="col-md-6">
           <label className="form-label">Status</label>
@@ -237,33 +205,18 @@ export default function ProductEditor({
         </div>
       </div>
 
-      {message && <div className="alert alert-success mt-3">{message}</div>}
       {error && <div className="alert alert-danger mt-3">{error}</div>}
 
-      <div className="mt-4 d-flex gap-2 justify-content-between">
-        <div className="d-flex gap-2">
-          <button
-            type="submit"
-            className="btn sb-btn-primary"
-            disabled={saving}
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
-          <button
-            type="button"
-            className="btn sb-btn-ghost"
-            onClick={() => router.back()}
-          >
-            Cancel
-          </button>
-        </div>
+      <div className="mt-4 d-flex gap-2">
+        <button type="submit" className="btn sb-btn-primary" disabled={saving}>
+          {saving ? "Creating..." : "Create Product"}
+        </button>
         <button
           type="button"
-          className="btn btn-danger"
-          onClick={handleDelete}
-          disabled={deleting}
+          className="btn sb-btn-ghost"
+          onClick={() => router.back()}
         >
-          {deleting ? "Deleting..." : "Delete Product"}
+          Cancel
         </button>
       </div>
     </form>
