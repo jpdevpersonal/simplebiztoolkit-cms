@@ -23,6 +23,9 @@ export default function ProductEditor({
   );
   const [image, setImage] = useState(product.image || "");
   const [etsyUrl, setEtsyUrl] = useState(product.etsyUrl || "");
+  const [productPageUrl, setProductPageUrl] = useState(
+    product.productPageUrl || "",
+  );
   const [price, setPrice] = useState(product.price || "");
   const [categoryId, setCategoryId] = useState(product.categoryId || "");
   const [status, setStatus] = useState<"draft" | "published">(
@@ -54,6 +57,7 @@ export default function ProductEditor({
         bullets: bulletsArray,
         image: image || undefined,
         etsyUrl: etsyUrl || undefined,
+        productPageUrl: productPageUrl || undefined,
         price: price || undefined,
         categoryId,
         status,
@@ -220,6 +224,15 @@ export default function ProductEditor({
             className="form-control"
             value={etsyUrl}
             onChange={(e) => setEtsyUrl(e.target.value)}
+          />
+        </div>
+
+        <div className="col-md-6">
+          <label className="form-label">Product Page URL</label>
+          <input
+            className="form-control"
+            value={productPageUrl}
+            onChange={(e) => setProductPageUrl(e.target.value)}
           />
         </div>
       </div>

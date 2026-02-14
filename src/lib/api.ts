@@ -44,6 +44,7 @@ export interface ProductItem {
   bullets: string[];
   image: string;
   etsyUrl: string;
+  productPageUrl?: string;
   price: string;
   categoryId: string;
   status: "draft" | "published";
