@@ -259,6 +259,16 @@ class ApiService {
     );
   }
 
+  async getAllProducts(): Promise<ApiResponse<ProductCategory[]>> {
+    return this.fetchApi<ProductCategory[]>(
+      "/api/products/allCategories",
+      {
+        method: "GET",
+      },
+      ["products"],
+    );
+  }
+
   /**
    * Get single category by slug
    */
