@@ -67,7 +67,6 @@ class ApiService {
 
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
-    console.log(this.baseUrl);
   }
 
   /**
@@ -120,7 +119,6 @@ class ApiService {
         next: tags ? { tags } : undefined,
       };
 
-      console.log(url);
       const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {

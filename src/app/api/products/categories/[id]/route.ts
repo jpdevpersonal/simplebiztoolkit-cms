@@ -4,89 +4,54 @@
  * - Proxies GET to backend
  */
 
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import type { Session } from "next-auth";
-
-const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
+import { proxyToBackend, requireAuth } from "@/lib/apiProxy";
 
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  await headers();
-  const session = await auth();
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = await requireAuth();
+  if (!authResult.ok) {
+    return authResult.response;
   }
 
   const { id } = await context.params;
-  const body = await request.text();
-  const accessToken = (session as Session & { accessToken?: string })
-    .accessToken;
-
-  const res = await fetch(`${BACKEND}/api/products/categories/${id}`, {
+  return proxyToBackend({
+    request,
+    path: `/api/products/categories/${id}`,
     method: "PUT",
-    headers: {
-      "Content-Type": request.headers.get("content-type") || "application/json",
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-    body,
-  });
-
-  const text = await res.text();
-  return new NextResponse(text, {
-    status: res.status,
-    headers: {
-      "Content-Type": res.headers.get("content-type") || "text/plain",
-    },
+    accessToken: authResult.auth.accessToken,
   });
 }
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const res = await fetch(`${BACKEND}/api/products/categories/${id}`);
-  const text = await res.text();
-  return new NextResponse(text, {
-    status: res.status,
-    headers: {
-      "Content-Type": res.headers.get("content-type") || "text/plain",
-    },
+  return proxyToBackend({
+    request: null,
+    path: `/api/products/categories/${id}`,
+    method: "GET",
   });
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  await headers();
-  const session = await auth();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authResult = await requireAuth();
+  if (!authResult.ok) {
+    return authResult.response;
   }
 
   const { id } = await context.params;
-  const accessToken = (session as Session & { accessToken?: string })
-    .accessToken;
 
-  const res = await fetch(`${BACKEND}/api/products/categories/${id}`, {
+  return proxyToBackend({
+    request: null,
+    path: `/api/products/categories/${id}`,
     method: "DELETE",
-    headers: {
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-  });
-
-  const text = await res.text();
-  return new NextResponse(text, {
-    status: res.status,
-    headers: {
-      "Content-Type": res.headers.get("content-type") || "text/plain",
-    },
+    accessToken: authResult.auth.accessToken,
   });
 }

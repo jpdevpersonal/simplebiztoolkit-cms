@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
 import FaqAccordion from "@/components/FaqAccordion";
+import SupportSidebarCard from "@/components/SupportSidebarCard";
 import { faqs } from "@/data/faqs";
 import { site } from "@/config/site";
 
@@ -71,32 +71,18 @@ export default function FaqPage() {
             </main>
 
             <aside className="col-12 col-lg-4">
-              <div className="card">
-                <div className="card-body d-flex flex-column">
-                  <h3 className="h6" style={{ fontWeight: 800 }}>
-                    Need more help?
-                  </h3>
-                  <p className="sb-muted mb-3">
-                    If the FAQ doesn't answer your question you can contact us
-                    and we'll get back to you.
-                  </p>
-
-                  <Link href="/contact" className="btn btn-primary mt-auto">
-                    Contact page
-                  </Link>
-
-                  <hr />
-                  <h4 className="h6">Helpful links</h4>
-                  <ul className="list-unstyled sb-muted small">
-                    <li>
-                      <Link href="/help">Help & Troubleshooting</Link>
-                    </li>
-                    <li>
-                      <a href="https://www.etsy.com/">Etsy Help</a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              <SupportSidebarCard
+                description="If the FAQ doesn't answer your question you can contact us and we'll get back to you."
+                linksHeading="Helpful links"
+                links={[
+                  { href: "/help", label: "Help & Troubleshooting" },
+                  {
+                    href: "https://www.etsy.com/",
+                    label: "Etsy Help",
+                    external: true,
+                  },
+                ]}
+              />
             </aside>
           </div>
         </div>
