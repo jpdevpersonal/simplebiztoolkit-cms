@@ -75,7 +75,22 @@ export default function ProductEditor({
         setError(`Error: ${err}`);
       } else {
         setMessage("Product saved successfully!");
-        router.refresh();
+        // Update local state from response (if backend returns the saved product)
+        const saved = await res.json().catch(() => null);
+        if (saved && typeof saved === "object") {
+          // Merge returned fields into local state where present
+          setTitle((saved.title as string) || title);
+          setSlug((saved.slug as string) || slug);
+          setProblem((saved.problem as string) || problem);
+          setDescription((saved.description as string) || description);
+          setBullets(((saved.bullets as string[]) || []).join("\n") || bullets);
+          setImage((saved.image as string) || image);
+          setEtsyUrl((saved.etsyUrl as string) || etsyUrl);
+          setProductPageUrl((saved.productPageUrl as string) || productPageUrl);
+          setPrice((saved.price as string) || price);
+          setCategoryId((saved.categoryId as string) || categoryId);
+          setStatus((saved.status as "draft" | "published") || status);
+        }
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");

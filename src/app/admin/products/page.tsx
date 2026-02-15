@@ -4,10 +4,23 @@
  */
 
 import Link from "next/link";
-import { apiService } from "@/lib/api";
+import { headers } from "next/headers";
+import { apiService, getApiService } from "@/lib/api";
+import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
+import AdminProductsTable from "../../../components/AdminProductsTable";
 
 export default async function ProductsPage() {
-  const response = await apiService.getProductCategories();
+  // Ensure cookies are available for NextAuth on the server
+  await headers();
+  const session = await auth();
+
+  // Use an authenticated API service when session has an accessToken so drafts are returned
+  const _s = session as Session & { accessToken?: string };
+  const accessToken = _s?.accessToken;
+  const service = accessToken ? getApiService(accessToken) : apiService;
+
+  const response = await service.getAllProducts();
   const categories = response.data || [];
   const products = categories.flatMap((cat) => cat.items || []);
 
@@ -44,65 +57,8 @@ export default async function ProductsPage() {
         </div>
       </div>
 
-      {/* Product Table */}
-      <div className="sb-card">
-        <div className="table-responsive">
-          <table className="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="text-center py-4 sb-muted">
-                    No products found. Create your first product!
-                  </td>
-                </tr>
-              )}
-              {products.map((product) => {
-                const category = categories.find((cat) =>
-                  cat.items?.includes(product),
-                );
-                return (
-                  <tr key={product.id}>
-                    <td style={{ fontWeight: 600 }}>{product.title}</td>
-                    <td>{category?.name}</td>
-                    <td>{product.price}</td>
-                    <td>
-                      <span
-                        className="badge"
-                        style={{
-                          backgroundColor:
-                            product.status === "published"
-                              ? "var(--sb-success)"
-                              : "var(--sb-warning)",
-                          color: "#fff",
-                        }}
-                      >
-                        {product.status}
-                      </span>
-                    </td>
-                    <td>
-                      <Link
-                        href={`/admin/products/${product.id}/edit`}
-                        className="btn btn-sm sb-btn-ghost"
-                      >
-                        Edit
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Product Table (client-side for sorting) */}
+      <AdminProductsTable products={products} categories={categories} />
     </div>
   );
 }
