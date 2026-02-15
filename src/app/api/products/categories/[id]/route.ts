@@ -1,7 +1,7 @@
 /**
- * Products API proxy (per-id)
- * - Allows PUT to update a product but requires an authenticated NextAuth session
- * - Proxies other methods to the backend
+ * Product Categories API proxy (per-id)
+ * - Allows PUT/DELETE for admin-protected operations
+ * - Proxies GET to backend
  */
 
 import { NextResponse } from "next/server";
@@ -16,51 +16,22 @@ export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  // Use NextAuth server helper to validate session
-  // In NextAuth v5, we need to await headers() for proper cookie access
-  const headersList = await headers();
-  console.log("[API PUT] Request headers:");
-  console.log(
-    "  Cookie:",
-    headersList.get("cookie")?.substring(0, 100) + "...",
-  );
-
+  await headers();
   const session = await auth();
 
-  console.log("[API PUT /products/[id]] Session:", session ? "EXISTS" : "NULL");
-  if (session) {
-    console.log("[API PUT /products/[id]] User:", session.user?.email);
-    const _s = session as Session & { accessToken?: string };
-    console.log("[API PUT /products/[id]] Has accessToken:", !!_s.accessToken);
-  } else {
-    console.log(
-      "[API PUT /products/[id]] No session - cookies:",
-      headersList.get("cookie"),
-    );
-  }
-
   if (!session) {
-    console.log("[API PUT /products/[id]] Unauthorized - no session found");
-    return NextResponse.json(
-      { error: "Unauthorized - No session found. Please log in again." },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { id } = await context.params;
-
-  // Forward the original request body to the backend
   const body = await request.text();
-
-  // Get the JWT token from the session
   const accessToken = (session as Session & { accessToken?: string })
     .accessToken;
 
-  const res = await fetch(`${BACKEND}/api/products/${id}`, {
+  const res = await fetch(`${BACKEND}/api/products/categories/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": request.headers.get("content-type") || "application/json",
-      // Use the JWT token from the session
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     body,
@@ -80,7 +51,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const res = await fetch(`${BACKEND}/api/products/${id}`);
+  const res = await fetch(`${BACKEND}/api/products/categories/${id}`);
   const text = await res.text();
   return new NextResponse(text, {
     status: res.status,
@@ -94,7 +65,6 @@ export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  // Protect delete too
   await headers();
   const session = await auth();
   if (!session) {
@@ -102,17 +72,16 @@ export async function DELETE(
   }
 
   const { id } = await context.params;
-
-  // Get the JWT token from the session
   const accessToken = (session as Session & { accessToken?: string })
     .accessToken;
 
-  const res = await fetch(`${BACKEND}/api/products/${id}`, {
+  const res = await fetch(`${BACKEND}/api/products/categories/${id}`, {
     method: "DELETE",
     headers: {
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
   });
+
   const text = await res.text();
   return new NextResponse(text, {
     status: res.status,
