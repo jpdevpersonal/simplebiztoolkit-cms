@@ -3,7 +3,7 @@
  */
 
 import { apiService } from "@/lib/api";
-import NewProductForm from "./NewProductForm";
+import ProductEditor from "@/components/ProductEditor";
 
 export default async function NewProductPage() {
   // Fetch categories for the dropdown
@@ -13,7 +13,7 @@ export default async function NewProductPage() {
   return (
     <div>
       <h1 style={{ fontWeight: 700, marginBottom: "2rem" }}>New Product</h1>
-      <NewProductForm categories={categories} />
+      <ProductEditor categories={categories} />
     </div>
   );
 }

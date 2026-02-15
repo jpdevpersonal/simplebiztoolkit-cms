@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import SupportSidebarCard from "@/components/SupportSidebarCard";
 
 export const metadata: Metadata = {
   title: "Help",
@@ -72,32 +72,18 @@ export default function HelpPage() {
           </main>
 
           <aside className="col-12 col-lg-4">
-            <div className="card">
-              <div className="card-body d-flex flex-column">
-                <h3 className="h6" style={{ fontWeight: 800 }}>
-                  Need more help?
-                </h3>
-                <p className="sb-muted mb-3">
-                  Contact us for additional assistance or questions about
-                  downloads and orders.
-                </p>
-                <Link href="/contact" className="btn btn-primary mt-auto">
-                  Contact page
-                </Link>
-
-                <hr />
-
-                <h4 className="h6">Quick links</h4>
-                <ul className="list-unstyled sb-muted small">
-                  <li>
-                    <Link href="/faq">FAQ</Link>
-                  </li>
-                  <li>
-                    <a href="https://www.help.etsy.com/">Etsy Help</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
+            <SupportSidebarCard
+              description="Contact us for additional assistance or questions about downloads and orders."
+              linksHeading="Quick links"
+              links={[
+                { href: "/faq", label: "FAQ" },
+                {
+                  href: "https://www.help.etsy.com/",
+                  label: "Etsy Help",
+                  external: true,
+                },
+              ]}
+            />
           </aside>
         </div>
       </div>

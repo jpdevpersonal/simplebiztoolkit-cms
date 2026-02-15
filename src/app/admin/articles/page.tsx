@@ -5,6 +5,7 @@
 
 import Link from "next/link";
 import { apiService } from "@/lib/api";
+import AdminStatCard from "@/components/AdminStatCard";
 
 export default async function ArticlesPage() {
   const response = await apiService.getAllArticles();
@@ -25,34 +26,13 @@ export default async function ArticlesPage() {
       {/* Stats */}
       <div className="row g-3 mb-4">
         <div className="col-md-4">
-          <div className="sb-card p-3">
-            <div className="sb-muted" style={{ fontSize: "0.875rem" }}>
-              Total
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-              {articles.length}
-            </div>
-          </div>
+          <AdminStatCard label="Total" value={articles.length} />
         </div>
         <div className="col-md-4">
-          <div className="sb-card p-3">
-            <div className="sb-muted" style={{ fontSize: "0.875rem" }}>
-              Published
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-              {published.length}
-            </div>
-          </div>
+          <AdminStatCard label="Published" value={published.length} />
         </div>
         <div className="col-md-4">
-          <div className="sb-card p-3">
-            <div className="sb-muted" style={{ fontSize: "0.875rem" }}>
-              Drafts
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-              {drafts.length}
-            </div>
-          </div>
+          <AdminStatCard label="Drafts" value={drafts.length} />
         </div>
       </div>
 

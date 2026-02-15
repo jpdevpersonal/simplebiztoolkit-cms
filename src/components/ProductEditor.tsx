@@ -1,40 +1,75 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 
 type ProductEditorProps = {
-  product: ProductItem;
+  product?: ProductItem;
   categories?: ProductCategory[];
+};
+
+const EMPTY_PRODUCT: ProductItem = {
+  id: "",
+  title: "",
+  slug: "",
+  problem: "",
+  description: "",
+  bullets: [],
+  image: "",
+  etsyUrl: "",
+  productPageUrl: "",
+  price: "",
+  categoryId: "",
+  status: "draft",
 };
 
 export default function ProductEditor({
   product,
   categories = [],
 }: ProductEditorProps) {
+  const productData = product || EMPTY_PRODUCT;
+  const isCreateMode = !productData.id;
   const router = useRouter();
-  const [title, setTitle] = useState(product.title || "");
-  const [slug, setSlug] = useState(product.slug || "");
-  const [problem, setProblem] = useState(product.problem || "");
-  const [description, setDescription] = useState(product.description || "");
+  const [title, setTitle] = useState(productData.title || "");
+  const [slug, setSlug] = useState(productData.slug || "");
+  const [problem, setProblem] = useState(productData.problem || "");
+  const [description, setDescription] = useState(productData.description || "");
   const [bullets, setBullets] = useState(
-    (product.bullets || []).join("\n") || "",
+    (productData.bullets || []).join("\n") || "",
   );
-  const [image, setImage] = useState(product.image || "");
-  const [etsyUrl, setEtsyUrl] = useState(product.etsyUrl || "");
+  const [image, setImage] = useState(productData.image || "");
+  const [etsyUrl, setEtsyUrl] = useState(productData.etsyUrl || "");
   const [productPageUrl, setProductPageUrl] = useState(
-    product.productPageUrl || "",
+    productData.productPageUrl || "",
   );
-  const [price, setPrice] = useState(product.price || "");
-  const [categoryId, setCategoryId] = useState(product.categoryId || "");
+  const [price, setPrice] = useState(productData.price || "");
+  const [categoryId, setCategoryId] = useState(productData.categoryId || "");
   const [status, setStatus] = useState<"draft" | "published">(
-    product.status || "draft",
+    productData.status || "draft",
   );
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isCreateMode && !categoryId && categories.length > 0) {
+      setCategoryId(categories[0].id);
+    }
+  }, [isCreateMode, categoryId, categories]);
+
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+
+    if (isCreateMode && !slug.trim()) {
+      const autoSlug = value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      setSlug(autoSlug);
+    }
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,7 +84,7 @@ export default function ProductEditor({
         .map((b) => b.trim())
         .filter((b) => b);
 
-      const productData = {
+      const payload = {
         title,
         slug,
         problem: problem || undefined,
@@ -63,16 +98,23 @@ export default function ProductEditor({
         status,
       };
 
-      const res = await fetch(`/api/products/${product.id}`, {
-        method: "PUT",
+      const endpoint = isCreateMode
+        ? "/api/products"
+        : `/api/products/${productData.id}`;
+
+      const res = await fetch(endpoint, {
+        method: isCreateMode ? "POST" : "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productData),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const err = await res.text().catch(() => res.statusText);
         setError(`Error: ${err}`);
+      } else if (isCreateMode) {
+        router.push("/admin/products");
+        router.refresh();
       } else {
         setMessage("Product saved successfully!");
         // Update local state from response (if backend returns the saved product)
@@ -100,6 +142,10 @@ export default function ProductEditor({
   }
 
   async function handleDelete() {
+    if (isCreateMode) {
+      return;
+    }
+
     if (!confirm("Are you sure you want to delete this product?")) {
       return;
     }
@@ -109,7 +155,7 @@ export default function ProductEditor({
     setError(null);
 
     try {
-      const res = await fetch(`/api/products/${product.id}`, {
+      const res = await fetch(`/api/products/${productData.id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -138,7 +184,7 @@ export default function ProductEditor({
           <input
             className="form-control"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => handleTitleChange(e.target.value)}
             required
           />
         </div>
@@ -262,7 +308,13 @@ export default function ProductEditor({
             className="btn sb-btn-primary"
             disabled={saving}
           >
-            {saving ? "Saving..." : "Save Changes"}
+            {saving
+              ? isCreateMode
+                ? "Creating..."
+                : "Saving..."
+              : isCreateMode
+                ? "Create Product"
+                : "Save Changes"}
           </button>
           <button
             type="button"
@@ -272,14 +324,16 @@ export default function ProductEditor({
             Cancel
           </button>
         </div>
-        <button
-          type="button"
-          className="btn btn-danger"
-          onClick={handleDelete}
-          disabled={deleting}
-        >
-          {deleting ? "Deleting..." : "Delete Product"}
-        </button>
+        {!isCreateMode && (
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete Product"}
+          </button>
+        )}
       </div>
     </form>
   );

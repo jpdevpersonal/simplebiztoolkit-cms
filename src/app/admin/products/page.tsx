@@ -9,6 +9,7 @@ import { apiService, getApiService } from "@/lib/api";
 import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
 import AdminProductsTable from "../../../components/AdminProductsTable";
+import AdminStatCard from "@/components/AdminStatCard";
 
 export default async function ProductsPage() {
   // Ensure cookies are available for NextAuth on the server
@@ -36,24 +37,10 @@ export default async function ProductsPage() {
       {/* Stats */}
       <div className="row g-3 mb-4">
         <div className="col-md-6">
-          <div className="sb-card p-3">
-            <div className="sb-muted" style={{ fontSize: "0.875rem" }}>
-              Total Products
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-              {products.length}
-            </div>
-          </div>
+          <AdminStatCard label="Total Products" value={products.length} />
         </div>
         <div className="col-md-6">
-          <div className="sb-card p-3">
-            <div className="sb-muted" style={{ fontSize: "0.875rem" }}>
-              Categories
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
-              {categories.length}
-            </div>
-          </div>
+          <AdminStatCard label="Categories" value={categories.length} />
         </div>
       </div>
 
