@@ -29,6 +29,7 @@
   mix-blend-mode: overlay;
   pointer-events: none;
   z-index: 0;
+  padding: 1rem;
 }
 /* Fine grain noise texture for depth */
 .sb-hero::after {
@@ -84,18 +85,51 @@
   }
 }
 
-/* ——— HERO CONTENT (centered layout) ——— */
+/* ——— HERO GRID (two-column layout) ——— */
+.sb-hero-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 2rem;
+  align-items: stretch;
+}
+
+/* Desktop: two columns - strict 50/50 split */
+@media (min-width: 992px) {
+  .sb-hero-grid {
+    grid-template-columns: 50% 50%;
+    gap: 0;
+    align-items: stretch;
+  }
+}
+
+/* ——— HERO CONTENT (left column) ——— */
 .sb-hero-content {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   gap: 1.25rem;
-  padding: 3rem 0 2rem;
-  max-width: 760px;
-  margin: 0 auto;
+  padding: 2rem 2rem 2rem 1rem;
+}
+
+/* Add padding on larger screens */
+@media (min-width: 992px) {
+  .sb-hero-content {
+    padding: 3rem 3rem 3rem 2rem;
+  }
+}
+
+/* Center content on mobile */
+@media (max-width: 991px) {
+  .sb-hero-content {
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
 }
 
 /* ——— EYEBROW TRUST PILL ——— */
@@ -149,11 +183,17 @@
 .sb-hero-title {
   font-weight: 800;
   letter-spacing: -0.035em;
-  line-height: 1.08;
-  font-size: clamp(2rem, 5.5vw, 3.25rem);
+  line-height: 1.1;
+  font-size: clamp(1.875rem, 4.5vw, 2.75rem);
   color: #fff !important;
   margin: 0;
   animation: fadeInUp 0.7s ease-out 0.15s both;
+}
+
+@media (min-width: 992px) {
+  .sb-hero-title {
+    font-size: clamp(2.25rem, 3.5vw, 3rem);
+  }
 }
 .sb-hero-title em {
   font-style: normal;
@@ -178,8 +218,14 @@
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   animation: fadeInUp 0.7s ease-out 0.45s both;
+}
+
+@media (max-width: 991px) {
+  .sb-hero-actions {
+    justify-content: center;
+  }
 }
 .sb-btn-lg {
   padding: 1rem 2rem !important;
@@ -211,18 +257,19 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-/* ——— TRUST BAR (inside hero) ——— */
+/* ——— TRUST BAR (below hero, full-width) ——— */
 .sb-hero-trust-inline {
-  animation: fadeInUp 0.7s ease-out 0.6s both;
-  margin-top: 0.5rem;
+  animation: fadeInUp 0.7s ease-out 0.15s both;
+  margin: 1.25rem 0;
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
   flex-wrap: wrap;
+  align-items: center;
 }
-/* Override trust pills to match dark hero — smoky white background with brand-blue text */
-.sb-hero .sb-trust-pill {
-  /* Match global cloudy trust pill but tuned for dark hero */
+
+/* Make each pill centered */
+.sb-hero-trust-inline .sb-trust-pill {
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(65, 69, 86, 0.06);
   color: var(--sb-brand-blue) !important;
@@ -235,34 +282,61 @@
     transform 220ms ease,
     box-shadow 220ms ease,
     background 180ms ease;
+  text-align: center;
 }
-.sb-hero .sb-trust-pill:hover {
+.sb-hero-trust-inline .sb-trust-pill:hover {
   background: rgba(255, 255, 255, 0.98);
   border-color: rgba(65, 69, 86, 0.12);
   transform: translateY(-4px) scale(1.02);
   box-shadow: 0 20px 56px rgba(16, 24, 40, 0.22);
 }
 
-/* ——— SHOWCASE IMAGE ——— */
+/* ——— SHOWCASE IMAGE (right column) ——— */
 .sb-hero-showcase {
   position: relative;
   z-index: 2;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 1rem 0;
   animation: fadeInUp 0.8s ease-out 0.5s both;
+  height: 100%;
+  width: calc(50vw + 50%);
+  margin-left: calc(-50vw + 50%);
 }
+
 .sb-hero-img {
   display: block;
   width: 100%;
-  height: auto;
-  border-radius: var(--sb-radius-lg) var(--sb-radius-lg) 0 0;
+  height: 100%;
+  border-radius: 0;
   box-shadow:
-    0 -4px 0 rgba(255, 255, 255, 0.06),
-    0 24px 64px rgba(0, 0, 0, 0.35),
+    0 20px 60px rgba(0, 0, 0, 0.3),
     0 8px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: none;
+  object-fit: cover;
+  /* No borders for cleaner look */
+}
+
+/* On larger screens, fine-tune the extension */
+@media (min-width: 992px) {
+  .sb-hero-showcase {
+    width: 50vw;
+    margin-left: 0;
+  }
+}
+
+/* On mobile, adjust height behavior and fix right edge extension */
+@media (max-width: 991px) {
+  .sb-hero-showcase {
+    height: auto;
+    min-height: 300px;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+  .sb-hero-img {
+    height: auto;
+    min-height: 300px;
+  }
 }
 
 /* ——— SOCIAL PROOF BRIDGE ——— */
@@ -354,22 +428,17 @@
 /* Large screens */
 @media (min-width: 992px) {
   .sb-hero-content {
-    padding: 3.5rem 0 2.5rem;
     gap: 1.5rem;
   }
   .sb-hero-showcase {
-    padding: 0 2rem 0;
-  }
-  /* Slightly taller hero image on large screens when full-bleed */
-  .sb-hero-img {
-    height: 560px;
+    padding: 0;
   }
 }
 
 /* Extra-large screens */
 @media (min-width: 1200px) {
   .sb-hero-content {
-    padding: 4rem 0 2.5rem;
+    padding: 1rem 0 2.5rem;
   }
   .sb-hero-title {
     font-size: 3.25rem;
@@ -382,23 +451,17 @@
 /* Ultra-wide */
 @media (min-width: 1400px) {
   .sb-hero-content {
-    padding: 4.5rem 0 3rem;
-  }
-  .sb-hero-showcase {
-    max-width: 1060px;
+    padding: 1rem 0 3rem;
   }
 }
 
 /* Tablet & below */
 @media (max-width: 991px) {
   .sb-hero-content {
-    padding: 2.5rem 0 1.5rem;
+    padding: 1rem 0 1.5rem;
   }
   .sb-hero-title {
     font-size: 2rem;
-  }
-  .sb-hero-showcase {
-    padding: 0;
   }
   .sb-hero-img {
     border-radius: 0;
@@ -429,7 +492,7 @@
   .sb-hero-actions .btn {
     width: 100%;
   }
-  .sb-hero .sb-trust-pill {
+  .sb-hero-trust-inline .sb-trust-pill {
     font-size: 0.75rem;
     padding: 0.3rem 0.6rem;
   }
@@ -457,24 +520,6 @@
 @media (min-width: 768px) {
   .sb-see-more-mobile {
     display: none;
-  }
-  /* Make the hero showcase full-bleed on tablet and up */
-  .sb-hero-showcase {
-    max-width: none;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0;
-  }
-  .sb-hero-img {
-    width: 100%;
-    height: 480px;
-    object-fit: cover;
-    /* crop a bit off the bottom to preserve quality */
-    object-position: center top;
-    border-radius: 0;
-    border: none;
   }
 }
 

@@ -57,67 +57,73 @@ export default function HomePage() {
         <div className="sb-hero-orb sb-hero-orb--2" aria-hidden="true" />
 
         <div className="container">
-          {/* Centered hero content */}
-          <div className="sb-hero-content">
-            {/* Eyebrow trust pill */}
-            <span className="sb-hero-eyebrow">
-              <span className="sb-hero-eyebrow-dot" aria-hidden="true" />
-              Trusted by 3,500+ small business owners
-            </span>
+          <div className="sb-hero-grid">
+            {/* Left column: Content */}
+            <div className="sb-hero-content">
+              {/* Eyebrow trust pill */}
+              <span className="sb-hero-eyebrow">
+                <span className="sb-hero-eyebrow-dot" aria-hidden="true" />
+                Trusted by 3,500+ small business owners
+              </span>
 
-            <h1 className="sb-hero-title">
-              Templates & tools that make
-              <br className="d-none d-md-inline" /> running your business
-              easier{" "}
-            </h1>
+              <h1 className="sb-hero-title">
+                Templates & tools that make running your business easier
+              </h1>
 
-            <p className="sb-hero-subtitle">
-              Ready-to-use, printable downloads that cut admin time, keep you
-              organised, and require zero tech skills.
-            </p>
+              <p className="sb-hero-subtitle">
+                Ready-to-use, printable downloads that cut admin time, keep you
+                organised, and require zero tech skills.
+              </p>
 
-            <div className="sb-hero-actions">
-              <Link href="/products" className="btn sb-btn-primary sb-btn-lg">
-                Browse All Products
-                <svg
-                  className="sb-btn-arrow"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M3 8h10M9 4l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
+              <div className="sb-hero-actions">
+                <Link href="/products" className="btn sb-btn-primary sb-btn-lg">
+                  Browse All Products
+                  <svg
+                    className="sb-btn-arrow"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3 8h10M9 4l4 4-4 4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </Link>
+              </div>
+
+              {/* Compact trust bar (moved below hero for full-width layout) */}
             </div>
 
-            {/* Compact trust bar */}
-            <div className="sb-hero-trust-inline">
-              <TrustBar items={trust} />
+            {/* Right column: Image */}
+            <div className="sb-hero-showcase">
+              <Image
+                src="/images/hero-image-desk.webp"
+                alt="Tools for your small business"
+                className="sb-hero-img"
+                width={1200}
+                height={800}
+                priority
+                loading="eager"
+              />
             </div>
-          </div>
-
-          {/* Full-width showcase image */}
-          <div className="sb-hero-showcase">
-            <Image
-              src="/images/hero-image-desk.webp"
-              alt="Tools for your small business"
-              className="sb-hero-img"
-              width={1200}
-              height={800}
-              priority
-              loading="eager"
-            />
           </div>
         </div>
       </section>
+
+      {/* Trust pills moved below the hero so they span full width */}
+      <div className="sb-hero-trust-section">
+        <div className="container">
+          <div className="sb-hero-trust-inline">
+            <TrustBar items={trust} />
+          </div>
+        </div>
+      </div>
 
       {featureFlags.showFreeGuideButton && (
         <section className="sb-section sb-section-alt">
