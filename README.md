@@ -70,6 +70,29 @@ npm run lint
 npm run test
 ```
 
+## API architecture (centralized fetch)
+
+To avoid duplicated request/parsing/error logic, API calls are layered and centralized:
+
+- Shared transport: `src/lib/httpTransport.ts`
+	- `sendHttpRequest` (single place that calls `fetch`)
+	- `parseHttpResponse` (JSON/text parsing)
+	- `unwrapDataEnvelope` / `extractErrorMessage` (common response/error handling)
+- Browser/client API wrappers: `src/lib/clientApi.ts`
+	- Use this from client components (admin forms, loaders, table refreshes, revalidation calls)
+- Server-side API service: `src/lib/api.ts`
+	- Use this in server components/pages for backend reads/writes
+- Next.js API proxy routes: `src/lib/apiProxy.ts`
+	- Proxies authenticated and unauthenticated `/api/*` route-handler traffic to backend
+- Auth login call: `src/lib/auth.ts`
+	- Uses the same shared transport for backend auth requests
+
+### Rule of thumb for new API calls
+
+1. Put request/response behavior in `httpTransport` only when it is truly generic.
+2. Add endpoint-specific methods to `clientApi` (client-side) or `api` (server-side).
+3. Call those wrappers from UI/routes; avoid direct `fetch` in components unless there is a strong reason.
+
 ## Deployment
 
 This repo is configured to deploy to Azure Static Web Apps via GitHub Actions.

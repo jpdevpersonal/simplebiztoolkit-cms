@@ -7,6 +7,7 @@
 .sb-hero {
   position: relative;
   overflow: hidden;
+  min-height: 500px;
   /* Rich brand-blue gradient background */
   background: linear-gradient(
     160deg,
@@ -147,7 +148,7 @@
   padding: 0.45rem 1rem;
   border-radius: 999px;
   letter-spacing: 0.02em;
-  animation: fadeInDown 0.6s ease-out both;
+  animation: fadeInDown 0.5s ease-out forwards;
 }
 .sb-hero-eyebrow-dot {
   width: 7px;
@@ -187,7 +188,7 @@
   font-size: clamp(1.875rem, 4.5vw, 2.75rem);
   color: #fff !important;
   margin: 0;
-  animation: fadeInUp 0.7s ease-out 0.15s both;
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
 @media (min-width: 992px) {
@@ -210,7 +211,7 @@
   line-height: 1.65;
   margin: 0;
   max-width: 560px;
-  animation: fadeInUp 0.7s ease-out 0.3s both;
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
 /* ——— HERO CTA BUTTONS ——— */
@@ -219,7 +220,7 @@
   gap: 0.75rem;
   flex-wrap: wrap;
   justify-content: flex-start;
-  animation: fadeInUp 0.7s ease-out 0.45s both;
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
 @media (max-width: 991px) {
@@ -259,7 +260,7 @@
 
 /* ——— TRUST BAR (below hero, full-width) ——— */
 .sb-hero-trust-inline {
-  animation: fadeInUp 0.7s ease-out 0.15s both;
+  animation: fadeInUp 0.5s ease-out forwards;
   margin: 1.25rem 0;
   display: flex;
   justify-content: center;
@@ -295,7 +296,7 @@
 .sb-hero-showcase {
   position: relative;
   z-index: 2;
-  animation: fadeInUp 0.8s ease-out 0.5s both;
+  animation: fadeInUp 0.5s ease-out forwards;
   height: 100%;
   width: calc(50vw + 50%);
   margin-left: calc(-50vw + 50%);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,20 +9,28 @@ import EtsyCtaButton from "@/components/EtsyCtaButton";
 
 export default function SiteHeader() {
   const headerRef = useRef<HTMLElement | null>(null);
-  const [headerHeight, setHeaderHeight] = useState(0);
+  // Start with estimated height to prevent layout shift
+  const [headerHeight, setHeaderHeight] = useState(88);
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
 
-  useEffect(() => {
-    function updateHeight() {
-      const h = headerRef.current?.getBoundingClientRect().height ?? 0;
-      setHeaderHeight(h);
-    }
+  const updateHeight = useCallback(() => {
+    const h = headerRef.current?.getBoundingClientRect().height ?? 88;
+    // Only update if significantly different to prevent unnecessary re-renders
+    setHeaderHeight((prev) => {
+      if (Math.abs(h - prev) > 2) {
+        return h;
+      }
+      return prev;
+    });
+  }, []);
 
-    updateHeight();
+  useEffect(() => {
+    // Use RAF to ensure DOM is ready
+    requestAnimationFrame(updateHeight);
     window.addEventListener("resize", updateHeight);
     return () => window.removeEventListener("resize", updateHeight);
-  }, []);
+  }, [updateHeight]);
 
   return (
     <>

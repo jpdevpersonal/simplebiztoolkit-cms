@@ -10,6 +10,7 @@ import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "./BootstrapClient";
 import AuthProvider from "@/components/AuthProvider";
+import ScrollToTop from "./ScrollToTop";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -90,6 +91,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <BootstrapClient />
+          <ScrollToTop />
 
           <JsonLd json={websiteJsonLd} />
 

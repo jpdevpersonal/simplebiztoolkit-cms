@@ -4,6 +4,12 @@
  */
 
 import { unstable_noStore as noStore } from "next/cache";
+import {
+  extractErrorMessage,
+  parseHttpResponse,
+  sendHttpRequest,
+  unwrapDataEnvelope,
+} from "@/lib/httpTransport";
 
 // API Response Types
 export interface ApiResponse<T> {
@@ -119,33 +125,21 @@ class ApiService {
         next: tags ? { tags } : undefined,
       };
 
-      const response = await fetch(url, fetchOptions);
+      const response = await sendHttpRequest(url, fetchOptions);
+      const { payload } = await parseHttpResponse(response);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
         return {
-          error:
-            errorData.message ||
+          error: extractErrorMessage(
+            payload,
             `HTTP ${response.status}: ${response.statusText}`,
+          ),
           statusCode: response.status,
         };
       }
 
-      const json: unknown = await response.json();
-
-      // Some backends return an envelope like { data: ... }
-      // Unwrap that so callers receive the actual payload.
-      let payload: unknown;
-
-      if (json && typeof json === "object" && json !== null && "data" in json) {
-        // Narrow to an object with a `data` property of unknown type
-        payload = (json as { data: unknown }).data;
-      } else {
-        payload = json;
-      }
-
       return {
-        data: payload as T,
+        data: unwrapDataEnvelope<T>(payload),
         statusCode: response.status,
       };
     } catch (error) {

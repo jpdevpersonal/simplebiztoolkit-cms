@@ -1,4 +1,10 @@
 import type { Article, ProductCategory, ProductItem } from "@/lib/api";
+import {
+  extractErrorMessage,
+  parseHttpResponse,
+  sendHttpRequest,
+  unwrapDataEnvelope,
+} from "@/lib/httpTransport";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -8,33 +14,6 @@ type RequestOptions = {
   headers?: HeadersInit;
   credentials?: RequestCredentials;
 };
-
-function unwrapResponse<T>(payload: unknown): T {
-  if (
-    payload &&
-    typeof payload === "object" &&
-    payload !== null &&
-    "data" in payload
-  ) {
-    return (payload as { data: T }).data;
-  }
-
-  return payload as T;
-}
-
-function toErrorMessage(payload: unknown, fallback: string): string {
-  if (typeof payload === "string" && payload.trim()) {
-    return payload;
-  }
-
-  if (payload && typeof payload === "object") {
-    const candidate = payload as { message?: string; error?: string };
-    if (candidate.message) return candidate.message;
-    if (candidate.error) return candidate.error;
-  }
-
-  return fallback;
-}
 
 async function request<T>(
   url: string,
@@ -47,30 +26,25 @@ async function request<T>(
     ...headers,
   };
 
-  const response = await fetch(url, {
+  const response = await sendHttpRequest(url, {
     method,
     credentials,
     headers: requestHeaders,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  const contentType = response.headers.get("content-type") || "";
-  const isJson = contentType.includes("application/json");
-
-  const payload = isJson
-    ? await response.json().catch(() => null)
-    : await response.text().catch(() => "");
+  const { payload, isJson } = await parseHttpResponse(response);
 
   if (!response.ok) {
     const fallback = `HTTP ${response.status}: ${response.statusText}`;
-    throw new Error(toErrorMessage(payload, fallback));
+    throw new Error(extractErrorMessage(payload, fallback));
   }
 
   if (!isJson) {
     return payload as T;
   }
 
-  return unwrapResponse<T>(payload);
+  return unwrapDataEnvelope<T>(payload);
 }
 
 function buildArticlesUrl(articleId?: string) {

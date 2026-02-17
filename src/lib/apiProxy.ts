@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
+import { parseHttpResponse, sendHttpRequest } from "@/lib/httpTransport";
 
 const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
 
@@ -65,17 +66,18 @@ export async function proxyToBackend(options: {
       ? await request.text()
       : undefined;
 
-  const res = await fetch(`${BACKEND}${path}`, {
+  const res = await sendHttpRequest(`${BACKEND}${path}`, {
     method,
     headers: buildHeaders(request, accessToken),
     body,
   });
 
-  const text = await res.text();
+  const { payload, contentType } = await parseHttpResponse(res);
+  const text = typeof payload === "string" ? payload : JSON.stringify(payload);
   return new NextResponse(text, {
     status: res.status,
     headers: {
-      "Content-Type": res.headers.get("content-type") || "text/plain",
+      "Content-Type": contentType || "text/plain",
     },
   });
 }
