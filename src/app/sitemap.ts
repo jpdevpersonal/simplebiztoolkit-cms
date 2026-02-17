@@ -1,13 +1,23 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/config/site";
-import { categories } from "@/data/products";
-import { posts } from "@/data/posts";
+// local fallback data files removed; use API with empty fallbacks
 import { featuredProducts } from "@/data/featured";
+import { getApiService, Article } from "@/lib/api";
 
 export const dynamic = "force-static";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+
+  // Fetch products and posts from the central API; fall back to local data on error
+  const api = getApiService();
+  const [productsResp, articlesResp] = await Promise.all([
+    api.getAllProducts(),
+    api.getArticles(),
+  ]);
+
+  const categories = productsResp.data ?? [];
+  const posts = articlesResp.data ?? [];
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: site.url, lastModified: now },
@@ -40,9 +50,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
-  const blogRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
+  const blogRoutes: MetadataRoute.Sitemap = posts.map((p: Article) => ({
     url: `${site.url}/blog/${p.slug}`,
-    lastModified: p.dateISO,
+    lastModified: (p.dateISO as string) || now,
   }));
 
   const allRoutes = [
