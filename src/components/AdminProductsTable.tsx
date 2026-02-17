@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { ProductItem, ProductCategory } from "@/lib/api";
+import { clientApi } from "@/lib/clientApi";
 
 type Props = {
   products: ProductItem[];
@@ -24,14 +25,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
     let mounted = true;
     async function fetchCategories() {
       try {
-        const res = await fetch("/api/products/allCategories", {
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        const data = await res.json().catch(() => null);
-        if (!data) return;
-        // Unwrap envelope if present
-        const payload = data.data ?? data;
+        const payload = await clientApi.getAllProductCategories();
         if (!mounted) return;
         const payloadArray = (payload as ProductCategory[]) || [];
         setLocalCategories(payloadArray);

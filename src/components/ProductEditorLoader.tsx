@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import ProductEditor from "@/components/ProductEditor";
 import type { ProductItem, ProductCategory } from "@/lib/api";
+import { clientApi } from "@/lib/clientApi";
 
 type Props = { id: string };
 
@@ -15,21 +16,13 @@ export default function ProductEditorLoader({ id }: Props) {
     let mounted = true;
     async function fetchData() {
       try {
-        const [pRes, cRes] = await Promise.all([
-          fetch(`/api/products/${id}`, { credentials: "include" }),
-          fetch(`/api/products/categories`, { credentials: "include" }),
+        const [productPayload, categoryPayload] = await Promise.all([
+          clientApi.getProductById(id),
+          clientApi.getProductCategories(),
         ]);
         if (!mounted) return;
-        if (pRes.ok) {
-          const pJson = await pRes.json().catch(() => null);
-          const pPayload = pJson?.data ?? pJson;
-          setProduct(pPayload || null);
-        }
-        if (cRes.ok) {
-          const cJson = await cRes.json().catch(() => null);
-          const cPayload = cJson?.data ?? cJson;
-          setCategories(cPayload || []);
-        }
+        setProduct(productPayload || null);
+        setCategories(categoryPayload || []);
       } catch {
         // ignore
       } finally {

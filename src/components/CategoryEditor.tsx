@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductCategory } from "@/lib/api";
+import { clientApi } from "@/lib/clientApi";
 
 type Props = {
   category: ProductCategory;
@@ -35,20 +36,9 @@ export default function CategoryEditor({ category }: Props) {
         heroImage,
       };
 
-      const res = await fetch(`/api/products/categories/${category.id}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const err = await res.text().catch(() => res.statusText);
-        setError(`Error: ${err}`);
-      } else {
-        setMessage("Category saved successfully!");
-        router.refresh();
-      }
+      await clientApi.updateCategory(category.id, payload);
+      setMessage("Category saved successfully!");
+      router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -63,20 +53,10 @@ export default function CategoryEditor({ category }: Props) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/products/categories/${category.id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const err = await res.text().catch(() => res.statusText);
-        setError(`Error: ${err}`);
-        setDeleting(false);
-      } else {
-        setMessage("Category deleted");
-        router.push("/admin/categories");
-        router.refresh();
-      }
+      await clientApi.deleteCategory(category.id);
+      setMessage("Category deleted");
+      router.push("/admin/categories");
+      router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);

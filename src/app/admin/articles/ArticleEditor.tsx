@@ -10,6 +10,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Article } from "@/lib/api";
+import { clientApi } from "@/lib/clientApi";
 
 interface ArticleEditorProps {
   article?: Article;
@@ -67,28 +68,16 @@ export default function ArticleEditor({
           .filter(Boolean),
       };
 
-      const url = isNew
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/articles`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/articles/${article?.id}`;
-
-      const response = await fetch(url, {
-        method: isNew ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("Failed to save article");
+      if (isNew) {
+        await clientApi.createArticle(payload);
+      } else if (article?.id) {
+        await clientApi.updateArticle(article.id, payload);
+      } else {
+        throw new Error("Missing article id for update");
+      }
 
       // Trigger revalidation
-      await fetch("/api/revalidate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Revalidation-Secret":
-            process.env.NEXT_PUBLIC_REVALIDATION_SECRET || "",
-        },
-        body: JSON.stringify({ type: "article", slug: formData.slug }),
-      });
+      await clientApi.revalidateContent("article", formData.slug);
 
       router.push("/admin/articles");
       router.refresh();
