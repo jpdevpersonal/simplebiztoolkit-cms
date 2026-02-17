@@ -52,6 +52,9 @@
     border-color 0.25s ease;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .product-card::before {
@@ -91,6 +94,7 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  justify-content: space-between;
 }
 
 .product-card-title {
@@ -112,15 +116,61 @@
 
 .product-card-bullets {
   color: var(--sb-muted);
-  font-size: 0.875rem;
+  font-size: 1rem;
   margin: 0 0 1rem 0;
-  padding-left: 1.25rem;
-  flex-grow: 1;
+  padding-left: 0;
   line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  /* make the list a fixed-width block and center it in the card
+     while left-aligning individual list items so their left edges match */
+  width: 220px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 1rem auto;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+  list-style: none;
+  text-align: left;
 }
 
 .product-card-bullets li {
-  margin-bottom: 0.25rem;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sb-muted);
+}
+
+.product-card-bullets li::before {
+  /* use a stylish arrow glyph instead of a dot */
+  content: "➜";
+  display: inline-block;
+  margin-right: 0.45rem;
+  color: var(--sb-brand-blue);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transform: translateY(1px);
+  filter: drop-shadow(0 1px 2px rgba(11, 22, 40, 0.06));
+}
+
+@media (max-width: 576px) {
+  .product-card-bullets {
+    gap: 0.25rem;
+    /* keep the same pill/left-aligned layout on mobile but reduce width */
+    max-width: calc(100% - 24px);
+    margin: 0 auto 1rem auto;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .product-card-bullets li {
+    padding: 0.25rem 0.5rem;
+  }
 }
 
 .product-card-cta {

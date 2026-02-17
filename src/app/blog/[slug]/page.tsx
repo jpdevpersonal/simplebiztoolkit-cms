@@ -98,7 +98,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <main className="article-page">
         <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-          <Link href="/blog" className="sb-breadcrumb-link">
+          <Link href="/blog" className="sb-breadcrumb-link" prefetch={false}>
             <svg
               width="16"
               height="16"
@@ -165,7 +165,7 @@ export default async function BlogPostPage({ params }: Props) {
           className="sb-breadcrumb sb-breadcrumb--bottom"
           aria-label="Breadcrumb"
         >
-          <Link href="/blog" className="sb-breadcrumb-link">
+          <Link href="/blog" className="sb-breadcrumb-link" prefetch={false}>
             <svg
               width="16"
               height="16"

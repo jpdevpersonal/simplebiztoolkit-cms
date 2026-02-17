@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
+import { clientApi } from "@/lib/clientApi";
 
 type ProductEditorProps = {
   product?: ProductItem;
@@ -98,27 +99,17 @@ export default function ProductEditor({
         status,
       };
 
-      const endpoint = isCreateMode
-        ? "/api/products"
-        : `/api/products/${productData.id}`;
+      const saved = isCreateMode
+        ? await clientApi.createProduct(payload)
+        : await clientApi.updateProduct(productData.id, payload);
 
-      const res = await fetch(endpoint, {
-        method: isCreateMode ? "POST" : "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const err = await res.text().catch(() => res.statusText);
-        setError(`Error: ${err}`);
-      } else if (isCreateMode) {
+      if (isCreateMode) {
         router.push("/admin/products");
         router.refresh();
       } else {
         setMessage("Product saved successfully!");
+
         // Update local state from response (if backend returns the saved product)
-        const saved = await res.json().catch(() => null);
         if (saved && typeof saved === "object") {
           // Merge returned fields into local state where present
           setTitle((saved.title as string) || title);
@@ -155,21 +146,11 @@ export default function ProductEditor({
     setError(null);
 
     try {
-      const res = await fetch(`/api/products/${productData.id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const err = await res.text().catch(() => res.statusText);
-        setError(`Error: ${err}`);
-        setDeleting(false);
-      } else {
-        setMessage("Product deleted!");
-        // Redirect to products list
-        router.push("/admin/products");
-        router.refresh();
-      }
+      await clientApi.deleteProduct(productData.id);
+      setMessage("Product deleted!");
+      // Redirect to products list
+      router.push("/admin/products");
+      router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);

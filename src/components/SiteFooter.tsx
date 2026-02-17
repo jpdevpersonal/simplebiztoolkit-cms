@@ -37,7 +37,9 @@ export default function SiteFooter() {
           style={{ fontSize: "0.9375rem" }}
         >
           <Link href="/products">Products</Link>
-          <Link href="/blog">Resources</Link>
+          <Link href="/blog" prefetch={false}>
+            Resources
+          </Link>
           <Link href="/testimonials">Reviews</Link>
           <Link href="/faq">FAQ</Link>
           <Link href="/help">Help</Link>

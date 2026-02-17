@@ -248,6 +248,9 @@ export default function SiteNavigation() {
             key={item.to}
             className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link"
             href={item.to}
+            // Prevent automatic prefetch for the blog route to avoid
+            // preloading its CSS when users may not navigate there.
+            prefetch={item.to === "/blog" ? false : undefined}
             style={{
               transition: "all 0.2s ease",
               fontWeight: 600,

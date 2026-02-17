@@ -15,7 +15,7 @@ export default function NotFound() {
           <Link className="btn sb-btn-ghost" href="/products">
             Browse products
           </Link>
-          <Link className="btn sb-btn-ghost" href="/blog">
+          <Link className="btn sb-btn-ghost" href="/blog" prefetch={false}>
             Read resources
           </Link>
         </div>

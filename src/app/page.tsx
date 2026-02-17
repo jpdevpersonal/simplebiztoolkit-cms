@@ -50,78 +50,76 @@ export default function HomePage() {
     <>
       <JsonLd json={orgJsonLd} />
 
+      {/* ====== HERO ====== */}
       <section className="sb-hero">
         <div className="container">
-          <div className="row align-items-center g-4">
-            <div className="col-lg-6">
-              <div className="sb-hero-content">
-                <span className="sb-hero-badge">
-                  Trusted by 3,500+ small business owners
-                </span>
+          <div className="sb-hero-grid">
+            {/* Left column: Content */}
+            <div className="sb-hero-content">
+              {/* Eyebrow trust pill */}
+              <span className="sb-hero-eyebrow">
+                <span className="sb-hero-eyebrow-dot" aria-hidden="true" />
+                Trusted by 3,500+ small business owners
+              </span>
 
-                <h1 className="sb-hero-title">
-                  Essential templates & tools for small business owners
-                </h1>
+              <h1 className="sb-hero-title">
+                Templates & tools that make running your business easier
+              </h1>
 
-                <p className="sb-hero-subtitle">
-                  Simple, ready-to-use downloads that reduce admin, keep you
-                  organised, and don’t require tech skills.
-                </p>
+              <p className="sb-hero-subtitle">
+                Ready-to-use, printable downloads that cut admin time, keep you
+                organised, and require zero tech skills.
+              </p>
 
-                <div className="d-flex gap-2 flex-wrap sb-hero-actions">
-                  <Link href="/products" className="btn sb-btn-primary">
-                    Browse All Products
-                    <svg
-                      className="sb-btn-arrow"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M3 8h10M9 4l4 4-4 4"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Link>
-                </div>
-
-                <div className="sb-hero-trust">
-                  <TrustBar items={trust} />
-                </div>
-
-                <blockquote className="sb-hero-quote">
-                  <div className="sb-hero-quote-text">
-                    “Just what I was looking for and could not find. So glad I
-                    found these — they print out great!”
-                  </div>
-                  <cite className="sb-hero-quote-cite">
-                    — Becky, Etsy buyer
-                  </cite>
-                </blockquote>
+              <div className="sb-hero-actions">
+                <Link href="/products" className="btn sb-btn-primary sb-btn-lg">
+                  Browse All Products
+                  <svg
+                    className="sb-btn-arrow"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3 8h10M9 4l4 4-4 4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </Link>
               </div>
+
+              {/* Compact trust bar (moved below hero for full-width layout) */}
             </div>
 
-            <div className="col-lg-6">
-              <div className="hero-image-wrapper d-flex justify-content-center align-items-center">
-                <Image
-                  src="/images/hero-image-desk.webp"
-                  alt="Tools for your small business"
-                  className="img-fluid hero-image"
-                  width={820}
-                  height={547}
-                  priority
-                  loading="eager"
-                />
-              </div>
+            {/* Right column: Image */}
+            <div className="sb-hero-showcase">
+              <Image
+                src="/images/hero-image-desk.webp"
+                alt="Tools for your small business"
+                className="sb-hero-img"
+                width={1200}
+                height={800}
+                priority
+                loading="eager"
+              />
             </div>
           </div>
         </div>
       </section>
+
+      {/* Trust pills moved below the hero so they span full width */}
+      <div className="sb-hero-trust-section">
+        <div className="container">
+          <div className="sb-hero-trust-inline">
+            <TrustBar items={trust} />
+          </div>
+        </div>
+      </div>
 
       {featureFlags.showFreeGuideButton && (
         <section className="sb-section sb-section-alt">
@@ -168,109 +166,176 @@ export default function HomePage() {
       )}
 
       <section className="sb-section">
-        <div className="container">
-          <h2
-            className="text-center"
-            style={{ fontWeight: 700, marginBottom: "0.5rem" }}
-          >
+        <div className="text-center" style={{ marginBottom: "2rem" }}>
+          <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
             Popular Templates
           </h2>
-          <p className="text-center sb-muted mb-4">
-            Take a look at some of our most popular requests and best-sellers.
+          <p className="sb-muted" style={{ maxWidth: 480, margin: "0 auto" }}>
+            Our most popular requests and best-sellers — ready to download and
+            print.
           </p>
 
           <ProductGrid products={featuredProducts} />
         </div>
-      </section>
 
-      <section className="sb-section sb-section-alt">
-        <div className="container">
-          <div className="text-center mb-4">
-            <h2 style={{ fontWeight: 700 }}>Designed to be simple</h2>
-            <p className="sb-muted">
-              Clear layouts, printable formats, and essential categories.
-            </p>
-          </div>
+        <section className="sb-section sb-section-alt">
+          <div className="container">
+            <div className="text-center mb-4">
+              <span className="sb-section-eyebrow">
+                Why Simple Biz Toolkit?
+              </span>
+              <h2 style={{ fontWeight: 700 }}>Designed to be simple</h2>
+              <p
+                className="sb-muted"
+                style={{ maxWidth: 520, margin: "0 auto" }}
+              >
+                Clear layouts, printable formats, and essential categories —
+                everything a small business needs.
+              </p>
+            </div>
 
-          <div className="row g-3">
-            <div className="col-md-4 sb-animate-fade-in-delay-1">
-              <div className="sb-value-card">
-                <h3
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Essential templates
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
-                  Tracking, planning, and admin, without overcomplication.
-                </p>
+            <div className="sb-card p-4">
+              <div className="row g-4">
+                <div className="col-md-4 sb-animate-fade-in-delay-1">
+                  <div className="sb-value-card">
+                    <div className="sb-value-icon" aria-hidden="true">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                      </svg>
+                    </div>
+                    <h3
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      Essential templates
+                    </h3>
+                    <p
+                      className="sb-muted mb-0"
+                      style={{ fontSize: "0.9375rem" }}
+                    >
+                      Tracking, planning, and admin — without overcomplication.
+                    </p>
+                  </div>
+                </div>
+                <div className="col-md-4 sb-animate-fade-in-delay-2">
+                  <div className="sb-value-card">
+                    <div className="sb-value-icon" aria-hidden="true">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="9 11 12 14 22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                      </svg>
+                    </div>
+                    <h3
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      Simple systems
+                    </h3>
+                    <p
+                      className="sb-muted mb-0"
+                      style={{ fontSize: "0.9375rem" }}
+                    >
+                      Repeatable formats that keep you consistent and efficient.
+                    </p>
+                  </div>
+                </div>
+                <div className="col-md-4 sb-animate-fade-in-delay-3">
+                  <div className="sb-value-card">
+                    <div className="sb-value-icon" aria-hidden="true">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    </div>
+                    <h3
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      Real-world use
+                    </h3>
+                    <p
+                      className="sb-muted mb-0"
+                      style={{ fontSize: "0.9375rem" }}
+                    >
+                      Made for small business owners, solopreneurs, and online
+                      sellers.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="col-md-4 sb-animate-fade-in-delay-2">
-              <div className="sb-value-card">
-                <h3
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Simple systems
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
-                  Repeatable formats that keep you consistent.
-                </p>
-              </div>
-            </div>
-            <div className="col-md-4 sb-animate-fade-in-delay-3">
-              <div className="sb-value-card">
-                <h3
-                  style={{
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Real-world use
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
-                  Made for small business owners, solopreneurs, and online
-                  sellers.
-                </p>
-              </div>
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="sb-section">
-        <div className="container">
-          <div className="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3 sb-testimonial-header">
-            <div>
-              <h2 style={{ fontWeight: 700 }}>What customers say</h2>
-              <p className="sb-muted mb-0">Real feedback from Etsy buyers.</p>
+        <section className="sb-section">
+          <div className="container">
+            <div className="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3 sb-testimonial-header">
+              <div>
+                <span className="sb-section-eyebrow">Testamonials</span>
+                <h2 style={{ fontWeight: 700 }}>What customers say</h2>
+                <p className="sb-muted mb-0">Real feedback from Etsy buyers.</p>
+              </div>
+              <Link
+                className="btn sb-btn-ghost sb-see-more-desktop"
+                href="/testimonials"
+              >
+                See more reviews
+              </Link>
             </div>
-            <Link
-              className="btn sb-btn-ghost sb-see-more-desktop"
-              href="/testimonials"
-            >
-              See more reviews
-            </Link>
-          </div>
-          <TestimonialGrid count={3} />
-          <div className="text-center mt-3 sb-see-more-mobile">
-            <Link className="btn sb-btn-ghost" href="/testimonials">
-              See more reviews
-            </Link>
-          </div>
+            <TestimonialGrid count={3} />
+            <div className="text-center mt-3 sb-see-more-mobile">
+              <Link className="btn sb-btn-ghost" href="/testimonials">
+                See more reviews
+              </Link>
+            </div>
 
-          <div className="text-center mt-4">
-            <EtsyCtaButton label="Browse the full shop" />
+            <div className="text-center mt-4">
+              <EtsyCtaButton label="Browse the full shop" />
+            </div>
           </div>
-        </div>
+        </section>
       </section>
     </>
   );

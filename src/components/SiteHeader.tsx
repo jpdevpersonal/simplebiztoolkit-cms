@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,20 +9,8 @@ import EtsyCtaButton from "@/components/EtsyCtaButton";
 
 export default function SiteHeader() {
   const headerRef = useRef<HTMLElement | null>(null);
-  const [headerHeight, setHeaderHeight] = useState(0);
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
-
-  useEffect(() => {
-    function updateHeight() {
-      const h = headerRef.current?.getBoundingClientRect().height ?? 0;
-      setHeaderHeight(h);
-    }
-
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
-  }, []);
 
   return (
     <>
@@ -74,7 +62,7 @@ export default function SiteHeader() {
       </header>
 
       {/* spacer to prevent content from sitting under the fixed header */}
-      <div aria-hidden style={{ height: headerHeight }} />
+      <div className="sb-header-spacer" aria-hidden />
     </>
   );
 }

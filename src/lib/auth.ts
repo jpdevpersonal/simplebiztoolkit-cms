@@ -7,6 +7,11 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { User, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
+import {
+  parseHttpResponse,
+  sendHttpRequest,
+  unwrapDataEnvelope,
+} from "@/lib/httpTransport";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -28,7 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Call C# backend API for authentication
           const apiUrl =
             process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
-          const response = await fetch(`${apiUrl}/api/auth/login`, {
+          const response = await sendHttpRequest(`${apiUrl}/api/auth/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -44,7 +49,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
-          const data = await response.json();
+          const { payload } = await parseHttpResponse(response);
+          const data = unwrapDataEnvelope<{ token?: string; user?: User }>(
+            payload,
+          );
 
           // API returns { token, user: { id, email, name } }
           if (data.token && data.user) {
