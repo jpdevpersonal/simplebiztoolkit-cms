@@ -67,8 +67,8 @@ export default function HomePage() {
 
             <h1 className="sb-hero-title">
               Templates & tools that make
-              <br className="d-none d-md-inline" /> running your business{" "}
-              <em>simple</em>
+              <br className="d-none d-md-inline" /> running your business
+              easier{" "}
             </h1>
 
             <p className="sb-hero-subtitle">
@@ -115,37 +115,6 @@ export default function HomePage() {
               priority
               loading="eager"
             />
-          </div>
-        </div>
-      </section>
-
-      {/* ====== SOCIAL PROOF BRIDGE ====== */}
-      <section className="sb-proof-bridge">
-        <div className="container">
-          <div className="sb-proof-bridge-inner">
-            <blockquote className="sb-proof-quote">
-              <svg
-                className="sb-proof-quote-icon"
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M11 7H7a4 4 0 0 0-4 4v1a3 3 0 0 0 3 3h1a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2H6a2 2 0 0 1 2-2h3V7Zm10 0h-4a4 4 0 0 0-4 4v1a3 3 0 0 0 3 3h1a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2h-1a2 2 0 0 1 2-2h3V7Z"
-                  fill="currentColor"
-                  opacity=".15"
-                />
-              </svg>
-              <p className="sb-proof-quote-text">
-                “Just what I was looking for and could not find. So glad I found
-                these — they print out great!”
-              </p>
-              <cite className="sb-proof-quote-cite">
-                <strong>Becky</strong> · Verified Etsy Buyer
-              </cite>
-            </blockquote>
           </div>
         </div>
       </section>
@@ -197,7 +166,6 @@ export default function HomePage() {
       <section className="sb-section">
         <div className="container">
           <div className="text-center" style={{ marginBottom: "2rem" }}>
-            <span className="sb-section-eyebrow">Best Sellers</span>
             <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
               Popular Templates
             </h2>
@@ -330,7 +298,7 @@ export default function HomePage() {
         <div className="container">
           <div className="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3 sb-testimonial-header">
             <div>
-              <span className="sb-section-eyebrow">Social Proof</span>
+              <span className="sb-section-eyebrow">Testamonials</span>
               <h2 style={{ fontWeight: 700 }}>What customers say</h2>
               <p className="sb-muted mb-0">Real feedback from Etsy buyers.</p>
             </div>

@@ -17,6 +17,8 @@
     #1e2028 100%
   );
   padding: 0;
+  /* Subtle outer shadow to lift the hero from the page (reduced size) */
+  box-shadow: 0 10px 10px rgba(2, 6, 23, 0.45);
 }
 .sb-hero::before {
   content: "";
@@ -265,7 +267,6 @@
 
 /* ——— SOCIAL PROOF BRIDGE ——— */
 .sb-proof-bridge {
-  background: var(--sb-soft, #f9fafb);
   padding: 2rem 0;
   border-bottom: 1px solid var(--sb-border);
 }
@@ -358,6 +359,10 @@
   }
   .sb-hero-showcase {
     padding: 0 2rem 0;
+  }
+  /* Slightly taller hero image on large screens when full-bleed */
+  .sb-hero-img {
+    height: 560px;
   }
 }
 
@@ -452,6 +457,24 @@
 @media (min-width: 768px) {
   .sb-see-more-mobile {
     display: none;
+  }
+  /* Make the hero showcase full-bleed on tablet and up */
+  .sb-hero-showcase {
+    max-width: none;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0;
+  }
+  .sb-hero-img {
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    /* crop a bit off the bottom to preserve quality */
+    object-position: center top;
+    border-radius: 0;
+    border: none;
   }
 }
 
