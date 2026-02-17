@@ -358,22 +358,26 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid var(--sb-brand-blue);
-  background: #ffffff;
+  border: 1px solid rgba(65, 69, 86, 0.06);
+  /* Cloudy white: slightly translucent, with soft backdrop blur */
+  background: rgba(255, 255, 255, 0.94);
   border-radius: 999px;
   padding: 0.5rem 1rem;
   font-weight: 600;
   font-size: 0.875rem;
   color: var(--sb-brand-blue);
-  transition: all 0.18s ease;
+  transition: all 0.18s ease, box-shadow 0.25s ease;
   letter-spacing: -0.01em;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.06);
 }
 
 .sb-trust-pill:hover {
-  border-color: var(--sb-brand-blue-hover);
-  background: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: var(--sb-shadow);
+  border-color: rgba(65, 69, 86, 0.12);
+  background: rgba(255, 255, 255, 0.98);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px rgba(16, 24, 40, 0.12);
 }
 
 .sb-skip-link {
@@ -572,6 +576,35 @@ h3 {
   .sb-lead-magnet-card:hover::before {
     transform: scaleX(1);
   }
+}
+
+/* Section eyebrow label */
+.sb-section-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sb-green);
+  margin-bottom: 0.5rem;
+}
+
+/* Value card icon wrapper */
+.sb-value-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(26, 127, 90, 0.1) 0%, rgba(65, 69, 86, 0.06) 100%);
+  color: var(--sb-green);
+  margin-bottom: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sb-value-card:hover .sb-value-icon {
+  background: linear-gradient(135deg, rgba(26, 127, 90, 0.18) 0%, rgba(65, 69, 86, 0.1) 100%);
+  transform: scale(1.08);
 }
 
 /* Admin layout styles (moved from server component) */
