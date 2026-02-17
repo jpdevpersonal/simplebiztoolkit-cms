@@ -41,7 +41,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                       quality={75}
                       loading="lazy"
                       style={{
-                        marginTop: "5px",
+                        marginTop: "10px",
                         filter:
                           "drop-shadow(rgba(0, 0, 0, 0.325) 0.5px 2px 3px)",
                       }}

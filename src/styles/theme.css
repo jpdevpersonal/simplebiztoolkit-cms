@@ -366,7 +366,9 @@ h3 {
   font-weight: 600;
   font-size: 0.875rem;
   color: var(--sb-brand-blue);
-  transition: all 0.18s ease, box-shadow 0.25s ease;
+  transition:
+    all 0.18s ease,
+    box-shadow 0.25s ease;
   letter-spacing: -0.01em;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -597,13 +599,21 @@ h3 {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(26, 127, 90, 0.1) 0%, rgba(65, 69, 86, 0.06) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(26, 127, 90, 0.1) 0%,
+    rgba(65, 69, 86, 0.06) 100%
+  );
   color: var(--sb-green);
   margin-bottom: 1rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sb-value-card:hover .sb-value-icon {
-  background: linear-gradient(135deg, rgba(26, 127, 90, 0.18) 0%, rgba(65, 69, 86, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(26, 127, 90, 0.18) 0%,
+    rgba(65, 69, 86, 0.1) 100%
+  );
   transform: scale(1.08);
 }
 

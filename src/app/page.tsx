@@ -164,162 +164,176 @@ export default function HomePage() {
       )}
 
       <section className="sb-section">
-        <div className="container">
-          <div className="text-center" style={{ marginBottom: "2rem" }}>
-            <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Popular Templates
-            </h2>
-            <p className="sb-muted" style={{ maxWidth: 480, margin: "0 auto" }}>
-              Our most popular requests and best-sellers — ready to download and
-              print.
-            </p>
-          </div>
+        <div className="text-center" style={{ marginBottom: "2rem" }}>
+          <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
+            Popular Templates
+          </h2>
+          <p className="sb-muted" style={{ maxWidth: 480, margin: "0 auto" }}>
+            Our most popular requests and best-sellers — ready to download and
+            print.
+          </p>
 
           <ProductGrid products={featuredProducts} />
         </div>
-      </section>
 
-      <section className="sb-section sb-section-alt">
-        <div className="container">
-          <div className="text-center mb-4">
-            <span className="sb-section-eyebrow">Why Simple Biz Toolkit?</span>
-            <h2 style={{ fontWeight: 700 }}>Designed to be simple</h2>
-            <p className="sb-muted" style={{ maxWidth: 520, margin: "0 auto" }}>
-              Clear layouts, printable formats, and essential categories —
-              everything a small business needs.
-            </p>
-          </div>
+        <section className="sb-section sb-section-alt">
+          <div className="container">
+            <div className="text-center mb-4">
+              <span className="sb-section-eyebrow">
+                Why Simple Biz Toolkit?
+              </span>
+              <h2 style={{ fontWeight: 700 }}>Designed to be simple</h2>
+              <p
+                className="sb-muted"
+                style={{ maxWidth: 520, margin: "0 auto" }}
+              >
+                Clear layouts, printable formats, and essential categories —
+                everything a small business needs.
+              </p>
+            </div>
 
-          <div className="row g-4">
-            <div className="col-md-4 sb-animate-fade-in-delay-1">
-              <div className="sb-value-card">
-                <div className="sb-value-icon" aria-hidden="true">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
+            <div className="sb-card p-4">
+              <div className="row g-4">
+                <div className="col-md-4 sb-animate-fade-in-delay-1">
+                  <div className="sb-value-card">
+                    <div className="sb-value-icon" aria-hidden="true">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                      </svg>
+                    </div>
+                    <h3
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      Essential templates
+                    </h3>
+                    <p
+                      className="sb-muted mb-0"
+                      style={{ fontSize: "0.9375rem" }}
+                    >
+                      Tracking, planning, and admin — without overcomplication.
+                    </p>
+                  </div>
                 </div>
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Essential templates
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
-                  Tracking, planning, and admin — without overcomplication.
-                </p>
+                <div className="col-md-4 sb-animate-fade-in-delay-2">
+                  <div className="sb-value-card">
+                    <div className="sb-value-icon" aria-hidden="true">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="9 11 12 14 22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                      </svg>
+                    </div>
+                    <h3
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      Simple systems
+                    </h3>
+                    <p
+                      className="sb-muted mb-0"
+                      style={{ fontSize: "0.9375rem" }}
+                    >
+                      Repeatable formats that keep you consistent and efficient.
+                    </p>
+                  </div>
+                </div>
+                <div className="col-md-4 sb-animate-fade-in-delay-3">
+                  <div className="sb-value-card">
+                    <div className="sb-value-icon" aria-hidden="true">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    </div>
+                    <h3
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      Real-world use
+                    </h3>
+                    <p
+                      className="sb-muted mb-0"
+                      style={{ fontSize: "0.9375rem" }}
+                    >
+                      Made for small business owners, solopreneurs, and online
+                      sellers.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="col-md-4 sb-animate-fade-in-delay-2">
-              <div className="sb-value-card">
-                <div className="sb-value-icon" aria-hidden="true">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="9 11 12 14 22 4" />
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                  </svg>
-                </div>
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Simple systems
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
-                  Repeatable formats that keep you consistent and efficient.
-                </p>
-              </div>
-            </div>
-            <div className="col-md-4 sb-animate-fade-in-delay-3">
-              <div className="sb-value-card">
-                <div className="sb-value-icon" aria-hidden="true">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Real-world use
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
-                  Made for small business owners, solopreneurs, and online
-                  sellers.
-                </p>
-              </div>
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="sb-section">
-        <div className="container">
-          <div className="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3 sb-testimonial-header">
-            <div>
-              <span className="sb-section-eyebrow">Testamonials</span>
-              <h2 style={{ fontWeight: 700 }}>What customers say</h2>
-              <p className="sb-muted mb-0">Real feedback from Etsy buyers.</p>
+        <section className="sb-section">
+          <div className="container">
+            <div className="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3 sb-testimonial-header">
+              <div>
+                <span className="sb-section-eyebrow">Testamonials</span>
+                <h2 style={{ fontWeight: 700 }}>What customers say</h2>
+                <p className="sb-muted mb-0">Real feedback from Etsy buyers.</p>
+              </div>
+              <Link
+                className="btn sb-btn-ghost sb-see-more-desktop"
+                href="/testimonials"
+              >
+                See more reviews
+              </Link>
             </div>
-            <Link
-              className="btn sb-btn-ghost sb-see-more-desktop"
-              href="/testimonials"
-            >
-              See more reviews
-            </Link>
-          </div>
-          <TestimonialGrid count={3} />
-          <div className="text-center mt-3 sb-see-more-mobile">
-            <Link className="btn sb-btn-ghost" href="/testimonials">
-              See more reviews
-            </Link>
-          </div>
+            <TestimonialGrid count={3} />
+            <div className="text-center mt-3 sb-see-more-mobile">
+              <Link className="btn sb-btn-ghost" href="/testimonials">
+                See more reviews
+              </Link>
+            </div>
 
-          <div className="text-center mt-4">
-            <EtsyCtaButton label="Browse the full shop" />
+            <div className="text-center mt-4">
+              <EtsyCtaButton label="Browse the full shop" />
+            </div>
           </div>
-        </div>
+        </section>
       </section>
     </>
   );
