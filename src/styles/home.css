@@ -106,6 +106,45 @@
   }
 }
 
+/* Subtle blurred divider between the left content and right showcase */
+@media (min-width: 992px) {
+  .sb-hero-grid::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 19px; /* ~5mm */
+    pointer-events: none;
+    z-index: 4;
+    /* soft gradient that helps blend the two columns */
+    background: linear-gradient(
+      90deg,
+      rgba(45, 48, 57, 0) 0%,
+      rgba(45, 48, 57, 0.12) 16%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(45, 48, 57, 0.12) 50%,
+      rgba(45, 48, 57, 0) 20%
+    );
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+    mix-blend-mode: normal;
+  }
+
+  /* isolate children so backdrop-filter applies neatly without affecting other layers */
+  .sb-hero-content,
+  .sb-hero-showcase {
+    isolation: isolate;
+  }
+}
+
+@media (min-width: 1400px) {
+  .sb-hero-grid::before {
+    width: 19px; /* keep ~5mm on large screens */
+  }
+}
+
 /* ——— HERO CONTENT (left column) ——— */
 .sb-hero-content {
   position: relative;
