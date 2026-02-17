@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,28 +9,8 @@ import EtsyCtaButton from "@/components/EtsyCtaButton";
 
 export default function SiteHeader() {
   const headerRef = useRef<HTMLElement | null>(null);
-  // Start with estimated height to prevent layout shift
-  const [headerHeight, setHeaderHeight] = useState(88);
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
-
-  const updateHeight = useCallback(() => {
-    const h = headerRef.current?.getBoundingClientRect().height ?? 88;
-    // Only update if significantly different to prevent unnecessary re-renders
-    setHeaderHeight((prev) => {
-      if (Math.abs(h - prev) > 2) {
-        return h;
-      }
-      return prev;
-    });
-  }, []);
-
-  useEffect(() => {
-    // Use RAF to ensure DOM is ready
-    requestAnimationFrame(updateHeight);
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
-  }, [updateHeight]);
 
   return (
     <>
@@ -82,7 +62,7 @@ export default function SiteHeader() {
       </header>
 
       {/* spacer to prevent content from sitting under the fixed header */}
-      <div aria-hidden style={{ height: headerHeight }} />
+      <div className="sb-header-spacer" aria-hidden />
     </>
   );
 }

@@ -52,10 +52,6 @@ export default function HomePage() {
 
       {/* ====== HERO ====== */}
       <section className="sb-hero">
-        {/* Decorative gradient orbs */}
-        <div className="sb-hero-orb sb-hero-orb--1" aria-hidden="true" />
-        <div className="sb-hero-orb sb-hero-orb--2" aria-hidden="true" />
-
         <div className="container">
           <div className="sb-hero-grid">
             {/* Left column: Content */}

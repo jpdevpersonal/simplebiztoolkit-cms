@@ -7,7 +7,6 @@
 .sb-hero {
   position: relative;
   overflow: hidden;
-  min-height: 500px;
   /* Rich brand-blue gradient background */
   background: linear-gradient(
     160deg,
@@ -20,6 +19,8 @@
   padding: 0;
   /* Subtle outer shadow to lift the hero from the page (reduced size) */
   box-shadow: 0 10px 10px rgba(2, 6, 23, 0.45);
+  /* Prevent hero internals from shifting content below */
+  contain: layout style;
 }
 .sb-hero::before {
   content: "";
@@ -259,6 +260,10 @@
 }
 
 /* ——— TRUST BAR (below hero, full-width) ——— */
+.sb-hero-trust-section {
+  min-height: 68px; /* Reserve space for trust pills to prevent CLS */
+  contain: content;
+}
 .sb-hero-trust-inline {
   animation: fadeInUp 0.5s ease-out forwards;
   margin: 1.25rem 0;
@@ -298,6 +303,7 @@
   z-index: 2;
   animation: fadeInUp 0.5s ease-out forwards;
   height: 100%;
+  min-height: 300px;
   width: calc(50vw + 50%);
   margin-left: calc(-50vw + 50%);
 }
@@ -311,7 +317,8 @@
     0 20px 60px rgba(0, 0, 0, 0.3),
     0 8px 20px rgba(0, 0, 0, 0.2);
   object-fit: cover;
-  /* No borders for cleaner look */
+  /* Reserve space with aspect-ratio to prevent layout shift */
+  aspect-ratio: 1200 / 800;
 }
 
 /* On larger screens, fine-tune the extension */
@@ -337,6 +344,7 @@
   .sb-hero-img {
     height: auto;
     min-height: 300px;
+    aspect-ratio: 1200 / 800;
   }
 }
 
@@ -410,17 +418,8 @@
   color: rgba(255, 255, 255, 0.75) !important;
 }
 
-/* ——— ANIMATION KEYFRAMES ——— */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* Animations: use the shared `fadeInUp` defined in `theme.css` to
+   avoid duplicate/conflicting keyframes across stylesheets. */
 
 /* ======================================
    RESPONSIVE BREAKPOINTS

@@ -165,9 +165,19 @@ h3 {
 }
 
 /* Header layout: prevent mobile horizontal overflow */
+:root {
+  --sb-header-height: 105px;
+}
 .sb-site-header {
-  min-height: 88px;
-  will-change: transform;
+  height: var(--sb-header-height);
+  box-sizing: border-box;
+  will-change: auto;
+  contain: layout style;
+}
+/* Spacer matches header height exactly — no JS measurement needed */
+.sb-header-spacer {
+  height: var(--sb-header-height);
+  flex-shrink: 0;
 }
 .sb-site-header-inner {
   flex-wrap: wrap;
