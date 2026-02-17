@@ -7,7 +7,7 @@ import { faqs } from "@/data/faqs";
 import { site } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "FAQ",
+  title: "Frequently asked Questions (FAQ) | Simple Biz Toolkit",
   description:
     "Common questions about downloads, printing, and using the templates.",
   alternates: { canonical: "/faq" },
@@ -59,10 +59,7 @@ export default function FaqPage() {
       <section className="sb-section">
         <div className="container">
           <div className="products-header">
-            <h1 style={{ fontWeight: 900 }}>FAQ</h1>
-            <p className="sb-muted">
-              Answers to common questions about downloads and usage.
-            </p>
+            <h1 style={{ fontWeight: 900 }}>Frequently Asked Questions</h1>
           </div>
 
           <div className="row g-4" style={{ maxWidth: 1100, margin: "0 auto" }}>

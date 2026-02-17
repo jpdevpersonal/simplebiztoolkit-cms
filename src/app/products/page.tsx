@@ -3,8 +3,8 @@ import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
 import { site } from "@/config/site";
-import { categories } from "@/data/products";
 import "@/styles/products.css";
+import { apiService } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Products",
@@ -19,7 +19,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProductsPage() {
+const categories = await apiService
+  .getProductCategories()
+  .then((res) => res.data || []);
+
+export default async function ProductsPage() {
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

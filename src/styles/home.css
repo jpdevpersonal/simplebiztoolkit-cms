@@ -1,8 +1,21 @@
 .sb-hero {
   padding: 2.5rem 0 3rem;
-  background: var(--sb-gradient-hero);
+  /* add a semi-opaque brand-blue tint over the image while keeping the photo visible */
+  background:
+    linear-gradient(
+      135deg,
+      rgba(65, 69, 86, 0.45) 0%,
+      rgba(65, 69, 86, 0.28) 40%,
+      rgba(65, 69, 86, 0.18) 100%
+    ),
+    url("/images/hero-background.jpg") center center / cover no-repeat;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  /* small faint inner shadow at the top, large soft shadow at the bottom */
+  box-shadow:
+    inset 0 -10px 24px rgba(0, 0, 0, 0.06),
+    0 40px 80px rgba(0, 0, 0, 0.32);
 }
 .sb-hero::before {
   content: "";
@@ -11,12 +24,15 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
-    circle at 80% 20%,
-    rgba(26, 127, 90, 0.04) 0%,
-    transparent 50%
+  /* lighter overlay so white text remains bright against the blue image */
+  /* keep a very subtle dark overlay to preserve legibility without muting the tint */
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.06) 0%,
+    rgba(0, 0, 0, 0.02) 100%
   );
   pointer-events: none;
+  z-index: 1;
 }
 
 /* Hero content wrapper */
@@ -27,6 +43,12 @@
   text-align: center;
 }
 
+/* bring hero content above the overlay */
+.sb-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
 /* Trust badge above the title */
 .sb-hero-badge {
   display: inline-flex;
@@ -35,11 +57,11 @@
   gap: 0.4rem;
   background: linear-gradient(
     135deg,
-    rgba(26, 127, 90, 0.08) 0%,
-    rgba(26, 127, 90, 0.04) 100%
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 100%
   );
-  border: 1px solid rgba(26, 127, 90, 0.18);
-  color: var(--sb-green);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff !important;
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 0.4rem 0.9rem;
@@ -52,20 +74,22 @@
   letter-spacing: -0.02em;
   line-height: 1.1;
   font-size: clamp(1.75rem, 4vw, 2.75rem);
-  color: var(--sb-ink);
+  color: #ffffff !important;
   text-align: center;
   margin: 0;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
 }
 
 /* Subtitle paragraph */
 .sb-hero-subtitle {
-  color: var(--sb-muted);
+  color: #ffffff !important;
   font-size: 1.125rem;
   line-height: 1.6;
   margin: 0;
   max-width: 520px;
   margin-left: auto;
   margin-right: auto;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
 }
 
 /* Trust pills wrapper */
@@ -105,6 +129,33 @@
   font-size: 0.8125rem;
   color: var(--sb-muted);
   font-weight: 500;
+}
+
+/* Ensure hero background text (not inside cards) is pure white for contrast */
+.sb-hero .sb-hero-title,
+.sb-hero .sb-hero-subtitle,
+.sb-hero .sb-hero-badge,
+.sb-hero .sb-article-link,
+.sb-hero a,
+.sb-hero p,
+.sb-hero .sb-hero-trust {
+  color: #ffffff !important;
+}
+
+/* Ensure cards that appear inside the hero keep black text */
+.sb-hero .sb-card,
+.sb-hero .sb-hero-quote {
+  color: var(--sb-ink);
+  background: #fff;
+}
+
+/* Make general paragraphs inside the hero white, but keep card paragraphs black */
+.sb-hero p {
+  color: #ffffff;
+}
+.sb-hero .sb-card p,
+.sb-hero .sb-hero-quote p {
+  color: var(--sb-ink);
 }
 
 /* Large screens: left-align hero text, vertically center columns */
