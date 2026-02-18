@@ -3,19 +3,35 @@
  */
 
 import Link from "next/link";
-import { apiService } from "@/lib/api";
+import { headers } from "next/headers";
+import { apiService, getApiService } from "@/lib/api";
+import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
 import AdminStatCard from "@/components/AdminStatCard";
 
 export default async function AdminDashboard() {
+  // Ensure cookies are available for NextAuth on the server and use an
+  // authenticated API service when the session has an access token so drafts are returned.
+  await headers();
+  const session = await auth();
+  const _s = session as Session & { accessToken?: string };
+  const accessToken = _s?.accessToken;
+  const service = accessToken ? getApiService(accessToken) : apiService;
+
   // Fetch summary stats
   const [articlesResponse, categoriesResponse] = await Promise.all([
-    apiService.getAllArticles(),
-    apiService.getProductCategories(),
+    service.getAllArticles(),
+    service.getProductCategories(),
   ]);
 
   const articles = articlesResponse.data || [];
   const categories = categoriesResponse.data || [];
   const products = categories.flatMap((cat) => cat.items || []);
+
+  // const publishedArticles = articles.filter(
+  //   (a) => a.status === "published",
+  // ).length;
+  // const draftArticles = articles.filter((a) => a.status === "draft").length;
 
   const publishedArticles = articles.filter(
     (a) => a.status === "published",

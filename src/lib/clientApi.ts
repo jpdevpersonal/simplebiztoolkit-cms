@@ -48,9 +48,8 @@ async function request<T>(
 }
 
 function buildArticlesUrl(articleId?: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
   const resource = articleId ? `/api/articles/${articleId}` : "/api/articles";
-  return `${baseUrl}${resource}`;
+  return resource;
 }
 
 export const clientApi = {
@@ -109,6 +108,10 @@ export const clientApi = {
       method: "PUT",
       body: article,
     });
+  },
+
+  deleteArticle(id: string) {
+    return request<void>(buildArticlesUrl(id), { method: "DELETE" });
   },
 
   revalidateContent(type: "article" | "product", slug?: string) {

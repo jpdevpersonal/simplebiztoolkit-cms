@@ -4,11 +4,23 @@
  */
 
 import Link from "next/link";
-import { apiService } from "@/lib/api";
+import { headers } from "next/headers";
+import { apiService, getApiService } from "@/lib/api";
+import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
 import AdminStatCard from "@/components/AdminStatCard";
 
 export default async function ArticlesPage() {
-  const response = await apiService.getAllArticles();
+  // Ensure cookies are available for NextAuth on the server
+  await headers();
+  const session = await auth();
+
+  // Use an authenticated API service when session has an accessToken so drafts are returned
+  const _s = session as Session & { accessToken?: string };
+  const accessToken = _s?.accessToken;
+  const service = accessToken ? getApiService(accessToken) : apiService;
+
+  const response = await service.getAllArticles();
   const articles = response.data || [];
 
   const published = articles.filter((a) => a.status === "published");

@@ -16,6 +16,17 @@ vi.mock("@/lib/revalidation", () => ({
   revalidateAllProducts: revalidationMocks.revalidateAllProducts,
 }));
 
+// Mock requireAuth so tests don't import NextAuth runtime during test runs.
+vi.mock("@/lib/apiProxy", () => ({
+  requireAuth: vi.fn().mockResolvedValue({
+    ok: false,
+    response: new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "content-type": "application/json" },
+    }),
+  }),
+}));
+
 import { POST } from "./route";
 
 describe("POST /api/revalidate", () => {

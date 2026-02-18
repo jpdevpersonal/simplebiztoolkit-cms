@@ -1,0 +1,36 @@
+Issue
+
+401 Unauthorized when calling admin article endpoints (e.g., saving/updating an article). Product admin endpoints work.
+Helpful context to paste
+
+App uses Next.js with an API-proxy/back-end. Admin uses NextAuth (cookie-based). Product admin worked because /api/products/* is handled by the Next app (not rewritten to backend).
+Files to inspect (include links)
+
+Check rewrites: next.config.ts:1-200
+Articles collection route: route.ts:1-200
+Articles per-id route: src/app/api/articles/[id]/route.ts
+Revalidate webhook: route.ts:1-200
+Proxy & auth helpers: apiProxy.ts:1-200 and auth.ts:1-200
+Client helpers: clientApi.ts:1-200 and server API wrapper api.ts:1-200
+What to check (quick checklist)
+
+Are /api/articles/* requests being rewritten to the backend in next.config.ts? If yes, admin browser requests lose NextAuth cookies and get 401.
+Does the articles per-id route require auth for GET even when published? Compare to route.ts.
+Does /api/revalidate require only a server webhook secret? If admin UI calls it from browser, does it accept a signed-in admin session as an alternative?
+Does the client use credentials (cookies) when calling admin endpoints? (fetch should use credentials: 'include' or client helper should set credentials.)
+Reproduce steps (commands)
+
+Unauthenticated (expect 401):
+curl -i http://localhost:3001/api/articles
+curl -i -X PUT -H "Content-Type: application/json" -d '{"title":"x"}' http://localhost:3001/api/articles/42
+With cookie (simulate browser session): reproduce from browser after signing in, or pass cookie:
+curl -i --cookie "authjs.session-token=..." -X PUT ...
+Test revalidate:
+curl -i -X POST http://localhost:3001/api/revalidate -H "X-Revalidation-Secret: wrong" -d '{"type":"article","slug":"s"}'
+Likely fixes (fast, minimal)
+
+Mirror product behavior:
+Exclude /api/articles from external-backend rewrites in next.config.ts (same as /api/products) so Next app routes run and have access to NextAuth cookies.
+Make per-id article GET accept optional auth (pass access token if present) so published GET can work without auth but drafts work when auth present.
+Allow /api/revalidate to accept either the server webhook secret OR an authenticated admin session (via requireAuth()), so client-side admin revalidate doesn't require publishing the secret to the browser.
+Ensure clientApi calls include credentials: 'include' and the revalidation client either sends the secret (if using env) or lets server-side auth handle it.
