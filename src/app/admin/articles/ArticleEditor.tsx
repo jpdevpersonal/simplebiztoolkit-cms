@@ -12,6 +12,9 @@ import { useRouter } from "next/navigation";
 import type { Article } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import RichContentField from "@/components/RichContentField";
+import AdminFormBlock from "@/components/AdminFormBlock";
+import EditorActions from "@/components/EditorActions";
+import EditorFeedback from "@/components/EditorFeedback";
 
 interface ArticleEditorProps {
   article?: Article;
@@ -91,30 +94,14 @@ export default function ArticleEditor({
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && (
-        <div
-          role="alert"
-          style={{
-            marginBottom: "1rem",
-            padding: "0.75rem 1rem",
-            background: "#fff5f5",
-            border: "1px solid #fca5a5",
-            borderRadius: "8px",
-            color: "#dc2626",
-            fontSize: "0.875rem",
-            fontWeight: 500,
-          }}
-        >
-          {error}
-        </div>
-      )}
+      <EditorFeedback error={error} />
 
       <div className="row g-3">
         {/* Main Column */}
         <div className="col-lg-8">
           {/* Content block */}
-          <div className="admin-form-block mb-0">
-            <div className="admin-form-block-header">
+          <AdminFormBlock
+            icon={
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
@@ -131,104 +118,104 @@ export default function ArticleEditor({
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="admin-form-block-title">Article Content</span>
+            }
+            title="Article Content"
+            className="mb-0"
+          >
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Title *</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                required
+              />
             </div>
-            <div className="admin-form-block-body">
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Title *</label>
+
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Subtitle</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.subtitle}
+                onChange={(e) =>
+                  setFormData({ ...formData, subtitle: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Slug *</label>
+              <div className="input-group">
+                <span
+                  className="input-group-text"
+                  style={{ fontSize: "0.875rem", color: "var(--sb-muted)" }}
+                >
+                  /blog/
+                </span>
                 <input
                   type="text"
                   className="form-control"
-                  value={formData.title}
+                  value={formData.slug}
                   onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
+                    setFormData({ ...formData, slug: e.target.value })
                   }
                   required
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Subtitle</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.subtitle}
-                  onChange={(e) =>
-                    setFormData({ ...formData, subtitle: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Slug *</label>
-                <div className="input-group">
-                  <span
-                    className="input-group-text"
-                    style={{ fontSize: "0.875rem", color: "var(--sb-muted)" }}
-                  >
-                    /blog/
-                  </span>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slug: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Description *</label>
-                <textarea
-                  className="form-control"
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="mb-0">
-                <RichContentField
-                  label="Content"
-                  value={formData.content}
-                  onChange={(html) =>
-                    setFormData((prev) => ({ ...prev, content: html }))
-                  }
-                  storageKey="article-content-editor-mode"
-                  required
-                  htmlRows={20}
-                  minHeight={420}
-                  placeholder="Start writing your article content here…"
-                  hint={
-                    <>
-                      Use{" "}
-                      <code>
-                        &lt;section data-component=&quot;section&quot;&gt;
-                      </code>{" "}
-                      and{" "}
-                      <code>
-                        &lt;aside data-component=&quot;callout&quot;
-                        data-title=&quot;Title&quot;&gt;
-                      </code>
-                    </>
-                  }
                 />
               </div>
             </div>
-          </div>
+
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Description *</label>
+              <textarea
+                className="form-control"
+                rows={3}
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <div className="mb-0">
+              <RichContentField
+                label="Content"
+                value={formData.content}
+                onChange={(html) =>
+                  setFormData((prev) => ({ ...prev, content: html }))
+                }
+                storageKey="article-content-editor-mode"
+                required
+                htmlRows={20}
+                minHeight={420}
+                placeholder="Start writing your article content here…"
+                hint={
+                  <>
+                    Use{" "}
+                    <code>
+                      &lt;section data-component=&quot;section&quot;&gt;
+                    </code>{" "}
+                    and{" "}
+                    <code>
+                      &lt;aside data-component=&quot;callout&quot;
+                      data-title=&quot;Title&quot;&gt;
+                    </code>
+                  </>
+                }
+              />
+            </div>
+          </AdminFormBlock>
         </div>
 
         {/* Sidebar Column */}
         <div className="col-lg-4">
           {/* Settings block */}
-          <div className="admin-form-block">
-            <div className="admin-form-block-header">
+          <AdminFormBlock
+            icon={
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <circle
                   cx="12"
@@ -245,113 +232,110 @@ export default function ArticleEditor({
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="admin-form-block-title">Settings</span>
+            }
+            title="Settings"
+          >
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Status *</label>
+              <select
+                className="form-select"
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value as "draft" | "published",
+                  })
+                }
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
             </div>
-            <div className="admin-form-block-body">
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Status *</label>
-                <select
-                  className="form-select"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      status: e.target.value as "draft" | "published",
-                    })
-                  }
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                </select>
-              </div>
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Category *</label>
-                <select
-                  className="form-select"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                >
-                  <option value="Bookkeeping">Bookkeeping</option>
-                  <option value="Productivity">Productivity</option>
-                  <option value="Etsy Selling">Etsy Selling</option>
-                  <option value="Branding">Branding</option>
-                </select>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  Reading Time (min)
-                </label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={formData.readingMinutes}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      readingMinutes: parseInt(e.target.value),
-                    })
-                  }
-                  min="1"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  Badges{" "}
-                  <span style={{ fontWeight: 400, color: "var(--sb-muted)" }}>
-                    (comma-separated)
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.badges}
-                  onChange={(e) =>
-                    setFormData({ ...formData, badges: e.target.value })
-                  }
-                  placeholder="Bookkeeping, Small Business"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  Featured Image URL
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.featuredImage}
-                  onChange={(e) =>
-                    setFormData({ ...formData, featuredImage: e.target.value })
-                  }
-                  placeholder="/images/..."
-                />
-              </div>
-
-              <div className="mb-0">
-                <label className="form-label fw-semibold">
-                  Header Image URL
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.headerImage}
-                  onChange={(e) =>
-                    setFormData({ ...formData, headerImage: e.target.value })
-                  }
-                  placeholder="/images/..."
-                />
-              </div>
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Category *</label>
+              <select
+                className="form-select"
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+              >
+                <option value="Bookkeeping">Bookkeeping</option>
+                <option value="Productivity">Productivity</option>
+                <option value="Etsy Selling">Etsy Selling</option>
+                <option value="Branding">Branding</option>
+              </select>
             </div>
-          </div>
+
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Reading Time (min)
+              </label>
+              <input
+                type="number"
+                className="form-control"
+                value={formData.readingMinutes}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    readingMinutes: parseInt(e.target.value),
+                  })
+                }
+                min="1"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Badges{" "}
+                <span style={{ fontWeight: 400, color: "var(--sb-muted)" }}>
+                  (comma-separated)
+                </span>
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.badges}
+                onChange={(e) =>
+                  setFormData({ ...formData, badges: e.target.value })
+                }
+                placeholder="Bookkeeping, Small Business"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Featured Image URL
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.featuredImage}
+                onChange={(e) =>
+                  setFormData({ ...formData, featuredImage: e.target.value })
+                }
+                placeholder="/images/..."
+              />
+            </div>
+
+            <div className="mb-0">
+              <label className="form-label fw-semibold">Header Image URL</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.headerImage}
+                onChange={(e) =>
+                  setFormData({ ...formData, headerImage: e.target.value })
+                }
+                placeholder="/images/..."
+              />
+            </div>
+          </AdminFormBlock>
 
           {/* SEO block */}
-          <div className="admin-form-block">
-            <div className="admin-form-block-header">
+          <AdminFormBlock
+            icon={
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <circle
                   cx="11"
@@ -370,73 +354,48 @@ export default function ArticleEditor({
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="admin-form-block-title">SEO</span>
-            </div>
-            <div className="admin-form-block-body">
-              <div className="mb-3">
-                <label className="form-label fw-semibold">SEO Title</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData.seoTitle}
-                  onChange={(e) =>
-                    setFormData({ ...formData, seoTitle: e.target.value })
-                  }
-                  placeholder="Leave blank to use article title"
-                />
-              </div>
-
-              <div className="mb-0">
-                <label className="form-label fw-semibold">
-                  SEO Description
-                </label>
-                <textarea
-                  className="form-control"
-                  rows={3}
-                  value={formData.seoDescription}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      seoDescription: e.target.value,
-                    })
-                  }
-                  placeholder="Leave blank to use article description"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Form actions */}
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              paddingTop: "0.25rem",
-            }}
+            }
+            title="SEO"
           >
-            <button
-              type="submit"
-              className="admin-btn-save"
-              style={{ flex: 1, justifyContent: "center" }}
-              disabled={loading}
-            >
-              {loading
-                ? "Saving..."
-                : isNew
-                  ? "Create Article"
-                  : "Save Changes"}
-            </button>
-            <button
-              type="button"
-              className="admin-btn-cancel"
-              onClick={() => router.back()}
-              disabled={loading}
-            >
-              Cancel
-            </button>
-          </div>
+            <div className="mb-3">
+              <label className="form-label fw-semibold">SEO Title</label>
+              <input
+                type="text"
+                className="form-control"
+                value={formData.seoTitle}
+                onChange={(e) =>
+                  setFormData({ ...formData, seoTitle: e.target.value })
+                }
+                placeholder="Leave blank to use article title"
+              />
+            </div>
+
+            <div className="mb-0">
+              <label className="form-label fw-semibold">SEO Description</label>
+              <textarea
+                className="form-control"
+                rows={3}
+                value={formData.seoDescription}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    seoDescription: e.target.value,
+                  })
+                }
+                placeholder="Leave blank to use article description"
+              />
+            </div>
+          </AdminFormBlock>
         </div>
       </div>
+
+      {/* Actions */}
+      <EditorActions
+        saving={loading}
+        isCreateMode={isNew}
+        entityName="Article"
+        onCancel={() => router.back()}
+      />
     </form>
   );
 }

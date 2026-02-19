@@ -118,15 +118,20 @@ export default function RichContentField({
   placeholder = "Start writing here…",
   minHeight = 200,
 }: RichContentFieldProps) {
+  // Always start with "html" so server and client render identically (avoids
+  // hydration mismatches). After the component mounts, we restore the stored
+  // preference from localStorage.
   const [mode, setMode] = useState<EditorMode>("html");
 
-  // Restore saved preference
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey) as EditorMode | null;
-      if (saved === "html" || saved === "tiptap") setMode(saved);
+      if (saved === "html" || saved === "tiptap") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMode(saved);
+      }
     } catch {
-      // localStorage unavailable – keep default
+      // localStorage unavailable (SSR / incognito) – keep default
     }
   }, [storageKey]);
 
