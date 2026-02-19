@@ -30,8 +30,24 @@ export default async function ArticlesPage() {
         <h1>Articles</h1>
         <Link href="/admin/articles/new" className="admin-btn-save">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            <line
+              x1="12"
+              y1="5"
+              x2="12"
+              y2="19"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="5"
+              y1="12"
+              x2="19"
+              y2="12"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
           </svg>
           New Article
         </Link>
@@ -60,13 +76,14 @@ export default async function ArticlesPage() {
               <th>Category</th>
               <th>Status</th>
               <th>Published</th>
+              <th>Preview</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {articles.length === 0 && (
               <tr>
-                <td colSpan={6} className="admin-empty-state">
+                <td colSpan={7} className="admin-empty-state">
                   No articles found. Create your first article!
                 </td>
               </tr>
@@ -104,9 +121,54 @@ export default async function ArticlesPage() {
                   </span>
                 </td>
                 <td
-                  style={{ color: "var(--sb-muted)", fontSize: "0.8125rem", whiteSpace: "nowrap" }}
+                  style={{
+                    color: "var(--sb-muted)",
+                    fontSize: "0.8125rem",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {article.dateISO ?? "—"}
+                </td>
+                <td>
+                  <Link
+                    href={`/blog/${article.slug}`}
+                    className="admin-btn-action"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      style={{ marginLeft: "0.25rem" }}
+                    >
+                      <path
+                        d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <polyline
+                        points="15 3 21 3 21 9"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <line
+                        x1="10"
+                        y1="14"
+                        x2="21"
+                        y2="3"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </Link>
                 </td>
                 <td>
                   <Link

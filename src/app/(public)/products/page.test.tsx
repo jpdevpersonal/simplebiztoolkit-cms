@@ -15,6 +15,20 @@ describe("Products page", () => {
     getProductCategoriesMock.mockReset();
   });
 
+  it("renders heading with no category links when API returns empty list", async () => {
+    getProductCategoriesMock.mockResolvedValueOnce({ data: [] });
+
+    const { default: ProductsPage } = await import("./page");
+    render(await ProductsPage());
+
+    expect(
+      screen.getByRole("heading", { name: "Product Categories" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Browse templates/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders categories from API response", async () => {
     getProductCategoriesMock.mockResolvedValueOnce({
       data: [

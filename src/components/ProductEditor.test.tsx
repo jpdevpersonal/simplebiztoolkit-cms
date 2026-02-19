@@ -73,6 +73,89 @@ describe("ProductEditor", () => {
     });
   });
 
+  it("saves changes in edit mode and shows success message", async () => {
+    vi.mocked(clientApi.updateProduct).mockResolvedValueOnce({
+      id: "p-1",
+      title: "Old Product",
+      slug: "old-product",
+      problem: "",
+      description: "",
+      bullets: [],
+      image: "",
+      etsyUrl: "",
+      productPageUrl: "",
+      price: "",
+      categoryId: "cat-1",
+      status: "draft",
+    } as any);
+
+    render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "Old Product",
+          slug: "old-product",
+          problem: "",
+          description: "",
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => {
+      expect(clientApi.updateProduct).toHaveBeenCalledWith(
+        "p-1",
+        expect.any(Object),
+      );
+      expect(
+        screen.getByText("Product saved successfully!"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows error message when save fails in edit mode", async () => {
+    vi.mocked(clientApi.updateProduct).mockRejectedValueOnce(
+      new Error("Network timeout"),
+    );
+
+    render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "Old Product",
+          slug: "old-product",
+          problem: "",
+          description: "",
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => {
+      const alert = screen.getByRole("alert");
+      expect(alert).toBeInTheDocument();
+      expect(alert.textContent).toBe("Network timeout");
+    });
+  });
+
   it("deletes product in edit mode after confirmation", async () => {
     vi.mocked(clientApi.deleteProduct).mockResolvedValueOnce(undefined as any);
     vi.stubGlobal(

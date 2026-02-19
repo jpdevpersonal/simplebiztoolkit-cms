@@ -100,13 +100,14 @@ export default function AdminProductsTable({ products, categories }: Props) {
               Status
               <SortIcon active={sortBy === "status"} dir={dir} />
             </th>
+            <th>Preview</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={5} className="admin-empty-state">
+              <td colSpan={6} className="admin-empty-state">
                 No products found. Create your first product!
               </td>
             </tr>
@@ -135,6 +136,55 @@ export default function AdminProductsTable({ products, categories }: Props) {
                   >
                     {product.status}
                   </span>
+                </td>
+                <td>
+                  {product.productPageUrl ? (
+                    <Link
+                      href={product.productPageUrl}
+                      className="admin-btn-action"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        style={{ marginLeft: "0.25rem" }}
+                      >
+                        <path
+                          d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <polyline
+                          points="15 3 21 3 21 9"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <line
+                          x1="10"
+                          y1="14"
+                          x2="21"
+                          y2="3"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </Link>
+                  ) : (
+                    <span
+                      style={{ color: "var(--sb-muted)", fontSize: "0.8rem" }}
+                    >
+                      —
+                    </span>
+                  )}
                 </td>
                 <td>
                   <Link
