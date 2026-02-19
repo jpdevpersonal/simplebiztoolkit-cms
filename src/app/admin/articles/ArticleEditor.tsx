@@ -91,235 +91,344 @@ export default function ArticleEditor({
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <div className="alert alert-danger mb-4" role="alert">
+        <div
+          role="alert"
+          style={{
+            marginBottom: "1rem",
+            padding: "0.75rem 1rem",
+            background: "#fff5f5",
+            border: "1px solid #fca5a5",
+            borderRadius: "8px",
+            color: "#dc2626",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+          }}
+        >
           {error}
         </div>
       )}
 
-      <div className="row g-4">
+      <div className="row g-3">
         {/* Main Column */}
         <div className="col-lg-8">
-          <div className="sb-card p-4 mb-4">
-            <h3 style={{ fontWeight: 600, marginBottom: "1.5rem" }}>
-              Article Content
-            </h3>
-
-            <div className="mb-3">
-              <label className="form-label">Title *</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
-              />
+          {/* Content block */}
+          <div className="admin-form-block mb-0">
+            <div className="admin-form-block-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <polyline
+                  points="14 2 14 8 20 8"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="admin-form-block-title">Article Content</span>
             </div>
+            <div className="admin-form-block-body">
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Title *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  required
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Subtitle</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.subtitle}
-                onChange={(e) =>
-                  setFormData({ ...formData, subtitle: e.target.value })
-                }
-              />
-            </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Subtitle</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.subtitle}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subtitle: e.target.value })
+                  }
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Slug *</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.slug}
-                onChange={(e) =>
-                  setFormData({ ...formData, slug: e.target.value })
-                }
-                required
-              />
-              <small className="sb-muted">URL: /blog/{formData.slug}</small>
-            </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Slug *</label>
+                <div className="input-group">
+                  <span
+                    className="input-group-text"
+                    style={{ fontSize: "0.875rem", color: "var(--sb-muted)" }}
+                  >
+                    /blog/
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formData.slug}
+                    onChange={(e) =>
+                      setFormData({ ...formData, slug: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Description *</label>
-              <textarea
-                className="form-control"
-                rows={3}
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                required
-              />
-            </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Description *</label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  required
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Content (HTML) *</label>
-              <textarea
-                className="form-control"
-                rows={20}
-                value={formData.content}
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
-                }
-                required
-                style={{ fontFamily: "monospace", fontSize: "0.875rem" }}
-              />
-              <small className="sb-muted">
-                Use data attributes:
-                <code>&lt;section data-component="section"&gt;</code> and
-                <code>
-                  &lt;aside data-component="callout" data-title="Title"&gt;
-                </code>
-              </small>
+              <div className="mb-0">
+                <label className="form-label fw-semibold">
+                  Content (HTML) *
+                </label>
+                <textarea
+                  className="form-control"
+                  rows={20}
+                  value={formData.content}
+                  onChange={(e) =>
+                    setFormData({ ...formData, content: e.target.value })
+                  }
+                  required
+                  style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}
+                />
+                <small
+                  style={{ color: "var(--sb-muted)", fontSize: "0.8125rem" }}
+                >
+                  Use{" "}
+                  <code>
+                    &lt;section data-component=&quot;section&quot;&gt;
+                  </code>{" "}
+                  and{" "}
+                  <code>
+                    &lt;aside data-component=&quot;callout&quot;
+                    data-title=&quot;Title&quot;&gt;
+                  </code>
+                </small>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Sidebar Column */}
         <div className="col-lg-4">
-          <div className="sb-card p-4 mb-4">
-            <h3 style={{ fontWeight: 600, marginBottom: "1.5rem" }}>
-              Settings
-            </h3>
-
-            <div className="mb-3">
-              <label className="form-label">Status *</label>
-              <select
-                className="form-select"
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    status: e.target.value as "draft" | "published",
-                  })
-                }
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-              </select>
+          {/* Settings block */}
+          <div className="admin-form-block">
+            <div className="admin-form-block-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="3"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="admin-form-block-title">Settings</span>
             </div>
+            <div className="admin-form-block-body">
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Status *</label>
+                <select
+                  className="form-select"
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value as "draft" | "published",
+                    })
+                  }
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                </select>
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Category *</label>
-              <select
-                className="form-select"
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-              >
-                <option value="Bookkeeping">Bookkeeping</option>
-                <option value="Productivity">Productivity</option>
-                <option value="Etsy Selling">Etsy Selling</option>
-                <option value="Branding">Branding</option>
-              </select>
-            </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Category *</label>
+                <select
+                  className="form-select"
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                >
+                  <option value="Bookkeeping">Bookkeeping</option>
+                  <option value="Productivity">Productivity</option>
+                  <option value="Etsy Selling">Etsy Selling</option>
+                  <option value="Branding">Branding</option>
+                </select>
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Reading Time (minutes)</label>
-              <input
-                type="number"
-                className="form-control"
-                value={formData.readingMinutes}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    readingMinutes: parseInt(e.target.value),
-                  })
-                }
-                min="1"
-              />
-            </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">
+                  Reading Time (min)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={formData.readingMinutes}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      readingMinutes: parseInt(e.target.value),
+                    })
+                  }
+                  min="1"
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Badges (comma-separated)</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.badges}
-                onChange={(e) =>
-                  setFormData({ ...formData, badges: e.target.value })
-                }
-                placeholder="Bookkeeping, Small Business"
-              />
-            </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">
+                  Badges{" "}
+                  <span style={{ fontWeight: 400, color: "var(--sb-muted)" }}>
+                    (comma-separated)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.badges}
+                  onChange={(e) =>
+                    setFormData({ ...formData, badges: e.target.value })
+                  }
+                  placeholder="Bookkeeping, Small Business"
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Featured Image URL</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.featuredImage}
-                onChange={(e) =>
-                  setFormData({ ...formData, featuredImage: e.target.value })
-                }
-                placeholder="/images/..."
-              />
-            </div>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">
+                  Featured Image URL
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.featuredImage}
+                  onChange={(e) =>
+                    setFormData({ ...formData, featuredImage: e.target.value })
+                  }
+                  placeholder="/images/..."
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Header Image URL</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.headerImage}
-                onChange={(e) =>
-                  setFormData({ ...formData, headerImage: e.target.value })
-                }
-                placeholder="/images/..."
-              />
+              <div className="mb-0">
+                <label className="form-label fw-semibold">
+                  Header Image URL
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.headerImage}
+                  onChange={(e) =>
+                    setFormData({ ...formData, headerImage: e.target.value })
+                  }
+                  placeholder="/images/..."
+                />
+              </div>
             </div>
           </div>
 
-          <div className="sb-card p-4 mb-4">
-            <h3 style={{ fontWeight: 600, marginBottom: "1.5rem" }}>SEO</h3>
-
-            <div className="mb-3">
-              <label className="form-label">SEO Title</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.seoTitle}
-                onChange={(e) =>
-                  setFormData({ ...formData, seoTitle: e.target.value })
-                }
-                placeholder="Leave blank to use article title"
-              />
+          {/* SEO block */}
+          <div className="admin-form-block">
+            <div className="admin-form-block-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="8"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <line
+                  x1="21"
+                  y1="21"
+                  x2="16.65"
+                  y2="16.65"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="admin-form-block-title">SEO</span>
             </div>
+            <div className="admin-form-block-body">
+              <div className="mb-3">
+                <label className="form-label fw-semibold">SEO Title</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formData.seoTitle}
+                  onChange={(e) =>
+                    setFormData({ ...formData, seoTitle: e.target.value })
+                  }
+                  placeholder="Leave blank to use article title"
+                />
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">SEO Description</label>
-              <textarea
-                className="form-control"
-                rows={3}
-                value={formData.seoDescription}
-                onChange={(e) =>
-                  setFormData({ ...formData, seoDescription: e.target.value })
-                }
-                placeholder="Leave blank to use article description"
-              />
+              <div className="mb-0">
+                <label className="form-label fw-semibold">
+                  SEO Description
+                </label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={formData.seoDescription}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      seoDescription: e.target.value,
+                    })
+                  }
+                  placeholder="Leave blank to use article description"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="d-flex gap-2">
+          {/* Form actions */}
+          <div
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              paddingTop: "0.25rem",
+            }}
+          >
             <button
               type="submit"
-              className="btn sb-btn-primary flex-grow-1"
+              className="admin-btn-save"
+              style={{ flex: 1, justifyContent: "center" }}
               disabled={loading}
             >
               {loading
                 ? "Saving..."
                 : isNew
                   ? "Create Article"
-                  : "Update Article"}
+                  : "Save Changes"}
             </button>
             <button
               type="button"
-              className="btn sb-btn-ghost"
+              className="admin-btn-cancel"
               onClick={() => router.back()}
               disabled={loading}
             >

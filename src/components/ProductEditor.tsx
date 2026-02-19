@@ -158,137 +158,235 @@ export default function ProductEditor({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="sb-card p-3">
-      <div className="row g-3">
-        <div className="col-md-6">
-          <label className="form-label">Title *</label>
-          <input
-            className="form-control"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            required
-          />
+    <form onSubmit={handleSubmit}>
+      {/* Basic product info */}
+      <div className="admin-form-block">
+        <div className="admin-form-block-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <line
+              x1="3"
+              y1="6"
+              x2="21"
+              y2="6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M16 10a4 4 0 0 1-8 0"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="admin-form-block-title">Product Details</span>
         </div>
+        <div className="admin-form-block-body">
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label fw-semibold">Title *</label>
+              <input
+                className="form-control"
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="col-md-6">
-          <label className="form-label">Slug *</label>
-          <input
-            className="form-control"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            required
-          />
-        </div>
+            <div className="col-md-6">
+              <label className="form-label fw-semibold">Slug *</label>
+              <input
+                className="form-control"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                required
+              />
+            </div>
 
-        {categories.length > 0 && (
-          <div className="col-md-6">
-            <label className="form-label">Category *</label>
-            <select
-              className="form-select"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              required
-            >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+            {categories.length > 0 && (
+              <div className="col-md-6">
+                <label className="form-label fw-semibold">Category *</label>
+                <select
+                  className="form-select"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  required
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="col-md-3">
+              <label className="form-label fw-semibold">Status</label>
+              <select
+                className="form-select"
+                value={status}
+                onChange={(e) =>
+                  setStatus(e.target.value as "draft" | "published")
+                }
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+
+            <div className="col-md-3">
+              <label className="form-label fw-semibold">Price</label>
+              <input
+                className="form-control"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="$9.99"
+              />
+            </div>
           </div>
-        )}
-
-        <div className="col-md-6">
-          <label className="form-label">Status</label>
-          <select
-            className="form-select"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as "draft" | "published")}
-          >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-        </div>
-
-        <div className="col-md-6">
-          <label className="form-label">Price</label>
-          <input
-            className="form-control"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="$9.99"
-          />
-        </div>
-
-        <div className="col-md-6">
-          <label className="form-label">Image URL</label>
-          <input
-            className="form-control"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-          />
-        </div>
-
-        <div className="col-12">
-          <label className="form-label">Problem Statement</label>
-          <textarea
-            className="form-control"
-            value={problem}
-            onChange={(e) => setProblem(e.target.value)}
-            rows={3}
-          />
-        </div>
-
-        <div className="col-12">
-          <label className="form-label">Description</label>
-          <textarea
-            className="form-control"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-          />
-        </div>
-
-        <div className="col-12">
-          <label className="form-label">Bullets (one per line)</label>
-          <textarea
-            className="form-control"
-            value={bullets}
-            onChange={(e) => setBullets(e.target.value)}
-            rows={5}
-            placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
-          />
-        </div>
-
-        <div className="col-md-6">
-          <label className="form-label">Etsy URL</label>
-          <input
-            className="form-control"
-            value={etsyUrl}
-            onChange={(e) => setEtsyUrl(e.target.value)}
-          />
-        </div>
-
-        <div className="col-md-6">
-          <label className="form-label">Product Page URL</label>
-          <input
-            className="form-control"
-            value={productPageUrl}
-            onChange={(e) => setProductPageUrl(e.target.value)}
-          />
         </div>
       </div>
 
-      {message && <div className="alert alert-success mt-3">{message}</div>}
-      {error && <div className="alert alert-danger mt-3">{error}</div>}
+      {/* Content & media */}
+      <div className="admin-form-block">
+        <div className="admin-form-block-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <polyline
+              points="14 2 14 8 20 8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="admin-form-block-title">Content &amp; Media</span>
+        </div>
+        <div className="admin-form-block-body">
+          <div className="row g-3">
+            <div className="col-12">
+              <label className="form-label fw-semibold">
+                Problem Statement
+              </label>
+              <textarea
+                className="form-control"
+                value={problem}
+                onChange={(e) => setProblem(e.target.value)}
+                rows={3}
+              />
+            </div>
 
-      <div className="mt-4 d-flex gap-2 justify-content-between">
-        <div className="d-flex gap-2">
-          <button
-            type="submit"
-            className="btn sb-btn-primary"
-            disabled={saving}
-          >
+            <div className="col-12">
+              <label className="form-label fw-semibold">Description</label>
+              <textarea
+                className="form-control"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className="col-12">
+              <label className="form-label fw-semibold">
+                Bullets{" "}
+                <span style={{ fontWeight: 400, color: "var(--sb-muted)" }}>
+                  (one per line)
+                </span>
+              </label>
+              <textarea
+                className="form-control"
+                value={bullets}
+                onChange={(e) => setBullets(e.target.value)}
+                rows={5}
+                placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
+                style={{ fontFamily: "monospace", fontSize: "0.875rem" }}
+              />
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold">Image URL</label>
+              <input
+                className="form-control"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                placeholder="/images/..."
+              />
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold">Etsy URL</label>
+              <input
+                className="form-control"
+                value={etsyUrl}
+                onChange={(e) => setEtsyUrl(e.target.value)}
+              />
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold">Product Page URL</label>
+              <input
+                className="form-control"
+                value={productPageUrl}
+                onChange={(e) => setProductPageUrl(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Status messages */}
+      {message && (
+        <div
+          style={{
+            padding: "0.75rem 1rem",
+            background: "#f0fdf4",
+            border: "1px solid #86efac",
+            borderRadius: "8px",
+            color: "#166534",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            marginBottom: "0.75rem",
+          }}
+        >
+          {message}
+        </div>
+      )}
+      {error && (
+        <div
+          style={{
+            padding: "0.75rem 1rem",
+            background: "#fff5f5",
+            border: "1px solid #fca5a5",
+            borderRadius: "8px",
+            color: "#dc2626",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            marginBottom: "0.75rem",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="admin-form-actions">
+        <div className="admin-form-actions-primary">
+          <button type="submit" className="admin-btn-save" disabled={saving}>
             {saving
               ? isCreateMode
                 ? "Creating..."
@@ -299,7 +397,7 @@ export default function ProductEditor({
           </button>
           <button
             type="button"
-            className="btn sb-btn-ghost"
+            className="admin-btn-cancel"
             onClick={() => router.back()}
           >
             Cancel
@@ -308,7 +406,7 @@ export default function ProductEditor({
         {!isCreateMode && (
           <button
             type="button"
-            className="btn btn-danger"
+            className="admin-btn-danger"
             onClick={handleDelete}
             disabled={deleting}
           >

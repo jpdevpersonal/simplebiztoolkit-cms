@@ -27,20 +27,49 @@ export default async function ProductsPage() {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 style={{ fontWeight: 700 }}>Products</h1>
-        <Link href="/admin/products/new" className="btn sb-btn-primary">
-          + New Product
+      {/* Page header */}
+      <div className="admin-page-header">
+        <h1>Products</h1>
+        <Link href="/admin/products/new" className="admin-btn-save">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <line
+              x1="12"
+              y1="5"
+              x2="12"
+              y2="19"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="5"
+              y1="12"
+              x2="19"
+              y2="12"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          New Product
         </Link>
       </div>
 
       {/* Stats */}
       <div className="row g-3 mb-4">
-        <div className="col-md-6">
-          <AdminStatCard label="Total Products" value={products.length} />
+        <div className="col-6">
+          <AdminStatCard
+            label="Total Products"
+            value={products.length}
+            valueSize="lg"
+          />
         </div>
-        <div className="col-md-6">
-          <AdminStatCard label="Categories" value={categories.length} />
+        <div className="col-6">
+          <AdminStatCard
+            label="Categories"
+            value={categories.length}
+            valueSize="lg"
+          />
         </div>
       </div>
 

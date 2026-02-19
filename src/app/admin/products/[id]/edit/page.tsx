@@ -2,6 +2,7 @@
  * Edit Product Page
  */
 
+import Link from "next/link";
 import { headers } from "next/headers";
 import { apiService, getApiService } from "@/lib/api";
 import { auth } from "@/lib/auth";
@@ -13,17 +14,51 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+function PageHeader({ id }: { id: string }) {
+  return (
+    <div className="admin-page-header">
+      <div>
+        <div
+          style={{
+            fontSize: "0.8125rem",
+            color: "var(--sb-muted)",
+            marginBottom: "0.25rem",
+          }}
+        >
+          <Link
+            href="/admin/products"
+            style={{ color: "var(--sb-muted)", textDecoration: "none" }}
+          >
+            ← Products
+          </Link>
+        </div>
+        <h1>Edit Product</h1>
+      </div>
+      <span
+        style={{
+          fontSize: "0.75rem",
+          color: "var(--sb-muted)",
+          background: "#f1f3f5",
+          borderRadius: "999px",
+          padding: "0.25rem 0.75rem",
+          fontWeight: 600,
+        }}
+      >
+        ID: {id}
+      </span>
+    </div>
+  );
+}
+
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
 
-  // Ensure cookies available for NextAuth on the server
   await headers();
   const session = await auth();
   const _s = session as Session & { accessToken?: string };
   const accessToken = _s?.accessToken;
   const service = accessToken ? getApiService(accessToken) : apiService;
 
-  // Fetch both the product and categories using authenticated service when possible
   const categoriesResponse = await service.getProductCategories();
   const categories = categoriesResponse.data || [];
 
@@ -37,11 +72,9 @@ export default async function EditProductPage({ params }: Props) {
   }
 
   if (!product) {
-    // If server couldn't find the product (e.g., draft requiring cookies),
-    // fall back to a client-side loader which will fetch with credentials.
     return (
       <div>
-        <h1 style={{ fontWeight: 700, marginBottom: "2rem" }}>Edit Product</h1>
+        <PageHeader id={id} />
         <ProductEditorLoader id={id} />
       </div>
     );
@@ -49,8 +82,7 @@ export default async function EditProductPage({ params }: Props) {
 
   return (
     <div>
-      <h1 style={{ fontWeight: 700, marginBottom: "2rem" }}>Edit Product</h1>
-      {/* ProductEditor is a client component that handles the form and update */}
+      <PageHeader id={id} />
       <ProductEditor product={product} categories={categories} />
     </div>
   );

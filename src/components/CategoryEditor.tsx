@@ -64,73 +64,148 @@ export default function CategoryEditor({ category }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="sb-card p-3">
-      <div className="row g-3">
-        <div className="col-md-6">
-          <label className="form-label">Name *</label>
-          <input
-            className="form-control"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+    <form onSubmit={handleSubmit}>
+      {/* Fields */}
+      <div className="admin-form-block">
+        <div className="admin-form-block-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <rect
+              x="3"
+              y="3"
+              width="7"
+              height="7"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <rect
+              x="14"
+              y="3"
+              width="7"
+              height="7"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <rect
+              x="3"
+              y="14"
+              width="7"
+              height="7"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <rect
+              x="14"
+              y="14"
+              width="7"
+              height="7"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+          <span className="admin-form-block-title">Category Details</span>
         </div>
+        <div className="admin-form-block-body">
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label fw-semibold">Name *</label>
+              <input
+                className="form-control"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="col-md-6">
-          <label className="form-label">Slug *</label>
-          <input
-            className="form-control"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            required
-          />
-        </div>
+            <div className="col-md-6">
+              <label className="form-label fw-semibold">Slug *</label>
+              <input
+                className="form-control"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="col-12">
-          <label className="form-label">Summary</label>
-          <textarea
-            className="form-control"
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            rows={3}
-          />
-        </div>
+            <div className="col-12">
+              <label className="form-label fw-semibold">Summary</label>
+              <textarea
+                className="form-control"
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                rows={3}
+              />
+            </div>
 
-        <div className="col-12">
-          <label className="form-label">How this helps</label>
-          <textarea
-            className="form-control"
-            value={howThisHelps}
-            onChange={(e) => setHowThisHelps(e.target.value)}
-            rows={4}
-          />
-        </div>
+            <div className="col-12">
+              <label className="form-label fw-semibold">How this helps</label>
+              <textarea
+                className="form-control"
+                value={howThisHelps}
+                onChange={(e) => setHowThisHelps(e.target.value)}
+                rows={4}
+              />
+            </div>
 
-        <div className="col-12">
-          <label className="form-label">Hero Image URL</label>
-          <input
-            className="form-control"
-            value={heroImage}
-            onChange={(e) => setHeroImage(e.target.value)}
-          />
+            <div className="col-12">
+              <label className="form-label fw-semibold">Hero Image URL</label>
+              <input
+                className="form-control"
+                value={heroImage}
+                onChange={(e) => setHeroImage(e.target.value)}
+                placeholder="/images/..."
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {message && <div className="alert alert-success mt-3">{message}</div>}
-      {error && <div className="alert alert-danger mt-3">{error}</div>}
+      {/* Status messages */}
+      {message && (
+        <div
+          style={{
+            padding: "0.75rem 1rem",
+            background: "#f0fdf4",
+            border: "1px solid #86efac",
+            borderRadius: "8px",
+            color: "#166534",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            marginBottom: "0.75rem",
+          }}
+        >
+          {message}
+        </div>
+      )}
+      {error && (
+        <div
+          style={{
+            padding: "0.75rem 1rem",
+            background: "#fff5f5",
+            border: "1px solid #fca5a5",
+            borderRadius: "8px",
+            color: "#dc2626",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            marginBottom: "0.75rem",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
-      <div className="mt-4 d-flex gap-2 justify-content-between">
-        <div className="d-flex gap-2">
-          <button
-            type="submit"
-            className="btn sb-btn-primary"
-            disabled={saving}
-          >
+      {/* Actions */}
+      <div className="admin-form-actions">
+        <div className="admin-form-actions-primary">
+          <button type="submit" className="admin-btn-save" disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </button>
           <button
             type="button"
-            className="btn sb-btn-ghost"
+            className="admin-btn-cancel"
             onClick={() => router.back()}
           >
             Cancel
@@ -138,7 +213,7 @@ export default function CategoryEditor({ category }: Props) {
         </div>
         <button
           type="button"
-          className="btn btn-danger"
+          className="admin-btn-danger"
           onClick={handleDelete}
           disabled={deleting}
         >

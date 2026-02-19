@@ -72,7 +72,8 @@ describe("AdminProductsTable", () => {
       <AdminProductsTable products={products} categories={categories} />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /status/i }));
+    // header is rendered as a sortable column header (<th>), not a button
+    fireEvent.click(screen.getByRole("columnheader", { name: /status/i }));
     const rows = container.querySelectorAll("tbody tr");
     const firstRowCells = within(rows[0]).getAllByRole("cell");
     expect(firstRowCells[0]).toHaveTextContent("Zeta");
