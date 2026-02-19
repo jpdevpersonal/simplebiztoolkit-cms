@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import RichContentField from "@/components/RichContentField";
+import AdminFormBlock from "@/components/AdminFormBlock";
+import EditorActions from "@/components/EditorActions";
+import EditorFeedback from "@/components/EditorFeedback";
 
 type ProductEditorProps = {
   product?: ProductItem;
@@ -161,8 +164,8 @@ export default function ProductEditor({
   return (
     <form onSubmit={handleSubmit}>
       {/* Basic product info */}
-      <div className="admin-form-block">
-        <div className="admin-form-block-header">
+      <AdminFormBlock
+        icon={
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path
               d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
@@ -188,78 +191,77 @@ export default function ProductEditor({
               strokeLinejoin="round"
             />
           </svg>
-          <span className="admin-form-block-title">Product Details</span>
-        </div>
-        <div className="admin-form-block-body">
-          <div className="row g-3">
+        }
+        title="Product Details"
+      >
+        <div className="row g-3">
+          <div className="col-md-6">
+            <label className="form-label fw-semibold">Title *</label>
+            <input
+              className="form-control"
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold">Slug *</label>
+            <input
+              className="form-control"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              required
+            />
+          </div>
+
+          {categories.length > 0 && (
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Title *</label>
-              <input
-                className="form-control"
-                value={title}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="col-md-6">
-              <label className="form-label fw-semibold">Slug *</label>
-              <input
-                className="form-control"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                required
-              />
-            </div>
-
-            {categories.length > 0 && (
-              <div className="col-md-6">
-                <label className="form-label fw-semibold">Category *</label>
-                <select
-                  className="form-select"
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  required
-                >
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="col-md-3">
-              <label className="form-label fw-semibold">Status</label>
+              <label className="form-label fw-semibold">Category *</label>
               <select
                 className="form-select"
-                value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as "draft" | "published")
-                }
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                required
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
               </select>
             </div>
+          )}
 
-            <div className="col-md-3">
-              <label className="form-label fw-semibold">Price</label>
-              <input
-                className="form-control"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="$9.99"
-              />
-            </div>
+          <div className="col-md-3">
+            <label className="form-label fw-semibold">Status</label>
+            <select
+              className="form-select"
+              value={status}
+              onChange={(e) =>
+                setStatus(e.target.value as "draft" | "published")
+              }
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+
+          <div className="col-md-3">
+            <label className="form-label fw-semibold">Price</label>
+            <input
+              className="form-control"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="$9.99"
+            />
           </div>
         </div>
-      </div>
+      </AdminFormBlock>
 
       {/* Content & media */}
-      <div className="admin-form-block">
-        <div className="admin-form-block-header">
+      <AdminFormBlock
+        icon={
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path
               d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
@@ -276,147 +278,93 @@ export default function ProductEditor({
               strokeLinejoin="round"
             />
           </svg>
-          <span className="admin-form-block-title">Content &amp; Media</span>
-        </div>
-        <div className="admin-form-block-body">
-          <div className="row g-3">
-            <div className="col-12">
-              <RichContentField
-                label="Problem Statement"
-                value={problem}
-                onChange={setProblem}
-                storageKey="product-problem-editor-mode"
-                htmlRows={3}
-                minHeight={150}
-                placeholder="Describe the problem this product solves…"
-              />
-            </div>
+        }
+        title="Content &amp; Media"
+      >
+        <div className="row g-3">
+          <div className="col-12">
+            <RichContentField
+              label="Problem Statement"
+              value={problem}
+              onChange={setProblem}
+              storageKey="product-problem-editor-mode"
+              htmlRows={3}
+              minHeight={150}
+              placeholder="Describe the problem this product solves…"
+            />
+          </div>
 
-            <div className="col-12">
-              <RichContentField
-                label="Description"
-                value={description}
-                onChange={setDescription}
-                storageKey="product-description-editor-mode"
-                htmlRows={4}
-                minHeight={200}
-                placeholder="Describe the product in detail…"
-              />
-            </div>
+          <div className="col-12">
+            <RichContentField
+              label="Description"
+              value={description}
+              onChange={setDescription}
+              storageKey="product-description-editor-mode"
+              htmlRows={4}
+              minHeight={200}
+              placeholder="Describe the product in detail…"
+            />
+          </div>
 
-            <div className="col-12">
-              <label className="form-label fw-semibold">
-                Bullets{" "}
-                <span style={{ fontWeight: 400, color: "var(--sb-muted)" }}>
-                  (one per line)
-                </span>
-              </label>
-              <textarea
-                className="form-control"
-                value={bullets}
-                onChange={(e) => setBullets(e.target.value)}
-                rows={5}
-                placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
-                style={{ fontFamily: "monospace", fontSize: "0.875rem" }}
-              />
-            </div>
+          <div className="col-12">
+            <label className="form-label fw-semibold">
+              Bullets{" "}
+              <span style={{ fontWeight: 400, color: "var(--sb-muted)" }}>
+                (one per line)
+              </span>
+            </label>
+            <textarea
+              className="form-control"
+              value={bullets}
+              onChange={(e) => setBullets(e.target.value)}
+              rows={5}
+              placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
+              style={{ fontFamily: "monospace", fontSize: "0.875rem" }}
+            />
+          </div>
 
-            <div className="col-md-6">
-              <label className="form-label fw-semibold">Image URL</label>
-              <input
-                className="form-control"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="/images/..."
-              />
-            </div>
+          <div className="col-md-6">
+            <label className="form-label fw-semibold">Image URL</label>
+            <input
+              className="form-control"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+              placeholder="/images/..."
+            />
+          </div>
 
-            <div className="col-md-6">
-              <label className="form-label fw-semibold">Etsy URL</label>
-              <input
-                className="form-control"
-                value={etsyUrl}
-                onChange={(e) => setEtsyUrl(e.target.value)}
-              />
-            </div>
+          <div className="col-md-6">
+            <label className="form-label fw-semibold">Etsy URL</label>
+            <input
+              className="form-control"
+              value={etsyUrl}
+              onChange={(e) => setEtsyUrl(e.target.value)}
+            />
+          </div>
 
-            <div className="col-md-6">
-              <label className="form-label fw-semibold">Product Page URL</label>
-              <input
-                className="form-control"
-                value={productPageUrl}
-                onChange={(e) => setProductPageUrl(e.target.value)}
-              />
-            </div>
+          <div className="col-md-6">
+            <label className="form-label fw-semibold">Product Page URL</label>
+            <input
+              className="form-control"
+              value={productPageUrl}
+              onChange={(e) => setProductPageUrl(e.target.value)}
+            />
           </div>
         </div>
-      </div>
+      </AdminFormBlock>
 
       {/* Status messages */}
-      {message && (
-        <div
-          style={{
-            padding: "0.75rem 1rem",
-            background: "#f0fdf4",
-            border: "1px solid #86efac",
-            borderRadius: "8px",
-            color: "#166534",
-            fontSize: "0.875rem",
-            fontWeight: 500,
-            marginBottom: "0.75rem",
-          }}
-        >
-          {message}
-        </div>
-      )}
-      {error && (
-        <div
-          style={{
-            padding: "0.75rem 1rem",
-            background: "#fff5f5",
-            border: "1px solid #fca5a5",
-            borderRadius: "8px",
-            color: "#dc2626",
-            fontSize: "0.875rem",
-            fontWeight: 500,
-            marginBottom: "0.75rem",
-          }}
-        >
-          {error}
-        </div>
-      )}
+      <EditorFeedback message={message} error={error} />
 
       {/* Actions */}
-      <div className="admin-form-actions">
-        <div className="admin-form-actions-primary">
-          <button type="submit" className="admin-btn-save" disabled={saving}>
-            {saving
-              ? isCreateMode
-                ? "Creating..."
-                : "Saving..."
-              : isCreateMode
-                ? "Create Product"
-                : "Save Changes"}
-          </button>
-          <button
-            type="button"
-            className="admin-btn-cancel"
-            onClick={() => router.back()}
-          >
-            Cancel
-          </button>
-        </div>
-        {!isCreateMode && (
-          <button
-            type="button"
-            className="admin-btn-danger"
-            onClick={handleDelete}
-            disabled={deleting}
-          >
-            {deleting ? "Deleting..." : "Delete Product"}
-          </button>
-        )}
-      </div>
+      <EditorActions
+        saving={saving}
+        isCreateMode={isCreateMode}
+        entityName="Product"
+        onCancel={() => router.back()}
+        onDelete={handleDelete}
+        deleting={deleting}
+      />
     </form>
   );
 }
