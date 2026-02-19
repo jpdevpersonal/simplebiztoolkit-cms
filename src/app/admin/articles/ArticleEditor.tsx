@@ -11,6 +11,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Article } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import ArticleEditorTiptap from "./ArticleEditor-tiptap";
+
+type EditorMode = "html" | "tiptap";
+const EDITOR_MODE_KEY = "article-editor-mode";
 
 interface ArticleEditorProps {
   article?: Article;
@@ -24,6 +28,26 @@ export default function ArticleEditor({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [editorMode, setEditorMode] = useState<EditorMode>("html");
+
+  // Restore preferred editor mode from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(EDITOR_MODE_KEY) as EditorMode | null;
+      if (saved === "html" || saved === "tiptap") setEditorMode(saved);
+    } catch {
+      // localStorage unavailable (SSR / incognito) – stay with default
+    }
+  }, []);
+
+  const handleEditorModeChange = (mode: EditorMode) => {
+    setEditorMode(mode);
+    try {
+      localStorage.setItem(EDITOR_MODE_KEY, mode);
+    } catch {
+      // ignore
+    }
+  };
 
   const [formData, setFormData] = useState({
     title: article?.title || "",
@@ -193,32 +217,120 @@ export default function ArticleEditor({
               </div>
 
               <div className="mb-0">
-                <label className="form-label fw-semibold">
-                  Content (HTML) *
-                </label>
-                <textarea
-                  className="form-control"
-                  rows={20}
-                  value={formData.content}
-                  onChange={(e) =>
-                    setFormData({ ...formData, content: e.target.value })
-                  }
-                  required
-                  style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}
-                />
-                <small
-                  style={{ color: "var(--sb-muted)", fontSize: "0.8125rem" }}
+                {/* ── Editor mode toggle ─────────────────────────────── */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "0.5rem",
+                  }}
                 >
-                  Use{" "}
-                  <code>
-                    &lt;section data-component=&quot;section&quot;&gt;
-                  </code>{" "}
-                  and{" "}
-                  <code>
-                    &lt;aside data-component=&quot;callout&quot;
-                    data-title=&quot;Title&quot;&gt;
-                  </code>
-                </small>
+                  <label className="form-label fw-semibold mb-0">
+                    Content *
+                  </label>
+                  <div
+                    role="group"
+                    aria-label="Editor mode"
+                    style={{
+                      display: "inline-flex",
+                      border: "1px solid #dee2e6",
+                      borderRadius: 6,
+                      overflow: "hidden",
+                      fontSize: "0.8125rem",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleEditorModeChange("html")}
+                      style={{
+                        padding: "4px 12px",
+                        border: "none",
+                        background:
+                          editorMode === "html"
+                            ? "var(--sb-primary, #0d6efd)"
+                            : "#fff",
+                        color: editorMode === "html" ? "#fff" : "#495057",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        transition: "background 0.15s, color 0.15s",
+                      }}
+                    >
+                      HTML
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleEditorModeChange("tiptap")}
+                      style={{
+                        padding: "4px 12px",
+                        border: "none",
+                        borderLeft: "1px solid #dee2e6",
+                        background:
+                          editorMode === "tiptap"
+                            ? "var(--sb-primary, #0d6efd)"
+                            : "#fff",
+                        color: editorMode === "tiptap" ? "#fff" : "#495057",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        transition: "background 0.15s, color 0.15s",
+                      }}
+                    >
+                      ✦ Tiptap
+                    </button>
+                  </div>
+                </div>
+
+                {editorMode === "html" ? (
+                  <>
+                    <textarea
+                      className="form-control"
+                      rows={20}
+                      value={formData.content}
+                      onChange={(e) =>
+                        setFormData({ ...formData, content: e.target.value })
+                      }
+                      required
+                      style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}
+                    />
+                    <small
+                      style={{
+                        color: "var(--sb-muted)",
+                        fontSize: "0.8125rem",
+                      }}
+                    >
+                      Use{" "}
+                      <code>
+                        &lt;section data-component=&quot;section&quot;&gt;
+                      </code>{" "}
+                      and{" "}
+                      <code>
+                        &lt;aside data-component=&quot;callout&quot;
+                        data-title=&quot;Title&quot;&gt;
+                      </code>
+                    </small>
+                  </>
+                ) : (
+                  <>
+                    <ArticleEditorTiptap
+                      value={formData.content}
+                      onChange={(html) =>
+                        setFormData((prev) => ({ ...prev, content: html }))
+                      }
+                    />
+                    {/* Hidden input so the form "required" check still passes */}
+                    <input type="hidden" required value={formData.content} />
+                    <small
+                      style={{
+                        color: "var(--sb-muted)",
+                        fontSize: "0.8125rem",
+                        marginTop: "0.25rem",
+                        display: "block",
+                      }}
+                    >
+                      Rich-text editor — content is saved as HTML.
+                    </small>
+                  </>
+                )}
               </div>
             </div>
           </div>
