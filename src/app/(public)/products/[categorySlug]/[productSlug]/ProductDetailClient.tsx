@@ -12,7 +12,19 @@ type Props = {
 function ProductDescription({ description }: { description: string }) {
   if (!description) return null;
 
-  // Split description into paragraphs
+  // If the content contains HTML tags, render it directly as HTML.
+  // This supports content created with the Tiptap or HTML editors.
+  const containsHtml = /<[a-z][\s\S]*>/i.test(description);
+  if (containsHtml) {
+    return (
+      <div
+        className="product-description-content"
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
+    );
+  }
+
+  // Legacy plain-text fallback: split on double newlines and format manually.
   const paragraphs = description.split("\n\n").filter((p) => p.trim());
 
   return (
