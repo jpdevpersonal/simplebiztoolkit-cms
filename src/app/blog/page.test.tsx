@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+// `@testing-library/jest-dom/vitest` is loaded in test setup to extend `expect`.
 
 const getArticlesMock = vi.hoisted(() => vi.fn());
 
