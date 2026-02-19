@@ -28,4 +28,13 @@ describe("EtsyCtaButton", () => {
       "https://www.etsy.com/shop/simplebiztoolkit",
     );
   });
+
+  it("renders on non-home routes with default hideOnHome", () => {
+    mockUsePathname.mockReturnValue("/products");
+    render(<EtsyCtaButton />);
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      "https://www.etsy.com/shop/simplebiztoolkit",
+    );
+  });
 });

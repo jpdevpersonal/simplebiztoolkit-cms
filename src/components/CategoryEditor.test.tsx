@@ -57,6 +57,19 @@ describe("CategoryEditor", () => {
     });
   });
 
+  it("shows error message when save fails", async () => {
+    vi.mocked(clientApi.updateCategory).mockRejectedValueOnce(
+      new Error("Server error"),
+    );
+
+    render(<CategoryEditor category={category as any} />);
+    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Server error")).toBeInTheDocument();
+    });
+  });
+
   it("deletes category after confirmation", async () => {
     vi.mocked(clientApi.deleteCategory).mockResolvedValueOnce(undefined as any);
     vi.stubGlobal(

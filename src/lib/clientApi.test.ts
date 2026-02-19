@@ -162,6 +162,127 @@ describe("clientApi", () => {
     );
   });
 
+  it("updates a product with PUT to the correct path", async () => {
+    sendHttpRequestMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+    } as Response);
+    parseHttpResponseMock.mockResolvedValue({
+      payload: { data: { id: "p1", title: "Updated" } },
+      isJson: true,
+      contentType: "application/json",
+    });
+
+    const result = await clientApi.updateProduct("p1", { title: "Updated" });
+
+    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/products/p1", {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Updated" }),
+    });
+    expect(result).toEqual({ id: "p1", title: "Updated" });
+  });
+
+  it("fetches a product by id with GET", async () => {
+    sendHttpRequestMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+    } as Response);
+    parseHttpResponseMock.mockResolvedValue({
+      payload: { data: { id: "p2", title: "Found" } },
+      isJson: true,
+      contentType: "application/json",
+    });
+
+    const result = await clientApi.getProductById("p2");
+
+    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/products/p2", {
+      method: "GET",
+      credentials: "include",
+      headers: {},
+      body: undefined,
+    });
+    expect(result).toEqual({ id: "p2", title: "Found" });
+  });
+
+  it("deletes an article with DELETE to the correct path", async () => {
+    sendHttpRequestMock.mockResolvedValue({
+      ok: true,
+      status: 204,
+      statusText: "No Content",
+    } as Response);
+    parseHttpResponseMock.mockResolvedValue({
+      payload: "",
+      isJson: false,
+      contentType: "text/plain",
+    });
+
+    await clientApi.deleteArticle("a1");
+
+    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/articles/a1", {
+      method: "DELETE",
+      credentials: "include",
+      headers: {},
+      body: undefined,
+    });
+  });
+
+  it("updates a category with PUT", async () => {
+    sendHttpRequestMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+    } as Response);
+    parseHttpResponseMock.mockResolvedValue({
+      payload: { data: { id: "c1", name: "Updated Cat" } },
+      isJson: true,
+      contentType: "application/json",
+    });
+
+    const result = await clientApi.updateCategory("c1", {
+      name: "Updated Cat",
+    });
+
+    expect(sendHttpRequestMock).toHaveBeenCalledWith(
+      "/api/products/categories/c1",
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Updated Cat" }),
+      },
+    );
+    expect(result).toEqual({ id: "c1", name: "Updated Cat" });
+  });
+
+  it("deletes a category with DELETE", async () => {
+    sendHttpRequestMock.mockResolvedValue({
+      ok: true,
+      status: 204,
+      statusText: "No Content",
+    } as Response);
+    parseHttpResponseMock.mockResolvedValue({
+      payload: "",
+      isJson: false,
+      contentType: "text/plain",
+    });
+
+    await clientApi.deleteCategory("c1");
+
+    expect(sendHttpRequestMock).toHaveBeenCalledWith(
+      "/api/products/categories/c1",
+      {
+        method: "DELETE",
+        credentials: "include",
+        headers: {},
+        body: undefined,
+      },
+    );
+  });
+
   it("returns raw payload when response is not json", async () => {
     sendHttpRequestMock.mockResolvedValue({
       ok: true,

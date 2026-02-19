@@ -15,6 +15,20 @@ describe("Blog page", () => {
     getArticlesMock.mockReset();
   });
 
+  it("renders heading with no article cards when API returns empty list", async () => {
+    getArticlesMock.mockResolvedValueOnce({ data: [] });
+
+    const { default: BlogIndexPage } = await import("./page");
+    render(await BlogIndexPage());
+
+    expect(
+      screen.getByRole("heading", { name: "Resources" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Read article/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders article cards with read links", async () => {
     getArticlesMock.mockResolvedValueOnce({
       data: [

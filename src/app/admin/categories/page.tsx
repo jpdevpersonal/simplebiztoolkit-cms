@@ -40,84 +40,59 @@ export default async function CategoriesPage() {
         </Link>
       </div>
 
-      {/* Category grid */}
-      {categories.length === 0 ? (
-        <div className="admin-card p-4 text-center">
-          <p style={{ color: "var(--sb-muted)", marginBottom: 0 }}>
-            No categories found. Create your first category!
-          </p>
-        </div>
-      ) : (
-        <div className="row g-3">
-          {categories.map((category) => (
-            <div key={category.id} className="col-md-6">
-              <div
-                className="admin-card p-4 h-100"
-                style={{ display: "flex", flexDirection: "column" }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    <h3
-                      style={{ fontWeight: 600, fontSize: "1rem", margin: 0 }}
-                    >
-                      {category.name}
-                    </h3>
-                    <span
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "var(--sb-muted)",
-                        background: "#f1f3f5",
-                        borderRadius: "999px",
-                        padding: "0.15rem 0.6rem",
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {category.items?.length || 0} products
-                    </span>
-                  </div>
-                  {category.summary && (
-                    <p
-                      style={{
-                        color: "var(--sb-muted)",
-                        fontSize: "0.875rem",
-                        marginBottom: "1rem",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {category.summary}
-                    </p>
-                  )}
-                </div>
-                <div
+      {/* Category table */}
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Slug</th>
+              <th>Products</th>
+              <th>Preview</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.length === 0 && (
+              <tr>
+                <td colSpan={5} className="admin-empty-state">
+                  No categories found. Create your first category!
+                </td>
+              </tr>
+            )}
+            {categories.map((category) => (
+              <tr key={category.id}>
+                <td style={{ fontWeight: 600 }}>{category.name}</td>
+                <td
                   style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    marginTop: "0.75rem",
+                    color: "var(--sb-muted)",
+                    fontSize: "0.875rem",
+                    maxWidth: "180px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  <Link
-                    href={`/admin/categories/${category.id}/edit`}
-                    className="admin-btn-save"
-                    style={{ flex: 1, justifyContent: "center" }}
-                  >
-                    Edit
-                  </Link>
+                  {category.slug}
+                </td>
+                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
+                  {category.items?.length || 0}
+                </td>
+                <td>
                   <Link
                     href={`/products/${category.slug}`}
-                    className="admin-btn-cancel"
+                    className="admin-btn-action"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    View Live
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                    View
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      style={{ marginLeft: "0.25rem" }}
+                    >
                       <path
                         d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
                         stroke="currentColor"
@@ -143,12 +118,20 @@ export default async function CategoriesPage() {
                       />
                     </svg>
                   </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                </td>
+                <td>
+                  <Link
+                    href={`/admin/categories/${category.id}/edit`}
+                    className="admin-btn-action"
+                  >
+                    Edit
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

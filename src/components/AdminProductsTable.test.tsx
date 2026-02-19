@@ -89,4 +89,56 @@ describe("AdminProductsTable", () => {
       screen.getByText(/No products found. Create your first product!/i),
     ).toBeInTheDocument();
   });
+
+  it("renders a View link in the Preview column when productPageUrl is set", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const productsWithUrl = [
+      {
+        ...products[1], // Alpha
+        productPageUrl: "/products/cat-1/alpha",
+      },
+    ];
+    render(
+      <AdminProductsTable products={productsWithUrl} categories={categories} />,
+    );
+
+    const viewLink = screen.getByRole("link", { name: /View/i });
+    expect(viewLink).toHaveAttribute("href", "/products/cat-1/alpha");
+    expect(viewLink).toHaveAttribute("target", "_blank");
+  });
+
+  it("renders a dash in the Preview column when productPageUrl is empty", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    // products[0] (Zeta) has productPageUrl: ""
+    render(
+      <AdminProductsTable products={[products[0]]} categories={categories} />,
+    );
+
+    expect(
+      screen.queryByRole("link", { name: /View/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("\u2014")).toBeInTheDocument(); // em dash
+  });
+
+  it("toggles title sort to descending on second click", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const { container } = render(
+      <AdminProductsTable products={products} categories={categories} />,
+    );
+
+    // Default: title asc -> Alpha first
+    let rows = container.querySelectorAll("tbody tr");
+    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
+
+    // Click Title header to flip to desc -> Zeta first
+    fireEvent.click(screen.getByRole("columnheader", { name: /title/i }));
+    rows = container.querySelectorAll("tbody tr");
+    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+  });
 });

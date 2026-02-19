@@ -33,6 +33,18 @@ describe("SiteNavigation", () => {
     expect(screen.getByRole("link", { name: "Resources" })).toBeInTheDocument();
   });
 
+  it("applies active styles to the link matching the current path", () => {
+    mockUsePathname.mockReturnValue("/products");
+    render(<SiteNavigation />);
+
+    const productsLink = screen.getByRole("link", { name: "Products" });
+    const resourcesLink = screen.getByRole("link", { name: "Resources" });
+
+    // Active link gets brand colour; inactive links do not
+    expect(productsLink).toHaveStyle("color: var(--sb-brand-blue)");
+    expect(resourcesLink).not.toHaveStyle("color: var(--sb-brand-blue)");
+  });
+
   it("opens and closes mobile menu", async () => {
     mockUsePathname.mockReturnValue("/");
     render(<SiteNavigation />);
