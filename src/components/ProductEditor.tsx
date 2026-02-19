@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import RichContentField from "@/components/RichContentField";
 
 type ProductEditorProps = {
   product?: ProductItem;
@@ -280,24 +281,26 @@ export default function ProductEditor({
         <div className="admin-form-block-body">
           <div className="row g-3">
             <div className="col-12">
-              <label className="form-label fw-semibold">
-                Problem Statement
-              </label>
-              <textarea
-                className="form-control"
+              <RichContentField
+                label="Problem Statement"
                 value={problem}
-                onChange={(e) => setProblem(e.target.value)}
-                rows={3}
+                onChange={setProblem}
+                storageKey="product-problem-editor-mode"
+                htmlRows={3}
+                minHeight={150}
+                placeholder="Describe the problem this product solves…"
               />
             </div>
 
             <div className="col-12">
-              <label className="form-label fw-semibold">Description</label>
-              <textarea
-                className="form-control"
+              <RichContentField
+                label="Description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
+                onChange={setDescription}
+                storageKey="product-description-editor-mode"
+                htmlRows={4}
+                minHeight={200}
+                placeholder="Describe the product in detail…"
               />
             </div>
 
