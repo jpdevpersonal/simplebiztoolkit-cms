@@ -3,7 +3,10 @@
  */
 
 import { notFound } from "next/navigation";
-import { apiService } from "@/lib/api";
+import { headers } from "next/headers";
+import { apiService, getApiService } from "@/lib/api";
+import { auth } from "@/lib/auth";
+import type { Session } from "next-auth";
 import ArticleEditor from "../../ArticleEditor";
 
 type Props = {
@@ -12,7 +15,15 @@ type Props = {
 
 export default async function EditArticlePage({ params }: Props) {
   const { id } = await params;
-  const response = await apiService.getArticleById(id);
+
+  // Ensure cookies are available for NextAuth on the server
+  await headers();
+  const session = await auth();
+  const _s = session as Session & { accessToken?: string };
+  const accessToken = _s?.accessToken;
+  const service = accessToken ? getApiService(accessToken) : apiService;
+
+  const response = await service.getArticleById(id);
 
   if (!response.data) {
     notFound();

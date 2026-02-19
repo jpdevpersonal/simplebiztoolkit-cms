@@ -28,8 +28,10 @@ const nextConfig: NextConfig = {
     // so they are handled by the Next app itself.
     return [
       {
-        // Match /api/* paths that do NOT start with /api/auth, /api/products, or /api/revalidate
-        source: "/api/:path((?!auth/|products|revalidate).*)",
+        // Match /api/* paths that do NOT start with /api/auth, /api/products, /api/revalidate, or /api/articles
+        // This ensures admin/product and admin/article endpoints are handled by the Next app
+        // and can use NextAuth cookies for server-side auth instead of being proxied directly.
+        source: "/api/:path((?!auth/|products|revalidate|articles).*)",
         destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path`,
       },
     ];

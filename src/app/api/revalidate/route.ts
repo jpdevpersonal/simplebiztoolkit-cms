@@ -16,13 +16,19 @@ import {
   revalidateCategory,
   revalidateAllProducts,
 } from "@/lib/revalidation";
+import { requireAuth } from "@/lib/apiProxy";
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify webhook secret
+    // Verify webhook secret or allow an authenticated admin session
     const secret = request.headers.get("X-Revalidation-Secret");
+
     if (secret !== process.env.REVALIDATION_SECRET) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // If the secret didn't match, allow a signed-in admin to revalidate
+      const authResult = await requireAuth();
+      if (!authResult.ok) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
 
     const body = await request.json();

@@ -83,9 +83,7 @@ describe("clientApi", () => {
     });
   });
 
-  it("builds absolute article URL from NEXT_PUBLIC_API_URL", async () => {
-    process.env.NEXT_PUBLIC_API_URL = "https://api.example.com";
-
+  it("builds relative article URL through local proxy", async () => {
     sendHttpRequestMock.mockResolvedValue({
       ok: true,
       status: 200,
@@ -100,26 +98,18 @@ describe("clientApi", () => {
     await clientApi.createArticle({ title: "Article" });
     await clientApi.updateArticle("a1", { title: "Updated" });
 
-    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
-      1,
-      "https://api.example.com/api/articles",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Article" }),
-      },
-    );
-    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
-      2,
-      "https://api.example.com/api/articles/a1",
-      {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Updated" }),
-      },
-    );
+    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(1, "/api/articles", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Article" }),
+    });
+    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(2, "/api/articles/a1", {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Updated" }),
+    });
   });
 
   it("sends revalidation secret header for revalidateContent", async () => {
