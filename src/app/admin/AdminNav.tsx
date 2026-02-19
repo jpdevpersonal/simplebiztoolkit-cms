@@ -9,65 +9,73 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
+const navItems = [
+  { href: "/admin", label: "Dashboard", exact: true },
+  { href: "/admin/articles", label: "Articles", exact: false },
+  { href: "/admin/products", label: "Products", exact: false },
+  { href: "/admin/categories", label: "Categories", exact: false },
+];
+
+function isActive(href: string, exact: boolean, pathname: string): boolean {
+  if (exact) return pathname === href;
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
 export default function AdminNav({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
 
-  const navItems = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/articles", label: "Articles" },
-    { href: "/admin/products", label: "Products" },
-    { href: "/admin/categories", label: "Categories" },
-  ];
-
   return (
-    <nav
-      className="sb-card"
-      style={{
-        padding: "1rem 2rem",
-        marginBottom: "2rem",
-        borderRadius: 0,
-        borderBottom: "2px solid var(--sb-border-color)",
-      }}
-    >
+    <nav className="admin-nav">
       <div className="container">
-        <div className="d-flex justify-content-between align-items-center">
-          <div className="d-flex gap-4 align-items-center">
-            <Link
-              href="/admin"
-              style={{
-                fontWeight: 700,
-                fontSize: "1.25rem",
-                textDecoration: "none",
-              }}
-            >
-              CMS Admin
+        <div className="admin-nav-inner">
+          {/* Brand + nav links */}
+          <div className="admin-nav-start">
+            <Link href="/admin" className="admin-nav-brand">
+              <span className="admin-nav-brand-badge">CMS</span>
+              Admin
             </Link>
 
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  textDecoration: "none",
-                  fontWeight: pathname === item.href ? 600 : 400,
-                  color:
-                    pathname === item.href ? "var(--sb-brand-blue)" : "inherit",
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <div className="admin-nav-links">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={
+                    "admin-nav-link" +
+                    (isActive(item.href, item.exact, pathname) ? " active" : "")
+                  }
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <div className="d-flex gap-3 align-items-center">
-            <span className="sb-muted" style={{ fontSize: "0.875rem" }}>
+          {/* User info + logout */}
+          <div className="admin-nav-end">
+            <span className="admin-nav-email" title={userEmail}>
               {userEmail}
             </span>
             <button
+              className="admin-nav-logout"
               onClick={() => signOut({ callbackUrl: "/admin/login" })}
-              className="btn btn-sm sb-btn-ghost"
             >
-              Logout
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Sign out
             </button>
           </div>
         </div>

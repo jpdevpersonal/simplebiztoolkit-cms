@@ -14,23 +14,17 @@ export default function AdminStatCard({
   valueSize = "md",
 }: AdminStatCardProps) {
   return (
-    <div className="sb-card p-3">
-      <div className="sb-muted" style={{ fontSize: "0.875rem" }}>
-        {label}
-      </div>
+    <div className="admin-stat">
+      <div className="admin-stat-label">{label}</div>
       <div
-        style={{
-          fontSize: valueSize === "lg" ? "2rem" : "1.5rem",
-          fontWeight: 700,
-        }}
+        className={
+          "admin-stat-value" +
+          (valueSize === "md" ? " admin-stat-value-md" : "")
+        }
       >
         {value}
       </div>
-      {note && (
-        <div className="sb-muted" style={{ fontSize: "0.875rem" }}>
-          {note}
-        </div>
-      )}
+      {note && <div className="admin-stat-note">{note}</div>}
     </div>
   );
 }
