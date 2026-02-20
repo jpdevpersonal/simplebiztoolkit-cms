@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import type { ProductItem, ProductCategory } from "@/lib/api";
 import AdminProductsTable from "./AdminProductsTable";
 import { clientApi } from "@/lib/clientApi";
 
@@ -9,7 +10,7 @@ vi.mock("@/lib/clientApi", () => ({
   },
 }));
 
-const categories = [
+const categories: ProductCategory[] = [
   {
     id: "cat-1",
     slug: "cat-1",
@@ -30,7 +31,7 @@ const categories = [
   },
 ];
 
-const products = [
+const products: ProductItem[] = [
   {
     id: "p-2",
     title: "Zeta",
@@ -84,7 +85,7 @@ describe("AdminProductsTable", () => {
     // header is rendered as a sortable column header (<th>), not a button
     fireEvent.click(screen.getByRole("columnheader", { name: /status/i }));
     const rows = container.querySelectorAll("tbody tr");
-    const firstRowCells = within(rows[0]).getAllByRole("cell");
+    const firstRowCells = within(rows[0]!).getAllByRole("cell");
     expect(firstRowCells[0]).toHaveTextContent("Zeta");
   });
 
@@ -143,12 +144,12 @@ describe("AdminProductsTable", () => {
 
     // Default: title asc -> Alpha first
     let rows = container.querySelectorAll("tbody tr");
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
 
     // Click Title header to flip to desc -> Zeta first
     fireEvent.click(screen.getByRole("columnheader", { name: /title/i }));
     rows = container.querySelectorAll("tbody tr");
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
 
   it("sorts by category asc when Category header is clicked", () => {
@@ -162,8 +163,8 @@ describe("AdminProductsTable", () => {
     fireEvent.click(screen.getByRole("columnheader", { name: /category/i }));
     const rows = container.querySelectorAll("tbody tr");
     // Apples (cat-1 → Alpha) before Zucchini (cat-2 → Zeta)
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
-    expect(within(rows[1]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
+    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
 
   it("sorts by category desc on second click of Category header", () => {
@@ -180,7 +181,7 @@ describe("AdminProductsTable", () => {
     fireEvent.click(categoryHeader); // asc
     fireEvent.click(categoryHeader); // desc
     const rows = container.querySelectorAll("tbody tr");
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
 
   it("sorts by price asc when Price header is clicked", () => {
@@ -194,8 +195,8 @@ describe("AdminProductsTable", () => {
     fireEvent.click(screen.getByRole("columnheader", { name: /price/i }));
     const rows = container.querySelectorAll("tbody tr");
     // $10 (Alpha) before $12 (Zeta)
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
-    expect(within(rows[1]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
+    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
 
   it("sorts by price desc on second click of Price header", () => {
@@ -211,6 +212,6 @@ describe("AdminProductsTable", () => {
     fireEvent.click(priceHeader); // desc
     const rows = container.querySelectorAll("tbody tr");
     // $12 (Zeta) first
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
 });
