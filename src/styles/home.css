@@ -10,28 +10,18 @@
   /* Rich brand-blue gradient background */
   background: linear-gradient(
     160deg,
-    #2d3039 0%,
-    #414556 28%,
-    #4a4f65 52%,
-    #353849 78%,
-    #1e2028 100%
+    #1e202a 0%,
+    #2d3039 20%,
+    #414556 48%,
+    #353849 75%,
+    #1a1c24 100%
   );
   padding: 0;
+  min-height: 700px;
   /* Subtle outer shadow to lift the hero from the page (reduced size) */
   box-shadow: 0 10px 10px rgba(2, 6, 23, 0.45);
   /* Prevent hero internals from shifting content below */
   contain: layout style;
-}
-.sb-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("/images/hero-background.jpg") center center / cover no-repeat;
-  opacity: 0.08;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  z-index: 0;
-  padding: 1rem;
 }
 /* Fine grain noise texture for depth */
 .sb-hero::after {
@@ -43,7 +33,7 @@
   background-repeat: no-repeat;
   background-size: cover;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
 /* Decorative gradient orbs — adds depth like Linear/Stripe */
@@ -55,11 +45,11 @@
   z-index: 0;
 }
 .sb-hero-orb--1 {
-  width: 600px;
-  height: 600px;
+  width: 650px;
+  height: 650px;
   background: radial-gradient(
     circle,
-    rgba(26, 127, 90, 0.2) 0%,
+    rgba(26, 127, 90, 0.28) 0%,
     transparent 70%
   );
   top: -200px;
@@ -67,15 +57,15 @@
   animation: orbFloat 18s ease-in-out infinite alternate;
 }
 .sb-hero-orb--2 {
-  width: 500px;
-  height: 500px;
+  width: 550px;
+  height: 550px;
   background: radial-gradient(
     circle,
-    rgba(90, 95, 115, 0.25) 0%,
+    rgba(26, 90, 180, 0.18) 0%,
     transparent 70%
   );
-  bottom: -150px;
-  left: -120px;
+  bottom: -180px;
+  left: -130px;
   animation: orbFloat 22s ease-in-out infinite alternate-reverse;
 }
 @keyframes orbFloat {
@@ -87,89 +77,55 @@
   }
 }
 
-/* ——— HERO GRID (two-column layout) ——— */
-.sb-hero-grid {
-  position: relative;
+/* ——— HERO BACKGROUND IMAGE ——— */
+.sb-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.sb-hero-img {
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+/* ——— HERO OVERLAY ——— */
+.sb-hero-overlay {
+  position: absolute;
+  inset: 0;
   z-index: 2;
-  display: grid;
-  grid-template-columns: 1fr;
-  row-gap: 2rem;
-  align-items: stretch;
+  background: linear-gradient(
+    175deg,
+    rgba(14, 16, 24, 0.62) 0%,
+    rgba(26, 29, 44, 0.55) 45%,
+    rgba(20, 22, 36, 0.65) 100%
+  );
+  pointer-events: none;
 }
 
-/* Desktop: two columns - strict 50/50 split */
-@media (min-width: 992px) {
-  .sb-hero-grid {
-    grid-template-columns: 50% 50%;
-    gap: 0;
-    align-items: stretch;
-  }
-}
-
-/* Subtle blurred divider between the left content and right showcase */
-@media (min-width: 992px) {
-  .sb-hero-grid::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 19px; /* ~5mm */
-    pointer-events: none;
-    z-index: 4;
-    /* soft gradient that helps blend the two columns */
-    background: linear-gradient(
-      90deg,
-      rgba(45, 48, 57, 0) 0%,
-      rgba(45, 48, 57, 0.12) 16%,
-      rgba(255, 255, 255, 0.02) 50%,
-      rgba(45, 48, 57, 0.12) 50%,
-      rgba(45, 48, 57, 0) 20%
-    );
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
-    mix-blend-mode: normal;
-  }
-
-  /* isolate children so backdrop-filter applies neatly without affecting other layers */
-  .sb-hero-content,
-  .sb-hero-showcase {
-    isolation: isolate;
-  }
-}
-
-@media (min-width: 1400px) {
-  .sb-hero-grid::before {
-    width: 19px; /* keep ~5mm on large screens */
-  }
-}
-
-/* ——— HERO CONTENT (left column) ——— */
-.sb-hero-content {
+/* ——— HERO INNER (centred layout) ——— */
+.sb-hero-inner {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 1.25rem;
-  padding: 2rem 2rem 2rem 1rem;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 5.5rem 1rem 2.5rem;
+  max-width: 780px;
+  margin: 0 auto;
 }
 
-/* Add padding on larger screens */
 @media (min-width: 992px) {
-  .sb-hero-content {
-    padding: 3rem 3rem 3rem 2rem;
+  .sb-hero-inner {
+    padding: 6.5rem 1rem 3rem;
+    gap: 1.75rem;
   }
 }
 
-/* Center content on mobile */
-@media (max-width: 991px) {
-  .sb-hero-content {
-    align-items: center;
-    text-align: center;
-    padding: 2rem 1rem;
+@media (min-width: 1200px) {
+  .sb-hero-inner {
+    padding: 7.5rem 0 3.5rem;
   }
 }
 
@@ -225,7 +181,7 @@
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1.1;
-  font-size: clamp(1.875rem, 4.5vw, 2.75rem);
+  font-size: clamp(2rem, 5.5vw, 3.25rem);
   color: #fff !important;
   margin: 0;
   animation: fadeInUp 0.5s ease-out forwards;
@@ -233,7 +189,7 @@
 
 @media (min-width: 992px) {
   .sb-hero-title {
-    font-size: clamp(2.25rem, 3.5vw, 3rem);
+    font-size: clamp(2.75rem, 4.5vw, 3.75rem);
   }
 }
 .sb-hero-title em {
@@ -246,11 +202,11 @@
 
 /* ——— HERO SUBTITLE ——— */
 .sb-hero-subtitle {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: rgba(255, 255, 255, 0.78) !important;
   font-size: 1.125rem;
   line-height: 1.65;
   margin: 0;
-  max-width: 560px;
+  max-width: 580px;
   animation: fadeInUp 0.5s ease-out forwards;
 }
 
@@ -259,14 +215,8 @@
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: center;
   animation: fadeInUp 0.5s ease-out forwards;
-}
-
-@media (max-width: 991px) {
-  .sb-hero-actions {
-    justify-content: center;
-  }
 }
 .sb-btn-lg {
   padding: 1rem 2rem !important;
@@ -336,55 +286,72 @@
   box-shadow: 0 20px 56px rgba(16, 24, 40, 0.22);
 }
 
-/* ——— SHOWCASE IMAGE (right column) ——— */
-.sb-hero-showcase {
+/* ——— HERO STATS STRIP ——— */
+.sb-hero-stats-strip {
   position: relative;
-  z-index: 2;
-  animation: fadeInUp 0.5s ease-out forwards;
-  height: 100%;
-  min-height: 300px;
-  width: calc(50vw + 50%);
-  margin-left: calc(-50vw + 50%);
+  z-index: 3;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.sb-hero-stats-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 1.25rem 0;
+}
+.sb-hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem 2.5rem;
+  text-align: center;
+}
+.sb-hero-stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-family:
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", inherit;
+}
+.sb-hero-stat-label {
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sb-hero-stat-divider {
+  width: 1px;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+@media (max-width: 767px) {
+  .sb-hero-stat {
+    padding: 0.5rem 1.25rem;
+  }
+  .sb-hero-stat-divider {
+    display: none;
+  }
 }
 
-.sb-hero-img {
+/* ——— HERO WAVE DIVIDER ——— */
+.sb-hero-wave {
+  position: relative;
+  z-index: 3;
+  line-height: 0;
+  margin-bottom: -1px;
+}
+.sb-hero-wave svg {
   display: block;
   width: 100%;
-  height: 100%;
-  border-radius: 0;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.3),
-    0 8px 20px rgba(0, 0, 0, 0.2);
-  object-fit: cover;
-  /* Reserve space with aspect-ratio to prevent layout shift */
-  aspect-ratio: 1200 / 800;
-}
-
-/* On larger screens, fine-tune the extension */
-@media (min-width: 992px) {
-  .sb-hero-showcase {
-    width: 50vw;
-    margin-left: 0;
-  }
-}
-
-/* On mobile, adjust height behavior and fix right edge extension */
-@media (max-width: 991px) {
-  .sb-hero-showcase {
-    height: auto;
-    min-height: 300px;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-  }
-  .sb-hero-img {
-    height: auto;
-    min-height: 300px;
-    aspect-ratio: 1200 / 800;
-  }
+  height: auto;
 }
 
 /* ——— SOCIAL PROOF BRIDGE ——— */
@@ -454,7 +421,7 @@
 }
 /* But subtitle should be slightly muted */
 .sb-hero .sb-hero-subtitle {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: rgba(255, 255, 255, 0.78) !important;
 }
 
 /* Animations: use the shared `fadeInUp` defined in `theme.css` to
@@ -464,47 +431,20 @@
    RESPONSIVE BREAKPOINTS
    ====================================== */
 
-/* Large screens */
-@media (min-width: 992px) {
-  .sb-hero-content {
-    gap: 1.5rem;
-  }
-  .sb-hero-showcase {
-    padding: 0;
-  }
-}
-
 /* Extra-large screens */
 @media (min-width: 1200px) {
-  .sb-hero-content {
-    padding: 1rem 0 2.5rem;
-  }
   .sb-hero-title {
-    font-size: 3.25rem;
+    font-size: 3.75rem;
   }
   .sb-hero-subtitle {
     font-size: 1.1875rem;
   }
 }
 
-/* Ultra-wide */
-@media (min-width: 1400px) {
-  .sb-hero-content {
-    padding: 1rem 0 3rem;
-  }
-}
-
 /* Tablet & below */
 @media (max-width: 991px) {
-  .sb-hero-content {
-    padding: 1rem 0 1.5rem;
-  }
   .sb-hero-title {
-    font-size: 2rem;
-  }
-  .sb-hero-img {
-    border-radius: 0;
-    border: none;
+    font-size: 2.25rem;
   }
 }
 
@@ -513,12 +453,12 @@
   body {
     padding-bottom: 72px;
   }
-  .sb-hero-content {
-    padding: 2rem 0 1.25rem;
-    gap: 1rem;
+  .sb-hero-inner {
+    padding: 4rem 0 2rem;
+    gap: 1.1rem;
   }
   .sb-hero-title {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
   }
   .sb-hero-subtitle {
     font-size: 1rem;
@@ -604,6 +544,119 @@
   color: var(--sb-brand-blue);
 }
 
+/* ——— HERO STAR RATING ROW ——— */
+.sb-hero-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+.sb-hero-stars-icons {
+  color: #f4c542;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  /* Unicode stars render crisply on most platforms */
+  font-family:
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+.sb-hero-stars-label {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.sb-hero-stars-label strong {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 700;
+}
+
+/* ——— HERO REASSURANCE LINE ——— */
+.sb-hero-reassurance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-weight: 400;
+  margin: 0;
+  animation: fadeInUp 0.55s ease-out forwards;
+}
+.sb-hero-reassurance svg {
+  flex-shrink: 0;
+  color: rgba(26, 127, 90, 0.75);
+}
+
+/* ——— HOW IT WORKS SECTION ——— */
+.sb-how-it-works {
+  background: linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%);
+  border-bottom: 1px solid var(--sb-border);
+}
+.sb-steps-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+@media (max-width: 767px) {
+  .sb-steps-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 400px;
+  }
+  .sb-step-connector {
+    display: none;
+  }
+}
+.sb-step {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+.sb-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a7f5a, #0d5c3f);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin: 0 auto 1rem;
+  box-shadow: 0 4px 16px rgba(26, 127, 90, 0.35);
+}
+.sb-step h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.sb-step p {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0;
+}
+.sb-step-connector {
+  color: var(--sb-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sb-step-connector svg {
+  color: #d1d5db;
+}
+
+/* ——— PRODUCTS SECTION ——— */
+.sb-products-section {
+  background: #fff;
+}
+.sb-products-head {
+  margin-bottom: 0;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .sb-hero-orb,
@@ -613,7 +666,9 @@
   .sb-hero-subtitle,
   .sb-hero-actions,
   .sb-hero-trust-inline,
-  .sb-hero-showcase {
+  .sb-hero-inner,
+  .sb-hero-stars,
+  .sb-hero-reassurance {
     animation: none !important;
   }
 }
