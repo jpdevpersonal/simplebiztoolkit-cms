@@ -79,7 +79,7 @@ export default function HomePage() {
             </span>
 
             <h1 className="sb-hero-title">
-              Run your business smarter with <em>templates that just work</em>
+              Run your business smarter with templates that just work
             </h1>
 
             <p className="sb-hero-subtitle">
@@ -343,14 +343,14 @@ export default function HomePage() {
           <div className="text-center sb-products-head">
             <span className="sb-section-eyebrow">Best Sellers</span>
             <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Popular Templates
+              Our Popular Templates
             </h2>
             <p
               className="sb-muted"
               style={{ maxWidth: 480, margin: "0 auto 2rem" }}
             >
-              Our most popular requests and best-sellers — ready to download and
-              print.
+              Our best selling and most popular templates. Ready to download,
+              print and use.
             </p>
           </div>
           <ProductGrid products={featuredProducts} />
