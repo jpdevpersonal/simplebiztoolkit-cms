@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import type { Article } from "@/lib/api";
 import AdminArticlesTable from "./AdminArticlesTable";
 
-const articles = [
+const articles: Article[] = [
   {
     id: "a-2",
     slug: "zebra-guide",
@@ -43,20 +44,19 @@ describe("AdminArticlesTable", () => {
     const { container } = render(<AdminArticlesTable articles={articles} />);
 
     const rows = container.querySelectorAll("tbody tr");
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Apple Intro",
     );
-    expect(within(rows[1]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Zebra Guide",
     );
   });
 
-  it("sorts by title desc on second click of Title header", () => {
+  it("sorts by title desc when Title header is clicked", () => {
     const { container } = render(<AdminArticlesTable articles={articles} />);
-
     fireEvent.click(screen.getByRole("columnheader", { name: /title/i }));
     const rows = container.querySelectorAll("tbody tr");
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Zebra Guide",
     );
   });
@@ -67,7 +67,7 @@ describe("AdminArticlesTable", () => {
     fireEvent.click(screen.getByRole("columnheader", { name: /slug/i }));
     const rows = container.querySelectorAll("tbody tr");
     // apple-intro before zebra-guide
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Apple Intro",
     );
   });
@@ -78,10 +78,10 @@ describe("AdminArticlesTable", () => {
     fireEvent.click(screen.getByRole("columnheader", { name: /category/i }));
     const rows = container.querySelectorAll("tbody tr");
     // Guides before Tips
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Apple Intro",
     );
-    expect(within(rows[1]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Zebra Guide",
     );
   });
@@ -103,10 +103,10 @@ describe("AdminArticlesTable", () => {
     fireEvent.click(screen.getByRole("columnheader", { name: /published/i }));
     const rows = container.querySelectorAll("tbody tr");
     // 2024-01-15 before 2024-06-01
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Apple Intro",
     );
-    expect(within(rows[1]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Zebra Guide",
     );
   });
@@ -120,7 +120,7 @@ describe("AdminArticlesTable", () => {
     fireEvent.click(publishedHeader); // asc
     fireEvent.click(publishedHeader); // desc
     const rows = container.querySelectorAll("tbody tr");
-    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent(
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent(
       "Zebra Guide",
     );
   });
