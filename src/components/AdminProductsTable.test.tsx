@@ -13,7 +13,16 @@ const categories = [
   {
     id: "cat-1",
     slug: "cat-1",
-    name: "Category One",
+    name: "Apples",
+    summary: "",
+    howThisHelps: "",
+    heroImage: "",
+    items: [],
+  },
+  {
+    id: "cat-2",
+    slug: "cat-2",
+    name: "Zucchini",
     summary: "",
     howThisHelps: "",
     heroImage: "",
@@ -33,7 +42,7 @@ const products = [
     etsyUrl: "",
     productPageUrl: "",
     price: "$12",
-    categoryId: "cat-1",
+    categoryId: "cat-2",
     status: "draft" as const,
   },
   {
@@ -139,6 +148,69 @@ describe("AdminProductsTable", () => {
     // Click Title header to flip to desc -> Zeta first
     fireEvent.click(screen.getByRole("columnheader", { name: /title/i }));
     rows = container.querySelectorAll("tbody tr");
+    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+  });
+
+  it("sorts by category asc when Category header is clicked", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const { container } = render(
+      <AdminProductsTable products={products} categories={categories} />,
+    );
+
+    fireEvent.click(screen.getByRole("columnheader", { name: /category/i }));
+    const rows = container.querySelectorAll("tbody tr");
+    // Apples (cat-1 → Alpha) before Zucchini (cat-2 → Zeta)
+    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
+    expect(within(rows[1]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+  });
+
+  it("sorts by category desc on second click of Category header", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const { container } = render(
+      <AdminProductsTable products={products} categories={categories} />,
+    );
+
+    const categoryHeader = screen.getByRole("columnheader", {
+      name: /category/i,
+    });
+    fireEvent.click(categoryHeader); // asc
+    fireEvent.click(categoryHeader); // desc
+    const rows = container.querySelectorAll("tbody tr");
+    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+  });
+
+  it("sorts by price asc when Price header is clicked", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const { container } = render(
+      <AdminProductsTable products={products} categories={categories} />,
+    );
+
+    fireEvent.click(screen.getByRole("columnheader", { name: /price/i }));
+    const rows = container.querySelectorAll("tbody tr");
+    // $10 (Alpha) before $12 (Zeta)
+    expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
+    expect(within(rows[1]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+  });
+
+  it("sorts by price desc on second click of Price header", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const { container } = render(
+      <AdminProductsTable products={products} categories={categories} />,
+    );
+
+    const priceHeader = screen.getByRole("columnheader", { name: /price/i });
+    fireEvent.click(priceHeader); // asc
+    fireEvent.click(priceHeader); // desc
+    const rows = container.querySelectorAll("tbody tr");
+    // $12 (Zeta) first
     expect(within(rows[0]).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
 });

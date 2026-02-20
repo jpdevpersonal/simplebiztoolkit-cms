@@ -9,6 +9,7 @@ import { apiService, getApiService } from "@/lib/api";
 import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
 import AdminStatCard from "@/components/AdminStatCard";
+import AdminArticlesTable from "@/components/AdminArticlesTable";
 
 export default async function ArticlesPage() {
   await headers();
@@ -67,122 +68,7 @@ export default async function ArticlesPage() {
       </div>
 
       {/* Article table */}
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Slug</th>
-              <th>Category</th>
-              <th>Status</th>
-              <th>Published</th>
-              <th>Preview</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {articles.length === 0 && (
-              <tr>
-                <td colSpan={7} className="admin-empty-state">
-                  No articles found. Create your first article!
-                </td>
-              </tr>
-            )}
-            {articles.map((article) => (
-              <tr key={article.id}>
-                <td style={{ fontWeight: 600, maxWidth: "280px" }}>
-                  {article.title}
-                </td>
-                <td
-                  style={{
-                    color: "var(--sb-muted)",
-                    fontSize: "0.875rem",
-                    maxWidth: "180px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {article.slug}
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.875rem" }}>
-                  {article.category}
-                </td>
-                <td>
-                  <span
-                    className={
-                      "admin-badge " +
-                      (article.status === "published"
-                        ? "admin-badge-published"
-                        : "admin-badge-draft")
-                    }
-                  >
-                    {article.status}
-                  </span>
-                </td>
-                <td
-                  style={{
-                    color: "var(--sb-muted)",
-                    fontSize: "0.8125rem",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {article.dateISO ?? "—"}
-                </td>
-                <td>
-                  <Link
-                    href={`/blog/${article.slug}`}
-                    className="admin-btn-action"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View
-                    <svg
-                      width="11"
-                      height="11"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      style={{ marginLeft: "0.25rem" }}
-                    >
-                      <path
-                        d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <polyline
-                        points="15 3 21 3 21 9"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <line
-                        x1="10"
-                        y1="14"
-                        x2="21"
-                        y2="3"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </Link>
-                </td>
-                <td>
-                  <Link
-                    href={`/admin/articles/${article.id}/edit`}
-                    className="admin-btn-action"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminArticlesTable articles={articles} />
     </div>
   );
 }

@@ -10,7 +10,7 @@ type Props = {
   categories: ProductCategory[];
 };
 
-type SortCol = "title" | "status";
+type SortCol = "title" | "status" | "category" | "price";
 
 function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
   return (
@@ -54,17 +54,35 @@ export default function AdminProductsTable({ products, categories }: Props) {
     };
   }, []);
 
+  const categoryNameMap = useMemo(
+    () => Object.fromEntries(localCategories.map((c) => [c.id, c.name])),
+    [localCategories],
+  );
+
   const sorted = useMemo(() => {
     const copy = [...localProducts];
     copy.sort((a, b) => {
-      const va = sortBy === "title" ? a.title.toLowerCase() : (a.status ?? "");
-      const vb = sortBy === "title" ? b.title.toLowerCase() : (b.status ?? "");
+      let va: string | number = "";
+      let vb: string | number = "";
+      if (sortBy === "title") {
+        va = a.title.toLowerCase();
+        vb = b.title.toLowerCase();
+      } else if (sortBy === "status") {
+        va = a.status ?? "";
+        vb = b.status ?? "";
+      } else if (sortBy === "category") {
+        va = (categoryNameMap[a.categoryId] ?? "").toLowerCase();
+        vb = (categoryNameMap[b.categoryId] ?? "").toLowerCase();
+      } else if (sortBy === "price") {
+        va = parseFloat((a.price ?? "").replace(/[^0-9.]/g, "")) || 0;
+        vb = parseFloat((b.price ?? "").replace(/[^0-9.]/g, "")) || 0;
+      }
       if (va < vb) return dir === "asc" ? -1 : 1;
       if (va > vb) return dir === "asc" ? 1 : -1;
       return 0;
     });
     return copy;
-  }, [localProducts, sortBy, dir]);
+  }, [localProducts, sortBy, dir, categoryNameMap]);
 
   function toggleSort(column: SortCol) {
     if (sortBy === column) {
@@ -89,8 +107,24 @@ export default function AdminProductsTable({ products, categories }: Props) {
               Title
               <SortIcon active={sortBy === "title"} dir={dir} />
             </th>
-            <th>Category</th>
-            <th>Price</th>
+            <th
+              className={
+                "sortable" + (sortBy === "category" ? " sort-active" : "")
+              }
+              onClick={() => toggleSort("category")}
+            >
+              Category
+              <SortIcon active={sortBy === "category"} dir={dir} />
+            </th>
+            <th
+              className={
+                "sortable" + (sortBy === "price" ? " sort-active" : "")
+              }
+              onClick={() => toggleSort("price")}
+            >
+              Price
+              <SortIcon active={sortBy === "price"} dir={dir} />
+            </th>
             <th
               className={
                 "sortable" + (sortBy === "status" ? " sort-active" : "")
@@ -113,14 +147,12 @@ export default function AdminProductsTable({ products, categories }: Props) {
             </tr>
           )}
           {sorted.map((product) => {
-            const category = localCategories.find(
-              (cat) => cat.id === product.categoryId,
-            );
+            const categoryName = categoryNameMap[product.categoryId] ?? "—";
             return (
               <tr key={product.id}>
                 <td style={{ fontWeight: 600 }}>{product.title}</td>
                 <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {category?.name ?? "—"}
+                  {categoryName}
                 </td>
                 <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
                   {product.price ?? "—"}
