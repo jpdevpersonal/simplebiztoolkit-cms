@@ -54,115 +54,153 @@ export default function HomePage() {
       <section className="sb-hero">
         <span className="sb-hero-orb sb-hero-orb--1" aria-hidden="true" />
         <span className="sb-hero-orb sb-hero-orb--2" aria-hidden="true" />
+
+        {/* Full-bleed background image via Next.js Image for optimisation */}
+        <div className="sb-hero-bg" aria-hidden="true">
+          <Image
+            src="/images/hero-image-desk.webp"
+            alt=""
+            fill
+            priority
+            loading="eager"
+            sizes="100vw"
+            className="sb-hero-img"
+          />
+        </div>
+        {/* Dark gradient overlay for legibility */}
+        <div className="sb-hero-overlay" aria-hidden="true" />
+
         <div className="container">
-          <div className="sb-hero-grid">
-            {/* Left column: Content */}
-            <div className="sb-hero-content">
-              <h1 className="sb-hero-title">
-                Templates &amp; tools that{" "}
-                <em>make running your business easier</em>
-              </h1>
+          <div className="sb-hero-inner">
+            {/* Eyebrow trust pill */}
+            <span className="sb-hero-eyebrow">
+              <span className="sb-hero-eyebrow-dot" aria-hidden="true" />
+              Trusted by 3,500+ small business owners
+            </span>
 
-              <p className="sb-hero-subtitle">
-                Ready-to-use, printable downloads that cut admin time, keep you
-                organised, and require zero tech skills.
-              </p>
+            <h1 className="sb-hero-title">
+              Run your business smarter with <em>templates that just work</em>
+            </h1>
 
-              <div
-                className="sb-hero-stars"
-                aria-label="Five star rated on Etsy"
-              >
-                <span className="sb-hero-stars-icons" aria-hidden="true">
-                  ★★★★★
-                </span>
-                <span className="sb-hero-stars-label">
-                  <strong>5.0</strong> &middot; 3,500+ five-star reviews on Etsy
-                </span>
-              </div>
+            <p className="sb-hero-subtitle">
+              Ready-to-use, printable downloads that cut admin time, keep you
+              organised, and require zero tech skills.
+            </p>
 
-              <div className="sb-hero-actions">
-                <Link href="/products" className="btn sb-btn-primary sb-btn-lg">
-                  Browse All Products
-                  <svg
-                    className="sb-btn-arrow"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M3 8h10M9 4l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Link>
-                <Link
-                  href={links.etsyShopUrl}
-                  className="sb-btn-ghost-hero"
-                  target="_blank"
-                  rel="noopener noreferrer"
+            <div className="sb-hero-stars" aria-label="Five star rated on Etsy">
+              <span className="sb-hero-stars-icons" aria-hidden="true">
+                ★★★★★
+              </span>
+              <span className="sb-hero-stars-label">
+                <strong>5.0</strong> &middot; 3,500+ five-star reviews on Etsy
+              </span>
+            </div>
+
+            <div className="sb-hero-actions">
+              <Link href="/products" className="btn sb-btn-primary sb-btn-lg">
+                Browse All Products
+                <svg
+                  className="sb-btn-arrow"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
                 >
-                  View on Etsy
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    aria-hidden="true"
-                    style={{ opacity: 0.8 }}
-                  >
-                    <path
-                      d="M2.5 2.5h9M11.5 2.5v9M11.5 2.5 2.5 11.5"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Link>
-              </div>
-
-              <p className="sb-hero-reassurance">
+                  <path
+                    d="M3 8h10M9 4l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
+              <Link
+                href={links.etsyShopUrl}
+                className="sb-btn-ghost-hero"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on Etsy
                 <svg
                   width="14"
                   height="14"
-                  viewBox="0 0 24 24"
+                  viewBox="0 0 14 14"
                   fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
                   aria-hidden="true"
+                  style={{ opacity: 0.8 }}
                 >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path
+                    d="M2.5 2.5h9M11.5 2.5v9M11.5 2.5 2.5 11.5"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
-                Secure checkout &middot; Instant download &middot; No account
-                needed
-              </p>
+              </Link>
             </div>
 
-            {/* Right column: Image */}
-            <div className="sb-hero-showcase">
-              <Image
-                src="/images/hero-image-desk.webp"
-                alt="Tools for your small business"
-                className="sb-hero-img"
-                width={1200}
-                height={800}
-                priority
-                loading="eager"
-              />
-              <div className="sb-hero-badge" aria-hidden="true">
-                <div className="sb-hero-badge-stars">★★★★★</div>
-                <div className="sb-hero-badge-seller">Etsy Star Seller</div>
-                <div className="sb-hero-badge-sub">3,500+ happy customers</div>
+            <p className="sb-hero-reassurance">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              Secure checkout &middot; Instant download &middot; No account
+              needed
+            </p>
+          </div>
+        </div>
+
+        {/* Social proof stats strip — anchors trust at the hero bottom */}
+        <div className="sb-hero-stats-strip">
+          <div className="container">
+            <div className="sb-hero-stats-grid">
+              <div className="sb-hero-stat">
+                <span className="sb-hero-stat-value">3,500+</span>
+                <span className="sb-hero-stat-label">Happy customers</span>
+              </div>
+              <div className="sb-hero-stat-divider" aria-hidden="true" />
+              <div className="sb-hero-stat">
+                <span className="sb-hero-stat-value">★ 5.0</span>
+                <span className="sb-hero-stat-label">Average rating</span>
+              </div>
+              <div className="sb-hero-stat-divider" aria-hidden="true" />
+              <div className="sb-hero-stat">
+                <span className="sb-hero-stat-value">Instant</span>
+                <span className="sb-hero-stat-label">Digital download</span>
+              </div>
+              <div className="sb-hero-stat-divider" aria-hidden="true" />
+              <div className="sb-hero-stat">
+                <span className="sb-hero-stat-value">⭐ Star Seller</span>
+                <span className="sb-hero-stat-label">Etsy badge</span>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Wave transition to white below */}
+        <div className="sb-hero-wave" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 56"
+            preserveAspectRatio="none"
+          >
+            <path
+              fill="#ffffff"
+              d="M0,28 C240,56 480,0 720,28 C960,56 1200,0 1440,28 L1440,56 L0,56 Z"
+            />
+          </svg>
         </div>
       </section>
 
