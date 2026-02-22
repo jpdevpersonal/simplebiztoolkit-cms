@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
+import { sanitizeHtml } from "@/lib/sanitize";
 import "@/styles/products.css";
 
 type Props = {
@@ -19,7 +20,7 @@ function ProductDescription({ description }: { description: string }) {
     return (
       <div
         className="product-description-content"
-        dangerouslySetInnerHTML={{ __html: description }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
       />
     );
   }

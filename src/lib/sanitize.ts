@@ -1,73 +1,79 @@
 /**
  * HTML Sanitizer for XSS Prevention
- * Lightweight alternative to DOMPurify for server-side use
+ * Uses isomorphic-dompurify — works identically on the server (Node/jsdom)
+ * and in the browser (native DOM).  The old regex approach was bypassable.
  */
 
-const ALLOWED_TAGS = [
-  "p",
-  "br",
-  "strong",
-  "em",
-  "u",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "ul",
-  "ol",
-  "li",
-  "a",
-  "img",
-  "section",
-  "aside",
-  "div",
-  "span",
-  "blockquote",
-  "code",
-  "pre",
-];
-
-// Attribute whitelist intentionally omitted until attribute validation is needed
+import DOMPurify from "isomorphic-dompurify";
 
 /**
- * Basic HTML sanitization
- * For production, consider using DOMPurify or isomorphic-dompurify
+ * Sanitize an HTML string, removing all XSS vectors.
+ * Safe to call on both server and client.
  */
 export function sanitizeHtml(html: string): string {
-  // Remove script tags
-  html = html.replace(
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    "",
-  );
-
-  // Remove on* event handlers
-  html = html.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, "");
-  html = html.replace(/\son\w+\s*=\s*[^\s>]*/gi, "");
-
-  // Remove javascript: protocol
-  html = html.replace(/javascript:/gi, "");
-
-  // Remove data: protocol from src attributes
-  html = html.replace(/src\s*=\s*["']data:[^"']*["']/gi, 'src=""');
-
-  return html;
+  if (!html) return "";
+  return DOMPurify.sanitize(html, {
+    // Allow the structural/formatting tags Tiptap produces
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "u",
+      "s",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "ul",
+      "ol",
+      "li",
+      "a",
+      "img",
+      "section",
+      "aside",
+      "div",
+      "span",
+      "blockquote",
+      "code",
+      "pre",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "th",
+      "td",
+    ],
+    ALLOWED_ATTR: [
+      "href",
+      "src",
+      "alt",
+      "title",
+      "class",
+      "id",
+      "data-component",
+      "data-title",
+      // Allow target="_blank" on links
+      "target",
+      "rel",
+    ],
+    // Forbid dangerous URI schemes
+    ALLOWED_URI_REGEXP:
+      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    // Never return DOM — always return a string
+    RETURN_DOM: false,
+    RETURN_DOM_FRAGMENT: false,
+  });
 }
 
 /**
- * Validate that HTML only contains allowed tags
+ * Validate that HTML only contains allowed tags (legacy helper, kept for tests).
  */
 export function validateHtmlTags(html: string): boolean {
-  const tagRegex = /<(\w+)[^>]*>/g;
-  const tags = [];
-  let match;
-
-  while ((match = tagRegex.exec(html)) !== null) {
-    tags.push(match[1].toLowerCase());
-  }
-
-  return tags.every((tag) => ALLOWED_TAGS.includes(tag));
+  // If sanitizeHtml produces the same output the content is safe
+  return sanitizeHtml(html) === html;
 }
 
 /**

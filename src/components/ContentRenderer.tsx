@@ -10,6 +10,7 @@ import {
   Callout,
   ArticleFooter,
 } from "@/components/ArticleComponents";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 /**
  * Content structure parser
@@ -100,17 +101,18 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
  * Main Content Renderer Component
  */
 export function DynamicContentRenderer({ html }: { html: string }) {
+  const safeHtml = sanitizeHtml(html);
   // Only parse on client-side to avoid hydration mismatches
   if (typeof window === "undefined") {
     // Server-side: Return structured content without parsing
     return (
       <div className="dynamic-content">
-        <div dangerouslySetInnerHTML={{ __html: html }} />
+        <div dangerouslySetInnerHTML={{ __html: safeHtml }} />
       </div>
     );
   }
 
-  const blocks = parseContent(html);
+  const blocks = parseContent(safeHtml);
 
   return (
     <div className="dynamic-content">
@@ -124,7 +126,7 @@ export function DynamicContentRenderer({ html }: { html: string }) {
  * Uses regex parsing to avoid DOMParser on server
  */
 export function ContentRenderer({ html }: { html: string }) {
-  const blocks = parseContentServer(html);
+  const blocks = parseContentServer(sanitizeHtml(html));
 
   return (
     <>
