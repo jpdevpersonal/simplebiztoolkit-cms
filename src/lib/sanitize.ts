@@ -61,7 +61,7 @@ export function sanitizeHtml(html: string): string {
     ],
     // Forbid dangerous URI schemes
     ALLOWED_URI_REGEXP:
-      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))/i,
     // Never return DOM — always return a string
     RETURN_DOM: false,
     RETURN_DOM_FRAGMENT: false,
