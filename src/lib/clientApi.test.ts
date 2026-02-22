@@ -112,9 +112,7 @@ describe("clientApi", () => {
     });
   });
 
-  it("sends revalidation secret header for revalidateContent", async () => {
-    process.env.NEXT_PUBLIC_REVALIDATION_SECRET = "secret-xyz";
-
+  it("revalidateContent posts without a secret header (auth via session cookie)", async () => {
     sendHttpRequestMock.mockResolvedValue({
       ok: true,
       status: 200,
@@ -133,7 +131,6 @@ describe("clientApi", () => {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        "X-Revalidation-Secret": "secret-xyz",
       },
       body: JSON.stringify({ type: "article", slug: "hello-world" }),
     });

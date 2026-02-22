@@ -115,12 +115,10 @@ export const clientApi = {
   },
 
   revalidateContent(type: "article" | "product", slug?: string) {
+    // Authentication is handled by the NextAuth session cookie.
+    // No secret header needed (and never use NEXT_PUBLIC_ for secrets).
     return request<void>("/api/revalidate", {
       method: "POST",
-      headers: {
-        "X-Revalidation-Secret":
-          process.env.NEXT_PUBLIC_REVALIDATION_SECRET || "",
-      },
       body: { type, slug },
     });
   },

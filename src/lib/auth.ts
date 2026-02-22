@@ -89,7 +89,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           : "authjs.session-token",
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production", // Only secure in production
       },
@@ -103,12 +103,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       token: JWT;
       user?: User | null;
     }): Promise<JWT> {
-      console.log("JWT callback called", { hasUser: !!user, token: token });
       if (user) {
-        console.log("JWT callback: storing user  in token", {
-          userId: user.id,
-          email: user.email,
-        });
         const t = token as JWT & {
           id?: string;
           email?: string | undefined;
@@ -118,9 +113,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         t.email = (user.email ?? undefined) as string | undefined;
         // Store the JWT token from the backend API
         t.accessToken = (user as User & { token?: string }).token;
-        console.log("JWT callback: accessToken stored", {
-          hasToken: !!t.accessToken,
-        });
       }
       return token;
     },
@@ -131,10 +123,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session: Session;
       token: JWT;
     }): Promise<Session> {
-      console.log("Session callback called", {
-        token: token,
-        session: session,
-      });
       if (token && session.user) {
         const te = token as JWT & {
           id?: string | null;
@@ -151,10 +139,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Make the backend JWT token available in the session
         s.accessToken = te.accessToken;
         session.user = u;
-        console.log("Session callback: user set", {
-          userId: u.id,
-          email: u.email,
-        });
       }
       return session;
     },
