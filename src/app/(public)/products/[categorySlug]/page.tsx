@@ -71,7 +71,7 @@ export default async function CategoryPage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: `${category.name} | Simple Biz Toolkit`,
-    url: `https://simplebiztoolkit.com/products/${category.slug}`,
+    url: `https://www.simplebiztoolkit.com/products/${category.slug}`,
   };
 
   const breadcrumbJsonLd = {

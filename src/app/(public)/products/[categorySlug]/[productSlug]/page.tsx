@@ -90,9 +90,9 @@ export default async function ProductDetailPage({ params }: Props) {
     name: product.title,
     description: product.problem,
     image: product.image
-      ? `https://simplebiztoolkit.com${product.image}`
+      ? `https://www.simplebiztoolkit.com${product.image}`
       : undefined,
-    url: `https://simplebiztoolkit.com/products/${categorySlug}/${productSlug}`,
+    url: `https://www.simplebiztoolkit.com/products/${categorySlug}/${productSlug}`,
     brand: {
       "@type": "Organization",
       name: site.name,
