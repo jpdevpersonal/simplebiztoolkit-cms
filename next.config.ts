@@ -10,9 +10,9 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval';
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https://simplebiztoolkit.com blob:;
+  img-src 'self' data: https://www.simplebiztoolkit.com blob:;
   font-src 'self';
-  connect-src 'self' ${isProd ? "https://simplebiztoolkit.com" : "http://localhost:5117"};
+  connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"};
   frame-ancestors 'none';
   object-src 'none';
   base-uri 'self';

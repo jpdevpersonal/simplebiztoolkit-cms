@@ -41,8 +41,8 @@ export default function HomePage() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Simple Biz Toolkit",
-    url: "https://simplebiztoolkit.com",
-    logo: "https://simplebiztoolkit.com/images/simple-biz-toolkit-logo.png",
+    url: "https://www.simplebiztoolkit.com",
+    logo: "https://www.simplebiztoolkit.com/images/simple-biz-toolkit-logo.png",
     sameAs: [links.etsyShopUrl],
   };
 
@@ -218,7 +218,7 @@ export default function HomePage() {
         <div className="container">
           <div className="text-center mb-5">
             <span className="sb-section-eyebrow">
-              So simple it almost feels like cheating
+              Simple, convenient and affordable
             </span>
             <h2>Download. Print. Done.</h2>
             <p className="sb-muted" style={{ maxWidth: 460, margin: "0 auto" }}>
@@ -364,7 +364,7 @@ export default function HomePage() {
             <span className="sb-section-eyebrow">Why Simple Biz Toolkit?</span>
             <h2 style={{ fontWeight: 700 }}>Designed to be simple</h2>
             <p className="sb-muted" style={{ maxWidth: 520, margin: "0 auto" }}>
-              Clear layouts, printable formats, and essential categories —
+              Clear layouts, printable formats, and essential categories,
               everything a small business needs.
             </p>
           </div>
@@ -404,7 +404,7 @@ export default function HomePage() {
                     className="sb-muted mb-0"
                     style={{ fontSize: "0.9375rem" }}
                   >
-                    Tracking, planning, and admin — without overcomplication.
+                    Tracking, planning, and admin, without overcomplication.
                   </p>
                 </div>
               </div>

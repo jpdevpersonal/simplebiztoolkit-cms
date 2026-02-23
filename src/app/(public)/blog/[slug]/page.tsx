@@ -82,7 +82,7 @@ export default async function BlogPostPage({ params }: Props) {
     datePublished: article.dateISO,
     dateModified: article.dateModified || article.dateISO,
     image: article.headerImage
-      ? [`https://simplebiztoolkit.com${article.headerImage}`]
+      ? [`https://www.simplebiztoolkit.com${article.headerImage}`]
       : undefined,
     author: { "@type": "Person", name: "Julian (Simple Biz Toolkit)" },
     publisher: {
