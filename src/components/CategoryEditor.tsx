@@ -6,16 +6,19 @@ import type { ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 
 type Props = {
-  category: ProductCategory;
+  category?: ProductCategory;
+  isNew?: boolean;
 };
 
-export default function CategoryEditor({ category }: Props) {
+export default function CategoryEditor({ category, isNew = false }: Props) {
   const router = useRouter();
-  const [name, setName] = useState(category.name || "");
-  const [slug, setSlug] = useState(category.slug || "");
-  const [summary, setSummary] = useState(category.summary || "");
-  const [howThisHelps, setHowThisHelps] = useState(category.howThisHelps || "");
-  const [heroImage, setHeroImage] = useState(category.heroImage || "");
+  const [name, setName] = useState(category?.name || "");
+  const [slug, setSlug] = useState(category?.slug || "");
+  const [summary, setSummary] = useState(category?.summary || "");
+  const [howThisHelps, setHowThisHelps] = useState(
+    category?.howThisHelps || "",
+  );
+  const [heroImage, setHeroImage] = useState(category?.heroImage || "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -36,9 +39,17 @@ export default function CategoryEditor({ category }: Props) {
         heroImage,
       };
 
-      await clientApi.updateCategory(category.id, payload);
-      setMessage("Category saved successfully!");
-      router.refresh();
+      if (isNew) {
+        await clientApi.createCategory(payload);
+        router.push("/admin/categories");
+        router.refresh();
+      } else if (category?.id) {
+        await clientApi.updateCategory(category.id, payload);
+        setMessage("Category saved successfully!");
+        router.refresh();
+      } else {
+        throw new Error("Missing category id for update");
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -53,7 +64,7 @@ export default function CategoryEditor({ category }: Props) {
     setError(null);
 
     try {
-      await clientApi.deleteCategory(category.id);
+      await clientApi.deleteCategory(category!.id);
       setMessage("Category deleted");
       router.push("/admin/categories");
       router.refresh();
@@ -201,7 +212,7 @@ export default function CategoryEditor({ category }: Props) {
       <div className="admin-form-actions">
         <div className="admin-form-actions-primary">
           <button type="submit" className="admin-btn-save" disabled={saving}>
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? "Saving..." : isNew ? "Create Category" : "Save Changes"}
           </button>
           <button
             type="button"
@@ -211,14 +222,16 @@ export default function CategoryEditor({ category }: Props) {
             Cancel
           </button>
         </div>
-        <button
-          type="button"
-          className="admin-btn-danger"
-          onClick={handleDelete}
-          disabled={deleting}
-        >
-          {deleting ? "Deleting..." : "Delete Category"}
-        </button>
+        {!isNew && (
+          <button
+            type="button"
+            className="admin-btn-danger"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete Category"}
+          </button>
+        )}
       </div>
     </form>
   );
