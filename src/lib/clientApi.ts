@@ -83,6 +83,13 @@ export const clientApi = {
     return request<void>(`/api/products/${id}`, { method: "DELETE" });
   },
 
+  createCategory(category: Partial<ProductCategory>) {
+    return request<ProductCategory>("/api/products/categories", {
+      method: "POST",
+      body: category,
+    });
+  },
+
   updateCategory(id: string, category: Partial<ProductCategory>) {
     return request<ProductCategory>(`/api/products/categories/${id}`, {
       method: "PUT",
