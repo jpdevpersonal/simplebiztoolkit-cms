@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   // Ensure we always show three columns for the Popular Templates
@@ -94,7 +95,16 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                 {p ? (
                   <>
                     <h3 className="product-card-title">{p.title}</h3>
-                    <h3 className="product-card-problem">{p.problem}</h3>
+                    {/<[a-z][\s\S]*>/i.test(p.problem ?? "") ? (
+                      <div
+                        className="product-card-problem"
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizeHtml(p.problem),
+                        }}
+                      />
+                    ) : (
+                      <h3 className="product-card-problem">{p.problem}</h3>
+                    )}
                     <ul className="product-card-bullets">
                       {p.bullets.map((b) => (
                         <li key={b}>{b}</li>
