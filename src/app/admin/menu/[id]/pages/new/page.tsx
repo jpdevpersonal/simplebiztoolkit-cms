@@ -1,6 +1,5 @@
 /**
- * New Category Page - Admin
- * Creates a new MenuCategory under the given menu item
+ * New Page directly under a Menu Item (no category required) – Admin
  */
 
 import Link from "next/link";
@@ -9,13 +8,13 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { apiService, getApiService } from "@/lib/api";
 import type { Session } from "next-auth";
-import MenuCategoryEditor from "@/components/MenuCategoryEditor";
+import MenuItemPageEditor from "@/components/MenuItemPageEditor";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function NewMenuCategoryPage({ params }: Props) {
+export default async function NewDirectPagePage({ params }: Props) {
   await headers();
   const { id: menuItemId } = await params;
   const session = await auth();
@@ -23,10 +22,15 @@ export default async function NewMenuCategoryPage({ params }: Props) {
   const accessToken = _s?.accessToken;
   const service = accessToken ? getApiService(accessToken) : apiService;
 
-  const itemResponse = await service.getMenuItemById(menuItemId);
+  const [itemResponse, catResponse] = await Promise.all([
+    service.getMenuItemById(menuItemId),
+    service.getMenuCategories(menuItemId),
+  ]);
+
   if (!itemResponse.data) return notFound();
 
   const menuItem = itemResponse.data;
+  const categories = catResponse.data || [];
 
   return (
     <div>
@@ -53,10 +57,14 @@ export default async function NewMenuCategoryPage({ params }: Props) {
               {menuItem.title}
             </Link>
           </div>
-          <h1>New Category</h1>
+          <h1>New Page</h1>
         </div>
       </div>
-      <MenuCategoryEditor menuItemId={menuItemId} isNew />
+      <MenuItemPageEditor
+        menuItemId={menuItemId}
+        categories={categories}
+        isNew
+      />
     </div>
   );
 }

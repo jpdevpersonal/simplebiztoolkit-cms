@@ -8,7 +8,25 @@ import { featureFlags } from "@/config/featureFlags";
 import { createPortal } from "react-dom";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 
-export default function SiteNavigation() {
+/** Shape passed from server components – fully serialisable */
+export type MenuNavPage = { id: string; title: string; href: string };
+export type MenuNavGroup = {
+  categoryId?: string;
+  categoryTitle?: string;
+  pages: MenuNavPage[];
+};
+export type MenuNavItem = {
+  id: string;
+  title: string;
+  /** Set when the item links directly to a single page (no dropdown needed) */
+  directHref?: string;
+  /** Set when the item should render as a dropdown */
+  groups?: MenuNavGroup[];
+};
+
+type Props = { menuNavItems?: MenuNavItem[] };
+
+export default function SiteNavigation({ menuNavItems = [] }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -189,6 +207,91 @@ export default function SiteNavigation() {
                 </svg>
               </Link>
             ))}
+
+            {/* Dynamic menu items from CMS */}
+            {menuNavItems.map((item) => {
+              if (item.directHref) {
+                return (
+                  <Link
+                    key={item.id}
+                    onClick={closeMenu}
+                    href={item.directHref}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "1rem 1.5rem",
+                      textDecoration: "none",
+                      color: "var(--sb-ink)",
+                      fontWeight: 600,
+                      fontSize: "1rem",
+                      backgroundColor: "white",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        backgroundColor: "var(--sb-brand-blue)",
+                        borderRadius: "50%",
+                        marginRight: "1rem",
+                      }}
+                    />
+                    {item.title}
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      style={{ marginLeft: "auto", opacity: 0.4 }}
+                    >
+                      <path
+                        d="M9 18L15 12L9 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
+                );
+              }
+              if (item.groups && item.groups.length > 0) {
+                return item.groups.flatMap((group) =>
+                  group.pages.map((page) => (
+                    <Link
+                      key={page.id}
+                      onClick={closeMenu}
+                      href={page.href}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "0.875rem 1.5rem 0.875rem 2.5rem",
+                        textDecoration: "none",
+                        color: "var(--sb-ink)",
+                        fontWeight: 500,
+                        fontSize: "0.9375rem",
+                        backgroundColor: "white",
+                        borderBottom: "1px solid #eee",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          backgroundColor: "var(--sb-muted)",
+                          borderRadius: "50%",
+                          marginRight: "0.875rem",
+                          flexShrink: 0,
+                        }}
+                      />
+                      {page.title}
+                    </Link>
+                  )),
+                );
+              }
+              return null;
+            })}
           </nav>
 
           {/* Action Buttons */}
@@ -263,6 +366,113 @@ export default function SiteNavigation() {
             {item.label}
           </Link>
         ))}
+
+        {/* Dynamic menu items from CMS */}
+        {menuNavItems.map((item) =>
+          item.directHref ? (
+            <Link
+              key={item.id}
+              className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link"
+              href={item.directHref}
+              style={{
+                transition: "all 0.2s ease",
+                fontWeight: 600,
+                backgroundColor: isActive(item.directHref)
+                  ? "var(--sb-soft)"
+                  : "transparent",
+                color: isActive(item.directHref)
+                  ? "var(--sb-brand-blue)"
+                  : undefined,
+              }}
+            >
+              {item.title}
+            </Link>
+          ) : item.groups && item.groups.length > 0 ? (
+            <div
+              key={item.id}
+              className="sb-nav-dropdown"
+              style={{ position: "relative" }}
+            >
+              <button
+                className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link"
+                style={{
+                  fontWeight: 600,
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.25rem",
+                }}
+              >
+                {item.title}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 9l6 6 6-6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <div
+                className="sb-nav-dropdown-menu"
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 4px)",
+                  left: 0,
+                  minWidth: "220px",
+                  background: "white",
+                  border: "1px solid var(--sb-border)",
+                  borderRadius: "10px",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                  padding: "0.5rem 0",
+                  zIndex: 1050,
+                }}
+              >
+                {item.groups.map((group, gi) => (
+                  <div key={group.categoryId ?? gi}>
+                    {group.categoryTitle && (
+                      <div
+                        style={{
+                          padding: "0.35rem 1rem",
+                          fontSize: "0.7rem",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                          color: "var(--sb-muted)",
+                          borderTop:
+                            gi > 0 ? "1px solid var(--sb-border)" : undefined,
+                          marginTop: gi > 0 ? "0.4rem" : undefined,
+                        }}
+                      >
+                        {group.categoryTitle}
+                      </div>
+                    )}
+                    {group.pages.map((page) => (
+                      <Link
+                        key={page.id}
+                        href={page.href}
+                        style={{
+                          display: "block",
+                          padding: "0.5rem 1rem",
+                          textDecoration: "none",
+                          color: "var(--sb-ink)",
+                          fontSize: "0.9rem",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {page.title}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null,
+        )}
       </nav>
 
       {/* Mobile Menu Button */}

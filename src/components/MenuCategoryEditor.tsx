@@ -22,12 +22,15 @@ export default function MenuCategoryEditor({
   const router = useRouter();
   const [title, setTitle] = useState(category?.title ?? "");
   const [description, setDescription] = useState(category?.description ?? "");
+  const [status, setStatus] = useState<"draft" | "published">(
+    category?.status ?? "draft",
+  );
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const backHref = `/admin/menu/${menuItemId}/categories`;
+  const backHref = `/admin/menu/${menuItemId}/edit`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,11 +43,14 @@ export default function MenuCategoryEditor({
         title,
         description: description || undefined,
         menuItemId,
+        status,
       };
 
       if (isNew) {
-        await clientApi.createMenuCategory(payload);
-        router.push(backHref);
+        const created = await clientApi.createMenuCategory(payload);
+        router.push(
+          `/admin/menu/categories/${(created as MenuCategory).id}/edit`,
+        );
         router.refresh();
       } else if (category?.id) {
         await clientApi.updateMenuCategory(category.id, payload);
@@ -93,6 +99,18 @@ export default function MenuCategoryEditor({
     </svg>
   );
 
+  const publishIcon = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
   return (
     <form onSubmit={handleSubmit}>
       <EditorFeedback message={message} error={error} />
@@ -127,59 +145,19 @@ export default function MenuCategoryEditor({
         </div>
       </AdminFormBlock>
 
-      {!isNew && category && (
-        <AdminFormBlock
-          icon={
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M14 2v6h6M16 13H8M16 17H8M10 9H8"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          }
-          title="Pages"
-        >
-          <p
-            style={{
-              fontSize: "0.875rem",
-              color: "var(--sb-muted)",
-              marginBottom: "0.75rem",
-            }}
+      <AdminFormBlock icon={publishIcon} title="Publish">
+        <div className="mb-0">
+          <label className="form-label fw-semibold">Status</label>
+          <select
+            className="form-select"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as "draft" | "published")}
           >
-            Manage the content pages that belong to this category.
-          </p>
-          <a
-            href={`/admin/menu/categories/${category.id}/pages`}
-            className="admin-btn-save"
-            style={{
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.35rem",
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Manage Pages
-          </a>
-        </AdminFormBlock>
-      )}
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+      </AdminFormBlock>
 
       <EditorActions
         saving={saving}

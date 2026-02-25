@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { MenuItemPage } from "@/lib/api";
+import type { MenuCategory, MenuItemPage } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
@@ -11,13 +11,20 @@ import EditorFeedback from "@/components/EditorFeedback";
 
 type Props = {
   page?: MenuItemPage;
-  menuCategoryId: string;
+  /** Always required – used to load categories for the selector */
+  menuItemId: string;
+  /** Pre-selected / current category; user can change via dropdown */
+  menuCategoryId?: string;
+  /** List of published categories for the selector */
+  categories: MenuCategory[];
   isNew?: boolean;
 };
 
 export default function MenuItemPageEditor({
   page,
-  menuCategoryId,
+  menuItemId,
+  menuCategoryId: initialCategoryId,
+  categories,
   isNew = false,
 }: Props) {
   const router = useRouter();
@@ -28,13 +35,17 @@ export default function MenuItemPageEditor({
 
   const today = new Date().toISOString().split("T")[0];
 
+  // Selected category id – empty string means "no category (direct)"
+  const [selectedCategoryId, setSelectedCategoryId] = useState(
+    initialCategoryId ?? page?.menuCategoryId ?? "",
+  );
+
   const [formData, setFormData] = useState({
     title: page?.title ?? "",
     subtitle: page?.subtitle ?? "",
     slug: page?.slug ?? "",
     description: page?.description ?? "",
     content: page?.content ?? "",
-    category: page?.category ?? "",
     featuredImage: page?.featuredImage ?? "",
     headerImage: page?.headerImage ?? "",
     status: page?.status ?? "draft",
@@ -60,7 +71,9 @@ export default function MenuItemPageEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.title, isNew]);
 
-  const backHref = `/admin/menu/categories/${menuCategoryId}/pages`;
+  const backHref = selectedCategoryId
+    ? `/admin/menu/categories/${selectedCategoryId}/edit`
+    : `/admin/menu/${menuItemId}/edit`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,9 +84,17 @@ export default function MenuItemPageEditor({
     try {
       const payload: Partial<MenuItemPage> = {
         ...formData,
-        menuCategoryId,
         dateModified: today,
       };
+
+      // Attach to category OR directly to menu item
+      if (selectedCategoryId) {
+        payload.menuCategoryId = selectedCategoryId;
+        payload.menuItemId = undefined;
+      } else {
+        payload.menuItemId = menuItemId;
+        payload.menuCategoryId = undefined;
+      }
 
       if (isNew) {
         await clientApi.createMenuItemPage(payload);
@@ -174,6 +195,18 @@ export default function MenuItemPageEditor({
     </svg>
   );
 
+  const categoryIcon = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
   return (
     <form onSubmit={handleSubmit}>
       <EditorFeedback message={message} error={error} />
@@ -228,16 +261,6 @@ export default function MenuItemPageEditor({
               />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Category</label>
-              <input
-                className="form-control"
-                value={formData.category}
-                onChange={(e) => update("category", e.target.value)}
-                placeholder="Optional category tag"
-              />
-            </div>
-
             <div>
               <RichContentField
                 label="Content"
@@ -251,6 +274,31 @@ export default function MenuItemPageEditor({
 
         {/* Sidebar column */}
         <div className="col-lg-4">
+          {/* Category assignment */}
+          <AdminFormBlock icon={categoryIcon} title="Category">
+            <div className="mb-0">
+              <label className="form-label fw-semibold">
+                Assign to Category
+              </label>
+              <select
+                className="form-select"
+                value={selectedCategoryId}
+                onChange={(e) => setSelectedCategoryId(e.target.value)}
+              >
+                <option value="">— No category (direct page) —</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.title}
+                    {cat.status === "published" ? "" : " (draft)"}
+                  </option>
+                ))}
+              </select>
+              <div className="form-text">
+                Leave blank to attach this page directly to the menu item.
+              </div>
+            </div>
+          </AdminFormBlock>
+
           {/* Publish settings */}
           <AdminFormBlock icon={publishIcon} title="Publish">
             <div className="mb-3">
@@ -356,3 +404,4 @@ export default function MenuItemPageEditor({
     </form>
   );
 }
+

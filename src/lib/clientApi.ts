@@ -193,8 +193,13 @@ export const clientApi = {
 
   // ==================== MENU ITEM PAGE METHODS ====================
 
-  getMenuItemPages(menuCategoryId?: string, status?: string) {
+  getMenuItemPages(
+    menuCategoryId?: string,
+    status?: string,
+    menuItemId?: string,
+  ) {
     const params = new URLSearchParams();
+    if (menuItemId) params.set("menuItemId", menuItemId);
     if (menuCategoryId) params.set("menuCategoryId", menuCategoryId);
     if (status) params.set("status", status);
     const qs = params.toString() ? `?${params.toString()}` : "";

@@ -17,6 +17,9 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(menuItem?.title ?? "");
   const [description, setDescription] = useState(menuItem?.description ?? "");
+  const [status, setStatus] = useState<"draft" | "published">(
+    menuItem?.status ?? "draft",
+  );
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -29,11 +32,11 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
     setError(null);
 
     try {
-      const payload = { title, description: description || undefined };
+      const payload = { title, description: description || undefined, status };
 
       if (isNew) {
-        await clientApi.createMenuItem(payload);
-        router.push("/admin/menu");
+        const created = await clientApi.createMenuItem(payload);
+        router.push(`/admin/menu/${(created as MenuItem).id}/edit`);
         router.refresh();
       } else if (menuItem?.id) {
         await clientApi.updateMenuItem(menuItem.id, payload);
@@ -81,6 +84,18 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
     </svg>
   );
 
+  const publishIcon = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
   return (
     <form onSubmit={handleSubmit}>
       <EditorFeedback message={message} error={error} />
@@ -97,7 +112,8 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
               required
             />
             <div className="form-text">
-              This label appears in the site navigation bar.
+              This label appears in the site navigation bar when published with
+              at least one page.
             </div>
           </div>
 
@@ -114,51 +130,23 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
         </div>
       </AdminFormBlock>
 
-      {!isNew && menuItem && (
-        <AdminFormBlock
-          icon={
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M3 7h18M3 12h18M3 17h12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          }
-          title="Categories"
-        >
-          <p
-            style={{
-              fontSize: "0.875rem",
-              color: "var(--sb-muted)",
-              marginBottom: "0.75rem",
-            }}
+      <AdminFormBlock icon={publishIcon} title="Publish">
+        <div className="mb-0">
+          <label className="form-label fw-semibold">Status</label>
+          <select
+            className="form-select"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as "draft" | "published")}
           >
-            Manage the categories that appear under this menu item.
-          </p>
-          <a
-            href={`/admin/menu/${menuItem.id}/categories`}
-            className="admin-btn-save"
-            style={{
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.35rem",
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M3 7h18M3 12h18M3 17h12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-            Manage Categories
-          </a>
-        </AdminFormBlock>
-      )}
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+          <div className="form-text">
+            Set to <strong>Published</strong> so this item appears in the site
+            navigation (requires at least one published page).
+          </div>
+        </div>
+      </AdminFormBlock>
 
       <EditorActions
         saving={saving}
@@ -171,3 +159,4 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
     </form>
   );
 }
+

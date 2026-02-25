@@ -9,8 +9,10 @@ import { proxyToBackend, requireAuth } from "@/lib/apiProxy";
 
 export async function GET(request: NextRequest) {
   const params = new URLSearchParams();
+  const menuItemId = request.nextUrl.searchParams.get("menuItemId");
   const menuCategoryId = request.nextUrl.searchParams.get("menuCategoryId");
   const status = request.nextUrl.searchParams.get("status");
+  if (menuItemId) params.set("menuItemId", menuItemId);
   if (menuCategoryId) params.set("menuCategoryId", menuCategoryId);
   if (status) params.set("status", status);
   const qs = params.toString() ? `?${params.toString()}` : "";

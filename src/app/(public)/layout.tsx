@@ -10,6 +10,8 @@ import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "../BootstrapClient";
 import ScrollToTop from "../ScrollToTop";
+import { apiService } from "@/lib/api";
+import type { MenuNavItem, MenuNavGroup } from "@/components/SiteNavigation";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -72,11 +74,92 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Build dynamic navigation items from published menu items
+  let menuNavItems: MenuNavItem[] = [];
+  try {
+    // Prefer the dedicated tree endpoint; fall back to GetAll if not yet deployed.
+    let menuRes = await apiService.getPublishedMenuItems();
+    if (menuRes.statusCode === 404) {
+      console.warn(
+        "[Nav] items-tree endpoint not found, falling back to GetAll",
+      );
+      menuRes = await apiService.getMenuItems();
+    }
+
+    if (menuRes.error) {
+      console.error(
+        `[Nav] menu API error (${menuRes.statusCode}):`,
+        menuRes.error,
+      );
+    }
+
+    const allItems = menuRes.data ?? [];
+    // Filter items by published status client-side (items-tree returns all)
+    const publishedItems = allItems.filter((i) => i.status === "published");
+
+    for (const item of publishedItems) {
+      const directPages = (item.pages ?? []).filter(
+        (p) => p.status === "published",
+      );
+      const publishedCategories = (item.categories ?? [])
+        .filter((cat) => cat.status === "published")
+        .map((cat) => ({
+          ...cat,
+          pages: (cat.pages ?? []).filter((p) => p.status === "published"),
+        }))
+        .filter((cat) => cat.pages.length > 0);
+
+      const hasContent =
+        directPages.length > 0 || publishedCategories.length > 0;
+      if (!hasContent) continue;
+
+      if (publishedCategories.length === 0 && directPages.length > 0) {
+        // Simple link – use the first direct page slug
+        const firstPage = directPages[0];
+        menuNavItems.push({
+          id: item.id,
+          title: item.title,
+          directHref: `/${firstPage.slug}`,
+        });
+      } else {
+        // Dropdown: categories with pages (and optionally direct pages)
+        const groups = publishedCategories.map((cat) => ({
+          categoryId: cat.id,
+          categoryTitle: cat.title,
+          pages: cat.pages.map((p) => ({
+            id: p.id,
+            title: p.title,
+            href: `/${p.slug}`,
+          })),
+        }));
+
+        if (directPages.length > 0) {
+          (groups as MenuNavGroup[]).unshift({
+            pages: directPages.map((p) => ({
+              id: p.id,
+              title: p.title,
+              href: `/${p.slug}`,
+            })),
+          });
+        }
+
+        menuNavItems.push({
+          id: item.id,
+          title: item.title,
+          groups,
+        });
+      }
+    }
+  } catch (err) {
+    // Navigation data not critical – fall back to static items only
+    console.error("[Nav] Failed to fetch menu items-tree:", err);
+  }
+
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -95,7 +178,7 @@ export default function PublicLayout({
         Skip to content
       </a>
 
-      <SiteHeader />
+      <SiteHeader menuNavItems={menuNavItems} />
       <main id="content">{children}</main>
       <SiteFooter />
       <StickyMobileCta />

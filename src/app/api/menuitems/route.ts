@@ -1,16 +1,18 @@
 /**
  * Menu Items API proxy (collection)
- * GET  – list all menu items (public)
+ * GET  – list all menu items, optionally filtered by ?status= (public)
  * POST – create a menu item (requires authentication)
  */
 
 import type { NextRequest } from "next/server";
 import { proxyToBackend, requireAuth } from "@/lib/apiProxy";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const status = request.nextUrl.searchParams.get("status");
+  const qs = status ? `?status=${encodeURIComponent(status)}` : "";
   return proxyToBackend({
     request: null,
-    path: "/api/menuitems",
+    path: `/api/menuitems${qs}`,
     method: "GET",
   });
 }

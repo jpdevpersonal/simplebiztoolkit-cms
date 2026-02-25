@@ -83,7 +83,7 @@ export default async function MenuPage() {
           <thead>
             <tr>
               <th>Title</th>
-              <th>Description</th>
+              <th>Status</th>
               <th>Categories</th>
               <th>Actions</th>
             </tr>
@@ -99,36 +99,33 @@ export default async function MenuPage() {
             {menuItems.map((item) => (
               <tr key={item.id}>
                 <td style={{ fontWeight: 600 }}>{item.title}</td>
-                <td
-                  style={{
-                    color: "var(--sb-muted)",
-                    fontSize: "0.875rem",
-                    maxWidth: "260px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {item.description || "—"}
+                <td>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "0.2rem 0.55rem",
+                      borderRadius: "999px",
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      background:
+                        item.status === "published" ? "#dcfce7" : "#fef9c3",
+                      color:
+                        item.status === "published" ? "#166534" : "#854d0e",
+                    }}
+                  >
+                    {item.status ?? "draft"}
+                  </span>
                 </td>
                 <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
                   {item.categories?.length ?? 0}
                 </td>
                 <td>
-                  <div style={{ display: "flex", gap: "0.4rem" }}>
-                    <Link
-                      href={`/admin/menu/${item.id}/categories`}
-                      className="admin-btn-action"
-                    >
-                      Categories
-                    </Link>
-                    <Link
-                      href={`/admin/menu/${item.id}/edit`}
-                      className="admin-btn-action"
-                    >
-                      Edit
-                    </Link>
-                  </div>
+                  <Link
+                    href={`/admin/menu/${item.id}/edit`}
+                    className="admin-btn-action"
+                  >
+                    Edit
+                  </Link>
                 </td>
               </tr>
             ))}

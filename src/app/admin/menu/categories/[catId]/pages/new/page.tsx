@@ -1,5 +1,5 @@
 /**
- * New Menu Item Page - Admin
+ * New Page under a Category – Admin
  */
 
 import Link from "next/link";
@@ -27,6 +27,10 @@ export default async function NewMenuItemPagePage({ params }: Props) {
 
   const category = catResponse.data;
 
+  // Load sibling categories so the user can re-assign if needed
+  const catListResponse = await service.getMenuCategories(category.menuItemId);
+  const categories = catListResponse.data || [];
+
   return (
     <div>
       <div className="admin-page-header">
@@ -46,7 +50,14 @@ export default async function NewMenuItemPagePage({ params }: Props) {
             </Link>
             {" / "}
             <Link
-              href={`/admin/menu/categories/${catId}/pages`}
+              href={`/admin/menu/${category.menuItemId}/edit`}
+              style={{ color: "var(--sb-muted)", textDecoration: "none" }}
+            >
+              Menu Item
+            </Link>
+            {" / "}
+            <Link
+              href={`/admin/menu/categories/${catId}/edit`}
               style={{ color: "var(--sb-muted)", textDecoration: "none" }}
             >
               {category.title}
@@ -55,7 +66,13 @@ export default async function NewMenuItemPagePage({ params }: Props) {
           <h1>New Page</h1>
         </div>
       </div>
-      <MenuItemPageEditor menuCategoryId={catId} isNew />
+      <MenuItemPageEditor
+        menuItemId={category.menuItemId}
+        menuCategoryId={catId}
+        categories={categories}
+        isNew
+      />
     </div>
   );
 }
+

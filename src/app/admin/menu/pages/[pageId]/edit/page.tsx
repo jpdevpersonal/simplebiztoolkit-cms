@@ -1,5 +1,5 @@
 /**
- * Edit Menu Item Page - Admin
+ * Edit Menu Item Page – Admin
  */
 
 import Link from "next/link";
@@ -27,6 +27,19 @@ export default async function EditMenuItemPagePage({ params }: Props) {
 
   const page = response.data;
 
+  // Resolve the parent menu item id (might come from a category or directly)
+  const menuItemId =
+    page.menuItemId ??
+    (page.menuCategoryId
+      ? (await service.getMenuCategoryById(page.menuCategoryId)).data
+          ?.menuItemId
+      : undefined);
+
+  // Load that menu item's categories for the reassignment dropdown
+  const categories = menuItemId
+    ? ((await service.getMenuCategories(menuItemId)).data ?? [])
+    : [];
+
   return (
     <div>
       <div className="admin-page-header">
@@ -44,18 +57,39 @@ export default async function EditMenuItemPagePage({ params }: Props) {
             >
               ← Menu Items
             </Link>
-            {" / "}
-            <Link
-              href={`/admin/menu/categories/${page.menuCategoryId}/pages`}
-              style={{ color: "var(--sb-muted)", textDecoration: "none" }}
-            >
-              Pages
-            </Link>
+            {menuItemId && (
+              <>
+                {" / "}
+                <Link
+                  href={`/admin/menu/${menuItemId}/edit`}
+                  style={{ color: "var(--sb-muted)", textDecoration: "none" }}
+                >
+                  Menu Item
+                </Link>
+              </>
+            )}
+            {page.menuCategoryId && (
+              <>
+                {" / "}
+                <Link
+                  href={`/admin/menu/categories/${page.menuCategoryId}/edit`}
+                  style={{ color: "var(--sb-muted)", textDecoration: "none" }}
+                >
+                  Category
+                </Link>
+              </>
+            )}
           </div>
           <h1>Edit: {page.title}</h1>
         </div>
       </div>
-      <MenuItemPageEditor page={page} menuCategoryId={page.menuCategoryId} />
+      <MenuItemPageEditor
+        page={page}
+        menuItemId={menuItemId ?? ""}
+        menuCategoryId={page.menuCategoryId}
+        categories={categories}
+      />
     </div>
   );
 }
+

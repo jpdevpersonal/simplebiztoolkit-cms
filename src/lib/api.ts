@@ -71,7 +71,9 @@ export interface MenuItem {
   id: string;
   title: string;
   description?: string;
+  status: "draft" | "published";
   categories?: MenuCategory[];
+  pages?: MenuItemPage[]; // pages attached directly (no category)
 }
 
 export interface MenuCategory {
@@ -79,13 +81,17 @@ export interface MenuCategory {
   menuItemId: string;
   title: string;
   description?: string;
+  status?: "draft" | "published";
   pages?: MenuItemPage[];
   menuItem?: MenuItem;
 }
 
 export interface MenuItemPage {
   id: string;
-  menuCategoryId: string;
+  /** Direct parent when page lives under a menu item without a category */
+  menuItemId?: string;
+  /** Parent category (mutually exclusive with top-level menuItemId) */
+  menuCategoryId?: string;
   slug: string;
   title: string;
   subtitle?: string;
@@ -102,6 +108,7 @@ export interface MenuItemPage {
   ogImage?: string;
   canonicalUrl?: string;
   menuCategory?: MenuCategory;
+  menuItem?: MenuItem;
 }
 
 // API Service Class
@@ -414,6 +421,19 @@ class ApiService {
   }
 
   /**
+   * Get all menu items with their nested categories and pages (for site nav).
+   * Calls the dedicated items-tree endpoint which returns the full hierarchy.
+   * Published-status filtering is done client-side in the layout.
+   */
+  async getPublishedMenuItems(): Promise<ApiResponse<MenuItem[]>> {
+    return this.fetchApi<MenuItem[]>(
+      "/api/menuitems/items-tree",
+      { method: "GET" },
+      ["menu"],
+    );
+  }
+
+  /**
    * Get menu item by ID (admin only)
    */
   async getMenuItemById(id: string): Promise<ApiResponse<MenuItem>> {
@@ -522,13 +542,15 @@ class ApiService {
   // ==================== MENU ITEM PAGE ENDPOINTS ====================
 
   /**
-   * Get all menu item pages, optionally filtered by menuCategoryId / status (public)
+   * Get all menu item pages, optionally filtered by menuItemId / menuCategoryId / status (public)
    */
   async getMenuItemPages(
     menuCategoryId?: string,
     status?: string,
+    menuItemId?: string,
   ): Promise<ApiResponse<MenuItemPage[]>> {
     const params = new URLSearchParams();
+    if (menuItemId) params.set("menuItemId", menuItemId);
     if (menuCategoryId) params.set("menuCategoryId", menuCategoryId);
     if (status) params.set("status", status);
     const qs = params.toString() ? `?${params.toString()}` : "";
