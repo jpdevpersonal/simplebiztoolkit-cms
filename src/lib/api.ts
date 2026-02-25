@@ -66,6 +66,44 @@ export interface ProductCategory {
   items?: ProductItem[];
 }
 
+// Menu Types (matches DB schema)
+export interface MenuItem {
+  id: string;
+  title: string;
+  description?: string;
+  categories?: MenuCategory[];
+}
+
+export interface MenuCategory {
+  id: string;
+  menuItemId: string;
+  title: string;
+  description?: string;
+  pages?: MenuItemPage[];
+  menuItem?: MenuItem;
+}
+
+export interface MenuItemPage {
+  id: string;
+  menuCategoryId: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  content?: string;
+  dateISO: string;
+  dateModified: string;
+  category?: string;
+  featuredImage?: string;
+  headerImage?: string;
+  status: "draft" | "published";
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  menuCategory?: MenuCategory;
+}
+
 // API Service Class
 class ApiService {
   private baseUrl: string;
@@ -361,6 +399,203 @@ class ApiService {
     return this.fetchApi<ProductCategory>(`/api/products/categories/${id}`, {
       method: "PUT",
       body: JSON.stringify(category),
+    });
+  }
+
+  // ==================== MENU ITEM ENDPOINTS ====================
+
+  /**
+   * Get all menu items (public)
+   */
+  async getMenuItems(): Promise<ApiResponse<MenuItem[]>> {
+    return this.fetchApi<MenuItem[]>("/api/menuitems", { method: "GET" }, [
+      "menu",
+    ]);
+  }
+
+  /**
+   * Get menu item by ID (admin only)
+   */
+  async getMenuItemById(id: string): Promise<ApiResponse<MenuItem>> {
+    noStore();
+    return this.fetchApi<MenuItem>(`/api/menuitems/${id}`, { method: "GET" });
+  }
+
+  /**
+   * Create menu item (admin only)
+   */
+  async createMenuItem(
+    item: Partial<MenuItem>,
+  ): Promise<ApiResponse<MenuItem>> {
+    noStore();
+    return this.fetchApi<MenuItem>("/api/menuitems", {
+      method: "POST",
+      body: JSON.stringify(item),
+    });
+  }
+
+  /**
+   * Update menu item (admin only)
+   */
+  async updateMenuItem(
+    id: string,
+    item: Partial<MenuItem>,
+  ): Promise<ApiResponse<MenuItem>> {
+    noStore();
+    return this.fetchApi<MenuItem>(`/api/menuitems/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(item),
+    });
+  }
+
+  /**
+   * Delete menu item (admin only)
+   */
+  async deleteMenuItem(id: string): Promise<ApiResponse<void>> {
+    noStore();
+    return this.fetchApi<void>(`/api/menuitems/${id}`, { method: "DELETE" });
+  }
+
+  // ==================== MENU CATEGORY ENDPOINTS ====================
+
+  /**
+   * Get all menu categories, optionally filtered by menuItemId (public)
+   */
+  async getMenuCategories(
+    menuItemId?: string,
+  ): Promise<ApiResponse<MenuCategory[]>> {
+    const qs = menuItemId ? `?menuItemId=${menuItemId}` : "";
+    return this.fetchApi<MenuCategory[]>(
+      `/api/menucategories${qs}`,
+      { method: "GET" },
+      ["menu"],
+    );
+  }
+
+  /**
+   * Get menu category by ID (public)
+   */
+  async getMenuCategoryById(id: string): Promise<ApiResponse<MenuCategory>> {
+    noStore();
+    return this.fetchApi<MenuCategory>(`/api/menucategories/${id}`, {
+      method: "GET",
+    });
+  }
+
+  /**
+   * Create menu category (admin only)
+   */
+  async createMenuCategory(
+    category: Partial<MenuCategory>,
+  ): Promise<ApiResponse<MenuCategory>> {
+    noStore();
+    return this.fetchApi<MenuCategory>("/api/menucategories", {
+      method: "POST",
+      body: JSON.stringify(category),
+    });
+  }
+
+  /**
+   * Update menu category (admin only)
+   */
+  async updateMenuCategory(
+    id: string,
+    category: Partial<MenuCategory>,
+  ): Promise<ApiResponse<MenuCategory>> {
+    noStore();
+    return this.fetchApi<MenuCategory>(`/api/menucategories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(category),
+    });
+  }
+
+  /**
+   * Delete menu category (admin only)
+   */
+  async deleteMenuCategory(id: string): Promise<ApiResponse<void>> {
+    noStore();
+    return this.fetchApi<void>(`/api/menucategories/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // ==================== MENU ITEM PAGE ENDPOINTS ====================
+
+  /**
+   * Get all menu item pages, optionally filtered by menuCategoryId / status (public)
+   */
+  async getMenuItemPages(
+    menuCategoryId?: string,
+    status?: string,
+  ): Promise<ApiResponse<MenuItemPage[]>> {
+    const params = new URLSearchParams();
+    if (menuCategoryId) params.set("menuCategoryId", menuCategoryId);
+    if (status) params.set("status", status);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    return this.fetchApi<MenuItemPage[]>(
+      `/api/menuitempages${qs}`,
+      { method: "GET" },
+      ["menu"],
+    );
+  }
+
+  /**
+   * Get menu item page by slug (public)
+   */
+  async getMenuItemPageBySlug(
+    slug: string,
+  ): Promise<ApiResponse<MenuItemPage>> {
+    return this.fetchApi<MenuItemPage>(
+      `/api/menuitempages/slug/${slug}`,
+      { method: "GET" },
+      ["menu", `menupage-${slug}`],
+    );
+  }
+
+  /**
+   * Get menu item page by ID (admin only)
+   */
+  async getMenuItemPageById(id: string): Promise<ApiResponse<MenuItemPage>> {
+    noStore();
+    return this.fetchApi<MenuItemPage>(`/api/menuitempages/${id}`, {
+      method: "GET",
+    });
+  }
+
+  /**
+   * Create menu item page (admin only)
+   */
+  async createMenuItemPage(
+    page: Partial<MenuItemPage>,
+  ): Promise<ApiResponse<MenuItemPage>> {
+    noStore();
+    return this.fetchApi<MenuItemPage>("/api/menuitempages", {
+      method: "POST",
+      body: JSON.stringify(page),
+    });
+  }
+
+  /**
+   * Update menu item page (admin only)
+   */
+  async updateMenuItemPage(
+    id: string,
+    page: Partial<MenuItemPage>,
+  ): Promise<ApiResponse<MenuItemPage>> {
+    noStore();
+    return this.fetchApi<MenuItemPage>(`/api/menuitempages/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(page),
+    });
+  }
+
+  /**
+   * Delete menu item page (admin only)
+   */
+  async deleteMenuItemPage(id: string): Promise<ApiResponse<void>> {
+    noStore();
+    return this.fetchApi<void>(`/api/menuitempages/${id}`, {
+      method: "DELETE",
     });
   }
 }
