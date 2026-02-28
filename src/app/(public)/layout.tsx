@@ -81,7 +81,7 @@ export default async function PublicLayout({
   children: React.ReactNode;
 }>) {
   // Build dynamic navigation items from published menu items
-  let menuNavItems: MenuNavItem[] = [];
+  const menuNavItems: MenuNavItem[] = [];
   try {
     // Prefer the dedicated tree endpoint; fall back to GetAll if not yet deployed.
     let menuRes = await apiService.getPublishedMenuItems();
