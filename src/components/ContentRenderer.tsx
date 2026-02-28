@@ -10,6 +10,7 @@ import {
   Callout,
   ArticleFooter,
 } from "@/components/ArticleComponents";
+import { ArticleCTA } from "@/components/ArticleCTA";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 /**
@@ -18,13 +19,31 @@ import { sanitizeHtml } from "@/lib/sanitize";
  *
  * <section data-component="section">...</section>
  * <aside data-component="callout" data-title="Title">...</aside>
+ * <section data-component="article-cta" data-title="..." ...></section>
  */
 
 interface ContentBlock {
-  type: "section" | "callout" | "html";
+  type: "section" | "callout" | "article-cta" | "html";
   content: string;
   title?: string;
-  children?: ContentBlock[];
+  description?: string;
+  primaryLabel?: string;
+  primaryHref?: string;
+  disclosure?: string;
+  showHomeLink?: boolean;
+  showEtsyLink?: boolean;
+}
+
+function parseBooleanAttribute(value?: string | null): boolean {
+  if (!value) return false;
+  return ["true", "1", "yes", "on"].includes(value.toLowerCase());
+}
+
+function parseAttributeFromString(attributes: string, name: string): string {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`${escaped}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, "i");
+  const match = attributes.match(regex);
+  return match?.[1] ?? match?.[2] ?? "";
 }
 
 /**
@@ -51,6 +70,22 @@ function parseContent(html: string): ContentBlock[] {
         type: "callout",
         title: element.getAttribute("data-title") || "Note",
         content: element.innerHTML,
+      });
+    } else if (componentType === "article-cta") {
+      blocks.push({
+        type: "article-cta",
+        content: "",
+        title: element.getAttribute("data-title") || undefined,
+        description: element.getAttribute("data-description") || undefined,
+        primaryLabel: element.getAttribute("data-primary-label") || undefined,
+        primaryHref: element.getAttribute("data-primary-href") || undefined,
+        disclosure: element.getAttribute("data-disclosure") || undefined,
+        showHomeLink: parseBooleanAttribute(
+          element.getAttribute("data-show-home-link"),
+        ),
+        showEtsyLink: parseBooleanAttribute(
+          element.getAttribute("data-show-etsy-link"),
+        ),
       });
     } else {
       // Regular HTML content
@@ -90,6 +125,20 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
     case "html":
       return (
         <div key={index} dangerouslySetInnerHTML={{ __html: block.content }} />
+      );
+
+    case "article-cta":
+      return (
+        <ArticleCTA
+          key={index}
+          title={block.title}
+          description={block.description}
+          primaryLabel={block.primaryLabel}
+          primaryHref={block.primaryHref}
+          disclosure={block.disclosure}
+          showHomeLink={block.showHomeLink}
+          showEtsyLink={block.showEtsyLink}
+        />
       );
 
     default:
@@ -150,14 +199,20 @@ function parseContentServer(html: string): ContentBlock[] {
   const calloutRegex =
     /<aside[^>]*data-component="callout"[^>]*data-title="([^"]*)"[^>]*>([\s\S]*?)<\/aside>/gi;
 
+  // Match article CTA placeholders
+  const articleCtaRegex =
+    /<(section|div)\b([^>]*)data-component="article-cta"([^>]*)>([\s\S]*?)<\/\1>/gi;
+
   let lastIndex = 0;
-  const matches: Array<{ index: number; block: ContentBlock }> = [];
+  const matches: Array<{ index: number; end: number; block: ContentBlock }> =
+    [];
 
   // Find all sections
   let match;
   while ((match = sectionRegex.exec(html)) !== null) {
     matches.push({
       index: match.index,
+      end: match.index + match[0].length,
       block: {
         type: "section",
         content: match[1],
@@ -169,6 +224,7 @@ function parseContentServer(html: string): ContentBlock[] {
   while ((match = calloutRegex.exec(html)) !== null) {
     matches.push({
       index: match.index,
+      end: match.index + match[0].length,
       block: {
         type: "callout",
         title: match[1] || "Note",
@@ -177,11 +233,41 @@ function parseContentServer(html: string): ContentBlock[] {
     });
   }
 
+  // Find all article CTA blocks
+  while ((match = articleCtaRegex.exec(html)) !== null) {
+    const attributes = `${match[2]} ${match[3]}`;
+    matches.push({
+      index: match.index,
+      end: match.index + match[0].length,
+      block: {
+        type: "article-cta",
+        content: "",
+        title: parseAttributeFromString(attributes, "data-title") || undefined,
+        description:
+          parseAttributeFromString(attributes, "data-description") || undefined,
+        primaryLabel:
+          parseAttributeFromString(attributes, "data-primary-label") ||
+          undefined,
+        primaryHref:
+          parseAttributeFromString(attributes, "data-primary-href") ||
+          undefined,
+        disclosure:
+          parseAttributeFromString(attributes, "data-disclosure") || undefined,
+        showHomeLink: parseBooleanAttribute(
+          parseAttributeFromString(attributes, "data-show-home-link"),
+        ),
+        showEtsyLink: parseBooleanAttribute(
+          parseAttributeFromString(attributes, "data-show-etsy-link"),
+        ),
+      },
+    });
+  }
+
   // Sort by order in document
   matches.sort((a, b) => a.index - b.index);
 
   // Build the blocks array
-  matches.forEach(({ index, block }) => {
+  matches.forEach(({ index, end, block }) => {
     // Add any HTML before this block
     if (index > lastIndex) {
       const beforeHtml = html.substring(lastIndex, index).trim();
@@ -194,8 +280,7 @@ function parseContentServer(html: string): ContentBlock[] {
     }
 
     blocks.push(block);
-    lastIndex =
-      index + html.substring(index).indexOf("</section>") + "</section>".length;
+    lastIndex = end;
   });
 
   // Add any remaining HTML
@@ -242,6 +327,12 @@ export function convertArticleToHtml(articleJsx: string): string {
   html = html.replace(
     /<Callout\s+title="([^"]*)">([\s\S]*?)<\/Callout>/g,
     '<aside data-component="callout" data-title="$1">$2</aside>',
+  );
+
+  // Convert self-closing <ArticleCTA ... /> tags
+  html = html.replace(
+    /<ArticleCTA\s+([^>]*)\/>/g,
+    '<section data-component="article-cta" $1></section>',
   );
 
   return html;

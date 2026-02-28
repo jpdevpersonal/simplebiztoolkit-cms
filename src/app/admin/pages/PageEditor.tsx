@@ -333,6 +333,30 @@ export default function PageEditor({
                 htmlRows={20}
                 minHeight={420}
                 placeholder="Start writing your page content here…"
+                hint={
+                  <>
+                    Supported blocks include{" "}
+                    <code>
+                      &lt;section data-component=&quot;section&quot;&gt;
+                    </code>
+                    ,{" "}
+                    <code>
+                      &lt;aside data-component=&quot;callout&quot;
+                      data-title=&quot;Title&quot;&gt;
+                    </code>
+                    , and{" "}
+                    <code>
+                      &lt;section data-component=&quot;article-cta&quot;
+                      data-title=&quot;Ready?&quot;
+                      data-description=&quot;...&quot;
+                      data-primary-label=&quot;Explore&quot;
+                      data-primary-href=&quot;https://...&quot;
+                      data-show-home-link=&quot;true&quot;
+                      data-show-etsy-link=&quot;false&quot;&gt;&lt;/section&gt;
+                    </code>
+                    .
+                  </>
+                }
               />
             </div>
           </AdminFormBlock>
