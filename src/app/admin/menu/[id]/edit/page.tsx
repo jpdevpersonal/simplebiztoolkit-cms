@@ -102,7 +102,19 @@ export default async function EditMenuItemPage({ params }: Props) {
           paddingTop: "1.5rem",
         }}
       >
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>Categories</h2>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+          Categories
+          <span
+            style={{
+              fontWeight: 400,
+              fontSize: "0.85rem",
+              color: "var(--sb-muted)",
+              marginLeft: "0.5rem",
+            }}
+          >
+            ({categories.length})
+          </span>
+        </h2>
         <Link
           href={`/admin/menu/${id}/categories/new`}
           className="admin-btn-save"
@@ -137,7 +149,7 @@ export default async function EditMenuItemPage({ params }: Props) {
                   <StatusBadge status={cat.status} />
                 </td>
                 <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {cat.pages?.length ?? 0}
+                  {allPages.filter((p) => p.menuCategoryId === cat.id).length}
                 </td>
                 <td>
                   <Link

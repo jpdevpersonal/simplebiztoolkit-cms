@@ -36,36 +36,44 @@ export default async function MenuPage() {
   const accessToken = _s?.accessToken;
   const service = accessToken ? getApiService(accessToken) : apiService;
 
-  const response = await service.getMenuItems();
-  const menuItems = response.data || [];
+  const [itemsResponse, categoriesResponse, pagesResponse] = await Promise.all([
+    service.getMenuItems(),
+    service.getMenuCategories(),
+    service.getMenuItemPages(),
+  ]);
 
-  const allCategories = menuItems.flatMap((item) =>
-    (item.categories ?? []).map((cat) => ({
-      ...cat,
-      menuItemTitle: item.title,
-    })),
+  const menuItems = itemsResponse.data || [];
+  const allCategoriesRaw = categoriesResponse.data || [];
+  const allPagesRaw = pagesResponse.data || [];
+
+  // Build lookup map: menuItemId → title
+  const itemTitleMap = new Map(menuItems.map((m) => [m.id, m.title]));
+  // Build lookup map: categoryId → { title, menuItemId }
+  const catMap = new Map(
+    allCategoriesRaw.map((c) => [
+      c.id,
+      { title: c.title, menuItemId: c.menuItemId },
+    ]),
   );
 
-  const allPages = menuItems.flatMap((item) => [
-    // Pages under categories
-    ...(item.categories ?? []).flatMap((cat) =>
-      (cat.pages ?? []).map((page) => ({
-        ...page,
-        menuItemTitle: item.title,
-        categoryTitle: cat.title,
-        categoryId: cat.id,
-        menuItemId: item.id,
-      })),
-    ),
-    // Pages directly under menu item (no category)
-    ...(item.pages ?? []).map((page) => ({
+  const allCategories = allCategoriesRaw.map((cat) => ({
+    ...cat,
+    menuItemTitle: itemTitleMap.get(cat.menuItemId) ?? "Unknown",
+    pageCount: allPagesRaw.filter((p) => p.menuCategoryId === cat.id).length,
+  }));
+
+  const allPages = allPagesRaw.map((page) => {
+    const catInfo = page.menuCategoryId
+      ? catMap.get(page.menuCategoryId)
+      : null;
+    return {
       ...page,
-      menuItemTitle: item.title,
-      categoryTitle: null as string | null,
-      categoryId: null as string | null,
-      menuItemId: item.id,
-    })),
-  ]);
+      menuItemTitle:
+        itemTitleMap.get(page.menuItemId ?? catInfo?.menuItemId ?? "") ??
+        "Unknown",
+      categoryTitle: catInfo?.title ?? (null as string | null),
+    };
+  });
 
   return (
     <div>
@@ -137,7 +145,10 @@ export default async function MenuPage() {
                   <StatusBadge status={item.status} />
                 </td>
                 <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {item.categories?.length ?? 0}
+                  {
+                    allCategoriesRaw.filter((c) => c.menuItemId === item.id)
+                      .length
+                  }
                 </td>
                 <td>
                   <Link
@@ -158,6 +169,34 @@ export default async function MenuPage() {
         <h2 className="admin-section-heading" style={{ margin: 0 }}>
           Categories
         </h2>
+        {menuItems.length > 0 && (
+          <Link
+            href={`/admin/menu/${menuItems[0].id}/categories/new`}
+            className="admin-btn-save"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <line
+                x1="12"
+                y1="5"
+                x2="12"
+                y2="19"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <line
+                x1="5"
+                y1="12"
+                x2="19"
+                y2="12"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            New Category
+          </Link>
+        )}
       </div>
       <div className="admin-table-wrap mb-5">
         <table className="admin-table">
@@ -188,7 +227,7 @@ export default async function MenuPage() {
                   <StatusBadge status={cat.status} />
                 </td>
                 <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {cat.pages?.length ?? 0}
+                  {cat.pageCount}
                 </td>
                 <td>
                   <Link
@@ -209,6 +248,29 @@ export default async function MenuPage() {
         <h2 className="admin-section-heading" style={{ margin: 0 }}>
           Menu Pages
         </h2>
+        <Link href="/admin/pages/new" className="admin-btn-save">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <line
+              x1="12"
+              y1="5"
+              x2="12"
+              y2="19"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="5"
+              y1="12"
+              x2="19"
+              y2="12"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          New Page
+        </Link>
       </div>
       <div className="admin-table-wrap mb-5">
         <table className="admin-table">
