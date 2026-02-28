@@ -257,7 +257,7 @@ export default async function MenuPage() {
                 </td>
                 <td>
                   <Link
-                    href={`/admin/menu/pages/${page.id}/edit`}
+                    href={`/admin/pages/${page.id}/edit`}
                     className="admin-btn-action"
                   >
                     Edit

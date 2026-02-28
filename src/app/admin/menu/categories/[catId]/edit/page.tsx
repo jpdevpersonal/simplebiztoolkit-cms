@@ -94,7 +94,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
           Pages in this Category
         </h2>
         <Link
-          href={`/admin/menu/categories/${catId}/pages/new`}
+          href={`/admin/pages/new?menuItemId=${category.menuItemId}&categoryId=${catId}`}
           className="admin-btn-save"
         >
           {plusIcon}
@@ -148,12 +148,26 @@ export default async function EditMenuCategoryPage({ params }: Props) {
                   {page.dateISO}
                 </td>
                 <td>
-                  <Link
-                    href={`/admin/menu/pages/${page.id}/edit`}
-                    className="admin-btn-action"
-                  >
-                    Edit
-                  </Link>
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                    <Link
+                      href={`/admin/pages/${page.id}/edit`}
+                      className="admin-btn-action"
+                    >
+                      Edit
+                    </Link>
+                    {page.status === "published" && (
+                      <a
+                        href={`/${page.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="admin-btn-action"
+                        style={{ opacity: 0.6 }}
+                        title="Preview"
+                      >
+                        ↗
+                      </a>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

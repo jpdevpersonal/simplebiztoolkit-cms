@@ -1,0 +1,138 @@
+/* =============================================
+   Pages – Category & Page Listing Styles
+   Mirrors the product category pattern
+   ============================================= */
+
+.pages-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.pages-header h1 {
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.pages-header p {
+  font-size: 1.0625rem;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* Grid for menu-item cards / category cards / page cards */
+.pages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.page-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.page-card-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.page-card {
+  background: #fff;
+  border: 1px solid var(--sb-border);
+  border-radius: var(--sb-radius);
+  padding: 1.5rem 1.25rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.page-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  border-color: var(--sb-brand-blue);
+}
+
+.page-card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--sb-ink);
+}
+
+.page-card-summary {
+  color: var(--sb-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.page-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--sb-muted);
+}
+
+.page-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--sb-green);
+  transition: gap 0.2s ease;
+}
+
+.page-card:hover .page-card-cta {
+  gap: 0.6rem;
+}
+
+.page-card-cta svg {
+  transition: transform 0.2s ease;
+}
+
+.page-card:hover .page-card-cta svg {
+  transform: translateX(2px);
+}
+
+/* Page listing card with thumbnail */
+.page-card-image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: calc(var(--sb-radius) - 4px);
+  margin-bottom: 1rem;
+  background-color: var(--sb-soft);
+}
+
+/* Empty state */
+.pages-empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--sb-muted);
+}
+
+.pages-empty h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--sb-ink);
+}
+
+.pages-empty p {
+  font-size: 0.95rem;
+  max-width: 400px;
+  margin: 0 auto;
+}

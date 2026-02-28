@@ -1,8 +1,14 @@
+/**
+ * Page Editor – Client Component
+ * Full-featured editor for creating/editing menu item pages.
+ * Supports menu item + category assignment, rich content, media, and SEO.
+ */
+
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { MenuCategory, MenuItemPage } from "@/lib/api";
+import type { MenuItem, MenuCategory, MenuItemPage } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
@@ -11,20 +17,19 @@ import EditorFeedback from "@/components/EditorFeedback";
 
 type Props = {
   page?: MenuItemPage;
-  /** Always required – used to load categories for the selector */
-  menuItemId: string;
-  /** Pre-selected / current category; user can change via dropdown */
-  menuCategoryId?: string;
-  /** List of published categories for the selector */
-  categories: MenuCategory[];
+  menuItems: MenuItem[];
+  /** Pre-selected menu item id */
+  initialMenuItemId?: string;
+  /** Pre-selected category id */
+  initialCategoryId?: string;
   isNew?: boolean;
 };
 
-export default function MenuItemPageEditor({
+export default function PageEditor({
   page,
-  menuItemId,
-  menuCategoryId: initialCategoryId,
-  categories,
+  menuItems,
+  initialMenuItemId,
+  initialCategoryId,
   isNew = false,
 }: Props) {
   const router = useRouter();
@@ -35,10 +40,75 @@ export default function MenuItemPageEditor({
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Selected category id – empty string means "no category (direct)"
+  // Resolve initial menu item id
+  const resolvedMenuItemId =
+    initialMenuItemId ??
+    page?.menuItemId ??
+    (page?.menuCategoryId
+      ? menuItems.find((m) =>
+          (m.categories ?? []).some((c) => c.id === page.menuCategoryId),
+        )?.id
+      : undefined) ??
+    "";
+
+  const [selectedMenuItemId, setSelectedMenuItemId] =
+    useState(resolvedMenuItemId);
   const [selectedCategoryId, setSelectedCategoryId] = useState(
     initialCategoryId ?? page?.menuCategoryId ?? "",
   );
+
+  // Dynamically compute available categories for selected menu item
+  const [dynamicCategories, setDynamicCategories] = useState<MenuCategory[]>(
+    [],
+  );
+  const [loadingCats, setLoadingCats] = useState(false);
+
+  // Categories from the selected menu item's nested data
+  const inlineCats = useMemo(() => {
+    if (!selectedMenuItemId) return [];
+    const item = menuItems.find((m) => m.id === selectedMenuItemId);
+    return item?.categories ?? [];
+  }, [selectedMenuItemId, menuItems]);
+
+  // Fetch categories when menu item changes (in case nested data is incomplete)
+  useEffect(() => {
+    if (!selectedMenuItemId) {
+      setDynamicCategories([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingCats(true);
+    clientApi
+      .getMenuCategories(selectedMenuItemId)
+      .then((cats) => {
+        if (!cancelled) setDynamicCategories(cats);
+      })
+      .catch(() => {
+        if (!cancelled) setDynamicCategories([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCats(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedMenuItemId]);
+
+  // Merge inline + fetched categories (prefer fetched, deduplicate by id)
+  const categories = useMemo(() => {
+    const map = new Map<string, MenuCategory>();
+    for (const c of inlineCats) map.set(c.id, c);
+    for (const c of dynamicCategories) map.set(c.id, c);
+    return Array.from(map.values());
+  }, [inlineCats, dynamicCategories]);
+
+  // Reset category when menu item changes
+  useEffect(() => {
+    if (selectedMenuItemId !== resolvedMenuItemId) {
+      setSelectedCategoryId("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMenuItemId]);
 
   const [formData, setFormData] = useState({
     title: page?.title ?? "",
@@ -59,7 +129,7 @@ export default function MenuItemPageEditor({
   const update = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
 
-  // Auto-generate slug from title when creating
+  // Auto-generate slug
   useEffect(() => {
     if (isNew && formData.title && !formData.slug) {
       const generated = formData.title
@@ -71,12 +141,14 @@ export default function MenuItemPageEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.title, isNew]);
 
-  const backHref = selectedCategoryId
-    ? `/admin/menu/categories/${selectedCategoryId}/edit`
-    : `/admin/menu/${menuItemId}/edit`;
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!selectedMenuItemId) {
+      setError("Please select a Menu Item.");
+      return;
+    }
+
     setSaving(true);
     setMessage(null);
     setError(null);
@@ -87,18 +159,17 @@ export default function MenuItemPageEditor({
         dateModified: today,
       };
 
-      // Attach to category OR directly to menu item
       if (selectedCategoryId) {
         payload.menuCategoryId = selectedCategoryId;
         payload.menuItemId = undefined;
       } else {
-        payload.menuItemId = menuItemId;
+        payload.menuItemId = selectedMenuItemId;
         payload.menuCategoryId = undefined;
       }
 
       if (isNew) {
         await clientApi.createMenuItemPage(payload);
-        router.push(backHref);
+        router.push("/admin/pages");
         router.refresh();
       } else if (page?.id) {
         await clientApi.updateMenuItemPage(page.id, payload);
@@ -122,7 +193,7 @@ export default function MenuItemPageEditor({
 
     try {
       await clientApi.deleteMenuItemPage(page!.id);
-      router.push(backHref);
+      router.push("/admin/pages");
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -130,6 +201,7 @@ export default function MenuItemPageEditor({
     }
   }
 
+  /* ── Icons ──────────────────────────────────── */
   const contentIcon = (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
       <path
@@ -141,6 +213,19 @@ export default function MenuItemPageEditor({
       />
       <polyline
         points="14 2 14 8 20 8"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
+  const settingsIcon = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -175,30 +260,6 @@ export default function MenuItemPageEditor({
       <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="2" />
       <polyline
         points="21 15 16 10 5 21"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-
-  const publishIcon = (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-
-  const categoryIcon = (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -247,7 +308,8 @@ export default function MenuItemPageEditor({
                 required
               />
               <div className="form-text">
-                URL path segment, e.g. <code>getting-started</code>
+                URL path segment, e.g. <code>getting-started</code>. The page
+                will be accessible at <code>/{formData.slug || "..."}</code>
               </div>
             </div>
 
@@ -264,9 +326,13 @@ export default function MenuItemPageEditor({
             <div>
               <RichContentField
                 label="Content"
-                storageKey="menu-item-page-content-mode"
+                storageKey="page-editor-content-mode"
                 value={formData.content}
                 onChange={(val) => update("content", val)}
+                required
+                htmlRows={20}
+                minHeight={420}
+                placeholder="Start writing your page content here…"
               />
             </div>
           </AdminFormBlock>
@@ -274,16 +340,36 @@ export default function MenuItemPageEditor({
 
         {/* Sidebar column */}
         <div className="col-lg-4">
-          {/* Category assignment */}
-          <AdminFormBlock icon={categoryIcon} title="Category">
+          {/* Assignment */}
+          <AdminFormBlock icon={settingsIcon} title="Assignment">
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Menu Item *</label>
+              <select
+                className="form-select"
+                value={selectedMenuItemId}
+                onChange={(e) => setSelectedMenuItemId(e.target.value)}
+                required
+              >
+                <option value="">— Select a menu item —</option>
+                {menuItems.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.title}
+                    {m.status === "published" ? "" : " (draft)"}
+                  </option>
+                ))}
+              </select>
+              <div className="form-text">
+                Every page must belong to a menu item.
+              </div>
+            </div>
+
             <div className="mb-0">
-              <label className="form-label fw-semibold">
-                Assign to Category
-              </label>
+              <label className="form-label fw-semibold">Category</label>
               <select
                 className="form-select"
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
+                disabled={!selectedMenuItemId || loadingCats}
               >
                 <option value="">— No category (direct page) —</option>
                 {categories.map((cat) => (
@@ -294,13 +380,26 @@ export default function MenuItemPageEditor({
                 ))}
               </select>
               <div className="form-text">
-                Leave blank to attach this page directly to the menu item.
+                Optional. Assign to a category to group related pages.
               </div>
             </div>
           </AdminFormBlock>
 
-          {/* Publish settings */}
-          <AdminFormBlock icon={publishIcon} title="Publish">
+          {/* Publish */}
+          <AdminFormBlock
+            icon={
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+            title="Publish"
+          >
             <div className="mb-3">
               <label className="form-label fw-semibold">Status</label>
               <select
@@ -312,7 +411,6 @@ export default function MenuItemPageEditor({
                 <option value="published">Published</option>
               </select>
             </div>
-
             <div>
               <label className="form-label fw-semibold">Publish Date</label>
               <input
@@ -337,7 +435,6 @@ export default function MenuItemPageEditor({
                 placeholder="https://..."
               />
             </div>
-
             <div>
               <label className="form-label fw-semibold">Header Image URL</label>
               <input
@@ -357,9 +454,9 @@ export default function MenuItemPageEditor({
                 className="form-control"
                 value={formData.seoTitle}
                 onChange={(e) => update("seoTitle", e.target.value)}
+                placeholder="Leave blank to use page title"
               />
             </div>
-
             <div className="mb-3">
               <label className="form-label fw-semibold">SEO Description</label>
               <textarea
@@ -367,9 +464,9 @@ export default function MenuItemPageEditor({
                 value={formData.seoDescription}
                 onChange={(e) => update("seoDescription", e.target.value)}
                 rows={3}
+                placeholder="Leave blank to use page description"
               />
             </div>
-
             <div className="mb-3">
               <label className="form-label fw-semibold">OG Image URL</label>
               <input
@@ -379,7 +476,6 @@ export default function MenuItemPageEditor({
                 placeholder="https://..."
               />
             </div>
-
             <div>
               <label className="form-label fw-semibold">Canonical URL</label>
               <input
@@ -397,11 +493,10 @@ export default function MenuItemPageEditor({
         saving={saving}
         isCreateMode={isNew}
         entityName="Page"
-        onCancel={() => router.push(backHref)}
+        onCancel={() => router.push("/admin/pages")}
         onDelete={!isNew && page ? handleDelete : undefined}
         deleting={deleting}
       />
     </form>
   );
 }
-

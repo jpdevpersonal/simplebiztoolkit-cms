@@ -11,7 +11,8 @@ import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "../BootstrapClient";
 import ScrollToTop from "../ScrollToTop";
 import { apiService } from "@/lib/api";
-import type { MenuNavItem, MenuNavGroup } from "@/components/SiteNavigation";
+import { slugify } from "@/lib/slugify";
+import type { MenuNavItem } from "@/components/SiteNavigation";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -119,39 +120,22 @@ export default async function PublicLayout({
       if (!hasContent) continue;
 
       if (publishedCategories.length === 0 && directPages.length > 0) {
-        // Simple link – use the first direct page slug
+        // No categories – simple link to the first direct page
         const firstPage = directPages[0];
         menuNavItems.push({
           id: item.id,
           title: item.title,
-          directHref: `/${firstPage.slug}`,
+          directHref:
+            directPages.length === 1
+              ? `/${firstPage.slug}`
+              : `/pages/${slugify(item.title)}`,
         });
       } else {
-        // Dropdown: categories with pages (and optionally direct pages)
-        const groups = publishedCategories.map((cat) => ({
-          categoryId: cat.id,
-          categoryTitle: cat.title,
-          pages: cat.pages.map((p) => ({
-            id: p.id,
-            title: p.title,
-            href: `/${p.slug}`,
-          })),
-        }));
-
-        if (directPages.length > 0) {
-          (groups as MenuNavGroup[]).unshift({
-            pages: directPages.map((p) => ({
-              id: p.id,
-              title: p.title,
-              href: `/${p.slug}`,
-            })),
-          });
-        }
-
+        // Has categories – link directly to the category listing page
         menuNavItems.push({
           id: item.id,
           title: item.title,
-          groups,
+          directHref: `/pages/${slugify(item.title)}`,
         });
       }
     }

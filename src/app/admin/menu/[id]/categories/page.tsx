@@ -133,7 +133,7 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
                 <td>
                   <div style={{ display: "flex", gap: "0.4rem" }}>
                     <Link
-                      href={`/admin/menu/categories/${cat.id}/pages`}
+                      href={`/admin/menu/categories/${cat.id}/edit`}
                       className="admin-btn-action"
                     >
                       Pages

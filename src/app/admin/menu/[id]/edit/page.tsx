@@ -1,6 +1,6 @@
 /**
  * Edit / View Menu Item Page – Admin
- * Shows the edit form, categories table, and all pages belonging to this menu item.
+ * Shows the edit form, categories table, and pages belonging to this menu item.
  */
 
 import Link from "next/link";
@@ -10,6 +10,25 @@ import { auth } from "@/lib/auth";
 import { apiService, getApiService } from "@/lib/api";
 import type { Session } from "next-auth";
 import MenuItemEditor from "@/components/MenuItemEditor";
+
+function StatusBadge({ status }: { status?: string }) {
+  const published = status === "published";
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "0.2rem 0.55rem",
+        borderRadius: "999px",
+        fontSize: "0.75rem",
+        fontWeight: 600,
+        background: published ? "#dcfce7" : "#fef9c3",
+        color: published ? "#166534" : "#854d0e",
+      }}
+    >
+      {status ?? "draft"}
+    </span>
+  );
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -34,8 +53,6 @@ export default async function EditMenuItemPage({ params }: Props) {
   const menuItem = itemResponse.data;
   const categories = catResponse.data || [];
   const allPages = pagesResponse.data || [];
-  // Pages directly under the menu item (no category)
-  const directPages = allPages.filter((p) => !p.menuCategoryId);
 
   const plusIcon = (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -90,8 +107,7 @@ export default async function EditMenuItemPage({ params }: Props) {
           href={`/admin/menu/${id}/categories/new`}
           className="admin-btn-save"
         >
-          {plusIcon}
-          New Category
+          {plusIcon} New Category
         </Link>
       </div>
 
@@ -109,7 +125,7 @@ export default async function EditMenuItemPage({ params }: Props) {
             {categories.length === 0 && (
               <tr>
                 <td colSpan={4} className="admin-empty-state">
-                  No categories yet. Add the first one or add a page directly
+                  No categories yet. Add the first one or add pages directly
                   below.
                 </td>
               </tr>
@@ -118,109 +134,14 @@ export default async function EditMenuItemPage({ params }: Props) {
               <tr key={cat.id}>
                 <td style={{ fontWeight: 600 }}>{cat.title}</td>
                 <td>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "0.2rem 0.55rem",
-                      borderRadius: "999px",
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      background:
-                        cat.status === "published" ? "#dcfce7" : "#fef9c3",
-                      color: cat.status === "published" ? "#166534" : "#854d0e",
-                    }}
-                  >
-                    {cat.status ?? "draft"}
-                  </span>
+                  <StatusBadge status={cat.status} />
                 </td>
                 <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
                   {cat.pages?.length ?? 0}
                 </td>
                 <td>
-                  <div style={{ display: "flex", gap: "0.4rem" }}>
-                    <Link
-                      href={`/admin/menu/categories/${cat.id}/edit`}
-                      className="admin-btn-action"
-                    >
-                      Edit
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ── Direct Pages (no category) ──────────────────────────── */}
-      <div
-        className="admin-page-header mt-4"
-        style={{
-          borderTop: "1px solid var(--sb-border)",
-          paddingTop: "1.5rem",
-        }}
-      >
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>Pages (direct)</h2>
-        <Link href={`/admin/menu/${id}/pages/new`} className="admin-btn-save">
-          {plusIcon}
-          New Page
-        </Link>
-      </div>
-
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Slug</th>
-              <th>Status</th>
-              <th>Category</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allPages.length === 0 && (
-              <tr>
-                <td colSpan={5} className="admin-empty-state">
-                  No pages yet. Add a direct page or add pages inside a
-                  category.
-                </td>
-              </tr>
-            )}
-            {allPages.map((page) => (
-              <tr key={page.id}>
-                <td style={{ fontWeight: 600 }}>{page.title}</td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.875rem" }}>
-                  {page.slug}
-                </td>
-                <td>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "0.2rem 0.55rem",
-                      borderRadius: "999px",
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      background:
-                        page.status === "published" ? "#dcfce7" : "#fef9c3",
-                      color:
-                        page.status === "published" ? "#166534" : "#854d0e",
-                    }}
-                  >
-                    {page.status}
-                  </span>
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.875rem" }}>
-                  {page.menuCategoryId ? (
-                    (categories.find((c) => c.id === page.menuCategoryId)
-                      ?.title ?? page.menuCategoryId)
-                  ) : (
-                    <em>direct</em>
-                  )}
-                </td>
-                <td>
                   <Link
-                    href={`/admin/menu/pages/${page.id}/edit`}
+                    href={`/admin/menu/categories/${cat.id}/edit`}
                     className="admin-btn-action"
                   >
                     Edit
@@ -232,18 +153,105 @@ export default async function EditMenuItemPage({ params }: Props) {
         </table>
       </div>
 
-      {directPages.length > 0 && (
-        <p
-          style={{
-            fontSize: "0.8rem",
-            color: "var(--sb-muted)",
-            marginTop: "0.5rem",
-          }}
+      {/* ── Pages ──────────────────────────────────────────────── */}
+      <div
+        className="admin-page-header mt-4"
+        style={{
+          borderTop: "1px solid var(--sb-border)",
+          paddingTop: "1.5rem",
+        }}
+      >
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+          Pages
+          <span
+            style={{
+              fontWeight: 400,
+              fontSize: "0.85rem",
+              color: "var(--sb-muted)",
+              marginLeft: "0.5rem",
+            }}
+          >
+            ({allPages.length})
+          </span>
+        </h2>
+        <Link
+          href={`/admin/pages/new?menuItemId=${id}`}
+          className="admin-btn-save"
         >
-          {directPages.length} page(s) attached directly to this menu item (no
-          category).
-        </p>
-      )}
+          {plusIcon} New Page
+        </Link>
+      </div>
+
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Slug</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allPages.length === 0 && (
+              <tr>
+                <td colSpan={5} className="admin-empty-state">
+                  No pages yet. Create a page using the button above.
+                </td>
+              </tr>
+            )}
+            {allPages.map((page) => {
+              const catName = page.menuCategoryId
+                ? (categories.find((c) => c.id === page.menuCategoryId)
+                    ?.title ?? "Unknown")
+                : null;
+              return (
+                <tr key={page.id}>
+                  <td style={{ fontWeight: 600 }}>{page.title}</td>
+                  <td
+                    style={{
+                      color: "var(--sb-muted)",
+                      fontSize: "0.85rem",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {page.slug}
+                  </td>
+                  <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
+                    {catName ?? <em style={{ opacity: 0.5 }}>Direct</em>}
+                  </td>
+                  <td>
+                    <StatusBadge status={page.status} />
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                      <Link
+                        href={`/admin/pages/${page.id}/edit`}
+                        className="admin-btn-action"
+                      >
+                        Edit
+                      </Link>
+                      {page.status === "published" && (
+                        <a
+                          href={`/${page.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="admin-btn-action"
+                          style={{ opacity: 0.6 }}
+                          title="Preview"
+                        >
+                          ↗
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
