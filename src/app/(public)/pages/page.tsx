@@ -123,8 +123,8 @@ export default async function PagesOverview() {
                       <div className="page-card-meta">
                         {item.publishedCats.length > 0 && (
                           <span>
-                            {item.publishedCats.length} categor
-                            {item.publishedCats.length === 1 ? "y" : "ies"}
+                            {item.publishedCats.length} topic
+                            {item.publishedCats.length === 1 ? "" : "s"}
                           </span>
                         )}
                         <span>

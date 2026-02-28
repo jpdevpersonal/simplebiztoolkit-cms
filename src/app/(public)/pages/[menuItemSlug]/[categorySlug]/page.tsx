@@ -160,7 +160,7 @@ export default async function CategoryPageListing({ params }: Props) {
           {publishedPages.length === 0 ? (
             <div className="pages-empty">
               <h2>No pages available yet</h2>
-              <p>Check back soon for new content in this category.</p>
+              <p>Check back soon for new content in this topic.</p>
             </div>
           ) : (
             <div className="pages-grid">

@@ -111,7 +111,7 @@ export default async function MenuPage() {
           <AdminStatCard label="Menu Items" value={menuItems.length} />
         </div>
         <div className="col-4">
-          <AdminStatCard label="Categories" value={allCategories.length} />
+          <AdminStatCard label="Topics" value={allCategories.length} />
         </div>
         <div className="col-4">
           <AdminStatCard label="Pages" value={allPages.length} />
@@ -126,7 +126,7 @@ export default async function MenuPage() {
             <tr>
               <th>Title</th>
               <th>Status</th>
-              <th>Categories</th>
+              <th>Topics</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -167,7 +167,7 @@ export default async function MenuPage() {
       {/* Categories table */}
       <div className="admin-page-header">
         <h2 className="admin-section-heading" style={{ margin: 0 }}>
-          Categories
+          Topics
         </h2>
         {menuItems.length > 0 && (
           <Link
@@ -194,7 +194,7 @@ export default async function MenuPage() {
                 strokeLinecap="round"
               />
             </svg>
-            New Category
+            New Topic
           </Link>
         )}
       </div>
@@ -213,7 +213,7 @@ export default async function MenuPage() {
             {allCategories.length === 0 && (
               <tr>
                 <td colSpan={5} className="admin-empty-state">
-                  No categories found.
+                  No topics found.
                 </td>
               </tr>
             )}
@@ -278,7 +278,7 @@ export default async function MenuPage() {
             <tr>
               <th>Title</th>
               <th>Menu Item</th>
-              <th>Category</th>
+              <th>Topic</th>
               <th>Slug</th>
               <th>Status</th>
               <th>Actions</th>

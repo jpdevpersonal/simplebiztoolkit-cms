@@ -44,7 +44,7 @@ export default async function NewMenuCategoryPage({ params }: Props) {
               {menuItem.title}
             </Link>
           </div>
-          <h1>New Category</h1>
+          <h1>New Topic</h1>
         </div>
       </div>
       <MenuCategoryEditor menuItemId={menuItemId} isNew />

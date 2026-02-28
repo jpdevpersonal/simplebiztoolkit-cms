@@ -135,7 +135,7 @@ export default async function AdminPagesListPage() {
               <th>Title</th>
               <th>Slug</th>
               <th>Menu Item</th>
-              <th>Category</th>
+              <th>Topic</th>
               <th>Status</th>
               <th>Date</th>
               <th>Actions</th>

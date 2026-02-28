@@ -94,7 +94,7 @@ export default async function EditMenuItemPage({ params }: Props) {
       {/* Edit form */}
       <MenuItemEditor menuItem={menuItem} />
 
-      {/* ── Categories ─────────────────────────────────────────── */}
+      {/* ── Topics ─────────────────────────────────────────── */}
       <div
         className="admin-page-header mt-4"
         style={{
@@ -103,7 +103,7 @@ export default async function EditMenuItemPage({ params }: Props) {
         }}
       >
         <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>
-          Categories
+          Topics
           <span
             style={{
               fontWeight: 400,
@@ -119,7 +119,7 @@ export default async function EditMenuItemPage({ params }: Props) {
           href={`/admin/menu/${id}/categories/new`}
           className="admin-btn-save"
         >
-          {plusIcon} New Category
+          {plusIcon} New Topic
         </Link>
       </div>
 
@@ -137,8 +137,7 @@ export default async function EditMenuItemPage({ params }: Props) {
             {categories.length === 0 && (
               <tr>
                 <td colSpan={4} className="admin-empty-state">
-                  No categories yet. Add the first one or add pages directly
-                  below.
+                  No topics yet. Add the first one or add pages directly below.
                 </td>
               </tr>
             )}
@@ -200,7 +199,7 @@ export default async function EditMenuItemPage({ params }: Props) {
             <tr>
               <th>Title</th>
               <th>Slug</th>
-              <th>Category</th>
+              <th>Topic</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>

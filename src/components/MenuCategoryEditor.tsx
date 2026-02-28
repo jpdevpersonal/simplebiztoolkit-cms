@@ -54,7 +54,7 @@ export default function MenuCategoryEditor({
         router.refresh();
       } else if (category?.id) {
         await clientApi.updateMenuCategory(category.id, payload);
-        setMessage("Category saved successfully!");
+        setMessage("Topic saved successfully!");
         router.refresh();
       } else {
         throw new Error("Missing category id for update");
@@ -69,7 +69,7 @@ export default function MenuCategoryEditor({
   async function handleDelete() {
     if (
       !confirm(
-        "Are you sure you want to delete this category? All pages beneath it will also be deleted.",
+        "Are you sure you want to delete this topic? All pages beneath it will also be deleted.",
       )
     )
       return;
@@ -115,7 +115,7 @@ export default function MenuCategoryEditor({
     <form onSubmit={handleSubmit}>
       <EditorFeedback message={message} error={error} />
 
-      <AdminFormBlock icon={detailsIcon} title="Category Details">
+      <AdminFormBlock icon={detailsIcon} title="Topic Details">
         <div className="row g-3">
           <div className="col-12">
             <label className="form-label fw-semibold">Title *</label>
@@ -139,7 +139,7 @@ export default function MenuCategoryEditor({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Optional description for this category"
+              placeholder="Optional description for this topic"
             />
           </div>
         </div>
@@ -162,7 +162,7 @@ export default function MenuCategoryEditor({
       <EditorActions
         saving={saving}
         isCreateMode={isNew}
-        entityName="Category"
+        entityName="Topic"
         onCancel={() => router.push(backHref)}
         onDelete={!isNew && category ? handleDelete : undefined}
         deleting={deleting}

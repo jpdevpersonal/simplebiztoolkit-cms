@@ -53,7 +53,7 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
               {menuItem.title}
             </Link>
           </div>
-          <h1>Categories</h1>
+          <h1>Topics</h1>
         </div>
         <Link
           href={`/admin/menu/${menuItemId}/categories/new`}
@@ -79,14 +79,14 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
               strokeLinecap="round"
             />
           </svg>
-          New Category
+          New Topic
         </Link>
       </div>
 
       {/* Stats */}
       <div className="row g-3 mb-4">
         <div className="col-6">
-          <AdminStatCard label="Categories" value={categories.length} />
+          <AdminStatCard label="Topics" value={categories.length} />
         </div>
         <div className="col-6">
           <AdminStatCard label="Total Pages" value={totalPages} />
@@ -108,7 +108,7 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
             {categories.length === 0 && (
               <tr>
                 <td colSpan={4} className="admin-empty-state">
-                  No categories yet. Add the first one!
+                  No topics yet. Add the first one!
                 </td>
               </tr>
             )}

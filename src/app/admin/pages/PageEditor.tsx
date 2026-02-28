@@ -364,14 +364,14 @@ export default function PageEditor({
             </div>
 
             <div className="mb-0">
-              <label className="form-label fw-semibold">Category</label>
+              <label className="form-label fw-semibold">Topic</label>
               <select
                 className="form-select"
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
                 disabled={!selectedMenuItemId || loadingCats}
               >
-                <option value="">— No category (direct page) —</option>
+                <option value="">— No topic (direct page) —</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.title}
@@ -380,7 +380,7 @@ export default function PageEditor({
                 ))}
               </select>
               <div className="form-text">
-                Optional. Assign to a category to group related pages.
+                Optional. Assign to a topic to group related pages.
               </div>
             </div>
           </AdminFormBlock>

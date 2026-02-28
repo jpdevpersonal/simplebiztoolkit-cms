@@ -72,7 +72,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
               Menu Item
             </Link>
           </div>
-          <h1>Edit Category: {category.title}</h1>
+          <h1>Edit Topic: {category.title}</h1>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
         }}
       >
         <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>
-          Pages in this Category
+          Pages in this Topic
         </h2>
         <Link
           href={`/admin/pages/new?menuItemId=${category.menuItemId}&categoryId=${catId}`}
