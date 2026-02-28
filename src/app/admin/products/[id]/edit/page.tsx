@@ -18,17 +18,8 @@ function PageHeader({ id }: { id: string }) {
   return (
     <div className="admin-page-header">
       <div>
-        <div
-          style={{
-            fontSize: "0.8125rem",
-            color: "var(--sb-muted)",
-            marginBottom: "0.25rem",
-          }}
-        >
-          <Link
-            href="/admin/products"
-            style={{ color: "var(--sb-muted)", textDecoration: "none" }}
-          >
+        <div className="admin-breadcrumb">
+          <Link href="/admin/products" className="admin-breadcrumb-link">
             ← Products
           </Link>
         </div>

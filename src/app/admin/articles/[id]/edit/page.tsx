@@ -33,17 +33,8 @@ export default async function EditArticlePage({ params }: Props) {
     <div>
       <div className="admin-page-header">
         <div>
-          <div
-            style={{
-              fontSize: "0.8125rem",
-              color: "var(--sb-muted)",
-              marginBottom: "0.25rem",
-            }}
-          >
-            <Link
-              href="/admin/articles"
-              style={{ color: "var(--sb-muted)", textDecoration: "none" }}
-            >
+          <div className="admin-breadcrumb">
+            <Link href="/admin/articles" className="admin-breadcrumb-link">
               ← Articles
             </Link>
           </div>

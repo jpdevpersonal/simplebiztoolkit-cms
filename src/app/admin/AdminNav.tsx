@@ -13,8 +13,8 @@ const navItems = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/articles", label: "Articles", exact: false },
   { href: "/admin/products", label: "Products", exact: false },
-  { href: "/admin/categories", label: "Categories", exact: false },
-  { href: "/admin/menu", label: "Menu", exact: false },
+  { href: "/admin/categories", label: "Product Categories", exact: false },
+  { href: "/admin/menu", label: "Menu Items", exact: false },
 ];
 
 function isActive(href: string, exact: boolean, pathname: string): boolean {
