@@ -36,7 +36,7 @@ export async function requireAuth(): Promise<
 }
 
 function buildHeaders(
-  request: NextRequest | null,
+  request: NextRequest | Request | null,
   accessToken?: string,
 ): HeadersInit {
   const headersInit: HeadersInit = {};
@@ -54,7 +54,7 @@ function buildHeaders(
 }
 
 export async function proxyToBackend(options: {
-  request: NextRequest | null;
+  request: NextRequest | Request | null;
   path: string;
   method: "GET" | "POST" | "PUT" | "DELETE";
   accessToken?: string;

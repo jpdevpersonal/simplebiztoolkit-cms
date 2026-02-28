@@ -935,3 +935,20 @@ ol:not([class]) li {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* ── Dynamic nav dropdown ────────────────────────────────────── */
+.sb-nav-dropdown .sb-nav-dropdown-menu {
+  display: none;
+  pointer-events: none;
+}
+
+.sb-nav-dropdown:hover .sb-nav-dropdown-menu,
+.sb-nav-dropdown:focus-within .sb-nav-dropdown-menu {
+  display: block;
+  pointer-events: auto;
+}
+
+.sb-nav-dropdown-menu a:hover {
+  background-color: var(--sb-soft, #f0f7f4);
+  color: var(--sb-brand-blue, #0a7c5e);
+}

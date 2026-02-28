@@ -4,10 +4,14 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import SiteNavigation from "./SiteNavigation";
+import SiteNavigation, { type MenuNavItem } from "./SiteNavigation";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 
-export default function SiteHeader() {
+type Props = {
+  menuNavItems?: MenuNavItem[];
+};
+
+export default function SiteHeader({ menuNavItems = [] }: Props) {
   const headerRef = useRef<HTMLElement | null>(null);
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
@@ -50,7 +54,7 @@ export default function SiteHeader() {
           {!isAdmin && (
             <>
               <div className="order-3 order-lg-2 d-flex align-items-center">
-                <SiteNavigation />
+                <SiteNavigation menuNavItems={menuNavItems} />
               </div>
 
               <div className="d-flex align-items-center gap-2 sb-site-header-actions order-2 order-lg-3">

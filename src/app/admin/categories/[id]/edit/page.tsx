@@ -27,17 +27,8 @@ export default async function EditCategoryPage({ params }: Props) {
     <div>
       <div className="admin-page-header">
         <div>
-          <div
-            style={{
-              fontSize: "0.8125rem",
-              color: "var(--sb-muted)",
-              marginBottom: "0.25rem",
-            }}
-          >
-            <Link
-              href="/admin/categories"
-              style={{ color: "var(--sb-muted)", textDecoration: "none" }}
-            >
+          <div className="admin-breadcrumb">
+            <Link href="/admin/categories" className="admin-breadcrumb-link">
               ← Categories
             </Link>
           </div>

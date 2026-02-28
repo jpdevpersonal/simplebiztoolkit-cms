@@ -16,14 +16,23 @@ export default async function AdminDashboard() {
   const accessToken = _s?.accessToken;
   const service = accessToken ? getApiService(accessToken) : apiService;
 
-  const [articlesResponse, categoriesResponse] = await Promise.all([
+  const [
+    articlesResponse,
+    categoriesResponse,
+    pagesResponse,
+    menuItemsResponse,
+  ] = await Promise.all([
     service.getAllArticles(),
     service.getProductCategories(),
+    service.getMenuItemPages(),
+    service.getMenuItems(),
   ]);
 
   const articles = articlesResponse.data || [];
   const categories = categoriesResponse.data || [];
   const products = categories.flatMap((cat) => cat.items || []);
+  const pages = pagesResponse.data || [];
+  const menuItems = menuItemsResponse.data || [];
 
   const publishedArticles = articles.filter(
     (a) => a.status === "published",
@@ -112,7 +121,7 @@ export default async function AdminDashboard() {
     },
     {
       href: "/admin/categories",
-      label: "Manage Categories",
+      label: "Manage Product Categories",
       description: `${categories.length} categories`,
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -155,6 +164,44 @@ export default async function AdminDashboard() {
         </svg>
       ),
     },
+    {
+      href: "/admin/menu",
+      label: "Manage Menu Items",
+      description: `${menuItems.length} menu items`,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M3 12h18M3 6h18M3 18h12"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: "/admin/pages",
+      label: "Manage Pages",
+      description: `${pages.length} pages`,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <polyline
+            points="14 2 14 8 20 8"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -176,13 +223,6 @@ export default async function AdminDashboard() {
         </div>
         <div className="col-6 col-md-3">
           <AdminStatCard
-            label="Published"
-            value={publishedArticles}
-            valueSize="lg"
-          />
-        </div>
-        <div className="col-6 col-md-3">
-          <AdminStatCard
             label="Products"
             value={products.length}
             valueSize="lg"
@@ -190,10 +230,13 @@ export default async function AdminDashboard() {
         </div>
         <div className="col-6 col-md-3">
           <AdminStatCard
-            label="Categories"
-            value={categories.length}
+            label="Menu Items"
+            value={menuItems.length}
             valueSize="lg"
           />
+        </div>
+        <div className="col-6 col-md-3">
+          <AdminStatCard label="Pages" value={pages.length} valueSize="lg" />
         </div>
       </div>
 
@@ -331,6 +374,60 @@ export default async function AdminDashboard() {
                 </span>
                 <span style={{ fontWeight: 600, fontSize: "0.9375rem" }}>
                   New Product
+                </span>
+              </Link>
+              <Link href="/admin/pages/new" className="admin-quick-link">
+                <span className="admin-quick-link-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <line
+                      x1="12"
+                      y1="5"
+                      x2="12"
+                      y2="19"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="5"
+                      y1="12"
+                      x2="19"
+                      y2="12"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
+                <span style={{ fontWeight: 600, fontSize: "0.9375rem" }}>
+                  New Page
+                </span>
+              </Link>
+              <Link href="/admin/menu/new" className="admin-quick-link">
+                <span className="admin-quick-link-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <line
+                      x1="12"
+                      y1="5"
+                      x2="12"
+                      y2="19"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="5"
+                      y1="12"
+                      x2="19"
+                      y2="12"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
+                <span style={{ fontWeight: 600, fontSize: "0.9375rem" }}>
+                  New Menu Item
                 </span>
               </Link>
             </div>

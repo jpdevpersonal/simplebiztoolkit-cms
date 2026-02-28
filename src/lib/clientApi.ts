@@ -1,4 +1,11 @@
-import type { Article, ProductCategory, ProductItem } from "@/lib/api";
+import type {
+  Article,
+  MenuCategory,
+  MenuItem,
+  MenuItemPage,
+  ProductCategory,
+  ProductItem,
+} from "@/lib/api";
 import {
   extractErrorMessage,
   parseHttpResponse,
@@ -128,5 +135,96 @@ export const clientApi = {
       method: "POST",
       body: { type, slug },
     });
+  },
+
+  // ==================== MENU ITEM METHODS ====================
+
+  getMenuItems() {
+    return request<MenuItem[]>("/api/menuitems");
+  },
+
+  getMenuItemById(id: string) {
+    return request<MenuItem>(`/api/menuitems/${id}`);
+  },
+
+  createMenuItem(item: Partial<MenuItem>) {
+    return request<MenuItem>("/api/menuitems", { method: "POST", body: item });
+  },
+
+  updateMenuItem(id: string, item: Partial<MenuItem>) {
+    return request<MenuItem>(`/api/menuitems/${id}`, {
+      method: "PUT",
+      body: item,
+    });
+  },
+
+  deleteMenuItem(id: string) {
+    return request<void>(`/api/menuitems/${id}`, { method: "DELETE" });
+  },
+
+  // ==================== MENU CATEGORY METHODS ====================
+
+  getMenuCategories(menuItemId?: string) {
+    const qs = menuItemId ? `?menuItemId=${menuItemId}` : "";
+    return request<MenuCategory[]>(`/api/menucategories${qs}`);
+  },
+
+  getMenuCategoryById(id: string) {
+    return request<MenuCategory>(`/api/menucategories/${id}`);
+  },
+
+  createMenuCategory(category: Partial<MenuCategory>) {
+    return request<MenuCategory>("/api/menucategories", {
+      method: "POST",
+      body: category,
+    });
+  },
+
+  updateMenuCategory(id: string, category: Partial<MenuCategory>) {
+    return request<MenuCategory>(`/api/menucategories/${id}`, {
+      method: "PUT",
+      body: category,
+    });
+  },
+
+  deleteMenuCategory(id: string) {
+    return request<void>(`/api/menucategories/${id}`, { method: "DELETE" });
+  },
+
+  // ==================== MENU ITEM PAGE METHODS ====================
+
+  getMenuItemPages(
+    menuCategoryId?: string,
+    status?: string,
+    menuItemId?: string,
+  ) {
+    const params = new URLSearchParams();
+    if (menuItemId) params.set("menuItemId", menuItemId);
+    if (menuCategoryId) params.set("menuCategoryId", menuCategoryId);
+    if (status) params.set("status", status);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    return request<MenuItemPage[]>(`/api/menuitempages${qs}`);
+  },
+
+  getMenuItemPageById(id: string) {
+    return request<MenuItemPage>(`/api/menuitempages/${id}`);
+  },
+
+  createMenuItemPage(page: Partial<MenuItemPage>) {
+    return request<MenuItemPage>("/api/menuitempages", {
+      method: "POST",
+      body: page,
+    });
+  },
+
+  updateMenuItemPage(id: string, page: Partial<MenuItemPage>) {
+    return request<MenuItemPage>(`/api/menuitempages/${id}`, {
+      method: "PUT",
+      body: page,
+    });
+  },
+
+  deleteMenuItemPage(id: string) {
+    return request<void>(`/api/menuitempages/${id}`, { method: "DELETE" });
   },
 };
