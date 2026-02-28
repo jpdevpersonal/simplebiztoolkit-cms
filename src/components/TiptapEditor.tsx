@@ -12,6 +12,7 @@
 
 import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { Node, mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
@@ -45,6 +46,94 @@ type ToolbarButtonProps = {
   title: string;
   children: React.ReactNode;
 };
+
+function parseBooleanAttribute(value?: string | null): boolean {
+  if (!value) return false;
+  return ["true", "1", "yes", "on"].includes(value.toLowerCase());
+}
+
+const CtaBlock = Node.create({
+  name: "ctaBlock",
+  group: "block",
+  atom: true,
+  selectable: true,
+
+  parseHTML() {
+    return [{ tag: "section[data-component='article-cta']" }];
+  },
+
+  addAttributes() {
+    return {
+      title: {
+        default: "Ready to get started?",
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-title"),
+        renderHTML: (attributes: { title?: string }) =>
+          attributes.title ? { "data-title": attributes.title } : {},
+      },
+      description: {
+        default: "Add a short supporting description.",
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-description"),
+        renderHTML: (attributes: { description?: string }) =>
+          attributes.description
+            ? { "data-description": attributes.description }
+            : {},
+      },
+      primaryLabel: {
+        default: "Explore",
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-primary-label"),
+        renderHTML: (attributes: { primaryLabel?: string }) =>
+          attributes.primaryLabel
+            ? { "data-primary-label": attributes.primaryLabel }
+            : {},
+      },
+      primaryHref: {
+        default: "https://example.com",
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-primary-href"),
+        renderHTML: (attributes: { primaryHref?: string }) =>
+          attributes.primaryHref
+            ? { "data-primary-href": attributes.primaryHref }
+            : {},
+      },
+      disclosure: {
+        default: null,
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-disclosure"),
+        renderHTML: (attributes: { disclosure?: string | null }) =>
+          attributes.disclosure
+            ? { "data-disclosure": attributes.disclosure }
+            : {},
+      },
+      showHomeLink: {
+        default: false,
+        parseHTML: (element: HTMLElement) =>
+          parseBooleanAttribute(element.getAttribute("data-show-home-link")),
+        renderHTML: (attributes: { showHomeLink?: boolean }) => ({
+          "data-show-home-link": attributes.showHomeLink ? "true" : "false",
+        }),
+      },
+      showEtsyLink: {
+        default: false,
+        parseHTML: (element: HTMLElement) =>
+          parseBooleanAttribute(element.getAttribute("data-show-etsy-link")),
+        renderHTML: (attributes: { showEtsyLink?: boolean }) => ({
+          "data-show-etsy-link": attributes.showEtsyLink ? "true" : "false",
+        }),
+      },
+    };
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "section",
+      mergeAttributes(HTMLAttributes, {
+        "data-component": "article-cta",
+      }),
+    ];
+  },
+});
 
 function ToolbarButton({
   onClick,
@@ -117,6 +206,7 @@ export default function TiptapEditor({
         heading: { levels: [1, 2, 3, 4] },
         codeBlock: { languageClassPrefix: "language-" },
       }),
+      CtaBlock,
       Underline,
       Link.configure({
         openOnClick: false,
@@ -172,6 +262,24 @@ export default function TiptapEditor({
   const addImage = () => {
     const url = window.prompt("Enter image URL");
     if (url) editor.chain().focus().setImage({ src: url }).run();
+  };
+
+  const insertCtaBlock = () => {
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "ctaBlock",
+        attrs: {
+          title: "Ready to get started?",
+          description: "Add a short supporting description.",
+          primaryLabel: "Explore",
+          primaryHref: "https://example.com",
+          showHomeLink: false,
+          showEtsyLink: false,
+        },
+      })
+      .run();
   };
 
   return (
@@ -373,6 +481,9 @@ export default function TiptapEditor({
           <ToolbarButton title="Insert image" onClick={addImage}>
             🖼
           </ToolbarButton>
+          <ToolbarButton title="Insert CTA block" onClick={insertCtaBlock}>
+            CTA
+          </ToolbarButton>
 
           <ToolbarDivider />
 
@@ -454,6 +565,24 @@ export default function TiptapEditor({
         }
         .tiptap a { color: var(--sb-primary, #0d6efd); text-decoration: underline; }
         .tiptap img { max-width: 100%; border-radius: 4px; height: auto; }
+        .tiptap section[data-component="article-cta"] {
+          margin: 0.75rem 0;
+          border: 1px dashed #adb5bd;
+          border-radius: 6px;
+          padding: 0.5rem 0.75rem;
+          background: #f8f9fa;
+          min-height: 2.25rem;
+          position: relative;
+        }
+        .tiptap section[data-component="article-cta"]::before {
+          content: "Article CTA block";
+          font-size: 0.8125rem;
+          font-weight: 600;
+          color: #495057;
+        }
+        .tiptap .ProseMirror-selectednode[data-component="article-cta"] {
+          border-color: var(--sb-primary, #0d6efd);
+        }
       `}</style>
     </div>
   );

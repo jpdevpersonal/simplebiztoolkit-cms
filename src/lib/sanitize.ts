@@ -55,6 +55,12 @@ export function sanitizeHtml(html: string): string {
       "id",
       "data-component",
       "data-title",
+      "data-description",
+      "data-primary-label",
+      "data-primary-href",
+      "data-disclosure",
+      "data-show-home-link",
+      "data-show-etsy-link",
       // Allow target="_blank" on links
       "target",
       "rel",
