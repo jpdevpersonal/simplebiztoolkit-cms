@@ -36,27 +36,28 @@ export default async function AdminPagesListPage() {
   const accessToken = _s?.accessToken;
   const service = accessToken ? getApiService(accessToken) : apiService;
 
-  // Fetch all menu items (with nested categories/pages) + all pages
-  const [menuRes, pagesRes] = await Promise.all([
+  // Fetch all menu items + categories + pages
+  const [menuRes, categoriesRes, pagesRes] = await Promise.all([
     service.getMenuItems(),
+    service.getMenuCategories(),
     service.getMenuItemPages(),
   ]);
 
   const menuItems = menuRes.data || [];
+  const allCategories = categoriesRes.data || [];
   const allPages = pagesRes.data || [];
 
   // Build a lookup for menu item titles and category titles
-  const menuItemMap = new Map<string, string>();
-  const categoryMap = new Map<string, { title: string; menuItemId: string }>();
-  for (const item of menuItems) {
-    menuItemMap.set(item.id, item.title);
-    for (const cat of item.categories ?? []) {
-      categoryMap.set(cat.id, {
-        title: cat.title,
-        menuItemId: item.id,
-      });
-    }
-  }
+  const menuItemMap = new Map(menuItems.map((item) => [item.id, item.title]));
+  const categoryMap = new Map(
+    allCategories.map((category) => [
+      category.id,
+      {
+        title: category.title,
+        menuItemId: category.menuItemId,
+      },
+    ]),
+  );
 
   // Enrich pages with parent names
   const enrichedPages = allPages.map((page) => {
