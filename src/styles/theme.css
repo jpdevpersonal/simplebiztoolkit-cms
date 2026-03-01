@@ -539,11 +539,16 @@ h3 {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: var(--sb-gradient-primary);
+  height: 3px;
+  background: linear-gradient(
+    135deg,
+    var(--sb-brand-blue) 0%,
+    var(--sb-ink) 100%
+  );
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s ease;
+  z-index: 1;
 }
 
 .sb-value-card:hover {

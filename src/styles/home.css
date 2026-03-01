@@ -621,7 +621,7 @@
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1a7f5a, #0d5c3f);
+  background: linear-gradient(135deg, var(--sb-brand-blue), #272338);
   color: #fff;
   font-size: 1.125rem;
   font-weight: 800;
