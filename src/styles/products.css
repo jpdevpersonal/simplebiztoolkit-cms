@@ -27,6 +27,37 @@
   /* Fix image shimmer/jitter on resize/hover */
   backface-visibility: hidden;
   transform: translateZ(0);
+  filter: drop-shadow(rgba(0, 0, 0, 0.325) 0.5px 2px 3px);
+}
+
+.product-thumb-wrap {
+  width: 100%;
+}
+
+.product-thumb-link {
+  aspect-ratio: 3 / 2;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.product-thumb-picture {
+  position: relative;
+  width: 95%;
+  height: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+.product-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f6f7f8, #ffffff);
+  border-radius: 8px;
 }
 
 /* =============================================
@@ -181,6 +212,16 @@
   font-weight: 600;
   color: var(--sb-green);
   transition: gap 0.2s ease;
+}
+
+.product-cta-icon-wrap {
+  font-size: 0.9em;
+  font-weight: 700;
+}
+
+.product-cta-icon {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .product-card:hover .product-card-cta {

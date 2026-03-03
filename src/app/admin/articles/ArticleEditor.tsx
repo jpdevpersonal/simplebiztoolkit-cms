@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Article } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import { slugify } from "@/lib/slugify";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
@@ -50,10 +51,7 @@ export default function ArticleEditor({
   // Auto-generate slug from title
   useEffect(() => {
     if (isNew && formData.title && !formData.slug) {
-      const generatedSlug = formData.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
+      const generatedSlug = slugify(formData.title);
       setFormData((prev) => ({ ...prev, slug: generatedSlug }));
     }
   }, [formData.title, isNew, formData.slug]);

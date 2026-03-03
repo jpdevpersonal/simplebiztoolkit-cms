@@ -1,29 +1,16 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Article } from "@/lib/api";
+import AdminSortIcon from "@/components/AdminSortIcon";
+import { compareSortValues } from "@/lib/sortUtils";
 
 type Props = {
   articles: Article[];
 };
 
 type SortCol = "title" | "slug" | "category" | "status" | "dateISO";
-
-function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
-  return (
-    <span
-      style={{
-        marginLeft: "0.375rem",
-        opacity: active ? 1 : 0.3,
-        fontSize: "0.7rem",
-      }}
-      aria-hidden="true"
-    >
-      {active && dir === "desc" ? "▼" : "▲"}
-    </span>
-  );
-}
 
 export default function AdminArticlesTable({ articles }: Props) {
   const [sortBy, setSortBy] = useState<SortCol>("title");
@@ -32,39 +19,44 @@ export default function AdminArticlesTable({ articles }: Props) {
   const sorted = useMemo(() => {
     const copy = [...articles];
     copy.sort((a, b) => {
-      let va: string | number = "";
-      let vb: string | number = "";
-      if (sortBy === "title") {
-        va = a.title.toLowerCase();
-        vb = b.title.toLowerCase();
-      } else if (sortBy === "slug") {
-        va = a.slug.toLowerCase();
-        vb = b.slug.toLowerCase();
-      } else if (sortBy === "category") {
-        va = (a.category ?? "").toLowerCase();
-        vb = (b.category ?? "").toLowerCase();
-      } else if (sortBy === "status") {
-        va = a.status ?? "";
-        vb = b.status ?? "";
-      } else if (sortBy === "dateISO") {
-        va = a.dateISO ?? "";
-        vb = b.dateISO ?? "";
-      }
-      if (va < vb) return dir === "asc" ? -1 : 1;
-      if (va > vb) return dir === "asc" ? 1 : -1;
-      return 0;
+      const va: string | number =
+        sortBy === "title"
+          ? a.title.toLowerCase()
+          : sortBy === "slug"
+            ? a.slug.toLowerCase()
+            : sortBy === "category"
+              ? (a.category ?? "").toLowerCase()
+              : sortBy === "status"
+                ? (a.status ?? "")
+                : (a.dateISO ?? "");
+
+      const vb: string | number =
+        sortBy === "title"
+          ? b.title.toLowerCase()
+          : sortBy === "slug"
+            ? b.slug.toLowerCase()
+            : sortBy === "category"
+              ? (b.category ?? "").toLowerCase()
+              : sortBy === "status"
+                ? (b.status ?? "")
+                : (b.dateISO ?? "");
+
+      return compareSortValues(va, vb, dir);
     });
     return copy;
   }, [articles, sortBy, dir]);
 
-  function toggleSort(column: SortCol) {
-    if (sortBy === column) {
-      setDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(column);
-      setDir("asc");
-    }
-  }
+  const toggleSort = useCallback(
+    (column: SortCol) => {
+      if (sortBy === column) {
+        setDir((d) => (d === "asc" ? "desc" : "asc"));
+      } else {
+        setSortBy(column);
+        setDir("asc");
+      }
+    },
+    [sortBy],
+  );
 
   return (
     <div className="admin-table-wrap">
@@ -78,14 +70,14 @@ export default function AdminArticlesTable({ articles }: Props) {
               onClick={() => toggleSort("title")}
             >
               Title
-              <SortIcon active={sortBy === "title"} dir={dir} />
+              <AdminSortIcon active={sortBy === "title"} dir={dir} />
             </th>
             <th
               className={"sortable" + (sortBy === "slug" ? " sort-active" : "")}
               onClick={() => toggleSort("slug")}
             >
               Slug
-              <SortIcon active={sortBy === "slug"} dir={dir} />
+              <AdminSortIcon active={sortBy === "slug"} dir={dir} />
             </th>
             <th
               className={
@@ -94,7 +86,7 @@ export default function AdminArticlesTable({ articles }: Props) {
               onClick={() => toggleSort("category")}
             >
               Category
-              <SortIcon active={sortBy === "category"} dir={dir} />
+              <AdminSortIcon active={sortBy === "category"} dir={dir} />
             </th>
             <th
               className={
@@ -103,7 +95,7 @@ export default function AdminArticlesTable({ articles }: Props) {
               onClick={() => toggleSort("status")}
             >
               Status
-              <SortIcon active={sortBy === "status"} dir={dir} />
+              <AdminSortIcon active={sortBy === "status"} dir={dir} />
             </th>
             <th
               className={
@@ -112,7 +104,7 @@ export default function AdminArticlesTable({ articles }: Props) {
               onClick={() => toggleSort("dateISO")}
             >
               Published
-              <SortIcon active={sortBy === "dateISO"} dir={dir} />
+              <AdminSortIcon active={sortBy === "dateISO"} dir={dir} />
             </th>
             <th>Preview</th>
             <th>Actions</th>
@@ -128,24 +120,13 @@ export default function AdminArticlesTable({ articles }: Props) {
           )}
           {sorted.map((article) => (
             <tr key={article.id}>
-              <td style={{ fontWeight: 600, maxWidth: "280px" }}>
+              <td className="admin-cell-strong admin-cell-max-280">
                 {article.title}
               </td>
-              <td
-                style={{
-                  color: "var(--sb-muted)",
-                  fontSize: "0.875rem",
-                  maxWidth: "180px",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <td className="admin-cell-muted admin-cell-max-180 admin-cell-ellipsis">
                 {article.slug}
               </td>
-              <td style={{ color: "var(--sb-muted)", fontSize: "0.875rem" }}>
-                {article.category}
-              </td>
+              <td className="admin-cell-muted">{article.category}</td>
               <td>
                 <span
                   className={
@@ -158,13 +139,7 @@ export default function AdminArticlesTable({ articles }: Props) {
                   {article.status}
                 </span>
               </td>
-              <td
-                style={{
-                  color: "var(--sb-muted)",
-                  fontSize: "0.8125rem",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <td className="admin-cell-muted-sm admin-cell-nowrap">
                 {article.dateISO ?? "—"}
               </td>
               <td>
@@ -180,7 +155,7 @@ export default function AdminArticlesTable({ articles }: Props) {
                     height="11"
                     viewBox="0 0 24 24"
                     fill="none"
-                    style={{ marginLeft: "0.25rem" }}
+                    className="admin-inline-icon"
                   >
                     <path
                       d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"

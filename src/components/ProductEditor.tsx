@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import { slugify } from "@/lib/slugify";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
@@ -68,10 +69,7 @@ export default function ProductEditor({
     setTitle(value);
 
     if (isCreateMode && !slug.trim()) {
-      const autoSlug = value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
+      const autoSlug = slugify(value);
       setSlug(autoSlug);
     }
   };

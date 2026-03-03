@@ -33,14 +33,34 @@ async function request<T>(
     ...headers,
   };
 
-  const response = await sendHttpRequest(url, {
-    method,
-    credentials,
-    headers: requestHeaders,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await sendHttpRequest(url, {
+      method,
+      credentials,
+      headers: requestHeaders,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (error) {
+    const baseMessage = `Request failed for ${method} ${url}`;
+    const details =
+      error instanceof Error && error.message ? error.message : "Network error";
+    throw new Error(`${baseMessage}: ${details}`);
+  }
 
-  const { payload, isJson } = await parseHttpResponse(response);
+  let payload: unknown;
+  let isJson = false;
+  try {
+    ({ payload, isJson } = await parseHttpResponse(response));
+  } catch (error) {
+    const details =
+      error instanceof Error && error.message
+        ? error.message
+        : "Invalid response payload";
+    throw new Error(
+      `Failed to parse API response for ${method} ${url}: ${details}`,
+    );
+  }
 
   if (!response.ok) {
     const fallback = `HTTP ${response.status}: ${response.statusText}`;
