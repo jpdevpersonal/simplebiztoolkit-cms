@@ -78,15 +78,19 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
-    // Proxy API requests to the backend, but exclude NextAuth endpoints
-    // and our own API routes so they are handled by the Next app itself
-    // (they inject the NextAuth session token before forwarding to the backend).
+    // Proxy API requests to the backend, but only when `NEXT_PUBLIC_API_URL`
+    // is provided (e.g. in environments that have an upstream backend).
+    // If the env var is missing, return no rewrites so Next's build doesn't
+    // embed an invalid `undefined/...` destination and fail.
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) return [];
+
     return [
       {
         // Match /api/* paths that do NOT start with one of the Next.js-handled prefixes.
         source:
           "/api/:path((?!auth/|products|revalidate|articles|menuitems|menucategories|menuitempages).*)",
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path`,
+        destination: `${apiUrl}/api/:path`,
       },
     ];
   },
