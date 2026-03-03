@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import AdminSortIcon from "@/components/AdminSortIcon";
+import { compareSortValues, parseCurrencyValue } from "@/lib/sortUtils";
 
 type Props = {
   products: ProductItem[];
@@ -11,21 +13,6 @@ type Props = {
 };
 
 type SortCol = "title" | "status" | "category" | "price";
-
-function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
-  return (
-    <span
-      style={{
-        marginLeft: "0.375rem",
-        opacity: active ? 1 : 0.3,
-        fontSize: "0.7rem",
-      }}
-      aria-hidden="true"
-    >
-      {active && dir === "desc" ? "▼" : "▲"}
-    </span>
-  );
-}
 
 export default function AdminProductsTable({ products, categories }: Props) {
   const [sortBy, setSortBy] = useState<SortCol>("title");
@@ -36,7 +23,20 @@ export default function AdminProductsTable({ products, categories }: Props) {
   const [localProducts, setLocalProducts] = useState<ProductItem[]>(products);
 
   useEffect(() => {
+    setLocalCategories(categories);
+  }, [categories]);
+
+  useEffect(() => {
+    setLocalProducts(products);
+  }, [products]);
+
+  useEffect(() => {
+    if (categories.length > 0 || products.length > 0) {
+      return;
+    }
+
     let mounted = true;
+
     async function fetchCategories() {
       try {
         const payload = await clientApi.getAllProductCategories();
@@ -48,11 +48,13 @@ export default function AdminProductsTable({ products, categories }: Props) {
         // ignore
       }
     }
+
     fetchCategories();
+
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [categories.length, products.length]);
 
   const categoryNameMap = useMemo(
     () => Object.fromEntries(localCategories.map((c) => [c.id, c.name])),
@@ -62,36 +64,40 @@ export default function AdminProductsTable({ products, categories }: Props) {
   const sorted = useMemo(() => {
     const copy = [...localProducts];
     copy.sort((a, b) => {
-      let va: string | number = "";
-      let vb: string | number = "";
-      if (sortBy === "title") {
-        va = a.title.toLowerCase();
-        vb = b.title.toLowerCase();
-      } else if (sortBy === "status") {
-        va = a.status ?? "";
-        vb = b.status ?? "";
-      } else if (sortBy === "category") {
-        va = (categoryNameMap[a.categoryId] ?? "").toLowerCase();
-        vb = (categoryNameMap[b.categoryId] ?? "").toLowerCase();
-      } else if (sortBy === "price") {
-        va = parseFloat((a.price ?? "").replace(/[^0-9.]/g, "")) || 0;
-        vb = parseFloat((b.price ?? "").replace(/[^0-9.]/g, "")) || 0;
-      }
-      if (va < vb) return dir === "asc" ? -1 : 1;
-      if (va > vb) return dir === "asc" ? 1 : -1;
-      return 0;
+      const va: string | number =
+        sortBy === "title"
+          ? a.title.toLowerCase()
+          : sortBy === "status"
+            ? (a.status ?? "")
+            : sortBy === "category"
+              ? (categoryNameMap[a.categoryId] ?? "").toLowerCase()
+              : parseCurrencyValue(a.price);
+
+      const vb: string | number =
+        sortBy === "title"
+          ? b.title.toLowerCase()
+          : sortBy === "status"
+            ? (b.status ?? "")
+            : sortBy === "category"
+              ? (categoryNameMap[b.categoryId] ?? "").toLowerCase()
+              : parseCurrencyValue(b.price);
+
+      return compareSortValues(va, vb, dir);
     });
     return copy;
   }, [localProducts, sortBy, dir, categoryNameMap]);
 
-  function toggleSort(column: SortCol) {
-    if (sortBy === column) {
-      setDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(column);
-      setDir("asc");
-    }
-  }
+  const toggleSort = useCallback(
+    (column: SortCol) => {
+      if (sortBy === column) {
+        setDir((d) => (d === "asc" ? "desc" : "asc"));
+      } else {
+        setSortBy(column);
+        setDir("asc");
+      }
+    },
+    [sortBy],
+  );
 
   return (
     <div className="admin-table-wrap">
@@ -105,7 +111,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
               onClick={() => toggleSort("title")}
             >
               Title
-              <SortIcon active={sortBy === "title"} dir={dir} />
+              <AdminSortIcon active={sortBy === "title"} dir={dir} />
             </th>
             <th
               className={
@@ -114,7 +120,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
               onClick={() => toggleSort("category")}
             >
               Category
-              <SortIcon active={sortBy === "category"} dir={dir} />
+              <AdminSortIcon active={sortBy === "category"} dir={dir} />
             </th>
             <th
               className={
@@ -123,7 +129,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
               onClick={() => toggleSort("price")}
             >
               Price
-              <SortIcon active={sortBy === "price"} dir={dir} />
+              <AdminSortIcon active={sortBy === "price"} dir={dir} />
             </th>
             <th
               className={
@@ -132,7 +138,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
               onClick={() => toggleSort("status")}
             >
               Status
-              <SortIcon active={sortBy === "status"} dir={dir} />
+              <AdminSortIcon active={sortBy === "status"} dir={dir} />
             </th>
             <th>Preview</th>
             <th>Actions</th>
@@ -150,13 +156,9 @@ export default function AdminProductsTable({ products, categories }: Props) {
             const categoryName = categoryNameMap[product.categoryId] ?? "—";
             return (
               <tr key={product.id}>
-                <td style={{ fontWeight: 600 }}>{product.title}</td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {categoryName}
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {product.price ?? "—"}
-                </td>
+                <td className="admin-cell-strong">{product.title}</td>
+                <td className="admin-cell-muted">{categoryName}</td>
+                <td className="admin-cell-muted">{product.price ?? "—"}</td>
                 <td>
                   <span
                     className={
@@ -183,7 +185,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
                         height="11"
                         viewBox="0 0 24 24"
                         fill="none"
-                        style={{ marginLeft: "0.25rem" }}
+                        className="admin-inline-icon"
                       >
                         <path
                           d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
@@ -211,11 +213,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
                       </svg>
                     </Link>
                   ) : (
-                    <span
-                      style={{ color: "var(--sb-muted)", fontSize: "0.8rem" }}
-                    >
-                      —
-                    </span>
+                    <span className="admin-cell-muted-sm">—</span>
                   )}
                 </td>
                 <td>

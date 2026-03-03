@@ -309,6 +309,11 @@
   color: var(--sb-brand-blue);
 }
 
+.admin-sort-icon {
+  margin-left: 0.375rem;
+  font-size: 0.7rem;
+}
+
 .admin-table tbody td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #f1f3f5;
@@ -321,6 +326,42 @@
 
 .admin-table tbody tr:hover {
   background: #fafbfc;
+}
+
+.admin-cell-strong {
+  font-weight: 600;
+}
+
+.admin-cell-muted {
+  color: var(--sb-muted);
+  font-size: 0.875rem;
+}
+
+.admin-cell-muted-sm {
+  color: var(--sb-muted);
+  font-size: 0.8125rem;
+}
+
+.admin-cell-max-280 {
+  max-width: 280px;
+}
+
+.admin-cell-max-180 {
+  max-width: 180px;
+}
+
+.admin-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-cell-nowrap {
+  white-space: nowrap;
+}
+
+.admin-inline-icon {
+  margin-left: 0.25rem;
 }
 
 /* ---- Status Badges ---- */

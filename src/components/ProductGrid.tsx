@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
@@ -9,8 +10,11 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   // Ensure we always show three columns for the Popular Templates
   // section; if there are fewer products, render placeholder cards
   // that match the image aspect and layout.
-  const displayItems = [...products];
-  while (displayItems.length < 3) displayItems.push(null as unknown as Product);
+  const displayItems = useMemo(() => {
+    const items = [...products];
+    while (items.length < 3) items.push(null as unknown as Product);
+    return items;
+  }, [products]);
 
   return (
     <>
@@ -18,27 +22,12 @@ export default function ProductGrid({ products }: { products: Product[] }) {
         {displayItems.map((p, idx) => (
           <div className="col-md-4" key={p ? p.title : `placeholder-${idx}`}>
             <article className="template-thumbnail sb-card h-100 product-card">
-              <div className="overflow-hidden" style={{ width: "100%" }}>
+              <div className="overflow-hidden product-thumb-wrap">
                 <Link
                   href={p ? p.productPageUrl || "#" : "#"}
-                  className="product-thumbnail-clickable"
-                  style={{
-                    aspectRatio: "3/2",
-                    width: "100%",
-                    position: "relative",
-                    overflow: "hidden",
-                    display: "block",
-                  }}
+                  className="product-thumbnail-clickable product-thumb-link"
                 >
-                  <picture
-                    style={{
-                      position: "relative",
-                      width: "95%",
-                      height: "100%",
-                      display: "block",
-                      margin: "0 auto",
-                    }}
-                  >
+                  <picture className="product-thumb-picture">
                     {p ? (
                       <Image
                         src={p.image || "/images/placeholder-preview.png"}
@@ -48,24 +37,12 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         quality={75}
                         loading="lazy"
-                        style={{
-                          marginTop: "10px",
-                          filter:
-                            "drop-shadow(rgba(0, 0, 0, 0.325) 0.5px 2px 3px)",
-                        }}
+                        style={{ marginTop: "10px" }}
                       />
                     ) : (
                       <div
                         aria-hidden="true"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: "linear-gradient(180deg,#f6f7f8,#ffffff)",
-                          borderRadius: 8,
-                        }}
+                        className="product-thumb-placeholder"
                       >
                         <svg
                           width="160"
@@ -111,10 +88,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                       ))}
                     </ul>
                     <span className="product-card-cta">
-                      <span
-                        className="sb-btn-icon"
-                        style={{ fontSize: "0.9em", fontWeight: "bold" }}
-                      >
+                      <span className="sb-btn-icon product-cta-icon-wrap">
                         <svg
                           width="16"
                           height="16"
@@ -124,10 +98,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          style={{
-                            display: "inline-block",
-                            verticalAlign: "middle",
-                          }}
+                          className="product-cta-icon"
                         >
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
