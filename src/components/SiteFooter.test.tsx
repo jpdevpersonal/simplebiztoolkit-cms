@@ -1,10 +1,14 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import SiteFooter from "./SiteFooter";
 
 describe("SiteFooter", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-03T12:00:00.000Z"));
+  });
+
   it("renders key links and current year", () => {
-    const year = String(new Date().getFullYear());
     render(<SiteFooter />);
 
     expect(screen.getByRole("link", { name: "Products" })).toHaveAttribute(
@@ -15,6 +19,6 @@ describe("SiteFooter", () => {
       "href",
       "https://www.etsy.com/shop/simplebiztoolkit",
     );
-    expect(screen.getByText(new RegExp(`© ${year}`))).toBeInTheDocument();
+    expect(screen.getByText(/© 2026/)).toBeInTheDocument();
   });
 });

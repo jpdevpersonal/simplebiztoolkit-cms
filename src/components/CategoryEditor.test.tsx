@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import CategoryEditor from "./CategoryEditor";
 import { clientApi } from "@/lib/clientApi";
@@ -38,12 +39,16 @@ describe("CategoryEditor", () => {
   };
 
   it("saves category changes", async () => {
+    const user = userEvent.setup();
     vi.mocked(clientApi.updateCategory).mockResolvedValueOnce(category as any);
 
     const { container } = render(<CategoryEditor category={category as any} />);
-    const inputs = container.querySelectorAll("input.form-control");
-    fireEvent.change(inputs[0], { target: { value: "Updated General" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+    const nameInput = container.querySelectorAll(
+      "input.form-control",
+    )[0] as HTMLInputElement;
+    await user.clear(nameInput);
+    await user.type(nameInput, "Updated General");
+    await user.click(screen.getByRole("button", { name: "Save Changes" }));
 
     await waitFor(() => {
       expect(clientApi.updateCategory).toHaveBeenCalledWith(
@@ -58,12 +63,13 @@ describe("CategoryEditor", () => {
   });
 
   it("shows error message when save fails", async () => {
+    const user = userEvent.setup();
     vi.mocked(clientApi.updateCategory).mockRejectedValueOnce(
       new Error("Server error"),
     );
 
     render(<CategoryEditor category={category as any} />);
-    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+    await user.click(screen.getByRole("button", { name: "Save Changes" }));
 
     await waitFor(() => {
       expect(screen.getByText("Server error")).toBeInTheDocument();
@@ -71,6 +77,7 @@ describe("CategoryEditor", () => {
   });
 
   it("deletes category after confirmation", async () => {
+    const user = userEvent.setup();
     vi.mocked(clientApi.deleteCategory).mockResolvedValueOnce(undefined as any);
     vi.stubGlobal(
       "confirm",
@@ -78,7 +85,7 @@ describe("CategoryEditor", () => {
     );
 
     render(<CategoryEditor category={category as any} />);
-    fireEvent.click(screen.getByRole("button", { name: "Delete Category" }));
+    await user.click(screen.getByRole("button", { name: "Delete Category" }));
 
     await waitFor(() => {
       expect(clientApi.deleteCategory).toHaveBeenCalledWith("cat-1");

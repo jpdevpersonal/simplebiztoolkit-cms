@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProductEditorLoader from "./ProductEditorLoader";
 import { clientApi } from "@/lib/clientApi";
 
@@ -17,6 +17,10 @@ vi.mock("@/lib/clientApi", () => ({
 }));
 
 describe("ProductEditorLoader", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("shows loading then renders ProductEditor", async () => {
     vi.mocked(clientApi.getProductById).mockResolvedValueOnce({
       id: "p-1",
@@ -36,6 +40,8 @@ describe("ProductEditorLoader", () => {
     expect(screen.getByText("Loading...")).toBeInTheDocument();
 
     await waitFor(() => {
+      expect(clientApi.getProductById).toHaveBeenCalledWith("p-1");
+      expect(clientApi.getProductCategories).toHaveBeenCalledTimes(1);
       expect(screen.getByText("Editor: Loaded Product")).toBeInTheDocument();
     });
   });

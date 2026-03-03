@@ -53,16 +53,10 @@ vi.mock("next/link", () => ({
   },
 }));
 
-// Provide a deterministic pathname for components that call `usePathname()`.
-vi.mock("next/navigation", async () => {
-  const actual = await vi.importActual<any>("next/navigation");
-  return {
-    ...actual,
-    usePathname: () => "/",
-  };
-});
-
 // Cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+  vi.clearAllMocks();
 });

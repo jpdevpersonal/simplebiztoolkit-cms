@@ -61,23 +61,40 @@ export async function proxyToBackend(options: {
 }) {
   const { request, path, method, accessToken } = options;
 
-  const body =
-    request && (method === "POST" || method === "PUT")
-      ? await request.text()
-      : undefined;
+  try {
+    const body =
+      request && (method === "POST" || method === "PUT")
+        ? await request.text()
+        : undefined;
 
-  const res = await sendHttpRequest(`${BACKEND}${path}`, {
-    method,
-    headers: buildHeaders(request, accessToken),
-    body,
-  });
+    const res = await sendHttpRequest(`${BACKEND}${path}`, {
+      method,
+      headers: buildHeaders(request, accessToken),
+      body,
+    });
 
-  const { payload, contentType } = await parseHttpResponse(res);
-  const text = typeof payload === "string" ? payload : JSON.stringify(payload);
-  return new NextResponse(text, {
-    status: res.status,
-    headers: {
-      "Content-Type": contentType || "text/plain",
-    },
-  });
+    const { payload, contentType } = await parseHttpResponse(res);
+    const text =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
+
+    return new NextResponse(text, {
+      status: res.status,
+      headers: {
+        "Content-Type": contentType || "text/plain",
+      },
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "Unable to reach backend";
+
+    return NextResponse.json(
+      {
+        error: "Backend proxy failed",
+        message,
+      },
+      { status: 502 },
+    );
+  }
 }

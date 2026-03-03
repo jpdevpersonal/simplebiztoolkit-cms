@@ -297,4 +297,26 @@ describe("clientApi", () => {
     expect(result).toBe("plain text payload");
     expect(unwrapDataEnvelopeMock).not.toHaveBeenCalled();
   });
+
+  it("throws an actionable error when transport request fails", async () => {
+    sendHttpRequestMock.mockRejectedValueOnce(new Error("socket hang up"));
+
+    await expect(clientApi.getProductCategories()).rejects.toThrow(
+      "Request failed for GET /api/products/categories: socket hang up",
+    );
+    expect(parseHttpResponseMock).not.toHaveBeenCalled();
+  });
+
+  it("throws an actionable error when response parsing fails", async () => {
+    sendHttpRequestMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+    } as Response);
+    parseHttpResponseMock.mockRejectedValueOnce(new Error("unexpected token"));
+
+    await expect(clientApi.getProductCategories()).rejects.toThrow(
+      "Failed to parse API response for GET /api/products/categories: unexpected token",
+    );
+  });
 });
