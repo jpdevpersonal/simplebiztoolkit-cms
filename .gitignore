@@ -22,6 +22,8 @@ out
 .idea
 .DS_Store
 coverage
+playwright-report
+test-results
 *.suo
 *.ntvs*
 *.njsproj

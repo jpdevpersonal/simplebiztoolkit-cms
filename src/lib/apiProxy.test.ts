@@ -130,5 +130,21 @@ describe("apiProxy", () => {
       expect(response.headers.get("content-type")).toContain("text/plain");
       await expect(response.text()).resolves.toBe("plain text");
     });
+
+    it("returns 502 response when backend request fails", async () => {
+      sendHttpRequestMock.mockRejectedValueOnce(new Error("ECONNREFUSED"));
+
+      const response = await proxyToBackend({
+        request: null,
+        path: "/api/products/1",
+        method: "GET",
+      });
+
+      expect(response.status).toBe(502);
+      await expect(response.json()).resolves.toEqual({
+        error: "Backend proxy failed",
+        message: "ECONNREFUSED",
+      });
+    });
   });
 });
