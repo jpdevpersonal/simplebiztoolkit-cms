@@ -83,7 +83,11 @@ export default async function EditMenuItemPage({ params }: Props) {
       <div className="admin-page-header">
         <div>
           <div className="admin-breadcrumb">
-            <Link href="/admin/menu" className="admin-breadcrumb-link">
+            <Link
+              href="/admin/menu"
+              className="admin-breadcrumb-link"
+              style={{ fontSize: "1rem" }}
+            >
               ← Menu Items
             </Link>
           </div>
@@ -262,6 +266,23 @@ export default async function EditMenuItemPage({ params }: Props) {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Bottom breadcrumb */}
+      <div
+        style={{
+          marginTop: "1rem",
+          paddingTop: "0.5rem",
+          borderTop: "1px solid var(--sb-border)",
+        }}
+      >
+        <Link
+          href="/admin/menu"
+          className="admin-breadcrumb-link"
+          style={{ fontSize: "1rem" }}
+        >
+          ← Menu Items
+        </Link>
       </div>
     </div>
   );

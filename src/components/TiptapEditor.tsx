@@ -10,7 +10,7 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { Node, mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -200,10 +200,12 @@ export default function TiptapEditor({
   minHeight = 420,
   readOnly = false,
 }: TiptapEditorProps) {
+  const [hasSelection, setHasSelection] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3, 4] },
+        heading: { levels: [1, 2, 3, 4, 5] },
         codeBlock: { languageClassPrefix: "language-" },
       }),
       CtaBlock,
@@ -223,6 +225,9 @@ export default function TiptapEditor({
     immediatelyRender: false,
     onUpdate({ editor }) {
       onChange(editor.getHTML());
+    },
+    onSelectionUpdate({ editor }) {
+      setHasSelection(!editor.state.selection.empty);
     },
   });
 
@@ -282,6 +287,37 @@ export default function TiptapEditor({
       .run();
   };
 
+  const autoFormatParagraphs = () => {
+    const { state } = editor;
+    const { from, to, empty } = state.selection;
+    if (empty) return;
+
+    // Collect selected text, collapsing inter-node whitespace to a single space
+    const selectedText = state.doc.textBetween(from, to, " ");
+    if (!selectedText.trim()) return;
+
+    // Split on each full stop, trim surrounding whitespace, drop empty fragments
+    const sentences = selectedText
+      .split(".")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    if (sentences.length === 0) return;
+
+    // Re-attach the period to every sentence
+    const paragraphNodes = sentences.map((sentence) => ({
+      type: "paragraph",
+      content: [{ type: "text", text: sentence + "." }],
+    }));
+
+    editor
+      .chain()
+      .focus()
+      .deleteRange({ from, to })
+      .insertContentAt(from, paragraphNodes)
+      .run();
+  };
+
   return (
     <div
       style={{
@@ -334,14 +370,21 @@ export default function TiptapEditor({
                     ? "h3"
                     : editor.isActive("heading", { level: 4 })
                       ? "h4"
-                      : "p"
+                      : editor.isActive("heading", { level: 5 })
+                        ? "h5"
+                        : "p"
             }
             onChange={(e) => {
               const val = e.target.value;
               if (val === "p") {
                 editor.chain().focus().setParagraph().run();
               } else {
-                const level = parseInt(val.replace("h", "")) as 1 | 2 | 3 | 4;
+                const level = parseInt(val.replace("h", "")) as
+                  | 1
+                  | 2
+                  | 3
+                  | 4
+                  | 5;
                 editor.chain().focus().toggleHeading({ level }).run();
               }
             }}
@@ -360,6 +403,7 @@ export default function TiptapEditor({
             <option value="h2">Heading 2</option>
             <option value="h3">Heading 3</option>
             <option value="h4">Heading 4</option>
+            <option value="h5">Heading 5</option>
           </select>
 
           <ToolbarDivider />
@@ -484,6 +528,13 @@ export default function TiptapEditor({
           <ToolbarButton title="Insert CTA block" onClick={insertCtaBlock}>
             CTA
           </ToolbarButton>
+          <ToolbarButton
+            title="Auto-format selection into paragraphs (splits at each full stop)"
+            onClick={autoFormatParagraphs}
+            disabled={!hasSelection}
+          >
+            ¶ Split
+          </ToolbarButton>
 
           <ToolbarDivider />
 
@@ -528,6 +579,7 @@ export default function TiptapEditor({
         .tiptap h2 { font-size: 1.375rem; font-weight: 700; margin: 1rem 0 0.5rem; }
         .tiptap h3 { font-size: 1.125rem; font-weight: 600; margin: 0.875rem 0 0.375rem; }
         .tiptap h4 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+        .tiptap h5 { font-size: 0.875rem; font-weight: 600; margin: 0.625rem 0 0.2rem; letter-spacing: 0.04em; }
         .tiptap p { margin: 0 0 0.75rem; }
         .tiptap ul, .tiptap ol { padding-left: 1.5rem; margin: 0 0 0.75rem; }
         .tiptap li { margin-bottom: 0.25rem; }
