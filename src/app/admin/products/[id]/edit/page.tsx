@@ -19,7 +19,11 @@ function PageHeader({ id }: { id: string }) {
     <div className="admin-page-header">
       <div>
         <div className="admin-breadcrumb">
-          <Link href="/admin/products" className="admin-breadcrumb-link">
+          <Link
+            href="/admin/products"
+            className="admin-breadcrumb-link"
+            style={{ fontSize: "1rem" }}
+          >
             ← Products
           </Link>
         </div>
@@ -67,6 +71,21 @@ export default async function EditProductPage({ params }: Props) {
       <div>
         <PageHeader id={id} />
         <ProductEditorLoader id={id} />
+        <div
+          style={{
+            marginTop: "1rem",
+            paddingTop: "0.5rem",
+            borderTop: "1px solid var(--sb-border)",
+          }}
+        >
+          <Link
+            href="/admin/products"
+            className="admin-breadcrumb-link"
+            style={{ fontSize: "1rem" }}
+          >
+            ← Products
+          </Link>
+        </div>
       </div>
     );
   }
@@ -75,6 +94,21 @@ export default async function EditProductPage({ params }: Props) {
     <div>
       <PageHeader id={id} />
       <ProductEditor product={product} categories={categories} />
+      <div
+        style={{
+          marginTop: "1rem",
+          paddingTop: "0.5rem",
+          borderTop: "1px solid var(--sb-border)",
+        }}
+      >
+        <Link
+          href="/admin/products"
+          className="admin-breadcrumb-link"
+          style={{ fontSize: "1rem" }}
+        >
+          ← Products
+        </Link>
+      </div>
     </div>
   );
 }
