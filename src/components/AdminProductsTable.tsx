@@ -15,7 +15,7 @@ type Props = {
 type SortCol = "title" | "status" | "category" | "price";
 
 export default function AdminProductsTable({ products, categories }: Props) {
-  const [sortBy, setSortBy] = useState<SortCol>("category");
+  const [sortBy, setSortBy] = useState<SortCol>("title");
   const [dir, setDir] = useState<"asc" | "desc">("asc");
 
   const [localCategories, setLocalCategories] =
