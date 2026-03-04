@@ -28,7 +28,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                   className="product-thumbnail-clickable product-thumb-link"
                 >
                   <picture className="product-thumb-picture">
-                    {p ? (
+                    {p && (
                       <Image
                         src={p.image || "/images/placeholder-preview.png"}
                         alt={p.title}
@@ -39,37 +39,12 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                         loading="lazy"
                         style={{ marginTop: "10px" }}
                       />
-                    ) : (
-                      <div
-                        aria-hidden="true"
-                        className="product-thumb-placeholder"
-                      >
-                        <svg
-                          width="160"
-                          height="106"
-                          viewBox="0 0 160 106"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <rect
-                            width="160"
-                            height="106"
-                            rx="8"
-                            fill="#eef1f3"
-                          />
-                          <g fill="#c7cbd0">
-                            <rect x="18" y="26" width="124" height="6" rx="3" />
-                            <rect x="18" y="40" width="90" height="6" rx="3" />
-                            <rect x="18" y="54" width="60" height="6" rx="3" />
-                          </g>
-                        </svg>
-                      </div>
                     )}
                   </picture>
                 </Link>
               </div>
               <div className="product-card-content">
-                {p ? (
+                {p && (
                   <>
                     <h3 className="product-card-title">{p.title}</h3>
                     {/<[a-z][\s\S]*>/i.test(p.problem ?? "") ? (
@@ -127,11 +102,6 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                         />
                       </svg>
                     </span>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="product-card-title">Coming soon</h3>
-                    <p className="sb-muted">New template arriving shortly</p>
                   </>
                 )}
               </div>
