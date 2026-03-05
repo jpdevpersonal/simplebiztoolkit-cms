@@ -51,18 +51,7 @@ export default async function EditPageAdminPage({ params }: Props) {
           </div>
           <h1>Edit Page</h1>
         </div>
-        <span
-          style={{
-            fontSize: "0.75rem",
-            color: "var(--sb-muted)",
-            background: "#f1f3f5",
-            borderRadius: "999px",
-            padding: "0.25rem 0.75rem",
-            fontWeight: 600,
-          }}
-        >
-          ID: {id}
-        </span>
+        <span className="admin-page-meta">ID: {id}</span>
       </div>
       <PageEditor
         page={page}

@@ -23,7 +23,6 @@
 
 import parse, { type DOMNode } from "html-react-parser";
 import { sanitizeHtml } from "@/lib/sanitize";
-import ProfitCalculator from "@/components/blocks/ProfitCalculator";
 
 // ─── Block registry ───────────────────────────────────────────────────────────
 
@@ -33,10 +32,8 @@ import ProfitCalculator from "@/components/blocks/ProfitCalculator";
  */
 const BLOCK_REGISTRY: Record<
   string,
-  React.ComponentType<Record<string, string>>
-> = {
-  "profit-calculator": ProfitCalculator,
-};
+  React.ComponentType<Record<string, unknown>>
+> = {};
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 

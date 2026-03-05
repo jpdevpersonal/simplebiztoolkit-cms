@@ -29,18 +29,7 @@ function PageHeader({ id }: { id: string }) {
         </div>
         <h1>Edit Template</h1>
       </div>
-      <span
-        style={{
-          fontSize: "0.75rem",
-          color: "var(--sb-muted)",
-          background: "#f1f3f5",
-          borderRadius: "999px",
-          padding: "0.25rem 0.75rem",
-          fontWeight: 600,
-        }}
-      >
-        ID: {id}
-      </span>
+      <span className="admin-page-meta">ID: {id}</span>
     </div>
   );
 }
@@ -71,18 +60,8 @@ export default async function EditProductPage({ params }: Props) {
       <div>
         <PageHeader id={id} />
         <ProductEditorLoader id={id} />
-        <div
-          style={{
-            marginTop: "1rem",
-            paddingTop: "0.5rem",
-            borderTop: "1px solid var(--sb-border)",
-          }}
-        >
-          <Link
-            href="/admin/products"
-            className="admin-breadcrumb-link"
-            style={{ fontSize: "1rem" }}
-          >
+        <div className="admin-page-footer-link">
+          <Link href="/admin/products" className="admin-breadcrumb-link">
             ← Templates
           </Link>
         </div>
@@ -94,19 +73,9 @@ export default async function EditProductPage({ params }: Props) {
     <div>
       <PageHeader id={id} />
       <ProductEditor product={product} categories={categories} />
-      <div
-        style={{
-          marginTop: "1rem",
-          paddingTop: "0.5rem",
-          borderTop: "1px solid var(--sb-border)",
-        }}
-      >
-        <Link
-          href="/admin/products"
-          className="admin-breadcrumb-link"
-          style={{ fontSize: "1rem" }}
-        >
-          ← Products
+      <div className="admin-page-footer-link">
+        <Link href="/admin/products" className="admin-breadcrumb-link">
+          ← Templates
         </Link>
       </div>
     </div>

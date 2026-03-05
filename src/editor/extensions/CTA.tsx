@@ -35,6 +35,10 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
   const { title, text, buttonText, buttonUrl } = node.attrs as CTAAttrs;
   const isLocked = node.attrs.locked === true;
   const lockReason = node.attrs.lockReason as string | null | undefined;
+  const buttonBg = node.attrs.buttonBg as string | undefined;
+  const buttonColor = node.attrs.buttonColor as string | undefined;
+  const buttonPadding = node.attrs.buttonPadding as number | undefined;
+  const buttonRadius = node.attrs.buttonRadius as number | undefined;
 
   const fieldStyle: React.CSSProperties = {
     width: "100%",
@@ -82,6 +86,93 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
         >
           CTA Block
           {isLocked && <LockedBadge reason={lockReason} />}
+        </div>
+
+        {/* Style controls */}
+        <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}>
+              Button background
+            </label>
+            <input
+              type="color"
+              value={buttonBg || "#2563eb"}
+              onChange={(e) => updateAttributes({ buttonBg: e.target.value })}
+              disabled={isLocked}
+              style={{ width: 48, height: 28, border: "none", padding: 0 }}
+            />
+            <input
+              type="text"
+              value={buttonBg || "#2563eb"}
+              onChange={(e) => updateAttributes({ buttonBg: e.target.value })}
+              disabled={isLocked}
+              style={{
+                marginLeft: 6,
+                fontSize: "0.8125rem",
+                padding: "4px 8px",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}>
+              Button color
+            </label>
+            <input
+              type="color"
+              value={buttonColor || "#ffffff"}
+              onChange={(e) =>
+                updateAttributes({ buttonColor: e.target.value })
+              }
+              disabled={isLocked}
+              style={{ width: 48, height: 28, border: "none", padding: 0 }}
+            />
+            <input
+              type="text"
+              value={buttonColor || "#ffffff"}
+              onChange={(e) =>
+                updateAttributes({ buttonColor: e.target.value })
+              }
+              disabled={isLocked}
+              style={{
+                marginLeft: 6,
+                fontSize: "0.8125rem",
+                padding: "4px 8px",
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}>
+              Padding (px)
+            </label>
+            <input
+              type="number"
+              min={0}
+              value={String(buttonPadding ?? 8)}
+              onChange={(e) =>
+                updateAttributes({ buttonPadding: Number(e.target.value) })
+              }
+              disabled={isLocked}
+              style={{ width: 96, padding: "4px 8px" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}>
+              Radius (px)
+            </label>
+            <input
+              type="number"
+              min={0}
+              value={String(buttonRadius ?? 3)}
+              onChange={(e) =>
+                updateAttributes({ buttonRadius: Number(e.target.value) })
+              }
+              disabled={isLocked}
+              style={{ width: 96, padding: "4px 8px" }}
+            />
+          </div>
         </div>
 
         <div style={{ display: "grid", gap: 8 }}>
@@ -158,10 +249,10 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
             <span
               style={{
                 marginLeft: 8,
-                padding: "2px 8px",
-                background: "#2563eb",
-                color: "#fff",
-                borderRadius: 3,
+                padding: (buttonPadding ?? 8) + "px",
+                background: buttonBg || "#2563eb",
+                color: buttonColor || "#fff",
+                borderRadius: (buttonRadius ?? 3) + "px",
                 fontSize: "0.75rem",
               }}
             >
@@ -215,6 +306,47 @@ export const CTA = Node.create({
           "/",
         renderHTML: () => ({}),
       },
+      // Inline style attributes for more granular control
+      buttonBg: {
+        default: "#2563eb",
+        parseHTML: (el: HTMLElement) =>
+          el.querySelector("a")?.getAttribute("data-button-bg") ||
+          el.querySelector("a")?.getAttribute("data-bg") ||
+          "#2563eb",
+        renderHTML: (attrs: { buttonBg?: string }) =>
+          attrs.buttonBg ? { "data-button-bg": attrs.buttonBg } : {},
+      },
+      buttonColor: {
+        default: "#ffffff",
+        parseHTML: (el: HTMLElement) =>
+          el.querySelector("a")?.getAttribute("data-button-color") ||
+          el.querySelector("a")?.getAttribute("data-color") ||
+          "#ffffff",
+        renderHTML: (attrs: { buttonColor?: string }) =>
+          attrs.buttonColor ? { "data-button-color": attrs.buttonColor } : {},
+      },
+      buttonPadding: {
+        default: 8,
+        parseHTML: (el: HTMLElement) => {
+          const v = el.querySelector("a")?.getAttribute("data-button-padding");
+          return v ? Number(v) : 8;
+        },
+        renderHTML: (attrs: { buttonPadding?: number }) =>
+          attrs.buttonPadding
+            ? { "data-button-padding": String(attrs.buttonPadding) }
+            : {},
+      },
+      buttonRadius: {
+        default: 3,
+        parseHTML: (el: HTMLElement) => {
+          const v = el.querySelector("a")?.getAttribute("data-button-radius");
+          return v ? Number(v) : 3;
+        },
+        renderHTML: (attrs: { buttonRadius?: number }) =>
+          attrs.buttonRadius
+            ? { "data-button-radius": String(attrs.buttonRadius) }
+            : {},
+      },
       locked: {
         default: false,
         parseHTML: (el: HTMLElement) =>
@@ -251,7 +383,39 @@ export const CTA = Node.create({
       ["p", {}, node.attrs.text || ""],
       [
         "a",
-        { href: node.attrs.buttonUrl || "/", class: "cta-button" },
+        mergeAttributes(
+          {
+            href: node.attrs.buttonUrl || "/",
+            class: "cta-button",
+            style: [
+              node.attrs.buttonBg ? `background:${node.attrs.buttonBg}` : null,
+              node.attrs.buttonColor ? `color:${node.attrs.buttonColor}` : null,
+              typeof node.attrs.buttonPadding === "number"
+                ? `padding:${node.attrs.buttonPadding}px`
+                : null,
+              typeof node.attrs.buttonRadius === "number"
+                ? `border-radius:${node.attrs.buttonRadius}px`
+                : null,
+            ]
+              .filter(Boolean)
+              .join("; "),
+          },
+          // also surface serialised attrs as data-* so parseHTML can read them
+          {
+            ...(node.attrs.buttonBg
+              ? { "data-button-bg": node.attrs.buttonBg }
+              : {}),
+            ...(node.attrs.buttonColor
+              ? { "data-button-color": node.attrs.buttonColor }
+              : {}),
+            ...(node.attrs.buttonPadding
+              ? { "data-button-padding": String(node.attrs.buttonPadding) }
+              : {}),
+            ...(node.attrs.buttonRadius
+              ? { "data-button-radius": String(node.attrs.buttonRadius) }
+              : {}),
+          },
+        ),
         node.attrs.buttonText || "Learn More",
       ],
     ] as unknown as [string, Record<string, string>];

@@ -40,18 +40,7 @@ export default async function EditArticlePage({ params }: Props) {
           </div>
           <h1>Edit Article</h1>
         </div>
-        <span
-          style={{
-            fontSize: "0.75rem",
-            color: "var(--sb-muted)",
-            background: "#f1f3f5",
-            borderRadius: "999px",
-            padding: "0.25rem 0.75rem",
-            fontWeight: 600,
-          }}
-        >
-          ID: {id}
-        </span>
+        <span className="admin-page-meta">ID: {id}</span>
       </div>
       <ArticleEditor article={response.data} />
     </div>

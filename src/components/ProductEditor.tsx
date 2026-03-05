@@ -108,11 +108,8 @@ export default function ProductEditor({
         router.push("/admin/products");
         router.refresh();
       } else {
-        setMessage("Template saved successfully!");
-
-        // Update local state from response (if backend returns the saved product)
+        // Keep local form state in sync in case a user navigates back quickly.
         if (saved && typeof saved === "object") {
-          // Merge returned fields into local state where present
           setTitle((saved.title as string) || title);
           setSlug((saved.slug as string) || slug);
           setProblem((saved.problem as string) || problem);
@@ -125,6 +122,9 @@ export default function ProductEditor({
           setCategoryId((saved.categoryId as string) || categoryId);
           setStatus((saved.status as "draft" | "published") || status);
         }
+
+        router.push("/admin/products");
+        router.refresh();
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");

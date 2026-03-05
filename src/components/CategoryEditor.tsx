@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import EditorFeedback from "@/components/EditorFeedback";
 
 type Props = {
   category?: ProductCategory;
@@ -175,38 +176,7 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
       </div>
 
       {/* Status messages */}
-      {message && (
-        <div
-          style={{
-            padding: "0.75rem 1rem",
-            background: "#f0fdf4",
-            border: "1px solid #86efac",
-            borderRadius: "8px",
-            color: "#166534",
-            fontSize: "0.875rem",
-            fontWeight: 500,
-            marginBottom: "0.75rem",
-          }}
-        >
-          {message}
-        </div>
-      )}
-      {error && (
-        <div
-          style={{
-            padding: "0.75rem 1rem",
-            background: "#fff5f5",
-            border: "1px solid #fca5a5",
-            borderRadius: "8px",
-            color: "#dc2626",
-            fontSize: "0.875rem",
-            fontWeight: 500,
-            marginBottom: "0.75rem",
-          }}
-        >
-          {error}
-        </div>
-      )}
+      <EditorFeedback message={message} error={error} />
 
       {/* Actions */}
       <div className="admin-form-actions">

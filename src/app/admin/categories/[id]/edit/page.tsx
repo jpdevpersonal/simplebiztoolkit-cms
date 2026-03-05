@@ -34,13 +34,7 @@ export default async function EditCategoryPage({ params }: Props) {
           </div>
           <h1>Edit Category</h1>
         </div>
-        <span
-          style={{
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            color: "var(--sb-brand-blue)",
-          }}
-        >
+        <span className="admin-page-meta admin-page-meta-lg">
           {category.name}
         </span>
       </div>
