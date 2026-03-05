@@ -29,7 +29,7 @@ export default function TestimonialsPage() {
 
         <div className="text-center mt-4">
           <Link href="/products" className="btn sb-btn-primary">
-            Browse All Products
+            Browse All Templates
             <svg
               className="sb-btn-arrow"
               width="16"

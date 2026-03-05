@@ -5,6 +5,7 @@
 
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -12,8 +13,8 @@ import { signOut } from "next-auth/react";
 const navItems = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/articles", label: "Articles", exact: false },
-  { href: "/admin/products", label: "Products", exact: false },
-  { href: "/admin/categories", label: "Product Categories", exact: false },
+  { href: "/admin/products", label: "Templates", exact: false },
+  { href: "/admin/categories", label: "Template Categories", exact: false },
   { href: "/admin/menu", label: "Menu Items", exact: false },
   { href: "/admin/pages", label: "Pages", exact: false },
 ];
@@ -33,7 +34,15 @@ export default function AdminNav({ userEmail }: { userEmail: string }) {
           {/* Brand + nav links */}
           <div className="admin-nav-start">
             <Link href="/admin" className="admin-nav-brand">
-              <span className="admin-nav-brand-badge">CMS</span>
+              <span className="admin-nav-brand-badge">
+                <Image
+                  src="/images/simple-biz-toolkit-logo.png"
+                  alt="Simple Biz Toolkit"
+                  width={28}
+                  height={28}
+                  style={{ borderRadius: 6 }}
+                />
+              </span>
               Admin
             </Link>
 

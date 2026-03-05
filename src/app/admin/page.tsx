@@ -89,8 +89,8 @@ export default async function AdminDashboard() {
     },
     {
       href: "/admin/products",
-      label: "Manage Products",
-      description: `${products.length} products`,
+      label: "Manage Templates",
+      description: `${products.length} templates`,
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <path
@@ -121,7 +121,7 @@ export default async function AdminDashboard() {
     },
     {
       href: "/admin/categories",
-      label: "Manage Product Categories",
+      label: "Manage Template Categories",
       description: `${categories.length} categories`,
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -223,7 +223,7 @@ export default async function AdminDashboard() {
         </div>
         <div className="col-6 col-md-3">
           <AdminStatCard
-            label="Products"
+            label="Templates"
             value={products.length}
             valueSize="lg"
           />
@@ -373,7 +373,7 @@ export default async function AdminDashboard() {
                   </svg>
                 </span>
                 <span style={{ fontWeight: 600, fontSize: "0.9375rem" }}>
-                  New Product
+                  New Template
                 </span>
               </Link>
               <Link href="/admin/pages/new" className="admin-quick-link">

@@ -53,7 +53,7 @@ describe("ProductEditorLoader", () => {
     render(<ProductEditorLoader id="missing" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Product not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/Template not found/i)).toBeInTheDocument();
     });
   });
 });

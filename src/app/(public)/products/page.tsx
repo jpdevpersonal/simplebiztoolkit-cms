@@ -7,12 +7,12 @@ import "@/styles/products.css";
 import { apiService } from "@/lib/api";
 
 export const metadata: Metadata = {
-  title: "Products",
+  title: "Templates",
   description:
     "Browse categories like accounting ledgers, time sheets, and rent trackers. Each tool links to Etsy for secure checkout.",
   alternates: { canonical: "/products" },
   openGraph: {
-    title: "Products | Simple Biz Toolkit",
+    title: "Templates | Simple Biz Toolkit",
     description:
       "Browse categories like accounting ledgers, time sheets, and rent trackers. Each tool links to Etsy for secure checkout.",
     url: "/products",
@@ -37,7 +37,7 @@ export default async function ProductsPage() {
       {
         "@type": "ListItem",
         position: 2,
-        name: "Products",
+        name: "Templates",
         item: `${site.url}/products`,
       },
     ],
@@ -49,7 +49,7 @@ export default async function ProductsPage() {
       <section className="sb-section">
         <div className="container">
           <div className="products-header">
-            <h1>Product Categories</h1>
+            <h1>Template Categories</h1>
             <p className="sb-muted">
               Browse our collection of simple, ready-to-use templates. All come
               in A4 and US-Letter sizes.

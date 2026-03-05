@@ -107,7 +107,7 @@ export default function AboutPage() {
                 border: "2px solid var(--sb-green)",
               }}
             >
-              Browse All Products
+              Browse All Templates
             </Link>
           </div>
         </div>

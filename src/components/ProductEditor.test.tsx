@@ -64,7 +64,7 @@ describe("ProductEditor", () => {
       target: { value: "my-product" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Create Product" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create Template" }));
 
     await waitFor(() => {
       expect(clientApi.createProduct).toHaveBeenCalled();
@@ -117,7 +117,7 @@ describe("ProductEditor", () => {
         expect.any(Object),
       );
       expect(
-        screen.getByText("Product saved successfully!"),
+        screen.getByText("Template saved successfully!"),
       ).toBeInTheDocument();
     });
   });
@@ -183,7 +183,7 @@ describe("ProductEditor", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Delete Product" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete Template" }));
 
     await waitFor(() => {
       expect(clientApi.deleteProduct).toHaveBeenCalledWith("p-1");

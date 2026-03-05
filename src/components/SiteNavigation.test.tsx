@@ -29,7 +29,7 @@ describe("SiteNavigation", () => {
     mockUsePathname.mockReturnValue("/products");
     render(<SiteNavigation />);
 
-    expect(screen.getByRole("link", { name: "Products" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Templates" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Resources" })).toBeInTheDocument();
   });
 
@@ -37,7 +37,7 @@ describe("SiteNavigation", () => {
     mockUsePathname.mockReturnValue("/products");
     render(<SiteNavigation />);
 
-    const productsLink = screen.getByRole("link", { name: "Products" });
+    const productsLink = screen.getByRole("link", { name: "Templates" });
     const resourcesLink = screen.getByRole("link", { name: "Resources" });
 
     // Active link gets brand colour; inactive links do not

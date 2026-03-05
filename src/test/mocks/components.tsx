@@ -13,7 +13,7 @@ export const Seo = vi.fn(
       data-title={title}
       data-description={description}
     />
-  )
+  ),
 );
 
 // Mock TrustBar component - renders items as a simple list
@@ -43,6 +43,6 @@ export const ProductGrid = vi.fn(({ products }: { products: unknown[] }) => (
     data-testid="product-grid-mock"
     data-product-count={products?.length || 0}
   >
-    {products?.length} Products
+    {products?.length} Templates
   </div>
 ));

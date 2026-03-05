@@ -148,7 +148,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
           {sorted.length === 0 && (
             <tr>
               <td colSpan={6} className="admin-empty-state">
-                No products found. Create your first product!
+                No templates found. Create your first template!
               </td>
             </tr>
           )}

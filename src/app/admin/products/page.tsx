@@ -29,7 +29,7 @@ export default async function ProductsPage() {
     <div>
       {/* Page header */}
       <div className="admin-page-header">
-        <h1>Products</h1>
+        <h1>Templates</h1>
         <Link href="/admin/products/new" className="admin-btn-save">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <line
@@ -51,7 +51,7 @@ export default async function ProductsPage() {
               strokeLinecap="round"
             />
           </svg>
-          New Product
+          New Template
         </Link>
       </div>
 
@@ -59,7 +59,7 @@ export default async function ProductsPage() {
       <div className="row g-3 mb-4">
         <div className="col-6">
           <AdminStatCard
-            label="Total Products"
+            label="Total Templates"
             value={products.length}
             valueSize="lg"
           />

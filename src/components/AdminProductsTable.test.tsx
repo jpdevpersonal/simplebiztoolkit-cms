@@ -96,7 +96,7 @@ describe("AdminProductsTable", () => {
     render(<AdminProductsTable products={[]} categories={categories} />);
 
     expect(
-      screen.getByText(/No products found. Create your first product!/i),
+      screen.getByText(/No templates found. Create your first template!/i),
     ).toBeInTheDocument();
   });
 

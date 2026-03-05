@@ -22,7 +22,7 @@ describe("Products page", () => {
     render(await ProductsPage());
 
     expect(
-      screen.getByRole("heading", { name: "Product Categories" }),
+      screen.getByRole("heading", { name: "Template Categories" }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: /Browse templates/i }),
@@ -44,7 +44,7 @@ describe("Products page", () => {
     render(await ProductsPage());
 
     expect(
-      screen.getByRole("heading", { name: "Product Categories" }),
+      screen.getByRole("heading", { name: "Template Categories" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Accounting Ledger")).toBeInTheDocument();
     expect(screen.getByText("Track your transactions")).toBeInTheDocument();
