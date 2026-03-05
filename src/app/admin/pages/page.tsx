@@ -4,19 +4,12 @@
  */
 
 import Link from "next/link";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { apiService, getApiService } from "@/lib/api";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminStatCard from "@/components/AdminStatCard";
 import AdminPagesTable from "@/components/AdminPagesTable";
 
 export default async function AdminPagesListPage() {
-  await headers();
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   // Fetch all menu items + categories + pages
   const [menuRes, categoriesRes, pagesRes] = await Promise.all([

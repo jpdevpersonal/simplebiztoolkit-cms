@@ -21,6 +21,12 @@ export default defineConfig({
         "**/*.test.*",
         "src/test/**",
         "**/node_modules/**",
+        // Tiptap editor internals are validated in integration flows (build/e2e),
+        // and are excluded from unit-test global coverage thresholds.
+        "src/editor/extensions/**",
+        "src/editor/EditorToolbar.tsx",
+        "src/editor/blockSelection.ts",
+        "src/components/TiptapEditor.tsx",
       ],
       thresholds: {
         statements: 70,

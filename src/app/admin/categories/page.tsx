@@ -4,10 +4,11 @@
  */
 
 import Link from "next/link";
-import { apiService } from "@/lib/api";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 
 export default async function CategoriesPage() {
-  const response = await apiService.getProductCategories();
+  const { service } = await getAdminApiService();
+  const response = await service.getProductCategories();
   const categories = response.data || [];
 
   return (

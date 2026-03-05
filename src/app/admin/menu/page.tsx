@@ -4,10 +4,7 @@
  */
 
 import Link from "next/link";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { apiService, getApiService } from "@/lib/api";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminStatCard from "@/components/AdminStatCard";
 
 function StatusBadge({ status }: { status?: string }) {
@@ -30,11 +27,7 @@ function StatusBadge({ status }: { status?: string }) {
 }
 
 export default async function MenuPage() {
-  await headers();
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   const [itemsResponse, categoriesResponse, pagesResponse] = await Promise.all([
     service.getMenuItems(),

@@ -4,10 +4,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { apiService, getApiService } from "@/lib/api";
-import { auth } from "@/lib/auth";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import ArticleEditor from "../../ArticleEditor";
 
 type Props = {
@@ -17,11 +14,7 @@ type Props = {
 export default async function EditArticlePage({ params }: Props) {
   const { id } = await params;
 
-  await headers();
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   const response = await service.getArticleById(id);
 

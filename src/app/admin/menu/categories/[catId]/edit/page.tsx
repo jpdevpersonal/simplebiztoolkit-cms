@@ -5,10 +5,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { apiService, getApiService } from "@/lib/api";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import MenuCategoryEditor from "@/components/MenuCategoryEditor";
 
 interface Props {
@@ -16,12 +13,8 @@ interface Props {
 }
 
 export default async function EditMenuCategoryPage({ params }: Props) {
-  await headers();
   const { catId } = await params;
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   const [catResponse, pagesResponse] = await Promise.all([
     service.getMenuCategoryById(catId),

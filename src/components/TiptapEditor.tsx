@@ -12,20 +12,20 @@
 
 import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import { Node, mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
-import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
+import { LegacyArticleCtaBlock } from "@/editor/extensions/LegacyArticleCtaBlock";
 import { Callout } from "@/editor/extensions/Callout";
 import { CTA } from "@/editor/extensions/CTA";
 import { ImageBlock } from "@/editor/extensions/ImageBlock";
 import { Locking } from "@/editor/extensions/Locking";
 import { EditorToolbar } from "@/editor/EditorToolbar";
 import type { EditorPolicy } from "@/editor/EditorToolbar";
+import { getTiptapScopedStyles } from "@/editor/tiptapScopedStyles";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -47,96 +47,6 @@ export interface TiptapEditorProps {
   /** Optional policy to restrict which block types / marks can be inserted */
   policy?: EditorPolicy;
 }
-
-// ─── Internal helpers ─────────────────────────────────────────────────────────
-
-function parseBooleanAttribute(value?: string | null): boolean {
-  if (!value) return false;
-  return ["true", "1", "yes", "on"].includes(value.toLowerCase());
-}
-
-const CtaBlock = Node.create({
-  name: "ctaBlock",
-  group: "block",
-  atom: true,
-  selectable: true,
-
-  parseHTML() {
-    return [{ tag: "section[data-component='article-cta']" }];
-  },
-
-  addAttributes() {
-    return {
-      title: {
-        default: "Ready to get started?",
-        parseHTML: (element: HTMLElement) => element.getAttribute("data-title"),
-        renderHTML: (attributes: { title?: string }) =>
-          attributes.title ? { "data-title": attributes.title } : {},
-      },
-      description: {
-        default: "Add a short supporting description.",
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-description"),
-        renderHTML: (attributes: { description?: string }) =>
-          attributes.description
-            ? { "data-description": attributes.description }
-            : {},
-      },
-      primaryLabel: {
-        default: "Explore",
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-primary-label"),
-        renderHTML: (attributes: { primaryLabel?: string }) =>
-          attributes.primaryLabel
-            ? { "data-primary-label": attributes.primaryLabel }
-            : {},
-      },
-      primaryHref: {
-        default: "https://example.com",
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-primary-href"),
-        renderHTML: (attributes: { primaryHref?: string }) =>
-          attributes.primaryHref
-            ? { "data-primary-href": attributes.primaryHref }
-            : {},
-      },
-      disclosure: {
-        default: null,
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-disclosure"),
-        renderHTML: (attributes: { disclosure?: string | null }) =>
-          attributes.disclosure
-            ? { "data-disclosure": attributes.disclosure }
-            : {},
-      },
-      showHomeLink: {
-        default: false,
-        parseHTML: (element: HTMLElement) =>
-          parseBooleanAttribute(element.getAttribute("data-show-home-link")),
-        renderHTML: (attributes: { showHomeLink?: boolean }) => ({
-          "data-show-home-link": attributes.showHomeLink ? "true" : "false",
-        }),
-      },
-      showEtsyLink: {
-        default: false,
-        parseHTML: (element: HTMLElement) =>
-          parseBooleanAttribute(element.getAttribute("data-show-etsy-link")),
-        renderHTML: (attributes: { showEtsyLink?: boolean }) => ({
-          "data-show-etsy-link": attributes.showEtsyLink ? "true" : "false",
-        }),
-      },
-    };
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return [
-      "section",
-      mergeAttributes(HTMLAttributes, {
-        "data-component": "article-cta",
-      }),
-    ];
-  },
-});
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -161,9 +71,8 @@ export default function TiptapEditor({
           HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
         },
       }),
-      CtaBlock,
+      LegacyArticleCtaBlock,
       Image.configure({ inline: false }),
-      Underline,
       Callout,
       CTA,
       ImageBlock,
@@ -230,79 +139,13 @@ export default function TiptapEditor({
       />
 
       {/* Scoped styles */}
-      <style>{`
-        .tiptap {
-          outline: none;
-          min-height: ${minHeight}px;
-        }
-        .tiptap p.is-editor-empty:first-child::before {
-          content: attr(data-placeholder);
-          float: left;
-          color: #adb5bd;
-          pointer-events: none;
-          height: 0;
-        }
-        .tiptap h1 { font-size: 1.75rem; font-weight: 700; margin: 1rem 0 0.5rem; }
-        .tiptap h2 { font-size: 1.375rem; font-weight: 700; margin: 1rem 0 0.5rem; }
-        .tiptap h3 { font-size: 1.125rem; font-weight: 600; margin: 0.875rem 0 0.375rem; }
-        .tiptap h4 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.25rem; }
-        .tiptap h5 { font-size: 0.875rem; font-weight: 600; margin: 0.625rem 0 0.2rem; letter-spacing: 0.04em; }
-        .tiptap p { margin: 0 0 0.75rem; }
-        .tiptap ul, .tiptap ol { padding-left: 1.5rem; margin: 0 0 0.75rem; }
-        .tiptap li { margin-bottom: 0.25rem; }
-        .tiptap blockquote {
-          border-left: 4px solid #dee2e6;
-          margin: 0.75rem 0;
-          padding: 0.25rem 1rem;
-          color: #6c757d;
-        }
-        .tiptap code {
-          background: #f1f3f5;
-          border-radius: 3px;
-          padding: 1px 4px;
-          font-size: 0.875em;
-          font-family: monospace;
-        }
-        .tiptap pre {
-          background: #1e1e2e;
-          color: #cdd6f4;
-          border-radius: 6px;
-          padding: 1rem;
-          margin: 0 0 0.75rem;
-          overflow-x: auto;
-          font-size: 0.875rem;
-        }
-        .tiptap pre code {
-          background: transparent;
-          padding: 0;
-          color: inherit;
-        }
-        .tiptap hr {
-          border: none;
-          border-top: 2px solid #dee2e6;
-          margin: 1.25rem 0;
-        }
-        .tiptap a { color: var(--sb-primary, #0d6efd); text-decoration: underline; }
-        .tiptap img { max-width: 100%; border-radius: 4px; height: auto; }
-        .tiptap section[data-component="article-cta"] {
-          margin: 0.75rem 0;
-          border: 1px dashed #adb5bd;
-          border-radius: 6px;
-          padding: 0.5rem 0.75rem;
-          background: #f8f9fa;
-          min-height: 2.25rem;
-          position: relative;
-        }
-        .tiptap section[data-component="article-cta"]::before {
-          content: "Article CTA block";
-          font-size: 0.8125rem;
-          font-weight: 600;
-          color: #495057;
-        }
-        .tiptap .ProseMirror-selectednode[data-component="article-cta"] {
-          border-color: var(--sb-primary, #0d6efd);
-        }
-      `}</style>
+      <style>
+        {getTiptapScopedStyles({
+          minHeight,
+          legacyArticleCtaLabel: "Article CTA block",
+          includeLegacySelectedBorder: true,
+        })}
+      </style>
     </div>
   );
 }

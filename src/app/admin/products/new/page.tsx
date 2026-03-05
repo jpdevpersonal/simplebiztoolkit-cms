@@ -3,11 +3,12 @@
  */
 
 import Link from "next/link";
-import { apiService } from "@/lib/api";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import ProductEditor from "@/components/ProductEditor";
 
 export default async function NewProductPage() {
-  const categoriesResponse = await apiService.getProductCategories();
+  const { service } = await getAdminApiService();
+  const categoriesResponse = await service.getProductCategories();
   const categories = categoriesResponse.data || [];
 
   return (
