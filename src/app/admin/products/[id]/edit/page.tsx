@@ -24,10 +24,10 @@ function PageHeader({ id }: { id: string }) {
             className="admin-breadcrumb-link"
             style={{ fontSize: "1rem" }}
           >
-            ← Products
+            ← Templates
           </Link>
         </div>
-        <h1>Edit Product</h1>
+        <h1>Edit Template</h1>
       </div>
       <span
         style={{
@@ -83,7 +83,7 @@ export default async function EditProductPage({ params }: Props) {
             className="admin-breadcrumb-link"
             style={{ fontSize: "1rem" }}
           >
-            ← Products
+            ← Templates
           </Link>
         </div>
       </div>

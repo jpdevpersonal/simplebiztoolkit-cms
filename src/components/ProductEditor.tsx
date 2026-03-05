@@ -109,7 +109,7 @@ export default function ProductEditor({
         router.push("/admin/products");
         router.refresh();
       } else {
-        setMessage("Product saved successfully!");
+        setMessage("Template saved successfully!");
 
         // Update local state from response (if backend returns the saved product)
         if (saved && typeof saved === "object") {
@@ -139,7 +139,7 @@ export default function ProductEditor({
       return;
     }
 
-    if (!confirm("Are you sure you want to delete this product?")) {
+    if (!confirm("Are you sure you want to delete this template?")) {
       return;
     }
 
@@ -149,7 +149,7 @@ export default function ProductEditor({
 
     try {
       await clientApi.deleteProduct(productData.id);
-      setMessage("Product deleted!");
+      setMessage("Template deleted!");
       // Redirect to products list
       router.push("/admin/products");
       router.refresh();
@@ -190,7 +190,7 @@ export default function ProductEditor({
             />
           </svg>
         }
-        title="Product Details"
+        title="Template Details"
       >
         <div className="row g-3">
           <div className="col-md-6">
@@ -288,7 +288,7 @@ export default function ProductEditor({
               storageKey="product-problem-editor-mode"
               htmlRows={3}
               minHeight={150}
-              placeholder="Describe the problem this product solves…"
+              placeholder="Describe the problem this template solves…"
             />
           </div>
 
@@ -300,7 +300,7 @@ export default function ProductEditor({
               storageKey="product-description-editor-mode"
               htmlRows={4}
               minHeight={200}
-              placeholder="Describe the product in detail…"
+              placeholder="Describe the template in detail…"
             />
           </div>
 
@@ -341,7 +341,7 @@ export default function ProductEditor({
           </div>
 
           <div className="col-md-6">
-            <label className="form-label fw-semibold">Product Page URL</label>
+            <label className="form-label fw-semibold">Template Page URL</label>
             <input
               className="form-control"
               value={productPageUrl}
@@ -358,7 +358,7 @@ export default function ProductEditor({
       <EditorActions
         saving={saving}
         isCreateMode={isCreateMode}
-        entityName="Product"
+        entityName="Template"
         onCancel={() => router.back()}
         onDelete={handleDelete}
         deleting={deleting}

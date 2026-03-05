@@ -5,7 +5,7 @@ test.describe("Smoke", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /products/i }).first(),
+      page.getByRole("link", { name: /templates/i }).first(),
     ).toBeVisible();
   });
 

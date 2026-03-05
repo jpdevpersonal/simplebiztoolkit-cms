@@ -14,7 +14,7 @@ export default async function CategoriesPage() {
     <div>
       {/* Page header */}
       <div className="admin-page-header">
-        <h1>Product Categories</h1>
+        <h1>Template Categories</h1>
         <Link href="/admin/categories/new" className="admin-btn-save">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <line
@@ -47,7 +47,7 @@ export default async function CategoriesPage() {
             <tr>
               <th>Name</th>
               <th>Slug</th>
-              <th>Products</th>
+              <th>Templates</th>
               <th>Preview</th>
               <th>Actions</th>
             </tr>

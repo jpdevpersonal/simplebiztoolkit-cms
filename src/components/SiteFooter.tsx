@@ -36,7 +36,7 @@ export default function SiteFooter() {
           className="d-flex gap-3 flex-wrap align-items-start justify-content-lg-end"
           style={{ fontSize: "0.9375rem" }}
         >
-          <Link href="/products">Products</Link>
+          <Link href="/products">Templates</Link>
           <Link href="/blog" prefetch={false}>
             Resources
           </Link>

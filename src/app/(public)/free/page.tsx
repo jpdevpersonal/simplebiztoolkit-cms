@@ -38,7 +38,7 @@ export default function FreebiePage() {
                 marginBottom: "1rem",
               }}
             >
-              Free Products
+              Free Templates
             </h1>
             <p
               className="sb-muted"
@@ -47,13 +47,13 @@ export default function FreebiePage() {
                 marginBottom: "2rem",
               }}
             >
-              We are not currently offering any free products, please try again
+              We are not currently offering any free templates, please try again
               soon.
             </p>
             <div className="d-flex gap-2 flex-wrap justify-content-center">
               <EtsyCtaButton />
               <a className="btn sb-btn-ghost" href="/products">
-                Browse All Products
+                Browse All Templates
               </a>
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function FreebiePage() {
                   className="btn sb-btn-ghost flex-grow-1 justify-content-center"
                   href="/products"
                 >
-                  Browse All Products
+                  Browse All Templates
                 </a>
               </div>
 

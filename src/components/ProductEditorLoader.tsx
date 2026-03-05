@@ -37,7 +37,7 @@ export default function ProductEditorLoader({ id }: Props) {
   }, [id]);
 
   if (loading) return <div>Loading...</div>;
-  if (!product) return <div className="sb-card p-3">Product not found.</div>;
+  if (!product) return <div className="sb-card p-3">Template not found.</div>;
 
   return <ProductEditor product={product} categories={categories} />;
 }

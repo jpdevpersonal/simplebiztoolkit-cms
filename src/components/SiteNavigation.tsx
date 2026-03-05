@@ -59,7 +59,7 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
   }, [isOpen]);
 
   const navItems = [
-    { to: "/products", label: "Products" },
+    { to: "/products", label: "Templates" },
     { to: "/blog", label: "Resources" },
     { to: "/testimonials", label: "Reviews" },
     { to: "/faq", label: "FAQ" },

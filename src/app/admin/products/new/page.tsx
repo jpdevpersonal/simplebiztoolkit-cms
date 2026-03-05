@@ -16,10 +16,10 @@ export default async function NewProductPage() {
         <div>
           <div className="admin-breadcrumb">
             <Link href="/admin/products" className="admin-breadcrumb-link">
-              ← Products
+              ← Templates
             </Link>
           </div>
-          <h1>New Product</h1>
+          <h1>New Template</h1>
         </div>
       </div>
       <ProductEditor categories={categories} />
