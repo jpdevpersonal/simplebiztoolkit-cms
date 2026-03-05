@@ -74,8 +74,7 @@ export default function ProductEditor({
     }
   };
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function saveProduct() {
     setSaving(true);
     setMessage(null);
     setError(null);
@@ -132,6 +131,22 @@ export default function ProductEditor({
     } finally {
       setSaving(false);
     }
+  }
+
+  const handlePreview = () => {
+    const cat = categories.find((c) => c.id === categoryId);
+    if (cat && slug) {
+      window.open(
+        `/products/${cat.slug}/${slug}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    }
+  };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await saveProduct();
   }
 
   async function handleDelete() {
@@ -289,6 +304,8 @@ export default function ProductEditor({
               htmlRows={3}
               minHeight={150}
               placeholder="Describe the problem this template solves…"
+              onSave={saveProduct}
+              onPreview={handlePreview}
             />
           </div>
 
@@ -301,6 +318,8 @@ export default function ProductEditor({
               htmlRows={4}
               minHeight={200}
               placeholder="Describe the template in detail…"
+              onSave={saveProduct}
+              onPreview={handlePreview}
             />
           </div>
 

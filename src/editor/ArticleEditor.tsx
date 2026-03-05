@@ -1,11 +1,22 @@
 /**
- * TiptapEditor – shared rich-text editor component.
+ * ArticleEditor – block-based TipTap editor for the CMS admin.
  *
- * Accepts and outputs standard HTML, making it compatible with any content
- * pipeline that currently uses raw HTML strings.
+ * Builds on the existing TiptapEditor feature set (full formatting toolbar,
+ * CtaBlock for legacy content) and adds three new custom block nodes:
+ *   • Callout   – styled info/warning/success boxes
+ *   • CTA       – call-to-action section (atomic, attribute-driven)
+ *   • ImageBlock – figure/img/figcaption with inline editing
  *
- * Used by RichContentField (and re-exported from ArticleEditor-tiptap.tsx
- * for backwards compatibility).
+ * On every content change `onChange` is called with both the TipTap JSON
+ * document and the serialised HTML string:
+ *
+ *   { json: editor.getJSON(), html: editor.getHTML() }
+ *
+ * Either `initialJson` (preferred) or `initialHtml` can be supplied as the
+ * opening content; if both are given JSON takes precedence.
+ *
+ * Pass `onSave` and `onPreview` to enable the Save / Preview buttons in the
+ * toolbar (they appear right-aligned).
  */
 
 "use client";
@@ -13,49 +24,61 @@
 import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { Node, mergeAttributes } from "@tiptap/core";
+import type { JSONContent } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
 import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
-import { Callout } from "@/editor/extensions/Callout";
-import { CTA } from "@/editor/extensions/CTA";
-import { ImageBlock } from "@/editor/extensions/ImageBlock";
-import { Locking } from "@/editor/extensions/Locking";
-import { EditorToolbar } from "@/editor/EditorToolbar";
-import type { EditorPolicy } from "@/editor/EditorToolbar";
+import { Callout } from "./extensions/Callout";
+import { CTA } from "./extensions/CTA";
+import { ImageBlock } from "./extensions/ImageBlock";
+import { Locking } from "./extensions/Locking";
+import { EditorToolbar } from "./EditorToolbar";
+import type { EditorPolicy } from "./policy";
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface TiptapEditorProps {
-  /** Current HTML content */
-  value: string;
-  /** Called whenever the content changes – receives the latest HTML string */
-  onChange: (html: string) => void;
-  /** Placeholder text shown when the editor is empty */
-  placeholder?: string;
-  /** Minimum editor height in px (default 420) */
-  minHeight?: number;
-  /** Whether the editor is read-only */
-  readOnly?: boolean;
-  /** When provided, renders a Save button in the toolbar */
-  onSave?: () => Promise<void>;
-  /** When provided, renders a Preview button in the toolbar */
-  onPreview?: () => void;
-  /** Optional policy to restrict which block types / marks can be inserted */
-  policy?: EditorPolicy;
+export interface BlockEditorOutput {
+  json: JSONContent;
+  html: string;
 }
 
-// ─── Internal helpers ─────────────────────────────────────────────────────────
+export interface ArticleEditorProps {
+  /** TipTap JSON document (preferred over initialHtml when available) */
+  initialJson?: JSONContent | null;
+  /** Fallback HTML content used when no JSON is provided */
+  initialHtml?: string;
+  /** Called on every content change with the latest JSON + HTML */
+  onChange?: (value: BlockEditorOutput) => void;
+  placeholder?: string;
+  minHeight?: number;
+  readOnly?: boolean;
+  /**
+   * Optional allowlist policy. When supplied, toolbar buttons for node/mark
+   * types NOT in the lists are hidden, and insertion helpers bail early.
+   * Omit (or pass `undefined`) to allow everything.
+   */
+  policy?: EditorPolicy;
+  /**
+   * Called when the user presses the "Save" button in the toolbar.
+   * Should persist both html and json (available via editor.getHTML() /
+   * editor.getJSON() at the time of the call, or derived from onChange).
+   */
+  onSave?: () => Promise<void>;
+  /** Called when the user presses the "Preview" button in the toolbar. */
+  onPreview?: () => void;
+}
+
+// ─── Legacy CtaBlock (backward-compat with old article content) ───────────────
 
 function parseBooleanAttribute(value?: string | null): boolean {
   if (!value) return false;
   return ["true", "1", "yes", "on"].includes(value.toLowerCase());
 }
 
-const CtaBlock = Node.create({
+const LegacyCtaBlock = Node.create({
   name: "ctaBlock",
   group: "block",
   atom: true,
@@ -69,14 +92,13 @@ const CtaBlock = Node.create({
     return {
       title: {
         default: "Ready to get started?",
-        parseHTML: (element: HTMLElement) => element.getAttribute("data-title"),
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-title"),
         renderHTML: (attributes: { title?: string }) =>
           attributes.title ? { "data-title": attributes.title } : {},
       },
       description: {
         default: "Add a short supporting description.",
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-description"),
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-description"),
         renderHTML: (attributes: { description?: string }) =>
           attributes.description
             ? { "data-description": attributes.description }
@@ -84,8 +106,7 @@ const CtaBlock = Node.create({
       },
       primaryLabel: {
         default: "Explore",
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-primary-label"),
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-primary-label"),
         renderHTML: (attributes: { primaryLabel?: string }) =>
           attributes.primaryLabel
             ? { "data-primary-label": attributes.primaryLabel }
@@ -93,8 +114,7 @@ const CtaBlock = Node.create({
       },
       primaryHref: {
         default: "https://example.com",
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-primary-href"),
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-primary-href"),
         renderHTML: (attributes: { primaryHref?: string }) =>
           attributes.primaryHref
             ? { "data-primary-href": attributes.primaryHref }
@@ -102,8 +122,7 @@ const CtaBlock = Node.create({
       },
       disclosure: {
         default: null,
-        parseHTML: (element: HTMLElement) =>
-          element.getAttribute("data-disclosure"),
+        parseHTML: (el: HTMLElement) => el.getAttribute("data-disclosure"),
         renderHTML: (attributes: { disclosure?: string | null }) =>
           attributes.disclosure
             ? { "data-disclosure": attributes.disclosure }
@@ -111,16 +130,16 @@ const CtaBlock = Node.create({
       },
       showHomeLink: {
         default: false,
-        parseHTML: (element: HTMLElement) =>
-          parseBooleanAttribute(element.getAttribute("data-show-home-link")),
+        parseHTML: (el: HTMLElement) =>
+          parseBooleanAttribute(el.getAttribute("data-show-home-link")),
         renderHTML: (attributes: { showHomeLink?: boolean }) => ({
           "data-show-home-link": attributes.showHomeLink ? "true" : "false",
         }),
       },
       showEtsyLink: {
         default: false,
-        parseHTML: (element: HTMLElement) =>
-          parseBooleanAttribute(element.getAttribute("data-show-etsy-link")),
+        parseHTML: (el: HTMLElement) =>
+          parseBooleanAttribute(el.getAttribute("data-show-etsy-link")),
         renderHTML: (attributes: { showEtsyLink?: boolean }) => ({
           "data-show-etsy-link": attributes.showEtsyLink ? "true" : "false",
         }),
@@ -140,63 +159,64 @@ const CtaBlock = Node.create({
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function TiptapEditor({
-  value,
+export default function ArticleEditor({
+  initialJson,
+  initialHtml,
   onChange,
   placeholder = "Start writing here…",
   minHeight = 420,
   readOnly = false,
+  policy,
   onSave,
   onPreview,
-  policy,
-}: TiptapEditorProps) {
+}: ArticleEditorProps) {
+  // Resolve initial content: JSON takes precedence over HTML
+  const initialContent: JSONContent | string | undefined =
+    initialJson ?? initialHtml ?? "";
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4, 5] },
         codeBlock: { languageClassPrefix: "language-" },
-        // Configured here to avoid duplicate-extension warnings in TipTap v3
+        // link is configured here to avoid duplicate-extension warnings
         link: {
           openOnClick: false,
           HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
         },
       }),
-      CtaBlock,
-      Image.configure({ inline: false }),
+      // Underline is not part of StarterKit – must be added explicitly
       Underline,
+      // Legacy block (backward-compat with existing article HTML)
+      LegacyCtaBlock,
+      // New CMS block nodes
       Callout,
       CTA,
       ImageBlock,
+      // Locked-block enforcement
       Locking,
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TextStyle,
       Color,
     ],
-    content: value,
+    content: initialContent,
     editable: !readOnly,
     immediatelyRender: false,
-    onUpdate({ editor }) {
-      onChange(editor.getHTML());
+    onUpdate({ editor: e }) {
+      onChange?.({ json: e.getJSON(), html: e.getHTML() });
     },
   });
 
-  // Sync external content changes (e.g. when switching editor modes)
-  useEffect(() => {
-    if (!editor) return;
-    if (editor.getHTML() !== value) {
-      editor.commands.setContent(value || "");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  // Sync editable state
+  // Sync editable flag whenever readOnly changes
   useEffect(() => {
     if (!editor) return;
     editor.setEditable(!readOnly);
   }, [editor, readOnly]);
 
   if (!editor) return null;
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div
@@ -207,12 +227,12 @@ export default function TiptapEditor({
         background: "#fff",
       }}
     >
-      {/* Toolbar */}
+      {/* Toolbar (hidden in readOnly mode) */}
       {!readOnly && (
         <EditorToolbar
           editor={editor}
-          onSave={onSave}
-          onPreview={onPreview}
+          onSave={onSave ?? (() => Promise.resolve())}
+          onPreview={onPreview ?? (() => {})}
           policy={policy}
         />
       )}
@@ -272,18 +292,11 @@ export default function TiptapEditor({
           overflow-x: auto;
           font-size: 0.875rem;
         }
-        .tiptap pre code {
-          background: transparent;
-          padding: 0;
-          color: inherit;
-        }
-        .tiptap hr {
-          border: none;
-          border-top: 2px solid #dee2e6;
-          margin: 1.25rem 0;
-        }
+        .tiptap pre code { background: transparent; padding: 0; color: inherit; }
+        .tiptap hr { border: none; border-top: 2px solid #dee2e6; margin: 1.25rem 0; }
         .tiptap a { color: var(--sb-primary, #0d6efd); text-decoration: underline; }
         .tiptap img { max-width: 100%; border-radius: 4px; height: auto; }
+        /* Legacy CTA block placeholder */
         .tiptap section[data-component="article-cta"] {
           margin: 0.75rem 0;
           border: 1px dashed #adb5bd;
@@ -291,16 +304,12 @@ export default function TiptapEditor({
           padding: 0.5rem 0.75rem;
           background: #f8f9fa;
           min-height: 2.25rem;
-          position: relative;
         }
         .tiptap section[data-component="article-cta"]::before {
-          content: "Article CTA block";
+          content: "Article CTA block (legacy)";
           font-size: 0.8125rem;
           font-weight: 600;
           color: #495057;
-        }
-        .tiptap .ProseMirror-selectednode[data-component="article-cta"] {
-          border-color: var(--sb-primary, #0d6efd);
         }
       `}</style>
     </div>

@@ -7,6 +7,7 @@ import { clientApi } from "@/lib/clientApi";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
+import RichContentField from "@/components/RichContentField";
 
 type Props = {
   menuItem?: MenuItem;
@@ -25,8 +26,7 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function saveMenuItem() {
     setSaving(true);
     setMessage(null);
     setError(null);
@@ -50,6 +50,11 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await saveMenuItem();
   }
 
   async function handleDelete() {
@@ -118,13 +123,14 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
           </div>
 
           <div className="col-12">
-            <label className="form-label fw-semibold">Description</label>
-            <textarea
-              className="form-control"
+            <RichContentField
+              label="Description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
+              onChange={setDescription}
+              storageKey="menu-item-description-mode"
+              htmlRows={3}
               placeholder="Optional description for this navigation item"
+              onSave={saveMenuItem}
             />
           </div>
         </div>
@@ -159,4 +165,3 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
     </form>
   );
 }
-

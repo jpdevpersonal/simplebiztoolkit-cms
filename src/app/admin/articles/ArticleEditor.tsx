@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import type { Article } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import { slugify } from "@/lib/slugify";
-import RichContentField from "@/components/RichContentField";
+import BlockEditor, { type BlockEditorOutput } from "@/editor/ArticleEditor";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
@@ -36,6 +36,7 @@ export default function ArticleEditor({
     slug: article?.slug || "",
     description: article?.description || "",
     content: article?.content || "",
+    editorJson: article?.editorJson || (null as string | null),
     category: article?.category || "Bookkeeping",
     readingMinutes: article?.readingMinutes || 5,
     badges: article?.badges?.join(", ") || "",
@@ -56,8 +57,11 @@ export default function ArticleEditor({
     }
   }, [formData.title, isNew, formData.slug]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  /**
+   * Core save logic – called both from the form submit handler and from the
+   * in-editor toolbar "Save" button via the `onSave` prop.
+   */
+  const saveArticle = async () => {
     setLoading(true);
     setError("");
 
@@ -87,6 +91,18 @@ export default function ArticleEditor({
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await saveArticle();
+  };
+
+  /** Opens the published (or draft) article in a new browser tab. */
+  const handlePreview = () => {
+    if (formData.slug) {
+      window.open(`/blog/${formData.slug}`, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -180,41 +196,35 @@ export default function ArticleEditor({
             </div>
 
             <div className="mb-0">
-              <RichContentField
-                label="Content"
-                value={formData.content}
-                onChange={(html) =>
-                  setFormData((prev) => ({ ...prev, content: html }))
+              <label className="form-label fw-semibold">Content</label>
+              <BlockEditor
+                initialJson={
+                  formData.editorJson
+                    ? (() => {
+                        try {
+                          return JSON.parse(formData.editorJson);
+                        } catch {
+                          return undefined;
+                        }
+                      })()
+                    : undefined
                 }
-                storageKey="article-content-editor-mode"
-                required
-                htmlRows={20}
-                minHeight={420}
+                initialHtml={formData.content}
+                onChange={({ html, json }: BlockEditorOutput) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    content: html,
+                    editorJson: JSON.stringify(json),
+                  }))
+                }
                 placeholder="Start writing your article content here…"
-                hint={
-                  <>
-                    Use{" "}
-                    <code>
-                      &lt;section data-component=&quot;section&quot;&gt;
-                    </code>{" "}
-                    and{" "}
-                    <code>
-                      &lt;aside data-component=&quot;callout&quot;
-                      data-title=&quot;Title&quot;&gt;
-                    </code>{" "}
-                    or{" "}
-                    <code>
-                      &lt;section data-component=&quot;article-cta&quot;
-                      data-title=&quot;Ready?&quot;
-                      data-description=&quot;...&quot;
-                      data-primary-label=&quot;Explore&quot;
-                      data-primary-href=&quot;https://...&quot;
-                      data-show-home-link=&quot;true&quot;
-                      data-show-etsy-link=&quot;false&quot;&gt;&lt;/section&gt;
-                    </code>
-                  </>
-                }
+                minHeight={420}
+                onSave={saveArticle}
+                onPreview={handlePreview}
               />
+              <div className="form-text mt-1">
+                Use the toolbar to insert Callout, CTA, and Image blocks.
+              </div>
             </div>
           </AdminFormBlock>
         </div>

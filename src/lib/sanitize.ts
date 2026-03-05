@@ -32,6 +32,8 @@ export function sanitizeHtml(html: string): string {
       "li",
       "a",
       "img",
+      "figure",
+      "figcaption",
       "section",
       "aside",
       "div",
@@ -53,6 +55,7 @@ export function sanitizeHtml(html: string): string {
       "title",
       "class",
       "id",
+      // Legacy CMS component attributes
       "data-component",
       "data-title",
       "data-description",
@@ -61,6 +64,12 @@ export function sanitizeHtml(html: string): string {
       "data-disclosure",
       "data-show-home-link",
       "data-show-etsy-link",
+      // Block editor attributes (data-sbt-block system)
+      "data-sbt-block",
+      "data-tone",
+      "data-text",
+      "data-button-text",
+      "data-button-url",
       // Allow target="_blank" on links
       "target",
       "rel",
