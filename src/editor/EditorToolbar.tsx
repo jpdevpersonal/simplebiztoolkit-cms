@@ -23,6 +23,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { isSelectionInLockedNode } from "./extensions/Locking";
+import type { EditorControlPreset } from "@/types/editorControls";
+import { clientApi } from "@/lib/clientApi";
 import {
   canMoveBlockDown,
   canMoveBlockUp,
@@ -152,6 +154,17 @@ export function EditorToolbar({
   const [saving, setSaving] = useState(false);
   // Controlled value for the Insert Block dropdown – reset to "" after pick.
   const [insertValue, setInsertValue] = useState("");
+  // Approved editor control presets loaded from the API.
+  const [presets, setPresets] = useState<EditorControlPreset[]>([]);
+
+  useEffect(() => {
+    clientApi
+      .getEditorControls("approved")
+      .then(setPresets)
+      .catch(() => {
+        /* silent – presets are optional */
+      });
+  }, []);
 
   useEffect(() => {
     if (!editor) return;
@@ -247,10 +260,71 @@ export function EditorToolbar({
       .run();
   };
 
+  const insertPresetBlock = (preset: EditorControlPreset) => {
+    switch (preset.blockType) {
+      case "paragraph":
+        editor.chain().focus().insertContent({ type: "paragraph" }).run();
+        break;
+      case "callout":
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: "callout",
+            attrs: { tone: preset.calloutTone ?? "info" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Your message here…" }],
+              },
+            ],
+          })
+          .run();
+        break;
+      case "cta":
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: "ctaSbtBlock",
+            attrs: {
+              title: preset.ctaTitle || "Start Growing Your Business",
+              text: preset.ctaText || "Use the tools in SimpleBizToolkit.",
+              buttonText: preset.ctaButtonText || "Try Now",
+              buttonUrl: preset.ctaButtonUrl || "/",
+            },
+          })
+          .run();
+        break;
+      case "image":
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: "imageBlock",
+            attrs: {
+              src: preset.imageSrc || "",
+              alt: preset.imageAlt || "",
+              caption: preset.imageCaption || "",
+            },
+          })
+          .run();
+        break;
+    }
+  };
+
   const handleInsertBlock = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setInsertValue(""); // reset immediately to show placeholder again
     if (!val) return;
+
+    // Handle preset selections (value = "preset:<id>")
+    if (val.startsWith("preset:")) {
+      const presetId = val.slice("preset:".length);
+      const preset = presets.find((p) => p.id === presetId);
+      if (preset) insertPresetBlock(preset);
+      return;
+    }
 
     switch (val) {
       case "paragraph":
@@ -569,6 +643,15 @@ export function EditorToolbar({
         )}
         {isNodeAllowed("ctaSbtBlock") && <option value="cta">📣 CTA</option>}
         {isNodeAllowed("imageBlock") && <option value="image">🖼️ Image</option>}
+        {presets.length > 0 && (
+          <optgroup label="── Presets">
+            {presets.map((p) => (
+              <option key={p.id} value={`preset:${p.id}`}>
+                ✦ {p.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
       </select>
 
       <TDivider />

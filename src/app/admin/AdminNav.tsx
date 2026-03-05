@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/categories", label: "Template Categories", exact: false },
   { href: "/admin/menu", label: "Menu Items", exact: false },
   { href: "/admin/pages", label: "Pages", exact: false },
+  { href: "/admin/editor-controls", label: "Editor Controls", exact: false },
 ];
 
 function isActive(href: string, exact: boolean, pathname: string): boolean {
