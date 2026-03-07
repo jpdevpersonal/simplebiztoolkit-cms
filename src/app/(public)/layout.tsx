@@ -10,9 +10,12 @@ import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "../BootstrapClient";
 import ScrollToTop from "../ScrollToTop";
-import { apiService } from "@/lib/api";
-import { slugify } from "@/lib/slugify";
 import type { MenuNavItem } from "@/components/SiteNavigation";
+import {
+  getMenuItemLandingHref,
+  getPublishedMenuItemContent,
+  getPublishedMenuItems,
+} from "@/lib/menuContent";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -83,61 +86,17 @@ export default async function PublicLayout({
   // Build dynamic navigation items from published menu items
   const menuNavItems: MenuNavItem[] = [];
   try {
-    // Prefer the dedicated tree endpoint; fall back to GetAll if not yet deployed.
-    let menuRes = await apiService.getPublishedMenuItems();
-    if (menuRes.statusCode === 404) {
-      console.warn(
-        "[Nav] items-tree endpoint not found, falling back to GetAll",
-      );
-      menuRes = await apiService.getMenuItems();
-    }
-
-    if (menuRes.error) {
-      console.error(
-        `[Nav] menu API error (${menuRes.statusCode}):`,
-        menuRes.error,
-      );
-    }
-
-    const allItems = menuRes.data ?? [];
-    // Filter items by published status client-side (items-tree returns all)
-    const publishedItems = allItems.filter((i) => i.status === "published");
+    const publishedItems = await getPublishedMenuItems();
 
     for (const item of publishedItems) {
-      const directPages = (item.pages ?? []).filter(
-        (p) => p.status === "published",
-      );
-      const publishedCategories = (item.categories ?? [])
-        .filter((cat) => cat.status === "published")
-        .map((cat) => ({
-          ...cat,
-          pages: (cat.pages ?? []).filter((p) => p.status === "published"),
-        }))
-        .filter((cat) => cat.pages.length > 0);
+      const content = await getPublishedMenuItemContent(item);
+      if (content.totalPages === 0) continue;
 
-      const hasContent =
-        directPages.length > 0 || publishedCategories.length > 0;
-      if (!hasContent) continue;
-
-      if (publishedCategories.length === 0 && directPages.length > 0) {
-        // No categories – simple link to the first direct page
-        const firstPage = directPages[0];
-        menuNavItems.push({
-          id: item.id,
-          title: item.title,
-          directHref:
-            directPages.length === 1
-              ? `/${firstPage.slug}`
-              : `/pages/${slugify(item.title)}`,
-        });
-      } else {
-        // Has categories – link directly to the category listing page
-        menuNavItems.push({
-          id: item.id,
-          title: item.title,
-          directHref: `/pages/${slugify(item.title)}`,
-        });
-      }
+      menuNavItems.push({
+        id: item.id,
+        title: item.title,
+        directHref: getMenuItemLandingHref(content),
+      });
     }
   } catch (err) {
     // Navigation data not critical – fall back to static items only

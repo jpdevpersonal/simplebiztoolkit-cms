@@ -6,9 +6,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
-import { apiService } from "@/lib/api";
 import { site } from "@/config/site";
-import { slugify } from "@/lib/slugify";
+import {
+  getMenuItemLandingHref,
+  getPublishedMenuItemContent,
+  getPublishedMenuItems,
+} from "@/lib/menuContent";
 import "@/styles/pages.css";
 
 export const metadata: Metadata = {
@@ -23,34 +26,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PagesOverview() {
-  // Use the tree endpoint so we get nested categories + pages
-  let menuRes = await apiService.getPublishedMenuItems();
-  if (menuRes.statusCode === 404) {
-    menuRes = await apiService.getMenuItems();
-  }
-  const allItems = menuRes.data ?? [];
-
-  // Only show published items that actually have content
-  const publishedItems = allItems
-    .filter((i) => i.status === "published")
-    .map((item) => {
-      const directPages = (item.pages ?? []).filter(
-        (p) => p.status === "published",
-      );
-      const publishedCats = (item.categories ?? [])
-        .filter((c) => c.status === "published")
-        .filter((c) => (c.pages ?? []).some((p) => p.status === "published"));
-      const totalPages =
-        directPages.length +
-        publishedCats.reduce(
-          (sum, c) =>
-            sum +
-            (c.pages ?? []).filter((p) => p.status === "published").length,
-          0,
-        );
-      return { ...item, directPages, publishedCats, totalPages };
-    })
-    .filter((i) => i.totalPages > 0);
+  const publishedItems = (
+    await Promise.all(
+      (await getPublishedMenuItems()).map((item) =>
+        getPublishedMenuItemContent(item),
+      ),
+    )
+  ).filter((item) => item.totalPages > 0);
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -104,14 +86,7 @@ export default async function PagesOverview() {
           ) : (
             <div className="pages-grid">
               {publishedItems.map((item) => {
-                const menuSlug = slugify(item.title);
-                // If no categories, link directly to first page
-                const href =
-                  item.publishedCats.length > 0
-                    ? `/pages/${menuSlug}`
-                    : item.directPages.length === 1
-                      ? `/${item.directPages[0].slug}`
-                      : `/pages/${menuSlug}`;
+                const href = getMenuItemLandingHref(item);
 
                 return (
                   <Link href={href} className="page-card-link" key={item.id}>
@@ -121,10 +96,10 @@ export default async function PagesOverview() {
                         <p className="page-card-summary">{item.description}</p>
                       )}
                       <div className="page-card-meta">
-                        {item.publishedCats.length > 0 && (
+                        {item.publishedCategories.length > 0 && (
                           <span>
-                            {item.publishedCats.length} topic
-                            {item.publishedCats.length === 1 ? "" : "s"}
+                            {item.publishedCategories.length} topic
+                            {item.publishedCategories.length === 1 ? "" : "s"}
                           </span>
                         )}
                         <span>

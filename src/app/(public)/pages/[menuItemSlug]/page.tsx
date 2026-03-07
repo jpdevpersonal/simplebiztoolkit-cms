@@ -5,12 +5,17 @@
  */
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
-import { apiService } from "@/lib/api";
 import { site } from "@/config/site";
 import { slugify } from "@/lib/slugify";
+import {
+  getPublishedMenuItemContent,
+  getPublishedMenuItems,
+} from "@/lib/menuContent";
+import "@/styles/blog.css";
 import "@/styles/pages.css";
 
 type Props = {
@@ -19,22 +24,14 @@ type Props = {
 
 /** Resolve a menu item by matching slugified title against the URL slug. */
 async function resolveMenuItem(slug: string) {
-  let menuRes = await apiService.getPublishedMenuItems();
-  if (menuRes.statusCode === 404) {
-    menuRes = await apiService.getMenuItems();
-  }
-  const items = (menuRes.data ?? []).filter((i) => i.status === "published");
+  const items = await getPublishedMenuItems();
   return items.find((i) => slugify(i.title) === slug);
 }
 
 export async function generateStaticParams() {
-  let menuRes = await apiService.getPublishedMenuItems();
-  if (menuRes.statusCode === 404) {
-    menuRes = await apiService.getMenuItems();
-  }
-  return (menuRes.data ?? [])
-    .filter((i) => i.status === "published")
-    .map((i) => ({ menuItemSlug: slugify(i.title) }));
+  return (await getPublishedMenuItems()).map((i) => ({
+    menuItemSlug: slugify(i.title),
+  }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -58,17 +55,11 @@ export default async function MenuItemLandingPage({ params }: Props) {
   const item = await resolveMenuItem(menuItemSlug);
   if (!item) notFound();
 
-  const publishedCats = (item.categories ?? [])
-    .filter((c) => c.status === "published")
-    .map((c) => ({
-      ...c,
-      publishedPages: (c.pages ?? []).filter((p) => p.status === "published"),
-    }))
-    .filter((c) => c.publishedPages.length > 0);
-
-  const directPages = (item.pages ?? []).filter(
-    (p) => p.status === "published",
-  );
+  const content = await getPublishedMenuItemContent(item);
+  const publishedCats = content.publishedCategories;
+  const directPages = content.directPages;
+  const showDirectPageCards =
+    publishedCats.length === 0 && directPages.length > 1;
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -101,6 +92,36 @@ export default async function MenuItemLandingPage({ params }: Props) {
       />
     </svg>
   );
+
+  const articleLinkIcon = (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M5 12h14M13 5l7 7-7 7"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
+  const formatPageDate = (dateISO?: string) => {
+    if (!dateISO) return null;
+    const parsedDate = new Date(dateISO);
+    if (Number.isNaN(parsedDate.getTime())) return dateISO;
+
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(parsedDate);
+  };
 
   return (
     <>
@@ -184,25 +205,102 @@ export default async function MenuItemLandingPage({ params }: Props) {
                   Other Pages
                 </h2>
               )}
-              <div className="pages-grid">
-                {directPages.map((page) => (
-                  <Link
-                    key={page.id}
-                    href={`/${page.slug}`}
-                    className="page-card-link"
-                  >
-                    <article className="page-card">
-                      <h2 className="page-card-title">{page.title}</h2>
-                      {page.description && (
-                        <p className="page-card-summary">{page.description}</p>
-                      )}
-                      <span className="page-card-cta">
-                        Read page {arrowIcon}
-                      </span>
-                    </article>
-                  </Link>
-                ))}
-              </div>
+              {showDirectPageCards ? (
+                <div className="row g-3 mt-2">
+                  {directPages.map((page) => {
+                    const imageSrc = page.featuredImage || page.headerImage;
+                    const pageDate = formatPageDate(page.dateISO);
+
+                    return (
+                      <div className="col-lg-6" key={page.id}>
+                        <article className="sb-card p-3 h-100">
+                          {imageSrc && (
+                            <div className="blog-card-image">
+                              <Link href={`/${page.slug}`}>
+                                <Image
+                                  src={imageSrc}
+                                  alt={page.title}
+                                  width={800}
+                                  height={450}
+                                  sizes="(max-width: 768px) 100vw, 50vw"
+                                  loading="lazy"
+                                  style={{
+                                    width: "100%",
+                                    height: "auto",
+                                    borderRadius: "8px",
+                                    marginBottom: "12px",
+                                    objectFit: "contain",
+                                    backgroundColor: "#f8f9fa",
+                                  }}
+                                />
+                              </Link>
+                            </div>
+                          )}
+
+                          <div className="d-flex justify-content-between gap-2 flex-wrap">
+                            <div className="sb-muted" style={{ fontSize: 13 }}>
+                              {page.category || item.title}
+                            </div>
+                            {pageDate && (
+                              <div
+                                className="sb-muted"
+                                style={{ fontSize: 13 }}
+                              >
+                                {pageDate}
+                              </div>
+                            )}
+                          </div>
+
+                          <div
+                            className="mt-1"
+                            style={{ fontWeight: 900, fontSize: 18 }}
+                          >
+                            {page.title}
+                          </div>
+
+                          {(page.description || page.subtitle) && (
+                            <div className="sb-muted mt-1">
+                              {page.description || page.subtitle}
+                            </div>
+                          )}
+
+                          <div className="mt-3">
+                            <Link
+                              className="sb-article-link"
+                              href={`/${page.slug}`}
+                            >
+                              <span>Read page</span>
+                              {articleLinkIcon}
+                            </Link>
+                          </div>
+                        </article>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="pages-grid">
+                  {directPages.map((page) => (
+                    <Link
+                      key={page.id}
+                      href={`/${page.slug}`}
+                      className="page-card-link"
+                    >
+                      <article className="page-card">
+                        <h2 className="page-card-title">{page.title}</h2>
+                        {page.description && (
+                          <p className="page-card-summary">
+                            {page.description}
+                          </p>
+                        )}
+                        <span className="page-card-cta">
+                          Read page {arrowIcon}
+                        </span>
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </>
           )}
 
