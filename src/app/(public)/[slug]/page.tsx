@@ -96,8 +96,8 @@ export default async function MenuItemPageView({ params }: Props) {
 
       <main className="article-page">
         <header className="article-header">
-          <h1 className="article-title">{page.title}</h1>
-          {page.subtitle && <p className="article-subtitle">{page.subtitle}</p>}
+          {/* <h1 className="article-title">{page.title}</h1>
+          {page.subtitle && <p className="article-subtitle">{page.subtitle}</p>} */}
         </header>
 
         {/* Header image */}

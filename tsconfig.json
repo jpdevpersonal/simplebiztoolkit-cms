@@ -17,6 +17,7 @@
         "name": "next"
       }
     ],
+    "types": ["vitest", "@testing-library/jest-dom"],
     "ignoreDeprecations": "5.0",
     "baseUrl": "./",
     "paths": {

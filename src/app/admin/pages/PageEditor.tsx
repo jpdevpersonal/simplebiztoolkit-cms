@@ -503,6 +503,8 @@ export default function PageEditor({
         onCancel={() => router.push("/admin/pages")}
         onDelete={!isNew && page ? handleDelete : undefined}
         deleting={deleting}
+        previewHref={formData.slug ? `/${formData.slug}` : undefined}
+        previewLabel="Preview"
       />
     </form>
   );

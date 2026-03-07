@@ -24,7 +24,6 @@ vi.mock("@/lib/clientApi", () => ({
     createArticle: vi.fn(),
     updateArticle: vi.fn(),
     revalidateContent: vi.fn(),
-    getEditorControls: vi.fn().mockResolvedValue([]),
   },
 }));
 

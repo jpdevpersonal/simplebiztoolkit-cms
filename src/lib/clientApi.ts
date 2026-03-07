@@ -6,10 +6,6 @@ import type {
   ProductCategory,
   ProductItem,
 } from "@/lib/api";
-import type {
-  EditorControlPreset,
-  EditorControlStatus,
-} from "@/types/editorControls";
 import {
   extractErrorMessage,
   parseHttpResponse,
@@ -250,34 +246,5 @@ export const clientApi = {
 
   deleteMenuItemPage(id: string) {
     return request<void>(`/api/menuitempages/${id}`, { method: "DELETE" });
-  },
-
-  // ==================== EDITOR CONTROL METHODS ====================
-
-  getEditorControls(status?: EditorControlStatus) {
-    const qs = status ? `?status=${encodeURIComponent(status)}` : "";
-    return request<EditorControlPreset[]>(`/api/editorcontrols${qs}`);
-  },
-
-  getEditorControlById(id: string) {
-    return request<EditorControlPreset>(`/api/editorcontrols/${id}`);
-  },
-
-  createEditorControl(payload: Partial<EditorControlPreset>) {
-    return request<EditorControlPreset>("/api/editorcontrols", {
-      method: "POST",
-      body: payload,
-    });
-  },
-
-  updateEditorControl(id: string, payload: Partial<EditorControlPreset>) {
-    return request<EditorControlPreset>(`/api/editorcontrols/${id}`, {
-      method: "PUT",
-      body: payload,
-    });
-  },
-
-  deleteEditorControl(id: string) {
-    return request<void>(`/api/editorcontrols/${id}`, { method: "DELETE" });
   },
 };
