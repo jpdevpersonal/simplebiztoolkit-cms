@@ -128,29 +128,6 @@ export default async function MenuItemLandingPage({ params }: Props) {
       <JsonLd json={breadcrumbJsonLd} />
       <section className="sb-section">
         <div className="container">
-          {/* Breadcrumb */}
-          <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-            <Link href="/pages" className="sb-breadcrumb-link">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                className="sb-breadcrumb-icon"
-              >
-                <path
-                  d="M10 3l-5 5 5 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              All Pages
-            </Link>
-          </nav>
-
           <div className="pages-header">
             <h1>{item.title}</h1>
             {item.description && <p className="sb-muted">{item.description}</p>}
@@ -229,7 +206,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
                                     height: "auto",
                                     borderRadius: "8px",
                                     marginBottom: "12px",
-                                    objectFit: "contain",
+                                    objectFit: "cover",
                                     backgroundColor: "#f8f9fa",
                                   }}
                                 />
@@ -239,16 +216,8 @@ export default async function MenuItemLandingPage({ params }: Props) {
 
                           <div className="d-flex justify-content-between gap-2 flex-wrap">
                             <div className="sb-muted" style={{ fontSize: 13 }}>
-                              {page.category || item.title}
+                              {/* {page.category || item.title} */}
                             </div>
-                            {pageDate && (
-                              <div
-                                className="sb-muted"
-                                style={{ fontSize: 13 }}
-                              >
-                                {pageDate}
-                              </div>
-                            )}
                           </div>
 
                           <div
@@ -261,6 +230,15 @@ export default async function MenuItemLandingPage({ params }: Props) {
                           {(page.description || page.subtitle) && (
                             <div className="sb-muted mt-1">
                               {page.description || page.subtitle}
+                            </div>
+                          )}
+
+                          {pageDate && (
+                            <div
+                              className="sb-muted"
+                              style={{ fontSize: 13, marginTop: "8px" }}
+                            >
+                              {pageDate}
                             </div>
                           )}
 
