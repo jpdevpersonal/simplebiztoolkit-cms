@@ -49,7 +49,21 @@ vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: any) => {
     const resolvedHref =
       typeof href === "string" ? href : (href?.pathname ?? "");
-    return React.createElement("a", { href: resolvedHref, ...rest }, children);
+    const {
+      prefetch: _prefetch,
+      replace: _replace,
+      scroll: _scroll,
+      shallow: _shallow,
+      locale: _locale,
+      legacyBehavior: _legacyBehavior,
+      ...anchorProps
+    } = rest;
+
+    return React.createElement(
+      "a",
+      { href: resolvedHref, ...anchorProps },
+      children,
+    );
   },
 }));
 

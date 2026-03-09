@@ -69,6 +69,49 @@ describe("POST /api/revalidate", () => {
     expect(json.slug).toBe("hello-world");
   });
 
+  it("revalidates a specific product when slug is present", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "X-Revalidation-Secret": "secret-123" },
+      body: JSON.stringify({ type: "product", slug: "prod-1" }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(revalidationMocks.revalidateProduct).toHaveBeenCalledWith("prod-1");
+    expect(response.status).toBe(200);
+    expect(json.revalidated).toBe(true);
+    expect(json.type).toBe("product");
+    expect(json.slug).toBe("prod-1");
+  });
+
+  it("revalidates all products when product type without slug", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "X-Revalidation-Secret": "secret-123" },
+      body: JSON.stringify({ type: "product" }),
+    });
+
+    const response = await POST(request as never);
+
+    expect(response.status).toBe(200);
+    expect(revalidationMocks.revalidateAllProducts).toHaveBeenCalledTimes(1);
+  });
+
+  it("revalidates a category when slug is present", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "X-Revalidation-Secret": "secret-123" },
+      body: JSON.stringify({ type: "category", slug: "books" }),
+    });
+
+    const response = await POST(request as never);
+
+    expect(revalidationMocks.revalidateCategory).toHaveBeenCalledWith("books");
+    expect(response.status).toBe(200);
+  });
+
   it("revalidates all products when type is all", async () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
@@ -108,5 +151,26 @@ describe("POST /api/revalidate", () => {
 
     expect(response.status).toBe(500);
     expect(json).toEqual({ error: "Revalidation failed" });
+  });
+
+  it("allows revalidation when secret invalid but requireAuth ok", async () => {
+    // Make requireAuth resolve to ok:true for this test
+    const apiProxy = await import("@/lib/apiProxy");
+    // @ts-ignore - set mock implementation
+    apiProxy.requireAuth.mockResolvedValue({
+      ok: true,
+      response: new Response(null, { status: 200 }),
+    });
+
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "X-Revalidation-Secret": "wrong" },
+      body: JSON.stringify({ type: "product", slug: "prod-2" }),
+    });
+
+    const response = await POST(request as never);
+
+    expect(revalidationMocks.revalidateProduct).toHaveBeenCalledWith("prod-2");
+    expect(response.status).toBe(200);
   });
 });

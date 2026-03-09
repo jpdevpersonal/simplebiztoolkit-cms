@@ -7,12 +7,8 @@ import type { Product } from "@/types/product";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
-  // Ensure we always show three columns for the Popular Templates
-  // section; if there are fewer products, render placeholder cards
-  // that match the image aspect and layout.
   const displayItems = useMemo(() => {
     const items = [...products];
-    while (items.length < 3) items.push(null as unknown as Product);
     return items;
   }, [products]);
 

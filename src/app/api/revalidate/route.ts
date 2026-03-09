@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Revalidation error:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Revalidation error:", message);
     return NextResponse.json({ error: "Revalidation failed" }, { status: 500 });
   }
 }
