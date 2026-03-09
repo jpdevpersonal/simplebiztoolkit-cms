@@ -5,10 +5,7 @@
  */
 
 import Link from "next/link";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { apiService, getApiService } from "@/lib/api";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import PageEditor from "../PageEditor";
 
 type Props = {
@@ -16,12 +13,8 @@ type Props = {
 };
 
 export default async function NewPageAdminPage({ searchParams }: Props) {
-  await headers();
   const { menuItemId, categoryId } = await searchParams;
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   const menuRes = await service.getMenuItems();
   const menuItems = menuRes.data || [];

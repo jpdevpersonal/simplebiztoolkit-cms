@@ -147,7 +147,7 @@ h6 {
 }
 
 h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2rem, 5vw, 2.5rem);
   letter-spacing: -0.03em;
 }
 
@@ -204,12 +204,12 @@ h3 {
   justify-content: center;
   gap: 0.625rem;
   border: 0;
-  border-radius: var(--sb-radius-sm);
-  color: #fff !important;
-  background: var(--sb-gradient-primary) !important;
+  border-radius: var(--sb-btn-radius, var(--sb-radius-sm));
+  color: var(--sb-btn-color, #fff) !important;
+  background: var(--sb-btn-bg, var(--sb-gradient-primary)) !important;
   font-weight: 600;
   font-size: 1.0625rem;
-  padding: 0.875rem 1.75rem;
+  padding: var(--sb-btn-padding, 0.875rem 1.75rem);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -235,7 +235,10 @@ h3 {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .sb-btn-primary:hover {
-  background: var(--sb-gradient-primary-hover) !important;
+  background: var(
+    --sb-btn-bg-hover,
+    var(--sb-gradient-primary-hover)
+  ) !important;
   transform: translateY(-3px);
   box-shadow: var(--sb-shadow-glow);
 }

@@ -26,6 +26,8 @@ export interface Article {
   subtitle?: string;
   description: string;
   content: string; // HTML content
+  /** Serialised TipTap JSON document (block editor source-of-truth) */
+  editorJson?: string | null;
   dateISO: string;
   dateModified?: string;
   category: string;
@@ -97,6 +99,8 @@ export interface MenuItemPage {
   subtitle?: string;
   description?: string;
   content?: string;
+  /** Serialised TipTap JSON document (block editor source-of-truth) */
+  editorJson?: string | null;
   dateISO: string;
   dateModified: string;
   category?: string;

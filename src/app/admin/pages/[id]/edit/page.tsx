@@ -5,10 +5,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { apiService, getApiService } from "@/lib/api";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import PageEditor from "../../PageEditor";
 
 interface Props {
@@ -16,12 +13,8 @@ interface Props {
 }
 
 export default async function EditPageAdminPage({ params }: Props) {
-  await headers();
   const { id } = await params;
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   const [pageRes, menuRes] = await Promise.all([
     service.getMenuItemPageById(id),
@@ -51,18 +44,7 @@ export default async function EditPageAdminPage({ params }: Props) {
           </div>
           <h1>Edit Page</h1>
         </div>
-        <span
-          style={{
-            fontSize: "0.75rem",
-            color: "var(--sb-muted)",
-            background: "#f1f3f5",
-            borderRadius: "999px",
-            padding: "0.25rem 0.75rem",
-            fontWeight: 600,
-          }}
-        >
-          ID: {id}
-        </span>
+        <span className="admin-page-meta">ID: {id}</span>
       </div>
       <PageEditor
         page={page}

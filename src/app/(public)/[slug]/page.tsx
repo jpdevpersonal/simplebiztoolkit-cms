@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
+import Link from "next/link";
+import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { apiService } from "@/lib/api";
@@ -71,6 +73,20 @@ export default async function MenuItemPageView({ params }: Props) {
 
   const page = response.data;
 
+  // Resolve parent menu item for breadcrumb (may be provided inline or referenced by id)
+  let parentMenuItem = page.menuItem ?? page.menuCategory?.menuItem;
+  if (!parentMenuItem && page.menuItemId) {
+    const mi = await apiService.getMenuItemById(page.menuItemId);
+    parentMenuItem = mi.data;
+  }
+  if (!parentMenuItem && page.menuCategoryId) {
+    const cat = await apiService.getMenuCategoryById(page.menuCategoryId);
+    if (cat.data?.menuItemId) {
+      const mi = await apiService.getMenuItemById(cat.data.menuItemId);
+      parentMenuItem = mi.data;
+    }
+  }
+
   const pageJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -95,9 +111,37 @@ export default async function MenuItemPageView({ params }: Props) {
       <JsonLd json={pageJsonLd} />
 
       <main className="article-page">
+        {/* Breadcrumb back to the menu item pages listing */}
+        {parentMenuItem ? (
+          <nav className="sb-breadcrumb" aria-label="Breadcrumb">
+            <Link
+              href={`/pages/${slugify(parentMenuItem.title)}`}
+              className="sb-breadcrumb-link"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+                className="sb-breadcrumb-icon"
+              >
+                <path
+                  d="M10 3l-5 5 5 5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Back to {parentMenuItem.title}
+            </Link>
+          </nav>
+        ) : null}
+
         <header className="article-header">
-          <h1 className="article-title">{page.title}</h1>
-          {page.subtitle && <p className="article-subtitle">{page.subtitle}</p>}
+          {/* <h1 className="article-title">{page.title}</h1>
+          {page.subtitle && <p className="article-subtitle">{page.subtitle}</p>} */}
         </header>
 
         {/* Header image */}

@@ -26,7 +26,6 @@ describe("SiteHeader", () => {
     render(<SiteHeader />);
 
     expect(screen.getByText("Site nav component")).toBeInTheDocument();
-    expect(screen.getByText("Etsy CTA")).toBeInTheDocument();
   });
 
   it("hides nav and CTA on admin routes", () => {
@@ -34,6 +33,5 @@ describe("SiteHeader", () => {
     render(<SiteHeader />);
 
     expect(screen.queryByText("Site nav component")).not.toBeInTheDocument();
-    expect(screen.queryByText("Etsy CTA")).not.toBeInTheDocument();
   });
 });

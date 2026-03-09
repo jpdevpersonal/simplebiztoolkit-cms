@@ -41,6 +41,129 @@ describe("ContentRenderer", () => {
     expect(screen.getByText("See all products")).toBeInTheDocument();
   });
 
+  it("renders saved CTA button styles from block HTML", () => {
+    const html =
+      '<section data-sbt-block="cta"><h2>Styled CTA</h2><p>Styled description</p><a href="/shop" data-button-bg="#123456" data-button-color="#abcdef" data-button-padding="14" data-button-radius="22">Shop now</a></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    expect(screen.getByText("Styled CTA")).toBeInTheDocument();
+    expect(screen.getByText("Styled description")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Shop now" })).toHaveStyle({
+      "--sb-btn-bg": "#123456",
+      "--sb-btn-bg-hover": "#123456",
+      "--sb-btn-color": "#abcdef",
+      "--sb-btn-padding": "14px",
+      "--sb-btn-radius": "22px",
+    });
+  });
+
+  it("adds a thin border when a CTA button background is white", () => {
+    const html =
+      '<section data-sbt-block="cta"><h2>White CTA</h2><p>Styled description</p><a href="/shop" data-button-bg="#ffffff">Shop now</a></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    expect(screen.getByRole("link", { name: "Shop now" })).toHaveStyle({
+      borderWidth: "1px",
+      borderStyle: "solid",
+      borderColor: "rgba(0, 0, 0, 0.2)",
+    });
+  });
+
+  it("renders saved CTA section background and border width", () => {
+    const html =
+      '<section data-sbt-block="cta" data-background-color="#fff4d6" data-border-width="6"><h2>Styled CTA</h2><p>Styled description</p><a href="/shop">Shop now</a></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    expect(screen.getByText("Styled CTA").closest("section")).toHaveStyle({
+      background: "#fff4d6",
+      borderWidth: "6px",
+      borderStyle: "solid",
+      borderColor: "#dee2e6",
+    });
+  });
+
+  it("uses shared primary button classes by default for CTA blocks", () => {
+    const html =
+      '<section data-sbt-block="cta"><h2>Default CTA</h2><p>Default description</p><a href="/shop">Shop now</a></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    expect(screen.getByRole("link", { name: "Shop now" })).toHaveClass(
+      "cta-button",
+      "btn",
+      "sb-btn-primary",
+    );
+  });
+
+  it("renders second CTA button styles plus saved gap and alignment", () => {
+    const html =
+      '<section data-sbt-block="cta" data-button-gap="24"><h2>Dual CTA</h2><p>Styled description</p><div class="sbt-cta-buttons"><div><a href="/primary" data-button-role="primary" data-button-align="left" data-button-bg="#123456">Primary</a></div><div></div><div><a href="/secondary" data-button-role="secondary" data-button-align="right" data-button-bg="#654321" data-button-color="#fedcba" data-button-padding="18" data-button-radius="30">Secondary</a></div></div></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    const secondButton = screen.getByRole("link", { name: "Secondary" });
+    expect(secondButton).toHaveStyle({
+      "--sb-btn-bg": "#654321",
+      "--sb-btn-bg-hover": "#654321",
+      "--sb-btn-color": "#fedcba",
+      "--sb-btn-padding": "18px",
+      "--sb-btn-radius": "30px",
+    });
+
+    const layout = screen
+      .getByRole("link", { name: "Primary" })
+      .closest(".sbt-cta-buttons");
+    expect(layout).toHaveStyle({
+      display: "grid",
+      gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+    });
+    expect(layout?.children[0]).toHaveStyle({ gap: "24px" });
+    expect(layout?.children[2]).toHaveStyle({ gap: "24px" });
+  });
+
+  it("renders saved CTA title and subtitle levels from block HTML", () => {
+    const html =
+      '<section data-sbt-block="cta"><h1 data-title-level="h1">Large CTA</h1><p data-text-level="h4">Larger subtitle</p><a href="/shop">Shop now</a></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    const heading = screen.getByRole("heading", {
+      name: "Large CTA",
+      level: 1,
+    });
+
+    expect(heading.tagName).toBe("H1");
+    expect(heading).toHaveStyle({
+      fontSize: "2.25rem",
+    });
+    expect(screen.getByText("Larger subtitle")).toHaveStyle({
+      fontSize: "1.25rem",
+    });
+  });
+
+  it("maps legacy CTA title and subtitle pixel sizes to heading levels", () => {
+    const html =
+      '<section data-sbt-block="cta"><h2 data-title-size="42">Legacy CTA</h2><p data-text-size="19">Legacy subtitle</p><a href="/shop">Shop now</a></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    const legacyHeading = screen.getByRole("heading", {
+      name: "Legacy CTA",
+      level: 1,
+    });
+
+    expect(legacyHeading.tagName).toBe("H1");
+    expect(legacyHeading).toHaveStyle({
+      fontSize: "2.25rem",
+    });
+    expect(screen.getByText("Legacy subtitle")).toHaveStyle({
+      fontSize: "1.25rem",
+    });
+  });
+
   it("converts JSX-like tags to data-component HTML", () => {
     const converted = convertArticleToHtml(
       '<Section><p>Hello</p></Section><Callout title="A">B</Callout><ArticleCTA title="Try" />',

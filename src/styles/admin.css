@@ -196,6 +196,21 @@
   margin-bottom: 1.5rem;
 }
 
+.admin-page-meta {
+  font-size: 0.75rem;
+  color: var(--sb-muted);
+  background: #f1f3f5;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-weight: 600;
+}
+
+.admin-page-meta-lg {
+  font-size: 0.875rem;
+  color: var(--sb-brand-blue);
+  background: rgba(65, 69, 86, 0.08);
+}
+
 /* ---- Admin breadcrumb (back link) ---- */
 .admin-breadcrumb {
   margin-bottom: 0.25rem;
@@ -216,6 +231,12 @@
 .admin-breadcrumb-link:hover {
   color: var(--sb-brand-blue);
   background: #f1f3f5;
+}
+
+.admin-page-footer-link {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--sb-border);
 }
 
 /* ---- Static Card (no hover lift) ---- */
@@ -360,6 +381,17 @@
   white-space: nowrap;
 }
 
+.admin-cell-code {
+  color: var(--sb-muted);
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.admin-cell-italic-faded {
+  font-style: italic;
+  opacity: 0.5;
+}
+
 .admin-inline-icon {
   margin-left: 0.25rem;
 }
@@ -419,6 +451,15 @@
   background: var(--sb-brand-blue);
   color: #fff !important;
   text-decoration: none;
+}
+
+.admin-btn-action-muted {
+  opacity: 0.6;
+}
+
+.admin-action-group {
+  display: flex;
+  gap: 0.4rem;
 }
 
 /* ---- Danger/Destructive button ---- */
@@ -556,6 +597,52 @@
 .admin-btn-cancel:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ---- Preview button (blue, compact) ---- */
+.admin-btn-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.45rem 0.9rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--sb-gradient-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.5;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+
+.admin-btn-preview:hover {
+  background: var(--sb-gradient-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 127, 90, 0.12);
+}
+
+/* ---- Feedback banners ---- */
+.admin-feedback {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.admin-feedback-success {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.admin-feedback-error {
+  background: #fff5f5;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
 }
 
 /* ---- Quick links (dashboard) ---- */

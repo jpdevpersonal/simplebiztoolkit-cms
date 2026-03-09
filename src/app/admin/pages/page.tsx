@@ -4,37 +4,12 @@
  */
 
 import Link from "next/link";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { apiService, getApiService } from "@/lib/api";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminStatCard from "@/components/AdminStatCard";
-
-function StatusBadge({ status }: { status?: string }) {
-  const published = status === "published";
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "0.2rem 0.55rem",
-        borderRadius: "999px",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        background: published ? "#dcfce7" : "#fef9c3",
-        color: published ? "#166534" : "#854d0e",
-      }}
-    >
-      {status ?? "draft"}
-    </span>
-  );
-}
+import AdminPagesTable from "@/components/AdminPagesTable";
 
 export default async function AdminPagesListPage() {
-  await headers();
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   // Fetch all menu items + categories + pages
   const [menuRes, categoriesRes, pagesRes] = await Promise.all([
@@ -128,87 +103,8 @@ export default async function AdminPagesListPage() {
         </div>
       </div>
 
-      {/* Pages table */}
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Slug</th>
-              <th>Menu Item</th>
-              <th>Topic</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {enrichedPages.length === 0 && (
-              <tr>
-                <td colSpan={7} className="admin-empty-state">
-                  No pages found. Create your first page!
-                </td>
-              </tr>
-            )}
-            {enrichedPages.map((page) => (
-              <tr key={page.id}>
-                <td style={{ fontWeight: 600 }}>{page.title}</td>
-                <td
-                  style={{
-                    color: "var(--sb-muted)",
-                    fontSize: "0.85rem",
-                    fontFamily: "monospace",
-                    maxWidth: "140px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {page.slug}
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {page.menuItemTitle}
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {page.categoryTitle ?? (
-                    <span style={{ fontStyle: "italic", opacity: 0.5 }}>
-                      None
-                    </span>
-                  )}
-                </td>
-                <td>
-                  <StatusBadge status={page.status} />
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.85rem" }}>
-                  {page.dateISO}
-                </td>
-                <td>
-                  <div style={{ display: "flex", gap: "0.4rem" }}>
-                    <Link
-                      href={`/admin/pages/${page.id}/edit`}
-                      className="admin-btn-action"
-                    >
-                      Edit
-                    </Link>
-                    {page.status === "published" && (
-                      <a
-                        href={`/${page.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="admin-btn-action"
-                        style={{ opacity: 0.6 }}
-                        title="Preview on site"
-                      >
-                        ↗
-                      </a>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Pages table (client-side sorting) */}
+      <AdminPagesTable pages={enrichedPages} />
     </div>
   );
 }

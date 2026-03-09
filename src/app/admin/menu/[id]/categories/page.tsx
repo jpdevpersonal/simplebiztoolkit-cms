@@ -4,10 +4,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { apiService, getApiService } from "@/lib/api";
-import type { Session } from "next-auth";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminStatCard from "@/components/AdminStatCard";
 
 interface Props {
@@ -15,12 +12,8 @@ interface Props {
 }
 
 export default async function MenuItemCategoriesPage({ params }: Props) {
-  await headers();
   const { id: menuItemId } = await params;
-  const session = await auth();
-  const _s = session as Session & { accessToken?: string };
-  const accessToken = _s?.accessToken;
-  const service = accessToken ? getApiService(accessToken) : apiService;
+  const { service } = await getAdminApiService();
 
   const [itemResponse, catResponse] = await Promise.all([
     service.getMenuItemById(menuItemId),

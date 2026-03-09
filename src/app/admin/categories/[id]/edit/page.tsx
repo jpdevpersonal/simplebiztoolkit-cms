@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { apiService } from "@/lib/api";
+import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import CategoryEditor from "@/components/CategoryEditor";
 
 type Props = {
@@ -14,7 +14,8 @@ type Props = {
 export default async function EditCategoryPage({ params }: Props) {
   const { id } = await params;
 
-  const response = await apiService.getProductCategories();
+  const { service } = await getAdminApiService();
+  const response = await service.getProductCategories();
   const categories = response.data || [];
 
   const category = categories.find((c) => c.id === id);
@@ -34,13 +35,7 @@ export default async function EditCategoryPage({ params }: Props) {
           </div>
           <h1>Edit Category</h1>
         </div>
-        <span
-          style={{
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            color: "var(--sb-brand-blue)",
-          }}
-        >
+        <span className="admin-page-meta admin-page-meta-lg">
           {category.name}
         </span>
       </div>

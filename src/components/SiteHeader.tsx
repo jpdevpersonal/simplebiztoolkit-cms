@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SiteNavigation, { type MenuNavItem } from "./SiteNavigation";
-import EtsyCtaButton from "@/components/EtsyCtaButton";
 
 type Props = {
   menuNavItems?: MenuNavItem[];
@@ -55,10 +54,6 @@ export default function SiteHeader({ menuNavItems = [] }: Props) {
             <>
               <div className="order-3 order-lg-2 d-flex align-items-center">
                 <SiteNavigation menuNavItems={menuNavItems} />
-              </div>
-
-              <div className="d-flex align-items-center gap-2 sb-site-header-actions order-2 order-lg-3">
-                <EtsyCtaButton className="d-none d-xl-inline-flex" />
               </div>
             </>
           )}

@@ -73,7 +73,7 @@ describe("ProductEditor", () => {
     });
   });
 
-  it("saves changes in edit mode and shows success message", async () => {
+  it("saves changes in edit mode and redirects to products", async () => {
     vi.mocked(clientApi.updateProduct).mockResolvedValueOnce({
       id: "p-1",
       title: "Old Product",
@@ -116,9 +116,8 @@ describe("ProductEditor", () => {
         "p-1",
         expect.any(Object),
       );
-      expect(
-        screen.getByText("Template saved successfully!"),
-      ).toBeInTheDocument();
+      expect(routerPush).toHaveBeenCalledWith("/admin/products");
+      expect(routerRefresh).toHaveBeenCalled();
     });
   });
 

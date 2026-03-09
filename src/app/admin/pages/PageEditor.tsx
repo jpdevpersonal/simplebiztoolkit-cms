@@ -116,6 +116,7 @@ export default function PageEditor({
     slug: page?.slug ?? "",
     description: page?.description ?? "",
     content: page?.content ?? "",
+    editorJson: page?.editorJson ?? (null as string | null),
     featuredImage: page?.featuredImage ?? "",
     headerImage: page?.headerImage ?? "",
     status: page?.status ?? "draft",
@@ -141,9 +142,7 @@ export default function PageEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.title, isNew]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function savePage() {
     if (!selectedMenuItemId) {
       setError("Please select a Menu Item.");
       return;
@@ -183,6 +182,11 @@ export default function PageEditor({
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await savePage();
   }
 
   async function handleDelete() {
@@ -326,38 +330,17 @@ export default function PageEditor({
             <div>
               <RichContentField
                 label="Content"
-                storageKey="page-editor-content-mode"
                 value={formData.content}
-                onChange={(val) => update("content", val)}
-                required
-                htmlRows={20}
-                minHeight={420}
+                onChange={(html) => update("content", html)}
+                storageKey="page-content-mode"
                 placeholder="Start writing your page content here…"
-                hint={
-                  <>
-                    Supported blocks include{" "}
-                    <code>
-                      &lt;section data-component=&quot;section&quot;&gt;
-                    </code>
-                    ,{" "}
-                    <code>
-                      &lt;aside data-component=&quot;callout&quot;
-                      data-title=&quot;Title&quot;&gt;
-                    </code>
-                    , and{" "}
-                    <code>
-                      &lt;section data-component=&quot;article-cta&quot;
-                      data-title=&quot;Ready?&quot;
-                      data-description=&quot;...&quot;
-                      data-primary-label=&quot;Explore&quot;
-                      data-primary-href=&quot;https://...&quot;
-                      data-show-home-link=&quot;true&quot;
-                      data-show-etsy-link=&quot;false&quot;&gt;&lt;/section&gt;
-                    </code>
-                    .
-                  </>
-                }
+                minHeight={420}
+                onSave={savePage}
               />
+              <div className="form-text mt-1">
+                Use the toggle above to switch between HTML and the rich-text
+                editor.
+              </div>
             </div>
           </AdminFormBlock>
         </div>
@@ -520,6 +503,8 @@ export default function PageEditor({
         onCancel={() => router.push("/admin/pages")}
         onDelete={!isNew && page ? handleDelete : undefined}
         deleting={deleting}
+        previewHref={formData.slug ? `/${formData.slug}` : undefined}
+        previewLabel="Preview"
       />
     </form>
   );

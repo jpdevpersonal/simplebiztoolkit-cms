@@ -74,8 +74,7 @@ export default function ProductEditor({
     }
   };
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function saveProduct() {
     setSaving(true);
     setMessage(null);
     setError(null);
@@ -109,11 +108,8 @@ export default function ProductEditor({
         router.push("/admin/products");
         router.refresh();
       } else {
-        setMessage("Template saved successfully!");
-
-        // Update local state from response (if backend returns the saved product)
+        // Keep local form state in sync in case a user navigates back quickly.
         if (saved && typeof saved === "object") {
-          // Merge returned fields into local state where present
           setTitle((saved.title as string) || title);
           setSlug((saved.slug as string) || slug);
           setProblem((saved.problem as string) || problem);
@@ -126,12 +122,31 @@ export default function ProductEditor({
           setCategoryId((saved.categoryId as string) || categoryId);
           setStatus((saved.status as "draft" | "published") || status);
         }
+
+        router.push("/admin/products");
+        router.refresh();
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setSaving(false);
     }
+  }
+
+  const handlePreview = () => {
+    const cat = categories.find((c) => c.id === categoryId);
+    if (cat && slug) {
+      window.open(
+        `/products/${cat.slug}/${slug}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    }
+  };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await saveProduct();
   }
 
   async function handleDelete() {
@@ -289,6 +304,8 @@ export default function ProductEditor({
               htmlRows={3}
               minHeight={150}
               placeholder="Describe the problem this template solves…"
+              onSave={saveProduct}
+              onPreview={handlePreview}
             />
           </div>
 
@@ -301,6 +318,8 @@ export default function ProductEditor({
               htmlRows={4}
               minHeight={200}
               placeholder="Describe the template in detail…"
+              onSave={saveProduct}
+              onPreview={handlePreview}
             />
           </div>
 

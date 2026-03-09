@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 
 type EditorActionsProps = {
   /** True while the save API call is in-flight */
@@ -15,6 +16,10 @@ type EditorActionsProps = {
   onDelete?: () => void;
   /** True while the delete API call is in-flight */
   deleting?: boolean;
+  /** Optional preview link href to open the page being edited in a new tab */
+  previewHref?: string;
+  /** Optional label for the preview link (defaults to "Preview") */
+  previewLabel?: string;
 };
 
 /**
@@ -31,6 +36,8 @@ export default function EditorActions({
   onCancel,
   onDelete,
   deleting = false,
+  previewHref,
+  previewLabel = "Preview",
 }: EditorActionsProps) {
   const saveLabel = saving
     ? isCreateMode
@@ -54,6 +61,47 @@ export default function EditorActions({
         >
           Cancel
         </button>
+        {previewHref && (
+          <Link
+            href={previewHref}
+            className="admin-btn-preview"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {previewLabel}
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="admin-inline-icon"
+            >
+              <path
+                d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <polyline
+                points="15 3 21 3 21 9"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <line
+                x1="10"
+                y1="14"
+                x2="21"
+                y2="3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </Link>
+        )}
       </div>
       {!isCreateMode && onDelete && (
         <button

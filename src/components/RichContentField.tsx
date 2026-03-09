@@ -16,6 +16,7 @@
 
 import { useState, useEffect } from "react";
 import TiptapEditor from "@/components/TiptapEditor";
+import type { EditorPolicy } from "@/editor/EditorToolbar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,12 @@ export interface RichContentFieldProps {
   placeholder?: string;
   /** Minimum height of the Tiptap editor in px (default 200) */
   minHeight?: number;
+  /** When provided, renders a Save button in the Tiptap toolbar */
+  onSave?: () => Promise<void>;
+  /** When provided, renders a Preview button in the Tiptap toolbar */
+  onPreview?: () => void;
+  /** Optional policy to restrict which block types / marks are available */
+  policy?: EditorPolicy;
 }
 
 // ─── Toggle pill ──────────────────────────────────────────────────────────────
@@ -117,6 +124,9 @@ export default function RichContentField({
   hint,
   placeholder = "Start writing here…",
   minHeight = 200,
+  onSave,
+  onPreview,
+  policy,
 }: RichContentFieldProps) {
   // Always start with "html" so server and client render identically (avoids
   // hydration mismatches). After the component mounts, we restore the stored
@@ -186,6 +196,9 @@ export default function RichContentField({
             onChange={onChange}
             placeholder={placeholder}
             minHeight={minHeight}
+            onSave={onSave}
+            onPreview={onPreview}
+            policy={policy}
           />
           {/* Hidden input keeps native form "required" validation working */}
           {required && <input type="hidden" required value={value} />}
