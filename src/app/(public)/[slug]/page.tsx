@@ -7,7 +7,11 @@ import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { apiService } from "@/lib/api";
-import { site } from "@/config/site";
+import {
+  createBreadcrumbJsonLd,
+  createPageMetadata,
+  createWebPageJsonLd,
+} from "@/lib/seo";
 import "@/styles/articleStyle.css";
 
 type Props = {
@@ -38,24 +42,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = response.data;
   const ogImage = page.ogImage || page.featuredImage || page.headerImage;
 
-  return {
+  return createPageMetadata({
     title: page.seoTitle || page.title,
     description: page.seoDescription || page.description,
-    alternates: { canonical: page.canonicalUrl || `/${page.slug}` },
-    openGraph: {
-      type: "article",
-      title: `${page.title} | ${site.name}`,
-      description: page.description,
-      url: `/${page.slug}`,
-      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${page.title} | ${site.name}`,
-      description: page.description,
-      ...(ogImage ? { images: [ogImage] } : {}),
-    },
-  };
+    pathname: `/${page.slug}`,
+    canonical: page.canonicalUrl || undefined,
+    image: ogImage || undefined,
+    openGraphType: "article",
+  });
 }
 
 /**
@@ -87,27 +81,28 @@ export default async function MenuItemPageView({ params }: Props) {
     }
   }
 
-  const pageJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
+  const pageJsonLd = createWebPageJsonLd({
     name: page.title,
     description: page.description,
+    href: `/${page.slug}`,
     datePublished: page.dateISO,
-    dateModified: page.dateModified || page.dateISO,
-    ...(page.headerImage
-      ? {
-          image: [`${site.url}${page.headerImage}`],
-        }
-      : {}),
-    publisher: {
-      "@type": "Organization",
-      name: site.name,
-      url: site.url,
-    },
-  };
+    dateModified: page.dateModified,
+    image: page.headerImage,
+  });
+  const breadcrumbJsonLd = parentMenuItem
+    ? createBreadcrumbJsonLd([
+        { name: "Home", href: "/" },
+        {
+          name: parentMenuItem.title,
+          href: `/pages/${slugify(parentMenuItem.title)}`,
+        },
+        { name: page.title, href: `/${page.slug}` },
+      ])
+    : null;
 
   return (
     <>
+      {breadcrumbJsonLd ? <JsonLd json={breadcrumbJsonLd} /> : null}
       <JsonLd json={pageJsonLd} />
 
       <main className="article-page">

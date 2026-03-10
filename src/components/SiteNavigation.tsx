@@ -97,6 +97,10 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
 
       {/* Mobile Menu Panel */}
       <div
+        id="site-navigation-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site navigation"
         style={{
           position: "fixed",
           top: 0,
@@ -501,6 +505,7 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
           paddingRight: "10px",
         }}
         aria-label="Open menu"
+        aria-controls="site-navigation-panel"
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <div

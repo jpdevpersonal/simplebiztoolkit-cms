@@ -1,21 +1,13 @@
-"use client";
-
-import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
-  const displayItems = useMemo(() => {
-    const items = [...products];
-    return items;
-  }, [products]);
-
   return (
     <>
       <div className="row g-3 mt-2">
-        {displayItems.map((p, idx) => (
+        {products.map((p, idx) => (
           <div className="col-md-4" key={p ? p.title : `placeholder-${idx}`}>
             <article className="template-thumbnail sb-card h-100 product-card">
               <div className="overflow-hidden product-thumb-wrap">

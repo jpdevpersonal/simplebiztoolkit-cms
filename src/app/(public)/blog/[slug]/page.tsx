@@ -7,7 +7,11 @@ import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { apiService } from "@/lib/api";
 import "@/styles/articleStyle.css";
-import { site } from "@/config/site";
+import {
+  createArticleJsonLd,
+  createBreadcrumbJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -42,24 +46,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ogImage =
     article.ogImage || article.featuredImage || "/images/hero-image-desk.webp";
 
-  return {
+  return createPageMetadata({
     title: article.seoTitle || article.title,
     description: article.seoDescription || article.description,
-    alternates: { canonical: article.canonicalUrl || `/blog/${article.slug}` },
-    openGraph: {
-      type: "article",
-      title: `${article.title} | Simple Biz Toolkit`,
-      description: article.description,
-      url: `/blog/${article.slug}`,
-      images: [{ url: ogImage }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${article.title} | Simple Biz Toolkit`,
-      description: article.description,
-      images: [ogImage],
-    },
-  };
+    pathname: `/blog/${article.slug}`,
+    canonical: article.canonicalUrl || undefined,
+    image: ogImage,
+    openGraphType: "article",
+  });
 }
 
 /**
@@ -74,26 +68,23 @@ export default async function BlogPostPage({ params }: Props) {
 
   const article = response.data;
 
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
+  const articleJsonLd = createArticleJsonLd({
     headline: article.title,
     description: article.description,
+    href: `/blog/${article.slug}`,
     datePublished: article.dateISO,
-    dateModified: article.dateModified || article.dateISO,
-    image: article.headerImage
-      ? [`https://www.simplebiztoolkit.com${article.headerImage}`]
-      : undefined,
-    author: { "@type": "Person", name: "Julian (Simple Biz Toolkit)" },
-    publisher: {
-      "@type": "Organization",
-      name: site.name,
-      url: site.url,
-    },
-  };
+    dateModified: article.dateModified,
+    image: article.headerImage,
+  });
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Resources", href: "/blog" },
+    { name: article.title, href: `/blog/${article.slug}` },
+  ]);
 
   return (
     <>
+      <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={articleJsonLd} />
 
       <main className="article-page">

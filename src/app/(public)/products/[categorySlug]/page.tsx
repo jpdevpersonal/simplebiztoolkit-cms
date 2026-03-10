@@ -7,7 +7,11 @@ import JsonLd from "@/components/JsonLd";
 import ProductGrid from "@/components/ProductGrid";
 import { apiService } from "@/lib/api";
 import { links } from "@/config/links";
-import { site } from "@/config/site";
+import {
+  createBreadcrumbJsonLd,
+  createCollectionPageJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
 import "@/styles/products.css";
 
 type Props = {
@@ -40,19 +44,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const category = response.data;
 
-  const title = `${category.name} | Simple Biz Toolkit`;
   const description = `${category.summary} Browse templates and then checkout securely on Etsy.`;
 
-  return {
+  return createPageMetadata({
     title: category.name,
     description,
-    alternates: { canonical: `/products/${category.slug}` },
-    openGraph: {
-      title,
-      description,
-      url: `/products/${category.slug}`,
-    },
-  };
+    pathname: `/products/${category.slug}`,
+    image: category.heroImage || undefined,
+  });
 }
 
 /**
@@ -67,37 +66,17 @@ export default async function CategoryPage({ params }: Props) {
 
   const category = response.data;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: `${category.name} | Simple Biz Toolkit`,
-    url: `https://www.simplebiztoolkit.com/products/${category.slug}`,
-  };
+  const jsonLd = createCollectionPageJsonLd({
+    name: category.name,
+    description: category.summary,
+    href: `/products/${category.slug}`,
+  });
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: site.url,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Products",
-        item: `${site.url}/products`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: category.name,
-        item: `${site.url}/products/${category.slug}`,
-      },
-    ],
-  };
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Products", href: "/products" },
+    { name: category.name, href: `/products/${category.slug}` },
+  ]);
 
   return (
     <>
