@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   extractErrorMessage,
+  parseProblemDetails,
   parseHttpResponse,
   sendHttpRequest,
   unwrapDataEnvelope,
@@ -42,6 +43,35 @@ describe("httpTransport", () => {
 
     it("returns fallback when payload has no useful value", () => {
       expect(extractErrorMessage({}, "fallback")).toBe("fallback");
+    });
+
+    it("formats RFC 7807 ProblemDetails using title/detail", () => {
+      expect(
+        extractErrorMessage(
+          { title: "Forbidden", detail: "Missing role", status: 403 },
+          "fallback",
+        ),
+      ).toBe("Forbidden: Missing role");
+    });
+  });
+
+  describe("parseProblemDetails", () => {
+    it("returns object for RFC 7807 payload", () => {
+      expect(
+        parseProblemDetails({
+          title: "Validation failed",
+          status: 400,
+          errors: { email: ["Required"] },
+        }),
+      ).toEqual({
+        title: "Validation failed",
+        status: 400,
+        errors: { email: ["Required"] },
+      });
+    });
+
+    it("returns null for non-problem payload", () => {
+      expect(parseProblemDetails({ message: "oops" })).toBeNull();
     });
   });
 

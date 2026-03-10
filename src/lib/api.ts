@@ -10,6 +10,7 @@ import {
   sendHttpRequest,
   unwrapDataEnvelope,
 } from "@/lib/httpTransport";
+import { getApiBaseUrl } from "@/config/apiBaseUrl";
 
 // API Response Types
 export interface ApiResponse<T> {
@@ -121,7 +122,7 @@ class ApiService {
   private authToken: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
+    this.baseUrl = getApiBaseUrl();
   }
 
   /**
@@ -141,12 +142,12 @@ class ApiService {
   /**
    * Get headers for API requests
    */
-  private getHeaders(): HeadersInit {
+  private getHeaders(requiresAuth: boolean): HeadersInit {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
 
-    if (this.authToken) {
+    if (requiresAuth && this.authToken) {
       headers["Authorization"] = `Bearer ${this.authToken}`;
     }
 
@@ -160,6 +161,7 @@ class ApiService {
     endpoint: string,
     options?: RequestInit,
     tags?: string[],
+    requiresAuth = false,
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`;
@@ -168,7 +170,7 @@ class ApiService {
       const fetchOptions: RequestInit = {
         ...options,
         headers: {
-          ...this.getHeaders(),
+          ...this.getHeaders(requiresAuth),
           ...options?.headers,
         },
         next: tags ? { tags } : undefined,
@@ -233,9 +235,15 @@ class ApiService {
    */
   async getArticleById(id: string): Promise<ApiResponse<Article>> {
     noStore(); // Don't cache in admin
-    return this.fetchApi<Article>(`/api/articles/${id}`, {
-      method: "GET",
-    });
+    const useAdminRoute = Boolean(this.authToken);
+    return this.fetchApi<Article>(
+      useAdminRoute ? `/api/admin/articles/${id}` : `/api/articles/${id}`,
+      {
+        method: "GET",
+      },
+      undefined,
+      useAdminRoute,
+    );
   }
 
   /**
@@ -243,9 +251,14 @@ class ApiService {
    */
   async getAllArticles(): Promise<ApiResponse<Article[]>> {
     noStore(); // Don't cache in admin
-    return this.fetchApi<Article[]>("/api/articles", {
-      method: "GET",
-    });
+    return this.fetchApi<Article[]>(
+      "/api/admin/articles",
+      {
+        method: "GET",
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -255,10 +268,15 @@ class ApiService {
     article: Partial<Article>,
   ): Promise<ApiResponse<Article>> {
     noStore();
-    return this.fetchApi<Article>("/api/articles", {
-      method: "POST",
-      body: JSON.stringify(article),
-    });
+    return this.fetchApi<Article>(
+      "/api/admin/articles",
+      {
+        method: "POST",
+        body: JSON.stringify(article),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -269,10 +287,15 @@ class ApiService {
     article: Partial<Article>,
   ): Promise<ApiResponse<Article>> {
     noStore();
-    return this.fetchApi<Article>(`/api/articles/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(article),
-    });
+    return this.fetchApi<Article>(
+      `/api/admin/articles/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(article),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -280,9 +303,14 @@ class ApiService {
    */
   async deleteArticle(id: string): Promise<ApiResponse<void>> {
     noStore();
-    return this.fetchApi<void>(`/api/articles/${id}`, {
-      method: "DELETE",
-    });
+    return this.fetchApi<void>(
+      `/api/admin/articles/${id}`,
+      {
+        method: "DELETE",
+      },
+      undefined,
+      true,
+    );
   }
 
   // ==================== PRODUCT ENDPOINTS ====================
@@ -291,22 +319,26 @@ class ApiService {
    * Get all product categories with items
    */
   async getProductCategories(): Promise<ApiResponse<ProductCategory[]>> {
+    const useAdminRoute = Boolean(this.authToken);
     return this.fetchApi<ProductCategory[]>(
-      "/api/products/categories",
+      useAdminRoute ? "/api/admin/categories" : "/api/products/categories",
       {
         method: "GET",
       },
       ["products"],
+      useAdminRoute,
     );
   }
 
   async getAllProducts(): Promise<ApiResponse<ProductCategory[]>> {
+    const useAdminRoute = Boolean(this.authToken);
     return this.fetchApi<ProductCategory[]>(
-      "/api/products/allCategories",
+      useAdminRoute ? "/api/admin/categories" : "/api/products/allCategories",
       {
         method: "GET",
       },
       ["products"],
+      useAdminRoute,
     );
   }
 
@@ -342,9 +374,15 @@ class ApiService {
    */
   async getProductById(id: string): Promise<ApiResponse<ProductItem>> {
     noStore(); // Don't cache in admin
-    return this.fetchApi<ProductItem>(`/api/products/${id}`, {
-      method: "GET",
-    });
+    const useAdminRoute = Boolean(this.authToken);
+    return this.fetchApi<ProductItem>(
+      useAdminRoute ? `/api/admin/products/${id}` : `/api/products/${id}`,
+      {
+        method: "GET",
+      },
+      undefined,
+      useAdminRoute,
+    );
   }
 
   /**
@@ -354,10 +392,15 @@ class ApiService {
     product: Partial<ProductItem>,
   ): Promise<ApiResponse<ProductItem>> {
     noStore();
-    return this.fetchApi<ProductItem>("/api/products", {
-      method: "POST",
-      body: JSON.stringify(product),
-    });
+    return this.fetchApi<ProductItem>(
+      "/api/admin/products",
+      {
+        method: "POST",
+        body: JSON.stringify(product),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -368,10 +411,15 @@ class ApiService {
     product: Partial<ProductItem>,
   ): Promise<ApiResponse<ProductItem>> {
     noStore();
-    return this.fetchApi<ProductItem>(`/api/products/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(product),
-    });
+    return this.fetchApi<ProductItem>(
+      `/api/admin/products/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(product),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -379,9 +427,14 @@ class ApiService {
    */
   async deleteProduct(id: string): Promise<ApiResponse<void>> {
     noStore();
-    return this.fetchApi<void>(`/api/products/${id}`, {
-      method: "DELETE",
-    });
+    return this.fetchApi<void>(
+      `/api/admin/products/${id}`,
+      {
+        method: "DELETE",
+      },
+      undefined,
+      true,
+    );
   }
 
   // ==================== CATEGORY ENDPOINTS ====================
@@ -393,10 +446,15 @@ class ApiService {
     category: Partial<ProductCategory>,
   ): Promise<ApiResponse<ProductCategory>> {
     noStore();
-    return this.fetchApi<ProductCategory>("/api/products/categories", {
-      method: "POST",
-      body: JSON.stringify(category),
-    });
+    return this.fetchApi<ProductCategory>(
+      "/api/admin/categories",
+      {
+        method: "POST",
+        body: JSON.stringify(category),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -407,10 +465,15 @@ class ApiService {
     category: Partial<ProductCategory>,
   ): Promise<ApiResponse<ProductCategory>> {
     noStore();
-    return this.fetchApi<ProductCategory>(`/api/products/categories/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(category),
-    });
+    return this.fetchApi<ProductCategory>(
+      `/api/admin/categories/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(category),
+      },
+      undefined,
+      true,
+    );
   }
 
   // ==================== MENU ITEM ENDPOINTS ====================
@@ -419,9 +482,13 @@ class ApiService {
    * Get all menu items (public)
    */
   async getMenuItems(): Promise<ApiResponse<MenuItem[]>> {
-    return this.fetchApi<MenuItem[]>("/api/menuitems", { method: "GET" }, [
-      "menu",
-    ]);
+    const useAdminRoute = Boolean(this.authToken);
+    return this.fetchApi<MenuItem[]>(
+      useAdminRoute ? "/api/admin/menus" : "/api/menuitems",
+      { method: "GET" },
+      ["menu"],
+      useAdminRoute,
+    );
   }
 
   /**
@@ -442,7 +509,13 @@ class ApiService {
    */
   async getMenuItemById(id: string): Promise<ApiResponse<MenuItem>> {
     noStore();
-    return this.fetchApi<MenuItem>(`/api/menuitems/${id}`, { method: "GET" });
+    const useAdminRoute = Boolean(this.authToken);
+    return this.fetchApi<MenuItem>(
+      useAdminRoute ? `/api/admin/menus/${id}` : `/api/menuitems/${id}`,
+      { method: "GET" },
+      undefined,
+      useAdminRoute,
+    );
   }
 
   /**
@@ -452,10 +525,15 @@ class ApiService {
     item: Partial<MenuItem>,
   ): Promise<ApiResponse<MenuItem>> {
     noStore();
-    return this.fetchApi<MenuItem>("/api/menuitems", {
-      method: "POST",
-      body: JSON.stringify(item),
-    });
+    return this.fetchApi<MenuItem>(
+      "/api/admin/menus",
+      {
+        method: "POST",
+        body: JSON.stringify(item),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -466,10 +544,15 @@ class ApiService {
     item: Partial<MenuItem>,
   ): Promise<ApiResponse<MenuItem>> {
     noStore();
-    return this.fetchApi<MenuItem>(`/api/menuitems/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(item),
-    });
+    return this.fetchApi<MenuItem>(
+      `/api/admin/menus/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(item),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -477,7 +560,12 @@ class ApiService {
    */
   async deleteMenuItem(id: string): Promise<ApiResponse<void>> {
     noStore();
-    return this.fetchApi<void>(`/api/menuitems/${id}`, { method: "DELETE" });
+    return this.fetchApi<void>(
+      `/api/admin/menus/${id}`,
+      { method: "DELETE" },
+      undefined,
+      true,
+    );
   }
 
   // ==================== MENU CATEGORY ENDPOINTS ====================
@@ -489,10 +577,14 @@ class ApiService {
     menuItemId?: string,
   ): Promise<ApiResponse<MenuCategory[]>> {
     const qs = menuItemId ? `?menuItemId=${menuItemId}` : "";
+    const useAdminRoute = Boolean(this.authToken);
     return this.fetchApi<MenuCategory[]>(
-      `/api/menucategories${qs}`,
+      useAdminRoute
+        ? `/api/admin/menucategories${qs}`
+        : `/api/menucategories${qs}`,
       { method: "GET" },
       ["menu"],
+      useAdminRoute,
     );
   }
 
@@ -501,9 +593,17 @@ class ApiService {
    */
   async getMenuCategoryById(id: string): Promise<ApiResponse<MenuCategory>> {
     noStore();
-    return this.fetchApi<MenuCategory>(`/api/menucategories/${id}`, {
-      method: "GET",
-    });
+    const useAdminRoute = Boolean(this.authToken);
+    return this.fetchApi<MenuCategory>(
+      useAdminRoute
+        ? `/api/admin/menucategories/${id}`
+        : `/api/menucategories/${id}`,
+      {
+        method: "GET",
+      },
+      undefined,
+      useAdminRoute,
+    );
   }
 
   /**
@@ -513,10 +613,15 @@ class ApiService {
     category: Partial<MenuCategory>,
   ): Promise<ApiResponse<MenuCategory>> {
     noStore();
-    return this.fetchApi<MenuCategory>("/api/menucategories", {
-      method: "POST",
-      body: JSON.stringify(category),
-    });
+    return this.fetchApi<MenuCategory>(
+      "/api/admin/menucategories",
+      {
+        method: "POST",
+        body: JSON.stringify(category),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -527,10 +632,15 @@ class ApiService {
     category: Partial<MenuCategory>,
   ): Promise<ApiResponse<MenuCategory>> {
     noStore();
-    return this.fetchApi<MenuCategory>(`/api/menucategories/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(category),
-    });
+    return this.fetchApi<MenuCategory>(
+      `/api/admin/menucategories/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(category),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -538,9 +648,14 @@ class ApiService {
    */
   async deleteMenuCategory(id: string): Promise<ApiResponse<void>> {
     noStore();
-    return this.fetchApi<void>(`/api/menucategories/${id}`, {
-      method: "DELETE",
-    });
+    return this.fetchApi<void>(
+      `/api/admin/menucategories/${id}`,
+      {
+        method: "DELETE",
+      },
+      undefined,
+      true,
+    );
   }
 
   // ==================== MENU ITEM PAGE ENDPOINTS ====================
@@ -558,10 +673,12 @@ class ApiService {
     if (menuCategoryId) params.set("menuCategoryId", menuCategoryId);
     if (status) params.set("status", status);
     const qs = params.toString() ? `?${params.toString()}` : "";
+    const useAdminRoute = Boolean(this.authToken);
     return this.fetchApi<MenuItemPage[]>(
-      `/api/menuitempages${qs}`,
+      useAdminRoute ? `/api/admin/pages${qs}` : `/api/menuitempages${qs}`,
       { method: "GET" },
       ["menu"],
+      useAdminRoute,
     );
   }
 
@@ -583,9 +700,15 @@ class ApiService {
    */
   async getMenuItemPageById(id: string): Promise<ApiResponse<MenuItemPage>> {
     noStore();
-    return this.fetchApi<MenuItemPage>(`/api/menuitempages/${id}`, {
-      method: "GET",
-    });
+    const useAdminRoute = Boolean(this.authToken);
+    return this.fetchApi<MenuItemPage>(
+      useAdminRoute ? `/api/admin/pages/${id}` : `/api/menuitempages/${id}`,
+      {
+        method: "GET",
+      },
+      undefined,
+      useAdminRoute,
+    );
   }
 
   /**
@@ -595,10 +718,15 @@ class ApiService {
     page: Partial<MenuItemPage>,
   ): Promise<ApiResponse<MenuItemPage>> {
     noStore();
-    return this.fetchApi<MenuItemPage>("/api/menuitempages", {
-      method: "POST",
-      body: JSON.stringify(page),
-    });
+    return this.fetchApi<MenuItemPage>(
+      "/api/admin/pages",
+      {
+        method: "POST",
+        body: JSON.stringify(page),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -609,10 +737,15 @@ class ApiService {
     page: Partial<MenuItemPage>,
   ): Promise<ApiResponse<MenuItemPage>> {
     noStore();
-    return this.fetchApi<MenuItemPage>(`/api/menuitempages/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(page),
-    });
+    return this.fetchApi<MenuItemPage>(
+      `/api/admin/pages/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(page),
+      },
+      undefined,
+      true,
+    );
   }
 
   /**
@@ -620,9 +753,14 @@ class ApiService {
    */
   async deleteMenuItemPage(id: string): Promise<ApiResponse<void>> {
     noStore();
-    return this.fetchApi<void>(`/api/menuitempages/${id}`, {
-      method: "DELETE",
-    });
+    return this.fetchApi<void>(
+      `/api/admin/pages/${id}`,
+      {
+        method: "DELETE",
+      },
+      undefined,
+      true,
+    );
   }
 }
 

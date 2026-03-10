@@ -4,6 +4,15 @@ type ParsedResponse = {
   contentType: string;
 };
 
+export type ProblemDetails = {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  errors?: Record<string, string[]>;
+};
+
 export function unwrapDataEnvelope<T>(payload: unknown): T {
   if (
     payload &&
@@ -21,6 +30,29 @@ export function extractErrorMessage(
   payload: unknown,
   fallback: string,
 ): string {
+  const problem = parseProblemDetails(payload);
+  if (problem) {
+    const headline = problem.title?.trim() || "Request failed";
+    const detail = problem.detail?.trim();
+    if (detail && detail !== headline) {
+      return `${headline}: ${detail}`;
+    }
+
+    const validationDetails = problem.errors
+      ? Object.values(problem.errors)
+          .flat()
+          .map((entry) => entry.trim())
+          .filter(Boolean)
+          .join(" ")
+      : "";
+
+    if (validationDetails) {
+      return `${headline}: ${validationDetails}`;
+    }
+
+    return headline;
+  }
+
   if (typeof payload === "string" && payload.trim()) {
     return payload;
   }
@@ -32,6 +64,23 @@ export function extractErrorMessage(
   }
 
   return fallback;
+}
+
+export function parseProblemDetails(payload: unknown): ProblemDetails | null {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return null;
+  }
+
+  const candidate = payload as ProblemDetails;
+  const hasProblemField =
+    typeof candidate.title === "string" ||
+    typeof candidate.detail === "string" ||
+    typeof candidate.status === "number" ||
+    typeof candidate.type === "string" ||
+    typeof candidate.instance === "string" ||
+    (candidate.errors && typeof candidate.errors === "object");
+
+  return hasProblemField ? candidate : null;
 }
 
 export async function sendHttpRequest(

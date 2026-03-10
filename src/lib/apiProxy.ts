@@ -4,8 +4,9 @@ import { headers } from "next/headers";
 import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
 import { parseHttpResponse, sendHttpRequest } from "@/lib/httpTransport";
+import { getApiBaseUrlForServer } from "@/config/apiBaseUrl";
 
-const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
+const BACKEND = getApiBaseUrlForServer();
 
 type SessionWithToken = Session & { accessToken?: string };
 

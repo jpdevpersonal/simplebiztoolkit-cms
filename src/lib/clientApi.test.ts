@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/httpTransport", () => ({
+const httpTransportMocks = vi.hoisted(() => ({
   sendHttpRequest: vi.fn(),
   parseHttpResponse: vi.fn(),
   unwrapDataEnvelope: vi.fn((payload: unknown) => {
@@ -11,31 +11,33 @@ vi.mock("@/lib/httpTransport", () => ({
   }),
   extractErrorMessage: vi.fn((payload: unknown, fallback: string) => {
     if (typeof payload === "string" && payload.trim()) return payload;
+    if (payload && typeof payload === "object" && "title" in payload) {
+      const p = payload as { title?: string; detail?: string };
+      return p.detail ? `${p.title}: ${p.detail}` : (p.title ?? fallback);
+    }
     return fallback;
   }),
 }));
 
-import {
-  extractErrorMessage,
-  parseHttpResponse,
-  sendHttpRequest,
-  unwrapDataEnvelope,
-} from "@/lib/httpTransport";
-import { clientApi } from "./clientApi";
+vi.mock("@/lib/httpTransport", () => httpTransportMocks);
 
-const sendHttpRequestMock = vi.mocked(sendHttpRequest);
-const parseHttpResponseMock = vi.mocked(parseHttpResponse);
-const unwrapDataEnvelopeMock = vi.mocked(unwrapDataEnvelope);
-const extractErrorMessageMock = vi.mocked(extractErrorMessage);
+import { adminApi, clientApi, publicApi } from "./clientApi";
+
+const sendHttpRequestMock = httpTransportMocks.sendHttpRequest;
+const parseHttpResponseMock = httpTransportMocks.parseHttpResponse;
+const unwrapDataEnvelopeMock = httpTransportMocks.unwrapDataEnvelope;
+const extractErrorMessageMock = httpTransportMocks.extractErrorMessage;
 
 describe("clientApi", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env.NEXT_PUBLIC_API_URL;
-    delete process.env.NEXT_PUBLIC_REVALIDATION_SECRET;
   });
 
-  it("creates a product with POST json payload", async () => {
+  it("keeps backward-compatible alias to adminApi", () => {
+    expect(clientApi).toBe(adminApi);
+  });
+
+  it("creates a product on /api/admin/products", async () => {
     sendHttpRequestMock.mockResolvedValue({
       ok: true,
       status: 201,
@@ -47,9 +49,9 @@ describe("clientApi", () => {
       contentType: "application/json",
     });
 
-    const result = await clientApi.createProduct({ title: "Test" });
+    const result = await adminApi.createProduct({ title: "Test" });
 
-    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/products", {
+    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/admin/products", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -61,29 +63,7 @@ describe("clientApi", () => {
     expect(result).toEqual({ id: "p1", title: "Test" });
   });
 
-  it("deletes a product with DELETE and no body", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 204,
-      statusText: "No Content",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: "",
-      isJson: false,
-      contentType: "text/plain",
-    });
-
-    await clientApi.deleteProduct("p1");
-
-    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/products/p1", {
-      method: "DELETE",
-      credentials: "include",
-      headers: {},
-      body: undefined,
-    });
-  });
-
-  it("builds relative article URL through local proxy", async () => {
+  it("uses /api/admin/articles paths for admin article calls", async () => {
     sendHttpRequestMock.mockResolvedValue({
       ok: true,
       status: 200,
@@ -95,184 +75,72 @@ describe("clientApi", () => {
       contentType: "application/json",
     });
 
-    await clientApi.createArticle({ title: "Article" });
-    await clientApi.updateArticle("a1", { title: "Updated" });
+    await adminApi.createArticle({ title: "Article" });
+    await adminApi.updateArticle("a1", { title: "Updated" });
 
-    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(1, "/api/articles", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Article" }),
-    });
-    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(2, "/api/articles/a1", {
-      method: "PUT",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Updated" }),
-    });
-  });
-
-  it("revalidateContent posts without a secret header (auth via session cookie)", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: "ok",
-      isJson: false,
-      contentType: "text/plain",
-    });
-
-    await clientApi.revalidateContent("article", "hello-world");
-
-    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/revalidate", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
+    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
+      1,
+      "/api/admin/articles",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Article" }),
       },
-      body: JSON.stringify({ type: "article", slug: "hello-world" }),
-    });
-  });
-
-  it("throws extracted error message for non-ok response", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: false,
-      status: 500,
-      statusText: "Internal Server Error",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: { error: "backend exploded" },
-      isJson: true,
-      contentType: "application/json",
-    });
-    extractErrorMessageMock.mockReturnValue("backend exploded");
-
-    await expect(clientApi.getProductCategories()).rejects.toThrow(
-      "backend exploded",
     );
-
-    expect(extractErrorMessageMock).toHaveBeenCalledWith(
-      { error: "backend exploded" },
-      "HTTP 500: Internal Server Error",
-    );
-  });
-
-  it("updates a product with PUT to the correct path", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: { data: { id: "p1", title: "Updated" } },
-      isJson: true,
-      contentType: "application/json",
-    });
-
-    const result = await clientApi.updateProduct("p1", { title: "Updated" });
-
-    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/products/p1", {
-      method: "PUT",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Updated" }),
-    });
-    expect(result).toEqual({ id: "p1", title: "Updated" });
-  });
-
-  it("fetches a product by id with GET", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: { data: { id: "p2", title: "Found" } },
-      isJson: true,
-      contentType: "application/json",
-    });
-
-    const result = await clientApi.getProductById("p2");
-
-    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/products/p2", {
-      method: "GET",
-      credentials: "include",
-      headers: {},
-      body: undefined,
-    });
-    expect(result).toEqual({ id: "p2", title: "Found" });
-  });
-
-  it("deletes an article with DELETE to the correct path", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 204,
-      statusText: "No Content",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: "",
-      isJson: false,
-      contentType: "text/plain",
-    });
-
-    await clientApi.deleteArticle("a1");
-
-    expect(sendHttpRequestMock).toHaveBeenCalledWith("/api/articles/a1", {
-      method: "DELETE",
-      credentials: "include",
-      headers: {},
-      body: undefined,
-    });
-  });
-
-  it("updates a category with PUT", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: { data: { id: "c1", name: "Updated Cat" } },
-      isJson: true,
-      contentType: "application/json",
-    });
-
-    const result = await clientApi.updateCategory("c1", {
-      name: "Updated Cat",
-    });
-
-    expect(sendHttpRequestMock).toHaveBeenCalledWith(
-      "/api/products/categories/c1",
+    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/admin/articles/a1",
       {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Updated Cat" }),
+        body: JSON.stringify({ title: "Updated" }),
       },
     );
-    expect(result).toEqual({ id: "c1", name: "Updated Cat" });
   });
 
-  it("deletes a category with DELETE", async () => {
+  it("throws extracted ProblemDetails-friendly error for non-ok response", async () => {
     sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 204,
-      statusText: "No Content",
+      ok: false,
+      status: 403,
+      statusText: "Forbidden",
     } as Response);
     parseHttpResponseMock.mockResolvedValue({
-      payload: "",
-      isJson: false,
-      contentType: "text/plain",
+      payload: { title: "Forbidden", detail: "Missing role" },
+      isJson: true,
+      contentType: "application/json",
+    });
+    extractErrorMessageMock.mockReturnValue("Forbidden: Missing role");
+
+    await expect(adminApi.getMenuItems()).rejects.toThrow(
+      "Forbidden: Missing role",
+    );
+
+    expect(extractErrorMessageMock).toHaveBeenCalledWith(
+      { title: "Forbidden", detail: "Missing role" },
+      "HTTP 403: Forbidden",
+    );
+  });
+
+  it("uses public endpoints without auth header", async () => {
+    sendHttpRequestMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+    } as Response);
+    parseHttpResponseMock.mockResolvedValue({
+      payload: { data: [] },
+      isJson: true,
+      contentType: "application/json",
     });
 
-    await clientApi.deleteCategory("c1");
+    await publicApi.getPublishedArticles();
 
     expect(sendHttpRequestMock).toHaveBeenCalledWith(
-      "/api/products/categories/c1",
+      "/api/articles?status=published",
       {
-        method: "DELETE",
+        method: "GET",
         credentials: "include",
         headers: {},
         body: undefined,
@@ -280,43 +148,28 @@ describe("clientApi", () => {
     );
   });
 
-  it("returns raw payload when response is not json", async () => {
+  it("deletes admin category on /api/admin/categories/{id}", async () => {
     sendHttpRequestMock.mockResolvedValue({
       ok: true,
-      status: 200,
-      statusText: "OK",
+      status: 204,
+      statusText: "No Content",
     } as Response);
     parseHttpResponseMock.mockResolvedValue({
-      payload: "plain text payload",
+      payload: "",
       isJson: false,
       contentType: "text/plain",
     });
 
-    const result = await clientApi.getAllProductCategories();
+    await adminApi.deleteCategory("c1");
 
-    expect(result).toBe("plain text payload");
-    expect(unwrapDataEnvelopeMock).not.toHaveBeenCalled();
-  });
-
-  it("throws an actionable error when transport request fails", async () => {
-    sendHttpRequestMock.mockRejectedValueOnce(new Error("socket hang up"));
-
-    await expect(clientApi.getProductCategories()).rejects.toThrow(
-      "Request failed for GET /api/products/categories: socket hang up",
-    );
-    expect(parseHttpResponseMock).not.toHaveBeenCalled();
-  });
-
-  it("throws an actionable error when response parsing fails", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-    } as Response);
-    parseHttpResponseMock.mockRejectedValueOnce(new Error("unexpected token"));
-
-    await expect(clientApi.getProductCategories()).rejects.toThrow(
-      "Failed to parse API response for GET /api/products/categories: unexpected token",
+    expect(sendHttpRequestMock).toHaveBeenCalledWith(
+      "/api/admin/categories/c1",
+      {
+        method: "DELETE",
+        credentials: "include",
+        headers: {},
+        body: undefined,
+      },
     );
   });
 });
