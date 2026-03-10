@@ -3,30 +3,22 @@ import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
 import Image from "next/image";
-import { site } from "@/config/site";
 import { apiService } from "@/lib/api";
+import {
+  createBreadcrumbJsonLd,
+  createCollectionPageJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
 import "@/styles/blog.css";
 
-export const metadata: Metadata = {
+const blogDescription =
+  "Guides and tips for small business owners and Etsy sellers. Essential advice that links to tools you can use immediately.";
+
+export const metadata: Metadata = createPageMetadata({
   title: "Resources",
-  description:
-    "Guides and tips for small business owners and Etsy sellers. Essential advice that links to tools you can use immediately.",
-  alternates: { canonical: "/blog" },
-  openGraph: {
-    title: "Resources | Simple Biz Toolkit",
-    description:
-      "Guides and tips for small business owners and Etsy sellers. Essential advice that links to tools you can use immediately.",
-    url: "/blog",
-    images: ["/images/hero-image-desk.webp"],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Resources | Simple Biz Toolkit",
-    description:
-      "Guides and tips for small business owners and Etsy sellers. Essential advice that links to tools you can use immediately.",
-    images: ["/images/hero-image-desk.webp"],
-  },
-};
+  description: blogDescription,
+  pathname: "/blog",
+});
 
 /**
  * Blog Index Page
@@ -35,31 +27,16 @@ export const metadata: Metadata = {
 export default async function BlogIndexPage() {
   const response = await apiService.getArticles();
   const articles = response.data || [];
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: site.url,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Resources",
-        item: `${site.url}/blog`,
-      },
-    ],
-  };
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Resources", href: "/blog" },
+  ]);
 
-  const collectionJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: "Resources | Simple Biz Toolkit",
-    url: `${site.url}/blog`,
-  };
+  const collectionJsonLd = createCollectionPageJsonLd({
+    name: "Resources",
+    description: blogDescription,
+    href: "/blog",
+  });
 
   return (
     <>

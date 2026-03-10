@@ -9,8 +9,12 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import { apiService } from "@/lib/api";
-import { site } from "@/config/site";
 import { slugify } from "@/lib/slugify";
+import {
+  createBreadcrumbJsonLd,
+  createCollectionPageJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
 import "@/styles/blog.css";
 import "@/styles/pages.css";
 
@@ -64,18 +68,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await resolve(menuItemSlug, categorySlug);
   if (!data) return {};
   const { item, cat } = data;
-  return {
-    title: `${cat.title} – ${item.title}`,
+  return createPageMetadata({
+    title: `${cat.title} - ${item.title}`,
     description: cat.description || `Browse ${cat.title} pages.`,
-    alternates: {
-      canonical: `/pages/${menuItemSlug}/${categorySlug}`,
-    },
-    openGraph: {
-      title: `${cat.title} | ${item.title} | ${site.name}`,
-      description: cat.description || `Browse ${cat.title} pages.`,
-      url: `/pages/${menuItemSlug}/${categorySlug}`,
-    },
-  };
+    pathname: `/pages/${menuItemSlug}/${categorySlug}`,
+  });
 }
 
 export default async function CategoryPageListing({ params }: Props) {
@@ -114,29 +111,21 @@ export default async function CategoryPageListing({ params }: Props) {
     }).format(parsedDate);
   };
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: site.url },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: item.title,
-        item: `${site.url}/pages/${menuItemSlug}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: cat.title,
-        item: `${site.url}/pages/${menuItemSlug}/${categorySlug}`,
-      },
-    ],
-  };
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: item.title, href: `/pages/${menuItemSlug}` },
+    { name: cat.title, href: `/pages/${menuItemSlug}/${categorySlug}` },
+  ]);
+  const collectionJsonLd = createCollectionPageJsonLd({
+    name: cat.title,
+    description: cat.description || `Browse ${cat.title} pages.`,
+    href: `/pages/${menuItemSlug}/${categorySlug}`,
+  });
 
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
+      <JsonLd json={collectionJsonLd} />
       <section className="sb-section">
         <div className="container">
           {/* Breadcrumb */}

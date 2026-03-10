@@ -2,50 +2,39 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
-import { site } from "@/config/site";
 import "@/styles/products.css";
 import { apiService } from "@/lib/api";
+import {
+  createBreadcrumbJsonLd,
+  createCollectionPageJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
 
-export const metadata: Metadata = {
+const productsDescription =
+  "Browse categories like accounting ledgers, time sheets, and rent trackers. Each tool links to Etsy for secure checkout.";
+
+export const metadata: Metadata = createPageMetadata({
   title: "Templates",
-  description:
-    "Browse categories like accounting ledgers, time sheets, and rent trackers. Each tool links to Etsy for secure checkout.",
-  alternates: { canonical: "/products" },
-  openGraph: {
-    title: "Templates | Simple Biz Toolkit",
-    description:
-      "Browse categories like accounting ledgers, time sheets, and rent trackers. Each tool links to Etsy for secure checkout.",
-    url: "/products",
-  },
-};
-
-const categories = await apiService
-  .getProductCategories()
-  .then((res) => res.data || []);
+  description: productsDescription,
+  pathname: "/products",
+});
 
 export default async function ProductsPage() {
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: site.url,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Templates",
-        item: `${site.url}/products`,
-      },
-    ],
-  };
+  const categories = (await apiService.getProductCategories()).data || [];
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Templates", href: "/products" },
+  ]);
+  const collectionJsonLd = createCollectionPageJsonLd({
+    name: "Template Categories",
+    description: productsDescription,
+    href: "/products",
+  });
 
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
+      <JsonLd json={collectionJsonLd} />
       <section className="sb-section">
         <div className="container">
           <div className="products-header">

@@ -11,6 +11,7 @@ import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "../BootstrapClient";
 import ScrollToTop from "../ScrollToTop";
 import type { MenuNavItem } from "@/components/SiteNavigation";
+import { createWebsiteJsonLd } from "@/lib/seo";
 import {
   getMenuItemLandingHref,
   getPublishedMenuItemContent,
@@ -103,19 +104,12 @@ export default async function PublicLayout({
     console.error("[Nav] Failed to fetch menu items-tree:", err);
   }
 
-  const websiteJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: site.name,
-    url: site.url,
-  };
-
   return (
     <>
       <BootstrapClient />
       <ScrollToTop />
 
-      <JsonLd json={websiteJsonLd} />
+      <JsonLd json={createWebsiteJsonLd()} />
 
       <a className="sb-skip-link" href="#content">
         Skip to content

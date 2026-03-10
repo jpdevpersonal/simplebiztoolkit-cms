@@ -5,7 +5,11 @@ import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import ProductDetailClient from "./ProductDetailClient";
 import { apiService } from "@/lib/api";
-import { site } from "@/config/site";
+import {
+  createBreadcrumbJsonLd,
+  createPageMetadata,
+  createProductJsonLd,
+} from "@/lib/seo";
 
 type Props = {
   params: Promise<{ categorySlug: string; productSlug: string }>;
@@ -50,20 +54,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const product = response.data;
 
-  const title = `${product.title} | Simple Biz Toolkit`;
   const description = `${product.problem} ${product.bullets.join(". ")}.`;
 
-  return {
+  return createPageMetadata({
     title: product.title,
     description,
-    alternates: { canonical: `/products/${categorySlug}/${productSlug}` },
-    openGraph: {
-      title,
-      description,
-      url: `/products/${categorySlug}/${productSlug}`,
-      images: product.image ? [{ url: product.image }] : undefined,
-    },
-  };
+    pathname: `/products/${categorySlug}/${productSlug}`,
+    image: product.image || undefined,
+  });
 }
 
 /**
@@ -84,58 +82,21 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = productResponse.data;
   const category = categoryResponse.data;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
+  const jsonLd = createProductJsonLd({
     name: product.title,
     description: product.problem,
-    image: product.image
-      ? `https://www.simplebiztoolkit.com${product.image}`
-      : undefined,
-    url: `https://www.simplebiztoolkit.com/products/${categorySlug}/${productSlug}`,
-    brand: {
-      "@type": "Organization",
-      name: site.name,
-    },
-    offers: {
-      "@type": "Offer",
-      price: product.price.replace("$", ""),
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-      url: product.etsyUrl,
-    },
-  };
+    href: `/products/${categorySlug}/${productSlug}`,
+    image: product.image,
+    price: product.price,
+    offerUrl: product.etsyUrl,
+  });
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: site.url,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Products",
-        item: `${site.url}/products`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: category.name,
-        item: `${site.url}/products/${category.slug}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: product.title,
-        item: `${site.url}/products/${categorySlug}/${productSlug}`,
-      },
-    ],
-  };
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Products", href: "/products" },
+    { name: category.name, href: `/products/${category.slug}` },
+    { name: product.title, href: `/products/${categorySlug}/${productSlug}` },
+  ]);
 
   return (
     <>

@@ -9,12 +9,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
-import { site } from "@/config/site";
 import { slugify } from "@/lib/slugify";
 import {
   getPublishedMenuItemContent,
   getPublishedMenuItems,
 } from "@/lib/menuContent";
+import {
+  createBreadcrumbJsonLd,
+  createCollectionPageJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
 import "@/styles/blog.css";
 import "@/styles/pages.css";
 
@@ -38,16 +42,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { menuItemSlug } = await params;
   const item = await resolveMenuItem(menuItemSlug);
   if (!item) return {};
-  return {
+  return createPageMetadata({
     title: item.title,
     description: item.description || `Browse ${item.title} pages.`,
-    alternates: { canonical: `/pages/${menuItemSlug}` },
-    openGraph: {
-      title: `${item.title} | ${site.name}`,
-      description: item.description || `Browse ${item.title} pages.`,
-      url: `/pages/${menuItemSlug}`,
-    },
-  };
+    pathname: `/pages/${menuItemSlug}`,
+  });
 }
 
 export default async function MenuItemLandingPage({ params }: Props) {
@@ -61,19 +60,15 @@ export default async function MenuItemLandingPage({ params }: Props) {
   const showDirectPageCards =
     publishedCats.length === 0 && directPages.length > 1;
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: site.url },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: item.title,
-        item: `${site.url}/pages/${menuItemSlug}`,
-      },
-    ],
-  };
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: item.title, href: `/pages/${menuItemSlug}` },
+  ]);
+  const collectionJsonLd = createCollectionPageJsonLd({
+    name: item.title,
+    description: item.description || `Browse ${item.title} pages.`,
+    href: `/pages/${menuItemSlug}`,
+  });
 
   const arrowIcon = (
     <svg
@@ -126,6 +121,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
+      <JsonLd json={collectionJsonLd} />
       <section className="sb-section">
         <div className="container">
           <div className="pages-header">

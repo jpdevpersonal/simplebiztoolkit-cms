@@ -59,6 +59,9 @@ describe("SiteNavigation", () => {
     expect(
       screen.getByRole("button", { name: "Close menu" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("dialog", { name: "Site navigation" }),
+    ).toHaveAttribute("aria-modal", "true");
 
     fireEvent.click(screen.getByRole("button", { name: "Close menu" }));
 

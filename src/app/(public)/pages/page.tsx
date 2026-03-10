@@ -6,24 +6,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
-import { site } from "@/config/site";
 import {
   getMenuItemLandingHref,
   getPublishedMenuItemContent,
   getPublishedMenuItems,
 } from "@/lib/menuContent";
+import {
+  createBreadcrumbJsonLd,
+  createCollectionPageJsonLd,
+  createPageMetadata,
+} from "@/lib/seo";
 import "@/styles/pages.css";
 
-export const metadata: Metadata = {
+const pagesDescription = "Browse our content pages by topic.";
+
+export const metadata: Metadata = createPageMetadata({
   title: "Pages",
-  description: "Browse our content pages by topic.",
-  alternates: { canonical: "/pages" },
-  openGraph: {
-    title: `Pages | ${site.name}`,
-    description: "Browse our content pages by topic.",
-    url: "/pages",
-  },
-};
+  description: pagesDescription,
+  pathname: "/pages",
+});
 
 export default async function PagesOverview() {
   const publishedItems = (
@@ -34,19 +35,15 @@ export default async function PagesOverview() {
     )
   ).filter((item) => item.totalPages > 0);
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: site.url },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Pages",
-        item: `${site.url}/pages`,
-      },
-    ],
-  };
+  const breadcrumbJsonLd = createBreadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Pages", href: "/pages" },
+  ]);
+  const collectionJsonLd = createCollectionPageJsonLd({
+    name: "Pages",
+    description: pagesDescription,
+    href: "/pages",
+  });
 
   const arrowIcon = (
     <svg
@@ -69,6 +66,7 @@ export default async function PagesOverview() {
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
+      <JsonLd json={collectionJsonLd} />
       <section className="sb-section">
         <div className="container">
           <div className="pages-header">
