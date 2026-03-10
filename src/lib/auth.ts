@@ -12,6 +12,7 @@ import {
   sendHttpRequest,
   unwrapDataEnvelope,
 } from "@/lib/httpTransport";
+import { getApiBaseUrlForServer } from "@/config/apiBaseUrl";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -30,9 +31,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         try {
-          // Call C# backend API for authentication
-          const apiUrl =
-            process.env.NEXT_PUBLIC_API_URL || "http://localhost:5117";
+          const apiUrl = getApiBaseUrlForServer();
           const response = await sendHttpRequest(`${apiUrl}/api/auth/login`, {
             method: "POST",
             headers: {
@@ -50,19 +49,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
 
           const { payload } = await parseHttpResponse(response);
-          const data = unwrapDataEnvelope<{ token?: string; user?: User }>(
-            payload,
-          );
+          const data = unwrapDataEnvelope<{
+            token?: string;
+            expiresAtUtc?: string;
+            user?: User;
+          }>(payload);
 
-          // API returns { token, user: { id, email, name } }
+          // API returns { token, expiresAtUtc, user: { id, email, name } }
           if (data.token && data.user) {
             return {
               id: data.user.id,
               email: data.user.email,
               name: data.user.name,
-              // Store the JWT token in the user object so it can be added to the token
               token: data.token,
-            } as User & { token: string };
+              expiresAtUtc: data.expiresAtUtc,
+            } as User & { token: string; expiresAtUtc?: string };
           }
 
           return null;
@@ -108,11 +109,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id?: string;
           email?: string | undefined;
           accessToken?: string;
+          expiresAtUtc?: string;
         };
         t.id = user.id;
         t.email = (user.email ?? undefined) as string | undefined;
-        // Store the JWT token from the backend API
         t.accessToken = (user as User & { token?: string }).token;
+        t.expiresAtUtc = (
+          user as User & { expiresAtUtc?: string }
+        ).expiresAtUtc;
       }
       return token;
     },
@@ -128,16 +132,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id?: string | null;
           email?: string | null;
           accessToken?: string;
+          expiresAtUtc?: string;
         };
         const u = session.user as Session["user"] & {
           id?: string;
           email?: string | undefined;
         };
-        const s = session as Session & { accessToken?: string };
+        const s = session as Session & {
+          accessToken?: string;
+          expiresAtUtc?: string;
+        };
         u.id = (te.id ?? undefined) as string;
         u.email = (te.email ?? undefined) as string | undefined;
-        // Make the backend JWT token available in the session
         s.accessToken = te.accessToken;
+        s.expiresAtUtc = te.expiresAtUtc;
         session.user = u;
       }
       return session;

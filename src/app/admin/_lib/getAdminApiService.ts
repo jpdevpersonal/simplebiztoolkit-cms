@@ -11,8 +11,13 @@ export async function getAdminApiService(): Promise<{
   await headers();
 
   const session = (await auth()) as Session | null;
-  const accessToken = (session as (Session & { accessToken?: string }) | null)
-    ?.accessToken;
+  const extended = session as
+    | (Session & { accessToken?: string; expiresAtUtc?: string })
+    | null;
+  const isExpired = extended?.expiresAtUtc
+    ? Date.parse(extended.expiresAtUtc) <= Date.now()
+    : false;
+  const accessToken = isExpired ? undefined : extended?.accessToken;
 
   const service = accessToken ? getApiService(accessToken) : apiService;
   return { service, session };
