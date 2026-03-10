@@ -28,14 +28,25 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Unit tests (pull requests)
+        if: github.event_name == 'pull_request'
+        run: npm run test
+
       - name: Unit and API tests with coverage gates
+        if: github.event_name != 'pull_request'
         run: npm run test:ci
 
       - name: Build
+        if: github.event_name != 'pull_request'
         run: npm run build
 
       - name: Install Playwright Chromium
+        if: github.event_name != 'pull_request'
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright smoke tests
+        if: github.event_name != 'pull_request'
         run: npm run e2e
