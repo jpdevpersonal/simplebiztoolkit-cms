@@ -79,7 +79,7 @@ export default function HomePage() {
             </span>
 
             <h1 className="sb-hero-title">
-              Run your business smarter with templates work for you
+              Run your business smarter with templates that work for you
             </h1>
 
             <p className="sb-hero-subtitle">
