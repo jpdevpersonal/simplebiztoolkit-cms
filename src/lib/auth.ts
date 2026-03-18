@@ -30,9 +30,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        let loginUrl = "";
+
         try {
           const apiUrl = getApiBaseUrlForServer();
-          const response = await sendHttpRequest(`${apiUrl}/api/auth/login`, {
+          loginUrl = `${apiUrl}/api/auth/login`;
+
+          const response = await sendHttpRequest(loginUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -44,7 +48,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!response.ok) {
-            console.error("Authentication failed:", response.status);
+            const { payload } = await parseHttpResponse(response);
+
+            console.error("Authentication failed", {
+              loginUrl,
+              status: response.status,
+              payload,
+            });
+
             return null;
           }
 
@@ -68,7 +79,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           return null;
         } catch (error) {
-          console.error("Authentication error:", error);
+          console.error("Authentication error", {
+            loginUrl,
+            error,
+          });
+
           return null;
         }
       },
