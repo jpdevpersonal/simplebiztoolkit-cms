@@ -3,6 +3,17 @@ import path from "path";
 
 const isProd = process.env.NODE_ENV === "production";
 
+function normalizeConfiguredApiUrl(base?: string): string {
+  if (!base) {
+    return "";
+  }
+
+  const trimmedBase = base.trim().replace(/\/+$/, "");
+  return trimmedBase.endsWith("/api")
+    ? trimmedBase.slice(0, -"/api".length)
+    : trimmedBase;
+}
+
 // Content-Security-Policy — blocks inline scripts except those Next.js needs,
 // external script hosts, and forbids framing (belt-and-suspenders with
 // X-Frame-Options below).
@@ -82,7 +93,7 @@ const nextConfig: NextConfig = {
     // is provided (e.g. in environments that have an upstream backend).
     // If the env var is missing, return no rewrites so Next's build doesn't
     // embed an invalid `undefined/...` destination and fail.
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = normalizeConfiguredApiUrl(process.env.NEXT_PUBLIC_API_URL);
     if (!apiUrl) return [];
 
     return [

@@ -74,6 +74,24 @@ export default function ProductEditor({
     }
   };
 
+  async function revalidateProductContent(
+    ...candidateSlugs: Array<string | undefined>
+  ) {
+    const uniqueSlugs = Array.from(
+      new Set(
+        candidateSlugs
+          .map((candidate) => candidate?.trim())
+          .filter((candidate): candidate is string => Boolean(candidate)),
+      ),
+    );
+
+    await Promise.all(
+      uniqueSlugs.map((candidateSlug) =>
+        clientApi.revalidateContent("product", candidateSlug),
+      ),
+    );
+  }
+
   async function saveProduct() {
     setSaving(true);
     setMessage(null);
@@ -103,6 +121,8 @@ export default function ProductEditor({
       const saved = isCreateMode
         ? await clientApi.createProduct(payload)
         : await clientApi.updateProduct(productData.id, payload);
+
+      await revalidateProductContent(productData.slug, saved?.slug, slug);
 
       if (isCreateMode) {
         router.push("/admin/products");
@@ -164,6 +184,7 @@ export default function ProductEditor({
 
     try {
       await clientApi.deleteProduct(productData.id);
+      await revalidateProductContent(productData.slug);
       setMessage("Template deleted!");
       // Redirect to products list
       router.push("/admin/products");

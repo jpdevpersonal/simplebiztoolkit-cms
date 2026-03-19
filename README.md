@@ -51,6 +51,8 @@ Notes:
 
 ## Production build (local)
 
+For local production runs, set `API_URL` for server-side proxy and auth traffic. `NEXT_PUBLIC_API_URL` is only the browser-visible origin. Keeping both set to the same origin removes ambiguity when `npm run start` is proxying admin writes.
+
 Build:
 
 ```bash

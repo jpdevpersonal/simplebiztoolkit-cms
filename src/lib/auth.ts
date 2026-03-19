@@ -14,6 +14,18 @@ import {
 } from "@/lib/httpTransport";
 import { getApiBaseUrlForServer } from "@/config/apiBaseUrl";
 
+function shouldUseSecureAuthCookies(): boolean {
+  const configuredUrl = process.env.NEXTAUTH_URL?.trim();
+
+  if (configuredUrl) {
+    return configuredUrl.startsWith("https://");
+  }
+
+  return process.env.NODE_ENV === "production";
+}
+
+const useSecureAuthCookies = shouldUseSecureAuthCookies();
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
@@ -30,9 +42,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        let loginUrl = "";
+
         try {
           const apiUrl = getApiBaseUrlForServer();
-          const response = await sendHttpRequest(`${apiUrl}/api/auth/login`, {
+          loginUrl = `${apiUrl}/api/auth/login`;
+
+          const response = await sendHttpRequest(loginUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -44,7 +60,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!response.ok) {
-            console.error("Authentication failed:", response.status);
+            const { payload } = await parseHttpResponse(response);
+
+            console.error("Authentication failed", {
+              loginUrl,
+              status: response.status,
+              payload,
+            });
+
             return null;
           }
 
@@ -68,7 +91,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           return null;
         } catch (error) {
-          console.error("Authentication error:", error);
+          console.error("Authentication error", {
+            loginUrl,
+            error,
+          });
+
           return null;
         }
       },
@@ -84,15 +111,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Development-friendly cookie settings for localhost
   cookies: {
     sessionToken: {
-      name:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-authjs.session-token"
-          : "authjs.session-token",
+      name: useSecureAuthCookies
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        sameSite: useSecureAuthCookies ? "strict" : "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production", // Only secure in production
+        secure: useSecureAuthCookies,
       },
     },
   },
