@@ -3,7 +3,13 @@
  * Called by C# API webhooks when content is updated
  */
 
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+
+function revalidatePublicProductPaths() {
+  revalidatePath("/products");
+  revalidatePath("/products/[categorySlug]", "page");
+  revalidatePath("/products/[categorySlug]/[productSlug]", "page");
+}
 
 /**
  * Revalidate specific article
@@ -26,6 +32,7 @@ export async function revalidateAllArticles() {
 export async function revalidateProduct(slug: string) {
   revalidateTag("products");
   revalidateTag(`product-${slug}`);
+  revalidatePublicProductPaths();
 }
 
 /**
@@ -34,6 +41,7 @@ export async function revalidateProduct(slug: string) {
 export async function revalidateCategory(slug: string) {
   revalidateTag("products");
   revalidateTag(`category-${slug}`);
+  revalidatePublicProductPaths();
 }
 
 /**
@@ -41,4 +49,5 @@ export async function revalidateCategory(slug: string) {
  */
 export async function revalidateAllProducts() {
   revalidateTag("products");
+  revalidatePublicProductPaths();
 }

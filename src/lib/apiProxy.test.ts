@@ -26,6 +26,7 @@ const sendHttpRequestMock = vi.mocked(sendHttpRequest);
 describe("apiProxy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
     headersMock.mockResolvedValue(new Headers());
   });
 
@@ -59,6 +60,8 @@ describe("apiProxy", () => {
 
   describe("proxyToBackend", () => {
     it("forwards POST request body and auth header", async () => {
+      vi.stubEnv("NODE_ENV", "development");
+
       const request = new Request("http://localhost/api/products", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -100,6 +103,8 @@ describe("apiProxy", () => {
     });
 
     it("forwards GET without body and uses text/plain fallback", async () => {
+      vi.stubEnv("NODE_ENV", "development");
+
       sendHttpRequestMock.mockResolvedValue(
         new Response(null, {
           status: 200,
@@ -131,7 +136,58 @@ describe("apiProxy", () => {
       await expect(response.text()).resolves.toBe("plain text");
     });
 
+    it("resolves the backend URL from the current env on each call", async () => {
+      vi.stubEnv("NODE_ENV", "production");
+
+      sendHttpRequestMock.mockResolvedValue(
+        new Response(null, {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+      parseHttpResponseMock.mockResolvedValue({
+        payload: { ok: true },
+        isJson: true,
+        contentType: "application/json",
+      });
+
+      vi.stubEnv("API_URL", "https://first.example.com/api");
+      await proxyToBackend({
+        request: null,
+        path: "/api/admin/products/1",
+        method: "GET",
+      });
+
+      vi.stubEnv("API_URL", "https://second.example.com/api");
+      await proxyToBackend({
+        request: null,
+        path: "/api/admin/products/1",
+        method: "GET",
+      });
+
+      expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
+        1,
+        "https://first.example.com/api/admin/products/1",
+        {
+          method: "GET",
+          headers: {},
+          body: undefined,
+        },
+      );
+      expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
+        2,
+        "https://second.example.com/api/admin/products/1",
+        {
+          method: "GET",
+          headers: {},
+          body: undefined,
+        },
+      );
+    });
+
     it("returns 502 response when backend request fails", async () => {
+      vi.stubEnv("NODE_ENV", "development");
+
       sendHttpRequestMock.mockRejectedValueOnce(new Error("ECONNREFUSED"));
 
       const response = await proxyToBackend({

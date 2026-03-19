@@ -6,8 +6,6 @@ import { auth } from "@/lib/auth";
 import { parseHttpResponse, sendHttpRequest } from "@/lib/httpTransport";
 import { getApiBaseUrlForServer } from "@/config/apiBaseUrl";
 
-const BACKEND = getApiBaseUrlForServer();
-
 type SessionWithToken = Session & { accessToken?: string };
 
 export type AuthContext = {
@@ -61,6 +59,7 @@ export async function proxyToBackend(options: {
   accessToken?: string;
 }) {
   const { request, path, method, accessToken } = options;
+  const backend = getApiBaseUrlForServer();
 
   try {
     const body =
@@ -68,7 +67,7 @@ export async function proxyToBackend(options: {
         ? await request.text()
         : undefined;
 
-    const res = await sendHttpRequest(`${BACKEND}${path}`, {
+    const res = await sendHttpRequest(`${backend}${path}`, {
       method,
       headers: buildHeaders(request, accessToken),
       body,

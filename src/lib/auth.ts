@@ -14,6 +14,18 @@ import {
 } from "@/lib/httpTransport";
 import { getApiBaseUrlForServer } from "@/config/apiBaseUrl";
 
+function shouldUseSecureAuthCookies(): boolean {
+  const configuredUrl = process.env.NEXTAUTH_URL?.trim();
+
+  if (configuredUrl) {
+    return configuredUrl.startsWith("https://");
+  }
+
+  return process.env.NODE_ENV === "production";
+}
+
+const useSecureAuthCookies = shouldUseSecureAuthCookies();
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
@@ -99,15 +111,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Development-friendly cookie settings for localhost
   cookies: {
     sessionToken: {
-      name:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-authjs.session-token"
-          : "authjs.session-token",
+      name: useSecureAuthCookies
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
       options: {
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        sameSite: useSecureAuthCookies ? "strict" : "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production", // Only secure in production
+        secure: useSecureAuthCookies,
       },
     },
   },
