@@ -41,8 +41,13 @@ function buildHeaders(
   const headersInit: HeadersInit = {};
 
   if (request) {
-    headersInit["Content-Type"] =
-      request.headers.get("content-type") || "application/json";
+    const contentType = request.headers.get("content-type");
+    if (
+      contentType &&
+      !contentType.toLowerCase().startsWith("multipart/form-data")
+    ) {
+      headersInit["Content-Type"] = contentType;
+    }
   }
 
   if (accessToken) {
@@ -50,6 +55,24 @@ function buildHeaders(
   }
 
   return headersInit;
+}
+
+async function getProxyRequestBody(
+  request: NextRequest | Request | null,
+  method: "GET" | "POST" | "PUT" | "DELETE",
+): Promise<BodyInit | undefined> {
+  if (!request || (method !== "POST" && method !== "PUT")) {
+    return undefined;
+  }
+
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+
+  if (contentType.startsWith("multipart/form-data")) {
+    return request.formData();
+  }
+
+  const text = await request.text();
+  return text.length > 0 ? text : undefined;
 }
 
 export async function proxyToBackend(options: {
@@ -62,15 +85,12 @@ export async function proxyToBackend(options: {
   const backend = getApiBaseUrlForServer();
 
   try {
-    const body =
-      request && (method === "POST" || method === "PUT")
-        ? await request.text()
-        : undefined;
+    const proxiedBody = await getProxyRequestBody(request, method);
 
     const res = await sendHttpRequest(`${backend}${path}`, {
       method,
       headers: buildHeaders(request, accessToken),
-      body,
+      body: proxiedBody,
     });
 
     const { payload, contentType } = await parseHttpResponse(res);

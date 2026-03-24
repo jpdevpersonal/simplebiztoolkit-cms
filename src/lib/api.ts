@@ -105,6 +105,8 @@ export interface MenuItemPage {
   dateISO: string;
   dateModified: string;
   category?: string;
+  featuredImageId?: string;
+  headerImageId?: string;
   featuredImage?: string;
   headerImage?: string;
   status: "draft" | "published";
@@ -114,6 +116,28 @@ export interface MenuItemPage {
   canonicalUrl?: string;
   menuCategory?: MenuCategory;
   menuItem?: MenuItem;
+}
+
+export interface ImageAsset {
+  id: string;
+  url: string;
+  blobName: string;
+  altText?: string;
+  caption?: string;
+  createdUtc: string;
+  updatedUtc: string;
+}
+
+export interface CreateImageInput {
+  file: File;
+  altText?: string;
+  caption?: string;
+}
+
+export interface UpdateImageInput {
+  file?: File;
+  altText?: string;
+  caption?: string;
 }
 
 // API Service Class

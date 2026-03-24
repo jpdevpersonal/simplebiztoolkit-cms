@@ -102,6 +102,53 @@ describe("apiProxy", () => {
       await expect(response.json()).resolves.toEqual({ id: 1 });
     });
 
+    it("forwards multipart uploads as FormData without forcing content-type", async () => {
+      vi.stubEnv("NODE_ENV", "development");
+
+      const formData = new FormData();
+      const file = new File(["binary"], "hero.webp", { type: "image/webp" });
+      formData.append("file", file);
+      formData.append("altText", "Hero alt");
+
+      const request = new Request("http://localhost/api/admin/images", {
+        method: "POST",
+        body: formData,
+      });
+
+      sendHttpRequestMock.mockResolvedValue(
+        new Response(null, {
+          status: 201,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+      parseHttpResponseMock.mockResolvedValue({
+        payload: { id: "img-1" },
+        isJson: true,
+        contentType: "application/json",
+      });
+
+      const response = await proxyToBackend({
+        request: request as never,
+        path: "/api/admin/images",
+        method: "POST",
+        accessToken: "access-123",
+      });
+
+      const [url, options] = sendHttpRequestMock.mock.calls[0];
+      expect(url).toBe("http://localhost:5117/api/admin/images");
+      expect(options?.method).toBe("POST");
+      expect(options?.headers).toEqual({
+        Authorization: "Bearer access-123",
+      });
+      const proxiedBody = options?.body as FormData;
+      expect(typeof proxiedBody?.get).toBe("function");
+      const proxiedFile = proxiedBody.get("file");
+      expect(proxiedFile).toBeTruthy();
+      expect((proxiedFile as File).type).toBe("image/webp");
+      expect(proxiedBody.get("altText")).toBe("Hero alt");
+      expect(response.status).toBe(201);
+    });
+
     it("forwards GET without body and uses text/plain fallback", async () => {
       vi.stubEnv("NODE_ENV", "development");
 

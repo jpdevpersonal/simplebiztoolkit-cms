@@ -8,12 +8,18 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { MenuItem, MenuCategory, MenuItemPage } from "@/lib/api";
+import type {
+  ImageAsset,
+  MenuItem,
+  MenuCategory,
+  MenuItemPage,
+} from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
+import CmsImagePicker from "@/components/CmsImagePicker";
 
 type Props = {
   page?: MenuItemPage;
@@ -117,7 +123,9 @@ export default function PageEditor({
     description: page?.description ?? "",
     content: page?.content ?? "",
     editorJson: page?.editorJson ?? (null as string | null),
+    featuredImageId: page?.featuredImageId ?? "",
     featuredImage: page?.featuredImage ?? "",
+    headerImageId: page?.headerImageId ?? "",
     headerImage: page?.headerImage ?? "",
     status: page?.status ?? "draft",
     dateISO: page?.dateISO ?? today,
@@ -129,6 +137,37 @@ export default function PageEditor({
 
   const update = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+  function handleImageSelection(
+    field: "featured" | "header",
+    image: ImageAsset | null,
+  ) {
+    setFormData((prev) => ({
+      ...prev,
+      ...(field === "featured"
+        ? {
+            featuredImageId: image?.id ?? "",
+            featuredImage: image?.url ?? "",
+          }
+        : {
+            headerImageId: image?.id ?? "",
+            headerImage: image?.url ?? "",
+          }),
+    }));
+  }
+
+  function handleImageUrlChange(
+    field: "featuredImage" | "headerImage",
+    value: string,
+  ) {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "featuredImage"
+        ? { featuredImageId: "" }
+        : { headerImageId: "" }),
+    }));
+  }
 
   // Auto-generate slug
   useEffect(() => {
@@ -153,8 +192,19 @@ export default function PageEditor({
     setError(null);
 
     try {
+      const pageFields = { ...formData };
+      const featuredImageId = pageFields.featuredImageId;
+      const headerImageId = pageFields.headerImageId;
+
+      delete pageFields.featuredImage;
+      delete pageFields.headerImage;
+      delete pageFields.featuredImageId;
+      delete pageFields.headerImageId;
+
       const payload: Partial<MenuItemPage> = {
-        ...formData,
+        ...pageFields,
+        ...(featuredImageId ? { featuredImageId } : {}),
+        ...(headerImageId ? { headerImageId } : {}),
         dateModified: today,
       };
 
@@ -435,21 +485,45 @@ export default function PageEditor({
               <label className="form-label fw-semibold">
                 Featured Image URL
               </label>
-              <input
-                className="form-control"
-                value={formData.featuredImage}
-                onChange={(e) => update("featuredImage", e.target.value)}
-                placeholder="https://..."
-              />
+              <div className="cms-image-inline-field">
+                <input
+                  className="form-control"
+                  value={formData.featuredImage}
+                  onChange={(e) =>
+                    handleImageUrlChange("featuredImage", e.target.value)
+                  }
+                  placeholder="https://..."
+                />
+                <CmsImagePicker
+                  value={formData.featuredImage}
+                  selectedImageId={formData.featuredImageId}
+                  label="featured image"
+                  onChangeAction={(image) =>
+                    handleImageSelection("featured", image)
+                  }
+                />
+              </div>
             </div>
             <div>
               <label className="form-label fw-semibold">Header Image URL</label>
-              <input
-                className="form-control"
-                value={formData.headerImage}
-                onChange={(e) => update("headerImage", e.target.value)}
-                placeholder="https://..."
-              />
+              <div className="cms-image-inline-field">
+                <input
+                  className="form-control"
+                  value={formData.headerImage}
+                  onChange={(e) =>
+                    handleImageUrlChange("headerImage", e.target.value)
+                  }
+                  placeholder="https://..."
+                />
+                <CmsImagePicker
+                  value={formData.headerImage}
+                  selectedImageId={formData.headerImageId}
+                  label="header image"
+                  onChangeAction={(image) =>
+                    handleImageSelection("header", image)
+                  }
+                />
+              </div>
             </div>
           </AdminFormBlock>
 
