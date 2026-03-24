@@ -367,7 +367,7 @@ export default function PageEditor({
               </div>
             </div>
 
-            <div className="mb-3">
+            <div className="mb-0">
               <label className="form-label fw-semibold">Description</label>
               <textarea
                 className="form-control"
@@ -376,10 +376,61 @@ export default function PageEditor({
                 rows={3}
               />
             </div>
+          </AdminFormBlock>
 
+          {/* Media */}
+          <AdminFormBlock icon={mediaIcon} title="Media">
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Featured Image URL
+              </label>
+              <div className="cms-image-inline-field">
+                <input
+                  className="form-control"
+                  value={formData.featuredImage}
+                  onChange={(e) =>
+                    handleImageUrlChange("featuredImage", e.target.value)
+                  }
+                  placeholder="https://..."
+                />
+                <CmsImagePicker
+                  value={formData.featuredImage}
+                  selectedImageId={formData.featuredImageId}
+                  label="featured image"
+                  onChangeAction={(image) =>
+                    handleImageSelection("featured", image)
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <label className="form-label fw-semibold">Header Image URL</label>
+              <div className="cms-image-inline-field">
+                <input
+                  className="form-control"
+                  value={formData.headerImage}
+                  onChange={(e) =>
+                    handleImageUrlChange("headerImage", e.target.value)
+                  }
+                  placeholder="https://..."
+                />
+                <CmsImagePicker
+                  value={formData.headerImage}
+                  selectedImageId={formData.headerImageId}
+                  label="header image"
+                  onChangeAction={(image) =>
+                    handleImageSelection("header", image)
+                  }
+                />
+              </div>
+            </div>
+          </AdminFormBlock>
+
+          {/* Content */}
+          <AdminFormBlock icon={contentIcon} title="Content" className="mb-0">
             <div>
               <RichContentField
-                label="Content"
+                label=""
                 value={formData.content}
                 onChange={(html) => update("content", html)}
                 storageKey="page-content-mode"
@@ -476,54 +527,6 @@ export default function PageEditor({
                 value={formData.dateISO}
                 onChange={(e) => update("dateISO", e.target.value)}
               />
-            </div>
-          </AdminFormBlock>
-
-          {/* Media */}
-          <AdminFormBlock icon={mediaIcon} title="Media">
-            <div className="mb-3">
-              <label className="form-label fw-semibold">
-                Featured Image URL
-              </label>
-              <div className="cms-image-inline-field">
-                <input
-                  className="form-control"
-                  value={formData.featuredImage}
-                  onChange={(e) =>
-                    handleImageUrlChange("featuredImage", e.target.value)
-                  }
-                  placeholder="https://..."
-                />
-                <CmsImagePicker
-                  value={formData.featuredImage}
-                  selectedImageId={formData.featuredImageId}
-                  label="featured image"
-                  onChangeAction={(image) =>
-                    handleImageSelection("featured", image)
-                  }
-                />
-              </div>
-            </div>
-            <div>
-              <label className="form-label fw-semibold">Header Image URL</label>
-              <div className="cms-image-inline-field">
-                <input
-                  className="form-control"
-                  value={formData.headerImage}
-                  onChange={(e) =>
-                    handleImageUrlChange("headerImage", e.target.value)
-                  }
-                  placeholder="https://..."
-                />
-                <CmsImagePicker
-                  value={formData.headerImage}
-                  selectedImageId={formData.headerImageId}
-                  label="header image"
-                  onChangeAction={(image) =>
-                    handleImageSelection("header", image)
-                  }
-                />
-              </div>
             </div>
           </AdminFormBlock>
 
