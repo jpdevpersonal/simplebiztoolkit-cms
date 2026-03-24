@@ -192,14 +192,22 @@ export default function PageEditor({
     setError(null);
 
     try {
-      const pageFields = { ...formData };
-      const featuredImageId = pageFields.featuredImageId;
-      const headerImageId = pageFields.headerImageId;
-
-      delete pageFields.featuredImage;
-      delete pageFields.headerImage;
-      delete pageFields.featuredImageId;
-      delete pageFields.headerImageId;
+      const featuredImageId = formData.featuredImageId;
+      const headerImageId = formData.headerImageId;
+      const pageFields = Object.fromEntries(
+        Object.entries(formData).filter(
+          ([key]) =>
+            ![
+              "featuredImage",
+              "headerImage",
+              "featuredImageId",
+              "headerImageId",
+            ].includes(key),
+        ),
+      ) as Omit<
+        typeof formData,
+        "featuredImage" | "headerImage" | "featuredImageId" | "headerImageId"
+      >;
 
       const payload: Partial<MenuItemPage> = {
         ...pageFields,

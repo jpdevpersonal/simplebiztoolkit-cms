@@ -241,7 +241,7 @@ export default function ProductDetailClient({ product }: Props) {
           </div>
 
           <div className="product-detail-features">
-            <h2>What's Included</h2>
+            <h2>What&apos;s Included</h2>
             <ul>
               {product.bullets.map((bullet, index) => (
                 <li key={index}>

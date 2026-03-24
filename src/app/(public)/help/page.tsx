@@ -30,8 +30,8 @@ export default function HelpPage() {
                 <h2 className="h4">Finding your digital downloads</h2>
                 <p className="sb-muted">
                   If you purchased using your Etsy account, open Purchases and
-                  Reviews, your items have a "Download Files" button next to
-                  them.
+                  Reviews, your items have a &quot;Download Files&quot; button
+                  next to them.
                 </p>
 
                 <div className="mt-3">
