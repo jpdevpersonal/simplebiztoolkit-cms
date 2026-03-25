@@ -80,31 +80,52 @@ export default async function AdminPagesListPage() {
   );
 
   return (
-    <div>
-      {/* Page header */}
+    <div className="admin-page-shell">
       <div className="admin-page-header">
-        <h1>Pages</h1>
-        <Link href="/admin/pages/new" className="admin-btn-save">
-          {plusIcon}
-          New Page
-        </Link>
+        <div className="admin-page-header-copy">
+          <div className="admin-page-eyebrow">Site structure</div>
+          <h1>Pages</h1>
+          <p className="admin-page-description">
+            Manage menu-linked pages with clearer hierarchy between menu items,
+            topics, and publishing status.
+          </p>
+        </div>
+        <div className="admin-page-actions">
+          <span className="admin-page-meta">
+            {menuItems.length} menu items linked
+          </span>
+          <Link href="/admin/pages/new" className="admin-btn-save">
+            {plusIcon}
+            New Page
+          </Link>
+        </div>
       </div>
 
-      {/* Stats */}
       <div className="row g-3 mb-4">
-        <div className="col-4">
+        <div className="col-12 col-md-4">
           <AdminStatCard label="Total Pages" value={enrichedPages.length} />
         </div>
-        <div className="col-4">
+        <div className="col-12 col-md-4">
           <AdminStatCard label="Published" value={published.length} />
         </div>
-        <div className="col-4">
+        <div className="col-12 col-md-4">
           <AdminStatCard label="Drafts" value={drafts.length} />
         </div>
       </div>
 
-      {/* Pages table (client-side sorting) */}
-      <AdminPagesTable pages={enrichedPages} />
+      <section className="admin-section-card">
+        <div className="admin-section-card-header">
+          <div>
+            <div className="admin-section-card-eyebrow">Content map</div>
+            <h2 className="admin-section-card-title">All pages</h2>
+            <p className="admin-section-card-copy">
+              Sort by title, menu item, topic, status, or publish date to see
+              where each page belongs.
+            </p>
+          </div>
+        </div>
+        <AdminPagesTable pages={enrichedPages} />
+      </section>
     </div>
   );
 }

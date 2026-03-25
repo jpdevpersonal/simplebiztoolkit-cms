@@ -31,7 +31,6 @@ export default function AdminNav({ userEmail }: { userEmail: string }) {
     <nav className="admin-nav">
       <div className="container">
         <div className="admin-nav-inner">
-          {/* Brand + nav links */}
           <div className="admin-nav-start">
             <Link href="/admin" className="admin-nav-brand">
               <span className="admin-nav-brand-badge">
@@ -43,30 +42,41 @@ export default function AdminNav({ userEmail }: { userEmail: string }) {
                   style={{ borderRadius: 6 }}
                 />
               </span>
-              Admin
+              <span className="admin-nav-brand-copy">
+                <span className="admin-nav-brand-title">
+                  Simple Biz Toolkit
+                </span>
+                <span className="admin-nav-brand-subtitle">
+                  Admin workspace
+                </span>
+              </span>
             </Link>
 
-            <div className="admin-nav-links">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={
-                    "admin-nav-link" +
-                    (isActive(item.href, item.exact, pathname) ? " active" : "")
-                  }
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <div className="admin-nav-links-wrap" aria-label="Admin sections">
+              <div className="admin-nav-links">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={
+                      "admin-nav-link" +
+                      (isActive(item.href, item.exact, pathname)
+                        ? " active"
+                        : "")
+                    }
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* User info + logout */}
           <div className="admin-nav-end">
-            <span className="admin-nav-email" title={userEmail}>
-              {userEmail}
-            </span>
+            <div className="admin-nav-user-chip" title={userEmail}>
+              <span className="admin-nav-user-label">Signed in</span>
+              <span className="admin-nav-email">{userEmail}</span>
+            </div>
             <button
               className="admin-nav-logout"
               onClick={() => signOut({ callbackUrl: "/admin/login" })}

@@ -11,15 +11,7 @@ function StatusBadge({ status }: { status?: string }) {
   const published = status === "published";
   return (
     <span
-      style={{
-        display: "inline-block",
-        padding: "0.2rem 0.55rem",
-        borderRadius: "999px",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        background: published ? "#dcfce7" : "#fef9c3",
-        color: published ? "#166534" : "#854d0e",
-      }}
+      className={`admin-badge ${published ? "admin-badge-published" : "admin-badge-draft"}`}
     >
       {status ?? "draft"}
     </span>
@@ -69,104 +61,21 @@ export default async function MenuPage() {
   });
 
   return (
-    <div>
-      {/* Page header */}
+    <div className="admin-page-shell">
       <div className="admin-page-header">
-        <h1>Menu Items</h1>
-        <Link href="/admin/menu/new" className="admin-btn-save">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <line
-              x1="12"
-              y1="5"
-              x2="12"
-              y2="19"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <line
-              x1="5"
-              y1="12"
-              x2="19"
-              y2="12"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          New Menu Item
-        </Link>
-      </div>
-
-      {/* Stats */}
-      <div className="row g-3 mb-4">
-        <div className="col-4">
-          <AdminStatCard label="Menu Items" value={menuItems.length} />
+        <div className="admin-page-header-copy">
+          <div className="admin-page-eyebrow">Navigation system</div>
+          <h1>Menu Items</h1>
+          <p className="admin-page-description">
+            Keep the site structure easy to scan by separating menu items,
+            topics, and menu pages into distinct sections.
+          </p>
         </div>
-        <div className="col-4">
-          <AdminStatCard label="Topics" value={allCategories.length} />
-        </div>
-        <div className="col-4">
-          <AdminStatCard label="Pages" value={allPages.length} />
-        </div>
-      </div>
-
-      {/* Menu items table */}
-      <h2 className="admin-section-heading">Menu Items</h2>
-      <div className="admin-table-wrap mb-5">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Topics</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {menuItems.length === 0 && (
-              <tr>
-                <td colSpan={4} className="admin-empty-state">
-                  No menu items found. Create your first menu item!
-                </td>
-              </tr>
-            )}
-            {menuItems.map((item) => (
-              <tr key={item.id}>
-                <td style={{ fontWeight: 600 }}>{item.title}</td>
-                <td>
-                  <StatusBadge status={item.status} />
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {
-                    allCategoriesRaw.filter((c) => c.menuItemId === item.id)
-                      .length
-                  }
-                </td>
-                <td>
-                  <Link
-                    href={`/admin/menu/${item.id}/edit`}
-                    className="admin-btn-action"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Categories table */}
-      <div className="admin-page-header">
-        <h2 className="admin-section-heading" style={{ margin: 0 }}>
-          Topics
-        </h2>
-        {menuItems.length > 0 && (
-          <Link
-            href={`/admin/menu/${menuItems[0].id}/categories/new`}
-            className="admin-btn-save"
-          >
+        <div className="admin-page-actions">
+          <span className="admin-page-meta">
+            {allCategories.length} topics tracked
+          </span>
+          <Link href="/admin/menu/new" className="admin-btn-save">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <line
                 x1="12"
@@ -187,142 +96,267 @@ export default async function MenuPage() {
                 strokeLinecap="round"
               />
             </svg>
-            New Topic
+            New Menu Item
           </Link>
-        )}
-      </div>
-      <div className="admin-table-wrap mb-5">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Menu Item</th>
-              <th>Status</th>
-              <th>Pages</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allCategories.length === 0 && (
-              <tr>
-                <td colSpan={5} className="admin-empty-state">
-                  No topics found.
-                </td>
-              </tr>
-            )}
-            {allCategories.map((cat) => (
-              <tr key={cat.id}>
-                <td style={{ fontWeight: 600 }}>{cat.title}</td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {cat.menuItemTitle}
-                </td>
-                <td>
-                  <StatusBadge status={cat.status} />
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {cat.pageCount}
-                </td>
-                <td>
-                  <Link
-                    href={`/admin/menu/categories/${cat.id}/edit`}
-                    className="admin-btn-action"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        </div>
       </div>
 
-      {/* Menu Pages table */}
-      <div className="admin-page-header">
-        <h2 className="admin-section-heading" style={{ margin: 0 }}>
-          Menu Pages
-        </h2>
-        <Link href="/admin/pages/new" className="admin-btn-save">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <line
-              x1="12"
-              y1="5"
-              x2="12"
-              y2="19"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <line
-              x1="5"
-              y1="12"
-              x2="19"
-              y2="12"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          New Page
-        </Link>
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-md-4">
+          <AdminStatCard label="Menu Items" value={menuItems.length} />
+        </div>
+        <div className="col-12 col-md-4">
+          <AdminStatCard label="Topics" value={allCategories.length} />
+        </div>
+        <div className="col-12 col-md-4">
+          <AdminStatCard label="Pages" value={allPages.length} />
+        </div>
       </div>
-      <div className="admin-table-wrap mb-5">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Menu Item</th>
-              <th>Topic</th>
-              <th>Slug</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allPages.length === 0 && (
+
+      <section className="admin-section-card">
+        <div className="admin-section-card-header">
+          <div>
+            <div className="admin-section-card-eyebrow">Primary navigation</div>
+            <h2 className="admin-section-card-title">Menu items</h2>
+            <p className="admin-section-card-copy">
+              See how many topics each top-level menu item contains, then open
+              the editor directly.
+            </p>
+          </div>
+        </div>
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td colSpan={6} className="admin-empty-state">
-                  No pages found.
-                </td>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Topics</th>
+                <th>Actions</th>
               </tr>
-            )}
-            {allPages.map((page) => (
-              <tr key={page.id}>
-                <td style={{ fontWeight: 600 }}>{page.title}</td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {page.menuItemTitle}
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {page.categoryTitle ?? (
-                    <span style={{ fontStyle: "italic", opacity: 0.6 }}>
-                      None
-                    </span>
-                  )}
-                </td>
-                <td
-                  style={{
-                    color: "var(--sb-muted)",
-                    fontSize: "0.85rem",
-                    fontFamily: "monospace",
-                  }}
-                >
-                  {page.slug}
-                </td>
-                <td>
-                  <StatusBadge status={page.status} />
-                </td>
-                <td>
-                  <Link
-                    href={`/admin/pages/${page.id}/edit`}
-                    className="admin-btn-action"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {menuItems.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="admin-empty-state">
+                    No menu items found. Create your first menu item!
+                  </td>
+                </tr>
+              )}
+              {menuItems.map((item) => (
+                <tr key={item.id}>
+                  <td className="admin-cell-strong" data-label="Title">
+                    {item.title}
+                  </td>
+                  <td data-label="Status">
+                    <StatusBadge status={item.status} />
+                  </td>
+                  <td className="admin-cell-muted" data-label="Topics">
+                    {
+                      allCategoriesRaw.filter((c) => c.menuItemId === item.id)
+                        .length
+                    }
+                  </td>
+                  <td className="admin-cell-actions" data-label="Actions">
+                    <Link
+                      href={`/admin/menu/${item.id}/edit`}
+                      className="admin-btn-action"
+                    >
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div className="admin-page-header">
+        <div className="admin-page-header-copy">
+          <div className="admin-page-eyebrow">Secondary grouping</div>
+          <h2>Topics</h2>
+          <p className="admin-page-description">
+            Topic sections make it easier to understand which menu item owns
+            each cluster of pages.
+          </p>
+        </div>
+        <div className="admin-page-actions">
+          {menuItems.length > 0 && (
+            <Link
+              href={`/admin/menu/${menuItems[0].id}/categories/new`}
+              className="admin-btn-save"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <line
+                  x1="12"
+                  y1="5"
+                  x2="12"
+                  y2="19"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="5"
+                  y1="12"
+                  x2="19"
+                  y2="12"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+              New Topic
+            </Link>
+          )}
+        </div>
       </div>
+      <section className="admin-section-card">
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Menu Item</th>
+                <th>Status</th>
+                <th>Pages</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allCategories.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="admin-empty-state">
+                    No topics found.
+                  </td>
+                </tr>
+              )}
+              {allCategories.map((cat) => (
+                <tr key={cat.id}>
+                  <td className="admin-cell-strong" data-label="Title">
+                    {cat.title}
+                  </td>
+                  <td className="admin-cell-muted" data-label="Menu Item">
+                    {cat.menuItemTitle}
+                  </td>
+                  <td data-label="Status">
+                    <StatusBadge status={cat.status} />
+                  </td>
+                  <td className="admin-cell-muted" data-label="Pages">
+                    {cat.pageCount}
+                  </td>
+                  <td className="admin-cell-actions" data-label="Actions">
+                    <Link
+                      href={`/admin/menu/categories/${cat.id}/edit`}
+                      className="admin-btn-action"
+                    >
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div className="admin-page-header">
+        <div className="admin-page-header-copy">
+          <div className="admin-page-eyebrow">Assigned pages</div>
+          <h2>Menu Pages</h2>
+          <p className="admin-page-description">
+            Review which pages belong to which menu item or topic before moving
+            into the full editor.
+          </p>
+        </div>
+        <div className="admin-page-actions">
+          <Link href="/admin/pages/new" className="admin-btn-save">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <line
+                x1="12"
+                y1="5"
+                x2="12"
+                y2="19"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <line
+                x1="5"
+                y1="12"
+                x2="19"
+                y2="12"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            New Page
+          </Link>
+        </div>
+      </div>
+      <section className="admin-section-card">
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Menu Item</th>
+                <th className="admin-col-phone-hide">Topic</th>
+                <th className="admin-col-tablet-hide admin-col-phone-hide">
+                  Slug
+                </th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allPages.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="admin-empty-state">
+                    No pages found.
+                  </td>
+                </tr>
+              )}
+              {allPages.map((page) => (
+                <tr key={page.id}>
+                  <td className="admin-cell-strong" data-label="Title">
+                    {page.title}
+                  </td>
+                  <td className="admin-cell-muted" data-label="Menu Item">
+                    {page.menuItemTitle}
+                  </td>
+                  <td
+                    className="admin-cell-muted admin-col-phone-hide"
+                    data-label="Topic"
+                  >
+                    {page.categoryTitle ?? (
+                      <span className="admin-cell-italic-faded">None</span>
+                    )}
+                  </td>
+                  <td
+                    className="admin-cell-code admin-col-tablet-hide admin-col-phone-hide"
+                    data-label="Slug"
+                  >
+                    {page.slug}
+                  </td>
+                  <td data-label="Status">
+                    <StatusBadge status={page.status} />
+                  </td>
+                  <td className="admin-cell-actions" data-label="Actions">
+                    <Link
+                      href={`/admin/pages/${page.id}/edit`}
+                      className="admin-btn-action"
+                    >
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

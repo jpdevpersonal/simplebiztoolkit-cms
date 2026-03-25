@@ -159,25 +159,39 @@ export default function AdminPagesTable({ pages }: Props) {
           )}
           {sorted.map((page) => (
             <tr key={page.id}>
-              <td className="admin-cell-strong admin-cell-max-280">
+              <td
+                className="admin-cell-strong admin-cell-max-280"
+                data-label="Title"
+              >
                 {page.title}
               </td>
-              <td className="admin-cell-code admin-cell-max-180 admin-cell-ellipsis">
+              <td
+                className="admin-cell-code admin-cell-max-180 admin-cell-ellipsis admin-col-tablet-hide admin-col-phone-hide"
+                data-label="Slug"
+              >
                 {page.slug}
               </td>
-              <td className="admin-cell-muted">{page.menuItemTitle}</td>
-              <td className="admin-cell-muted">
+              <td className="admin-cell-muted" data-label="Menu Item">
+                {page.menuItemTitle}
+              </td>
+              <td
+                className="admin-cell-muted admin-col-phone-hide"
+                data-label="Topic"
+              >
                 {page.categoryTitle ?? (
                   <span className="admin-cell-italic-faded">None</span>
                 )}
               </td>
-              <td>
+              <td data-label="Status">
                 <StatusBadge status={page.status} />
               </td>
-              <td className="admin-cell-muted-sm admin-cell-nowrap">
+              <td
+                className="admin-cell-muted-sm admin-cell-nowrap"
+                data-label="Published"
+              >
                 {page.dateISO ?? "-"}
               </td>
-              <td>
+              <td className="admin-cell-actions" data-label="Preview">
                 <Link
                   href={`/${page.slug}`}
                   className="admin-btn-action"
@@ -218,7 +232,7 @@ export default function AdminPagesTable({ pages }: Props) {
                   </svg>
                 </Link>
               </td>
-              <td>
+              <td className="admin-cell-actions" data-label="Actions">
                 <Link
                   href={`/admin/pages/${page.id}/edit`}
                   className="admin-btn-action"

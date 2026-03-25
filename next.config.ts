@@ -21,7 +21,7 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval';
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https://www.simplebiztoolkit.com blob:;
+  img-src 'self' data: https://www.simplebiztoolkit.com https://*.blob.core.windows.net blob:;
   font-src 'self';
   connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"};
   frame-ancestors 'none';
@@ -36,6 +36,10 @@ const remotePatterns: { protocol: "http" | "https"; hostname: string }[] = [
   {
     protocol: "https",
     hostname: "simplebiztoolkit.com",
+  },
+  {
+    protocol: "https",
+    hostname: "**.blob.core.windows.net",
   },
 ];
 

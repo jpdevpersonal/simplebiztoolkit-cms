@@ -22,7 +22,8 @@ export default function TestimonialsPage() {
       <div className="container">
         <h1 style={{ fontWeight: 900 }}>Reviews</h1>
         <p className="sb-muted">
-          Here's what some of our customers are saying about Simple Biz Toolkit
+          Here&apos;s what some of our customers are saying about Simple Biz
+          Toolkit
         </p>
 
         <TestimonialGrid />

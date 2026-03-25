@@ -22,7 +22,9 @@ export default async function AdminLayout({
       {session ? <AdminNav userEmail={session.user?.email || ""} /> : null}
 
       <main className="admin-content">
-        <div className="container py-4">{children}</div>
+        <div className="container py-4">
+          <div className="admin-shell">{children}</div>
+        </div>
       </main>
     </div>
   );
