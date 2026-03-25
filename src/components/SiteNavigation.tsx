@@ -74,6 +74,16 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const isGroupActive = (item: MenuNavItem) => {
+    if (item.directHref) return isActive(item.directHref);
+
+    return (
+      item.groups?.some((group) =>
+        group.pages.some((page) => isActive(page.href)),
+      ) ?? false
+    );
+  };
+
   const closeMenu = () => setIsOpen(false);
 
   const mobileMenu = (
@@ -349,23 +359,19 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="d-none d-lg-flex align-items-center gap-2">
+      <nav className="d-none d-lg-flex align-items-center gap-2 sb-site-nav">
         {navItems.map((item) => (
           <Link
             key={item.to}
-            className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link"
+            className={
+              "px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link" +
+              (isActive(item.to) ? " is-active" : "")
+            }
             href={item.to}
             // Prevent automatic prefetch for the blog route to avoid
             // preloading its CSS when users may not navigate there.
             prefetch={item.to === "/blog" ? false : undefined}
-            style={{
-              transition: "all 0.2s ease",
-              fontWeight: 600,
-              backgroundColor: isActive(item.to)
-                ? "var(--sb-soft)"
-                : "transparent",
-              color: isActive(item.to) ? "var(--sb-brand-blue)" : undefined,
-            }}
+            style={{ transition: "all 0.2s ease" }}
           >
             {item.label}
           </Link>
@@ -376,33 +382,28 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
           item.directHref ? (
             <Link
               key={item.id}
-              className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link"
+              className={
+                "px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link" +
+                (isActive(item.directHref) ? " is-active" : "")
+              }
               href={item.directHref}
-              style={{
-                transition: "all 0.2s ease",
-                fontWeight: 600,
-                backgroundColor: isActive(item.directHref)
-                  ? "var(--sb-soft)"
-                  : "transparent",
-                color: isActive(item.directHref)
-                  ? "var(--sb-brand-blue)"
-                  : undefined,
-              }}
+              style={{ transition: "all 0.2s ease" }}
             >
               {item.title}
             </Link>
           ) : item.groups && item.groups.length > 0 ? (
             <div
               key={item.id}
-              className="sb-nav-dropdown"
+              className={
+                "sb-nav-dropdown" + (isGroupActive(item) ? " is-active" : "")
+              }
               style={{ position: "relative" }}
             >
               <button
-                className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link"
+                className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link sb-nav-dropdown-trigger"
+                type="button"
                 style={{
-                  fontWeight: 600,
                   border: "none",
-                  background: "transparent",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -459,11 +460,13 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
                       <Link
                         key={page.id}
                         href={page.href}
+                        className={
+                          "sb-nav-dropdown-item" +
+                          (isActive(page.href) ? " is-active" : "")
+                        }
                         style={{
                           display: "block",
                           padding: "0.5rem 1rem",
-                          textDecoration: "none",
-                          color: "var(--sb-ink)",
                           fontSize: "0.9rem",
                           fontWeight: 500,
                         }}

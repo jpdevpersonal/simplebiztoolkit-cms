@@ -156,10 +156,19 @@ export default function AdminProductsTable({ products, categories }: Props) {
             const categoryName = categoryNameMap[product.categoryId] ?? "—";
             return (
               <tr key={product.id}>
-                <td className="admin-cell-strong">{product.title}</td>
-                <td className="admin-cell-muted">{categoryName}</td>
-                <td className="admin-cell-muted">{product.price ?? "—"}</td>
-                <td>
+                <td className="admin-cell-strong" data-label="Title">
+                  {product.title}
+                </td>
+                <td className="admin-cell-muted" data-label="Category">
+                  {categoryName}
+                </td>
+                <td
+                  className="admin-cell-muted admin-cell-nowrap"
+                  data-label="Price"
+                >
+                  {product.price ?? "—"}
+                </td>
+                <td data-label="Status">
                   <span
                     className={
                       "admin-badge " +
@@ -171,7 +180,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
                     {product.status}
                   </span>
                 </td>
-                <td>
+                <td className="admin-cell-actions" data-label="Preview">
                   {product.productPageUrl ? (
                     <Link
                       href={product.productPageUrl}
@@ -216,7 +225,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
                     <span className="admin-cell-muted-sm">—</span>
                   )}
                 </td>
-                <td>
+                <td className="admin-cell-actions" data-label="Actions">
                   <Link
                     href={`/admin/products/${product.id}/edit`}
                     className="admin-btn-action"
