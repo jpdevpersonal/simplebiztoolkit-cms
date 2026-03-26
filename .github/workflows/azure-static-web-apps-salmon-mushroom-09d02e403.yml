@@ -25,6 +25,7 @@ jobs:
         env:
           API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
           NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
+          NEXT_PUBLIC_SHOW_FREE_GUIDE_BUTTON: "false"
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_SALMON_MUSHROOM_09D02E403 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
