@@ -99,5 +99,6 @@ To avoid duplicated request/parsing/error logic, API calls are layered and centr
 
 This repo is configured to deploy to Azure Static Web Apps via GitHub Actions.
 
-- Workflow: `.github/workflows/azure-static-web-apps-gentle-rock-046101810.yml`
+- Workflow: `.github/workflows/azure-static-web-apps-salmon-mushroom-09d02e403.yml`
+- The Azure SWA build must receive `API_URL` and `NEXT_PUBLIC_API_URL` so `next build` can generate sitemap and static routes in production.
 - Static Web Apps routing/headers: `staticwebapp.config.json`
