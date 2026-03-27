@@ -11,6 +11,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Article } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import { redirectAndRefresh } from "@/lib/adminNavigation";
+import { revalidateArticleContent } from "@/lib/adminRevalidation";
 import { slugify } from "@/lib/slugify";
 import BlockEditor, { type BlockEditorOutput } from "@/editor/ArticleEditor";
 import AdminFormBlock from "@/components/AdminFormBlock";
@@ -82,11 +84,9 @@ export default function ArticleEditor({
         throw new Error("Missing article id for update");
       }
 
-      // Trigger revalidation
-      await clientApi.revalidateContent("article", formData.slug);
+      await revalidateArticleContent(formData.slug);
 
-      router.push("/admin/articles");
-      router.refresh();
+      redirectAndRefresh(router, "/admin/articles");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
