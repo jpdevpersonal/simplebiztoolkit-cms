@@ -11,6 +11,16 @@ function revalidatePublicProductPaths() {
   revalidatePath("/products/[categorySlug]/[productSlug]", "page");
 }
 
+function revalidatePublicPagePaths(slugs?: string[]) {
+  revalidatePath("/pages");
+  revalidatePath("/pages/[menuItemSlug]", "page");
+  revalidatePath("/pages/[menuItemSlug]/[categorySlug]", "page");
+
+  for (const slug of slugs ?? []) {
+    revalidatePath(`/${slug}`);
+  }
+}
+
 /**
  * Revalidate specific article
  */
@@ -50,4 +60,34 @@ export async function revalidateCategory(slug: string) {
 export async function revalidateAllProducts() {
   revalidateTag("products");
   revalidatePublicProductPaths();
+}
+
+/**
+ * Revalidate a specific CMS page and menu-derived listings.
+ */
+export async function revalidatePage(slug: string, previousSlug?: string) {
+  revalidateTag("menu");
+
+  const uniqueSlugs = Array.from(
+    new Set(
+      [slug, previousSlug]
+        .map((candidate) => candidate?.trim())
+        .filter((candidate): candidate is string => Boolean(candidate)),
+    ),
+  );
+
+  for (const candidateSlug of uniqueSlugs) {
+    revalidateTag(`menupage-${candidateSlug}`);
+  }
+
+  revalidatePublicPagePaths(uniqueSlugs);
+}
+
+/**
+ * Revalidate all CMS pages and page listings.
+ */
+export async function revalidateAllPages() {
+  revalidateTag("menu");
+  revalidatePath("/[slug]", "page");
+  revalidatePublicPagePaths();
 }

@@ -61,13 +61,19 @@ vi.mock("@/lib/clientApi", () => ({
     updateMenuItemPage: vi.fn(),
     createMenuItemPage: vi.fn(),
     deleteMenuItemPage: vi.fn(),
+    revalidateContent: vi.fn(),
   },
 }));
 
 describe("PageEditor", () => {
   it("sends image ids and omits legacy image url fields when saving a page", async () => {
     const user = userEvent.setup();
-    vi.mocked(clientApi.updateMenuItemPage).mockResolvedValueOnce({} as never);
+    vi.mocked(clientApi.updateMenuItemPage).mockResolvedValueOnce({
+      slug: "page-slug",
+    } as never);
+    vi.mocked(clientApi.revalidateContent).mockResolvedValueOnce(
+      undefined as never,
+    );
 
     render(
       <PageEditor
@@ -107,6 +113,11 @@ describe("PageEditor", () => {
     });
     expect(payload).not.toHaveProperty("featuredImage");
     expect(payload).not.toHaveProperty("headerImage");
+    expect(clientApi.revalidateContent).toHaveBeenCalledWith(
+      "page",
+      "page-slug",
+      "page-slug",
+    );
     expect(routerRefresh).toHaveBeenCalled();
   });
 });

@@ -11,8 +11,10 @@ vi.mock("next/cache", () => ({
 }));
 
 import {
+  revalidateAllPages,
   revalidateAllProducts,
   revalidateCategory,
+  revalidatePage,
   revalidateProduct,
 } from "./revalidation";
 
@@ -55,5 +57,46 @@ describe("revalidation", () => {
 
     expect(revalidateTagMock).toHaveBeenCalledWith("products");
     expect(revalidatePathMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("revalidates page tags and public page routes", async () => {
+    revalidatePathMock.mockClear();
+    revalidateTagMock.mockClear();
+
+    await revalidatePage("updated-page", "old-page");
+
+    expect(revalidateTagMock).toHaveBeenCalledWith("menu");
+    expect(revalidateTagMock).toHaveBeenCalledWith("menupage-updated-page");
+    expect(revalidateTagMock).toHaveBeenCalledWith("menupage-old-page");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/pages");
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      "/pages/[menuItemSlug]",
+      "page",
+    );
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      "/pages/[menuItemSlug]/[categorySlug]",
+      "page",
+    );
+    expect(revalidatePathMock).toHaveBeenCalledWith("/updated-page");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/old-page");
+  });
+
+  it("revalidates all public page routes", async () => {
+    revalidatePathMock.mockClear();
+    revalidateTagMock.mockClear();
+
+    await revalidateAllPages();
+
+    expect(revalidateTagMock).toHaveBeenCalledWith("menu");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/[slug]", "page");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/pages");
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      "/pages/[menuItemSlug]",
+      "page",
+    );
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      "/pages/[menuItemSlug]/[categorySlug]",
+      "page",
+    );
   });
 });

@@ -6,6 +6,8 @@ const revalidationMocks = vi.hoisted(() => ({
   revalidateProduct: vi.fn(),
   revalidateCategory: vi.fn(),
   revalidateAllProducts: vi.fn(),
+  revalidatePage: vi.fn(),
+  revalidateAllPages: vi.fn(),
 }));
 
 vi.mock("@/lib/revalidation", () => ({
@@ -14,6 +16,8 @@ vi.mock("@/lib/revalidation", () => ({
   revalidateProduct: revalidationMocks.revalidateProduct,
   revalidateCategory: revalidationMocks.revalidateCategory,
   revalidateAllProducts: revalidationMocks.revalidateAllProducts,
+  revalidatePage: revalidationMocks.revalidatePage,
+  revalidateAllPages: revalidationMocks.revalidateAllPages,
 }));
 
 // Mock requireAuth so tests don't import NextAuth runtime during test runs.
@@ -112,6 +116,29 @@ describe("POST /api/revalidate", () => {
     expect(response.status).toBe(200);
   });
 
+  it("revalidates a specific page when slug is present", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "X-Revalidation-Secret": "secret-123" },
+      body: JSON.stringify({
+        type: "page",
+        slug: "updated-page",
+        previousSlug: "old-page",
+      }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(revalidationMocks.revalidatePage).toHaveBeenCalledWith(
+      "updated-page",
+      "old-page",
+    );
+    expect(response.status).toBe(200);
+    expect(json.type).toBe("page");
+    expect(json.slug).toBe("updated-page");
+  });
+
   it("revalidates all products when type is all", async () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
@@ -124,6 +151,7 @@ describe("POST /api/revalidate", () => {
     expect(response.status).toBe(200);
     expect(revalidationMocks.revalidateAllArticles).toHaveBeenCalledTimes(1);
     expect(revalidationMocks.revalidateAllProducts).toHaveBeenCalledTimes(1);
+    expect(revalidationMocks.revalidateAllPages).toHaveBeenCalledTimes(1);
   });
 
   it("returns 400 for invalid revalidation type", async () => {

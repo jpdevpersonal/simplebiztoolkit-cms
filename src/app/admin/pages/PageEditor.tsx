@@ -181,6 +181,13 @@ export default function PageEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.title, isNew]);
 
+  async function revalidatePageContent(
+    currentSlug?: string,
+    previousSlug?: string,
+  ) {
+    await clientApi.revalidateContent("page", currentSlug, previousSlug);
+  }
+
   async function savePage() {
     if (!selectedMenuItemId) {
       setError("Please select a Menu Item.");
@@ -225,11 +232,13 @@ export default function PageEditor({
       }
 
       if (isNew) {
-        await clientApi.createMenuItemPage(payload);
+        const saved = await clientApi.createMenuItemPage(payload);
+        await revalidatePageContent(saved?.slug ?? formData.slug);
         router.push("/admin/pages");
         router.refresh();
       } else if (page?.id) {
-        await clientApi.updateMenuItemPage(page.id, payload);
+        const saved = await clientApi.updateMenuItemPage(page.id, payload);
+        await revalidatePageContent(saved?.slug ?? formData.slug, page.slug);
         setMessage("Page saved successfully!");
         router.refresh();
       } else {
@@ -255,6 +264,7 @@ export default function PageEditor({
 
     try {
       await clientApi.deleteMenuItemPage(page!.id);
+      await revalidatePageContent(undefined, page?.slug);
       router.push("/admin/pages");
       router.refresh();
     } catch (err: unknown) {
