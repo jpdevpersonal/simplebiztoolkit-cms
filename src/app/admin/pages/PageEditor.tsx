@@ -14,7 +14,9 @@ import type {
   MenuCategory,
   MenuItemPage,
 } from "@/lib/api";
+import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { revalidatePageContent } from "@/lib/adminRevalidation";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
@@ -181,13 +183,6 @@ export default function PageEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.title, isNew]);
 
-  async function revalidatePageContent(
-    currentSlug?: string,
-    previousSlug?: string,
-  ) {
-    await clientApi.revalidateContent("page", currentSlug, previousSlug);
-  }
-
   async function savePage() {
     if (!selectedMenuItemId) {
       setError("Please select a Menu Item.");
@@ -234,13 +229,12 @@ export default function PageEditor({
       if (isNew) {
         const saved = await clientApi.createMenuItemPage(payload);
         await revalidatePageContent(saved?.slug ?? formData.slug);
-        router.push("/admin/pages");
-        router.refresh();
+        redirectAndRefresh(router, "/admin/pages");
       } else if (page?.id) {
         const saved = await clientApi.updateMenuItemPage(page.id, payload);
         await revalidatePageContent(saved?.slug ?? formData.slug, page.slug);
         setMessage("Page saved successfully!");
-        router.refresh();
+        refreshEditor(router);
       } else {
         throw new Error("Missing page id for update");
       }
@@ -265,8 +259,7 @@ export default function PageEditor({
     try {
       await clientApi.deleteMenuItemPage(page!.id);
       await revalidatePageContent(undefined, page?.slug);
-      router.push("/admin/pages");
-      router.refresh();
+      redirectAndRefresh(router, "/admin/pages");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);
