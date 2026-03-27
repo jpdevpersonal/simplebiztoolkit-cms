@@ -424,10 +424,14 @@ export const adminApi = {
     });
   },
 
-  revalidateContent(type: "article" | "product", slug?: string) {
+  revalidateContent(
+    type: "article" | "product" | "page",
+    slug?: string,
+    previousSlug?: string,
+  ) {
     return request<void>("admin", "/api/revalidate", {
       method: "POST",
-      body: { type, slug },
+      body: { type, slug, previousSlug },
     });
   },
 };

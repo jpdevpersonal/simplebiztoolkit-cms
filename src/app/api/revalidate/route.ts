@@ -15,6 +15,8 @@ import {
   revalidateProduct,
   revalidateCategory,
   revalidateAllProducts,
+  revalidatePage,
+  revalidateAllPages,
 } from "@/lib/revalidation";
 import { requireAuth } from "@/lib/apiProxy";
 
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, slug } = body;
+    const { type, slug, previousSlug } = body;
 
     // Revalidate based on type
     switch (type) {
@@ -58,9 +60,18 @@ export async function POST(request: NextRequest) {
         }
         break;
 
+      case "page":
+        if (slug || previousSlug) {
+          await revalidatePage(slug ?? previousSlug, previousSlug);
+        } else {
+          await revalidateAllPages();
+        }
+        break;
+
       case "all":
         await revalidateAllArticles();
         await revalidateAllProducts();
+        await revalidateAllPages();
         break;
 
       default:
