@@ -11,6 +11,9 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
+      NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
 
     steps:
       - name: Checkout
