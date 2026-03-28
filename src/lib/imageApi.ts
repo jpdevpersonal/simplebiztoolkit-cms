@@ -19,7 +19,7 @@ export function validateImageFile(file: File): string | null {
   }
 
   if (file.size > IMAGE_ASSET_MAX_BYTES) {
-    return "Image files must be 2 MB or smaller.";
+    return "Image files must be 3 MB or smaller.";
   }
 
   return null;
