@@ -4,18 +4,18 @@ vi.mock("next/headers", () => ({
   headers: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("./auth", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/lib/httpTransport", () => ({
+vi.mock("./httpTransport", () => ({
   sendHttpRequest: vi.fn(),
   parseHttpResponse: vi.fn(),
 }));
 
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { parseHttpResponse, sendHttpRequest } from "@/lib/httpTransport";
+import { auth } from "./auth";
+import { parseHttpResponse, sendHttpRequest } from "./httpTransport";
 import { proxyToBackend, requireAuth } from "./apiProxy";
 
 const headersMock = vi.mocked(headers);
@@ -32,7 +32,7 @@ describe("apiProxy", () => {
 
   describe("requireAuth", () => {
     it("returns unauthorized response when no session exists", async () => {
-      authMock.mockResolvedValue(null);
+      authMock.mockResolvedValue(null as never);
 
       const result = await requireAuth();
 
