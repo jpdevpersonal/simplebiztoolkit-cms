@@ -7,7 +7,7 @@ export const IMAGE_ASSET_ALLOWED_TYPES = [
   "image/webp",
 ] as const;
 
-export const IMAGE_ASSET_MAX_BYTES = 2 * 1024 * 1024;
+export const IMAGE_ASSET_MAX_BYTES = 3 * 1024 * 1024;
 
 export function validateImageFile(file: File): string | null {
   if (
