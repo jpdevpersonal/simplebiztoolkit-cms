@@ -43,6 +43,28 @@ describe("/api/products/categories/[id]", () => {
     expect(response).toBe(proxied);
   });
 
+  it("PUT returns unauthorized when auth fails", async () => {
+    const unauthorized = new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "content-type": "application/json" },
+      },
+    );
+    requireAuthMock.mockResolvedValue({ ok: false, response: unauthorized });
+
+    const request = new Request("http://localhost/api/products/categories/9", {
+      method: "PUT",
+    });
+
+    const response = await PUT(request as never, {
+      params: Promise.resolve({ id: "9" }),
+    });
+
+    expect(response.status).toBe(401);
+    expect(proxyToBackendMock).not.toHaveBeenCalled();
+  });
+
   it("GET proxies category lookup without auth", async () => {
     const proxied = new Response(JSON.stringify({ id: "9" }), {
       status: 200,

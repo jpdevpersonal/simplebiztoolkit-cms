@@ -98,4 +98,64 @@ describe("menuContent", () => {
       { id: "item-1", title: "Published", status: "published" },
     ]);
   });
+
+  it("falls back to getMenuItems when published endpoint returns 404", async () => {
+    const { getPublishedMenuItems } = await import("./menuContent");
+
+    apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
+      statusCode: 404,
+      data: null,
+    });
+    apiServiceMock.getMenuItems.mockResolvedValueOnce({
+      statusCode: 200,
+      data: [
+        { id: "item-1", title: "Published", status: "published" },
+        { id: "item-2", title: "Draft", status: "draft" },
+      ],
+    });
+
+    const result = await getPublishedMenuItems();
+
+    expect(apiServiceMock.getMenuItems).toHaveBeenCalledTimes(1);
+    expect(result).toEqual([
+      { id: "item-1", title: "Published", status: "published" },
+    ]);
+  });
+
+  it("returns slug landing href when a menu item has published categories", async () => {
+    const { getMenuItemLandingHref } = await import("./menuContent");
+
+    expect(
+      getMenuItemLandingHref({
+        title: "How To Guides",
+        directPages: [{ slug: "one" }] as any,
+        publishedCategories: [{ id: "cat-1" }] as any,
+      }),
+    ).toBe("/pages/how-to-guides");
+  });
+
+  it("keeps direct pages empty when page hydration throws", async () => {
+    const { getPublishedMenuItemContent } = await import("./menuContent");
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    apiServiceMock.getMenuItemPages.mockRejectedValueOnce(
+      new Error("network failed"),
+    );
+
+    const result = await getPublishedMenuItemContent({
+      id: "item-1",
+      title: "Guides",
+      status: "published",
+      categories: [],
+      pages: [],
+    });
+
+    expect(result.directPages).toEqual([]);
+    expect(result.totalPages).toBe(0);
+    expect(consoleErrorSpy).toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
+  });
 });
