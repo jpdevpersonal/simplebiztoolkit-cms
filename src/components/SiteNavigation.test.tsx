@@ -40,9 +40,39 @@ describe("SiteNavigation", () => {
     const productsLink = screen.getByRole("link", { name: "Templates" });
     const resourcesLink = screen.getByRole("link", { name: "Resources" });
 
-    // Active link gets brand colour; inactive links do not
-    expect(productsLink).toHaveStyle("color: var(--sb-brand-blue)");
-    expect(resourcesLink).not.toHaveStyle("color: var(--sb-brand-blue)");
+    expect(productsLink).toHaveClass("is-active");
+    expect(resourcesLink).not.toHaveClass("is-active");
+  });
+
+  it("marks a CMS dropdown trigger active when one of its pages matches the route", () => {
+    mockUsePathname.mockReturnValue("/pages/services/payroll");
+    render(
+      <SiteNavigation
+        menuNavItems={[
+          {
+            id: "menu-1",
+            title: "Services",
+            groups: [
+              {
+                categoryId: "cat-1",
+                categoryTitle: "Operations",
+                pages: [
+                  {
+                    id: "page-1",
+                    title: "Payroll",
+                    href: "/pages/services/payroll",
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    const servicesTrigger = screen.getByRole("button", { name: /services/i });
+    expect(servicesTrigger).toHaveClass("sb-site-nav-link");
+    expect(servicesTrigger.parentElement).toHaveClass("is-active");
   });
 
   it("opens and closes mobile menu", async () => {

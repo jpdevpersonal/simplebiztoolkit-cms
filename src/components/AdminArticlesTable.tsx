@@ -120,14 +120,22 @@ export default function AdminArticlesTable({ articles }: Props) {
           )}
           {sorted.map((article) => (
             <tr key={article.id}>
-              <td className="admin-cell-strong admin-cell-max-280">
+              <td
+                className="admin-cell-strong admin-cell-max-280"
+                data-label="Title"
+              >
                 {article.title}
               </td>
-              <td className="admin-cell-muted admin-cell-max-180 admin-cell-ellipsis">
+              <td
+                className="admin-cell-muted admin-cell-max-180 admin-cell-ellipsis admin-col-tablet-hide admin-col-phone-hide"
+                data-label="Slug"
+              >
                 {article.slug}
               </td>
-              <td className="admin-cell-muted">{article.category}</td>
-              <td>
+              <td className="admin-cell-muted" data-label="Category">
+                {article.category}
+              </td>
+              <td data-label="Status">
                 <span
                   className={
                     "admin-badge " +
@@ -139,10 +147,13 @@ export default function AdminArticlesTable({ articles }: Props) {
                   {article.status}
                 </span>
               </td>
-              <td className="admin-cell-muted-sm admin-cell-nowrap">
+              <td
+                className="admin-cell-muted-sm admin-cell-nowrap"
+                data-label="Published"
+              >
                 {article.dateISO ?? "—"}
               </td>
-              <td>
+              <td className="admin-cell-actions" data-label="Preview">
                 <Link
                   href={`/blog/${article.slug}`}
                   className="admin-btn-action"
@@ -183,7 +194,7 @@ export default function AdminArticlesTable({ articles }: Props) {
                   </svg>
                 </Link>
               </td>
-              <td>
+              <td className="admin-cell-actions" data-label="Actions">
                 <Link
                   href={`/admin/articles/${article.id}/edit`}
                   className="admin-btn-action"

@@ -27,8 +27,12 @@ export default function AdminFormBlock({
   return (
     <div className={`admin-form-block${className ? ` ${className}` : ""}`}>
       <div className="admin-form-block-header">
-        {icon}
-        <span className="admin-form-block-title">{title}</span>
+        <span className="admin-form-block-icon" aria-hidden="true">
+          {icon}
+        </span>
+        <div className="admin-form-block-title-wrap">
+          <span className="admin-form-block-title">{title}</span>
+        </div>
       </div>
       <div className="admin-form-block-body">{children}</div>
     </div>

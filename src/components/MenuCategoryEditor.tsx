@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MenuCategory } from "@/lib/api";
+import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { revalidateMenuContent } from "@/lib/adminRevalidation";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
@@ -48,14 +50,16 @@ export default function MenuCategoryEditor({
 
       if (isNew) {
         const created = await clientApi.createMenuCategory(payload);
-        router.push(
+        await revalidateMenuContent();
+        redirectAndRefresh(
+          router,
           `/admin/menu/categories/${(created as MenuCategory).id}/edit`,
         );
-        router.refresh();
       } else if (category?.id) {
         await clientApi.updateMenuCategory(category.id, payload);
+        await revalidateMenuContent();
         setMessage("Topic saved successfully!");
-        router.refresh();
+        refreshEditor(router);
       } else {
         throw new Error("Missing category id for update");
       }
@@ -79,8 +83,8 @@ export default function MenuCategoryEditor({
 
     try {
       await clientApi.deleteMenuCategory(category!.id);
-      router.push(backHref);
-      router.refresh();
+      await revalidateMenuContent();
+      redirectAndRefresh(router, backHref);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);

@@ -23,6 +23,33 @@ type RequestOptions = {
   credentials?: RequestCredentials;
 };
 
+function isFormDataBody(body: unknown): body is FormData {
+  return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
+function isBodyInitLike(body: unknown): body is BodyInit {
+  return (
+    typeof body === "string" ||
+    (typeof URLSearchParams !== "undefined" &&
+      body instanceof URLSearchParams) ||
+    (typeof Blob !== "undefined" && body instanceof Blob) ||
+    (typeof ArrayBuffer !== "undefined" && body instanceof ArrayBuffer) ||
+    ArrayBuffer.isView(body)
+  );
+}
+
+function serializeRequestBody(body: unknown): BodyInit | undefined {
+  if (body === undefined) {
+    return undefined;
+  }
+
+  if (isFormDataBody(body) || isBodyInitLike(body)) {
+    return body;
+  }
+
+  return JSON.stringify(body);
+}
+
 export class ApiClientError extends Error {
   status: number;
 
@@ -93,25 +120,49 @@ async function request<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const { method = "GET", body, headers, credentials = "include" } = options;
-  const requestHeaders: Record<string, string> = {
-    ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-    ...(headers as Record<string, string> | undefined),
-  };
+  const requestHeaders = new Headers(headers);
+  const serializedBody = serializeRequestBody(body);
+
+  if (
+    body !== undefined &&
+    !isFormDataBody(body) &&
+    !requestHeaders.has("Content-Type")
+  ) {
+    requestHeaders.set("Content-Type", "application/json");
+  }
 
   if (scope === "admin") {
     const token = await resolveAdminToken();
     if (token) {
-      requestHeaders.Authorization = `Bearer ${token}`;
+      requestHeaders.set("Authorization", `Bearer ${token}`);
     }
   }
 
   let response: Response;
   try {
+    // Convert Headers instance to plain object to make it easier to
+    // inspect in tests and to interoperate with environments that
+    // expect simple header maps.
+    const headersObject: Record<string, string> = {};
+    for (const [k, v] of requestHeaders.entries()) {
+      headersObject[k] = v;
+    }
+
+    // Preserve conventional header capitalisation for tests and interoperability
+    if (headersObject["content-type"]) {
+      headersObject["Content-Type"] = headersObject["content-type"];
+      delete headersObject["content-type"];
+    }
+    if (headersObject["authorization"]) {
+      headersObject["Authorization"] = headersObject["authorization"];
+      delete headersObject["authorization"];
+    }
+
     response = await sendHttpRequest(url, {
       method,
       credentials,
-      headers: requestHeaders,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: headersObject,
+      body: serializedBody,
     });
   } catch (error) {
     const details =
@@ -151,8 +202,15 @@ async function request<T>(
   return unwrapDataEnvelope<T>(payload);
 }
 
-function buildAdminPath(resource: string, id?: string): string {
+export function buildAdminPath(resource: string, id?: string): string {
   return id ? `/api/admin/${resource}/${id}` : `/api/admin/${resource}`;
+}
+
+export async function adminRequest<T>(
+  url: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  return request<T>("admin", url, options);
 }
 
 export function setAdminAuthToken(token: string, expiresAtUtc?: string | null) {
@@ -366,10 +424,14 @@ export const adminApi = {
     });
   },
 
-  revalidateContent(type: "article" | "product", slug?: string) {
+  revalidateContent(
+    type: "article" | "product" | "page",
+    slug?: string,
+    previousSlug?: string,
+  ) {
     return request<void>("admin", "/api/revalidate", {
       method: "POST",
-      body: { type, slug },
+      body: { type, slug, previousSlug },
     });
   },
 };

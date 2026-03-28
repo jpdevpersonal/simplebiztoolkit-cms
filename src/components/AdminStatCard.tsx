@@ -14,7 +14,9 @@ export default function AdminStatCard({
   valueSize = "md",
 }: AdminStatCardProps) {
   return (
-    <div className="admin-stat">
+    <div
+      className={"admin-stat" + (valueSize === "lg" ? " admin-stat-lg" : "")}
+    >
       <div className="admin-stat-label">{label}</div>
       <div
         className={

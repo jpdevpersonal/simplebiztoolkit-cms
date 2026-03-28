@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 import EmailCaptureForm from "@/components/EmailCaptureForm";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
@@ -52,9 +53,9 @@ export default function FreebiePage() {
             </p>
             <div className="d-flex gap-2 flex-wrap justify-content-center">
               <EtsyCtaButton />
-              <a className="btn sb-btn-ghost" href="/products">
+              <Link className="btn sb-btn-ghost" href="/products">
                 Browse All Templates
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -136,7 +137,7 @@ export default function FreebiePage() {
                 style={{ fontWeight: 800, marginBottom: "1rem" }}
                 className="h5"
               >
-                What's Inside This Free Guide
+                What&apos;s Inside This Free Guide
               </h2>
               <ul
                 style={{
@@ -191,7 +192,7 @@ export default function FreebiePage() {
                 📬 Get Instant Access
               </h3>
               <p className="sb-muted mb-3" style={{ fontSize: "0.9rem" }}>
-                Enter your email and we'll send the guide straight to your
+                Enter your email and we&apos;ll send the guide straight to your
                 inbox.
               </p>
               <EmailCaptureForm source="freebie-page" />
@@ -201,12 +202,12 @@ export default function FreebiePage() {
                   label="Shop More on Etsy"
                   className="flex-grow-1 justify-content-center"
                 />
-                <a
+                <Link
                   className="btn sb-btn-ghost flex-grow-1 justify-content-center"
                   href="/products"
                 >
                   Browse All Templates
-                </a>
+                </Link>
               </div>
 
               <p

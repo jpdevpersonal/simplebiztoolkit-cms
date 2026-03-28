@@ -32,7 +32,7 @@ export default function TestimonialGrid({ count }: TestimonialGridProps) {
                     marginBottom: "0.75rem",
                   }}
                 >
-                  "{t.quote}"
+                  &ldquo;{t.quote}&rdquo;
                 </p>
                 <cite
                   className="sb-muted"
@@ -57,7 +57,7 @@ export default function TestimonialGrid({ count }: TestimonialGridProps) {
                   marginBottom: "0.75rem",
                 }}
               >
-                "{t.quote}"
+                &ldquo;{t.quote}&rdquo;
               </p>
               <cite
                 className="sb-muted"

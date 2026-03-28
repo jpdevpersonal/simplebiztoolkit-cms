@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
+import { redirectAndRefresh } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { revalidateProductContent } from "@/lib/adminRevalidation";
 import { slugify } from "@/lib/slugify";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
@@ -74,24 +76,6 @@ export default function ProductEditor({
     }
   };
 
-  async function revalidateProductContent(
-    ...candidateSlugs: Array<string | undefined>
-  ) {
-    const uniqueSlugs = Array.from(
-      new Set(
-        candidateSlugs
-          .map((candidate) => candidate?.trim())
-          .filter((candidate): candidate is string => Boolean(candidate)),
-      ),
-    );
-
-    await Promise.all(
-      uniqueSlugs.map((candidateSlug) =>
-        clientApi.revalidateContent("product", candidateSlug),
-      ),
-    );
-  }
-
   async function saveProduct() {
     setSaving(true);
     setMessage(null);
@@ -125,8 +109,7 @@ export default function ProductEditor({
       await revalidateProductContent(productData.slug, saved?.slug, slug);
 
       if (isCreateMode) {
-        router.push("/admin/products");
-        router.refresh();
+        redirectAndRefresh(router, "/admin/products");
       } else {
         // Keep local form state in sync in case a user navigates back quickly.
         if (saved && typeof saved === "object") {
@@ -143,8 +126,7 @@ export default function ProductEditor({
           setStatus((saved.status as "draft" | "published") || status);
         }
 
-        router.push("/admin/products");
-        router.refresh();
+        redirectAndRefresh(router, "/admin/products");
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -186,9 +168,7 @@ export default function ProductEditor({
       await clientApi.deleteProduct(productData.id);
       await revalidateProductContent(productData.slug);
       setMessage("Template deleted!");
-      // Redirect to products list
-      router.push("/admin/products");
-      router.refresh();
+      redirectAndRefresh(router, "/admin/products");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);

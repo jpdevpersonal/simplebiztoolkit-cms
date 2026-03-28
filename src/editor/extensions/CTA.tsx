@@ -349,6 +349,13 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
     alignItems: "center",
   };
 
+  const colorRowStyle: React.CSSProperties = {
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+    flexWrap: "wrap",
+  };
+
   const sectionTitleStyle: React.CSSProperties = {
     fontSize: "0.72rem",
     fontWeight: 700,
@@ -397,9 +404,14 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
         <div style={controlsPanelStyle}>
           <div style={controlSectionStyle}>
             <div style={sectionTitleStyle}>CTA section</div>
-            <div style={controlRowStyle}>
+            <div style={colorRowStyle}>
               <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  width: 110,
+                  flexShrink: 0,
+                }}
               >
                 CTA background
               </label>
@@ -410,7 +422,13 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                   updateAttributes({ backgroundColor: e.target.value })
                 }
                 disabled={isLocked}
-                style={{ width: 48, height: 28, border: "none", padding: 0 }}
+                style={{
+                  width: 48,
+                  height: 28,
+                  border: "none",
+                  padding: 0,
+                  flexShrink: 0,
+                }}
               />
               <input
                 type="text"
@@ -420,7 +438,7 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                 }
                 disabled={isLocked}
                 style={{
-                  marginLeft: 6,
+                  width: 96,
                   fontSize: "0.8125rem",
                   padding: "4px 8px",
                 }}
@@ -448,9 +466,14 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
 
           <div style={controlSectionStyle}>
             <div style={sectionTitleStyle}>Primary button</div>
-            <div style={controlRowStyle}>
+            <div style={colorRowStyle}>
               <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  width: 110,
+                  flexShrink: 0,
+                }}
               >
                 Button background
               </label>
@@ -459,7 +482,13 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                 value={buttonBg || CTA_BUTTON_DEFAULT_BG}
                 onChange={(e) => updateAttributes({ buttonBg: e.target.value })}
                 disabled={isLocked}
-                style={{ width: 48, height: 28, border: "none", padding: 0 }}
+                style={{
+                  width: 48,
+                  height: 28,
+                  border: "none",
+                  padding: 0,
+                  flexShrink: 0,
+                }}
               />
               <input
                 type="text"
@@ -467,16 +496,21 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                 onChange={(e) => updateAttributes({ buttonBg: e.target.value })}
                 disabled={isLocked}
                 style={{
-                  marginLeft: 6,
+                  width: 96,
                   fontSize: "0.8125rem",
                   padding: "4px 8px",
                 }}
               />
             </div>
 
-            <div style={controlRowStyle}>
+            <div style={colorRowStyle}>
               <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  width: 110,
+                  flexShrink: 0,
+                }}
               >
                 Button color
               </label>
@@ -487,7 +521,13 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                   updateAttributes({ buttonColor: e.target.value })
                 }
                 disabled={isLocked}
-                style={{ width: 48, height: 28, border: "none", padding: 0 }}
+                style={{
+                  width: 48,
+                  height: 28,
+                  border: "none",
+                  padding: 0,
+                  flexShrink: 0,
+                }}
               />
               <input
                 type="text"
@@ -497,7 +537,7 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                 }
                 disabled={isLocked}
                 style={{
-                  marginLeft: 6,
+                  width: 96,
                   fontSize: "0.8125rem",
                   padding: "4px 8px",
                 }}
@@ -607,9 +647,14 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
               <hr style={dividerStyle} />
               <div style={controlSectionStyle}>
                 <div style={sectionTitleStyle}>Second button</div>
-                <div style={controlRowStyle}>
+                <div style={colorRowStyle}>
                   <label
-                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      width: 110,
+                      flexShrink: 0,
+                    }}
                   >
                     2nd button background
                   </label>
@@ -627,6 +672,7 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                       height: 28,
                       border: "none",
                       padding: 0,
+                      flexShrink: 0,
                     }}
                   />
                   <input
@@ -639,16 +685,21 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                     }
                     disabled={isLocked}
                     style={{
-                      marginLeft: 6,
+                      width: 96,
                       fontSize: "0.8125rem",
                       padding: "4px 8px",
                     }}
                   />
                 </div>
 
-                <div style={controlRowStyle}>
+                <div style={colorRowStyle}>
                   <label
-                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      width: 110,
+                      flexShrink: 0,
+                    }}
                   >
                     2nd button color
                   </label>
@@ -668,6 +719,7 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                       height: 28,
                       border: "none",
                       padding: 0,
+                      flexShrink: 0,
                     }}
                   />
                   <input
@@ -680,7 +732,7 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                     }
                     disabled={isLocked}
                     style={{
-                      marginLeft: 6,
+                      width: 96,
                       fontSize: "0.8125rem",
                       padding: "4px 8px",
                     }}

@@ -8,12 +8,20 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { MenuItem, MenuCategory, MenuItemPage } from "@/lib/api";
+import type {
+  ImageAsset,
+  MenuItem,
+  MenuCategory,
+  MenuItemPage,
+} from "@/lib/api";
+import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { revalidatePageContent } from "@/lib/adminRevalidation";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
+import CmsImagePicker from "@/components/CmsImagePicker";
 
 type Props = {
   page?: MenuItemPage;
@@ -117,7 +125,9 @@ export default function PageEditor({
     description: page?.description ?? "",
     content: page?.content ?? "",
     editorJson: page?.editorJson ?? (null as string | null),
+    featuredImageId: page?.featuredImageId ?? "",
     featuredImage: page?.featuredImage ?? "",
+    headerImageId: page?.headerImageId ?? "",
     headerImage: page?.headerImage ?? "",
     status: page?.status ?? "draft",
     dateISO: page?.dateISO ?? today,
@@ -129,6 +139,37 @@ export default function PageEditor({
 
   const update = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+  function handleImageSelection(
+    field: "featured" | "header",
+    image: ImageAsset | null,
+  ) {
+    setFormData((prev) => ({
+      ...prev,
+      ...(field === "featured"
+        ? {
+            featuredImageId: image?.id ?? "",
+            featuredImage: image?.url ?? "",
+          }
+        : {
+            headerImageId: image?.id ?? "",
+            headerImage: image?.url ?? "",
+          }),
+    }));
+  }
+
+  function handleImageUrlChange(
+    field: "featuredImage" | "headerImage",
+    value: string,
+  ) {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "featuredImage"
+        ? { featuredImageId: "" }
+        : { headerImageId: "" }),
+    }));
+  }
 
   // Auto-generate slug
   useEffect(() => {
@@ -153,8 +194,27 @@ export default function PageEditor({
     setError(null);
 
     try {
+      const featuredImageId = formData.featuredImageId;
+      const headerImageId = formData.headerImageId;
+      const pageFields = Object.fromEntries(
+        Object.entries(formData).filter(
+          ([key]) =>
+            ![
+              "featuredImage",
+              "headerImage",
+              "featuredImageId",
+              "headerImageId",
+            ].includes(key),
+        ),
+      ) as Omit<
+        typeof formData,
+        "featuredImage" | "headerImage" | "featuredImageId" | "headerImageId"
+      >;
+
       const payload: Partial<MenuItemPage> = {
-        ...formData,
+        ...pageFields,
+        ...(featuredImageId ? { featuredImageId } : {}),
+        ...(headerImageId ? { headerImageId } : {}),
         dateModified: today,
       };
 
@@ -167,13 +227,14 @@ export default function PageEditor({
       }
 
       if (isNew) {
-        await clientApi.createMenuItemPage(payload);
-        router.push("/admin/pages");
-        router.refresh();
+        const saved = await clientApi.createMenuItemPage(payload);
+        await revalidatePageContent(saved?.slug ?? formData.slug);
+        redirectAndRefresh(router, "/admin/pages");
       } else if (page?.id) {
-        await clientApi.updateMenuItemPage(page.id, payload);
+        const saved = await clientApi.updateMenuItemPage(page.id, payload);
+        await revalidatePageContent(saved?.slug ?? formData.slug, page.slug);
         setMessage("Page saved successfully!");
-        router.refresh();
+        refreshEditor(router);
       } else {
         throw new Error("Missing page id for update");
       }
@@ -197,8 +258,8 @@ export default function PageEditor({
 
     try {
       await clientApi.deleteMenuItemPage(page!.id);
-      router.push("/admin/pages");
-      router.refresh();
+      await revalidatePageContent(undefined, page?.slug);
+      redirectAndRefresh(router, "/admin/pages");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);
@@ -317,7 +378,7 @@ export default function PageEditor({
               </div>
             </div>
 
-            <div className="mb-3">
+            <div className="mb-0">
               <label className="form-label fw-semibold">Description</label>
               <textarea
                 className="form-control"
@@ -326,10 +387,61 @@ export default function PageEditor({
                 rows={3}
               />
             </div>
+          </AdminFormBlock>
 
+          {/* Media */}
+          <AdminFormBlock icon={mediaIcon} title="Media">
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Featured Image URL
+              </label>
+              <div className="cms-image-inline-field">
+                <input
+                  className="form-control"
+                  value={formData.featuredImage}
+                  onChange={(e) =>
+                    handleImageUrlChange("featuredImage", e.target.value)
+                  }
+                  placeholder="https://..."
+                />
+                <CmsImagePicker
+                  value={formData.featuredImage}
+                  selectedImageId={formData.featuredImageId}
+                  label="featured image"
+                  onChangeAction={(image) =>
+                    handleImageSelection("featured", image)
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <label className="form-label fw-semibold">Header Image URL</label>
+              <div className="cms-image-inline-field">
+                <input
+                  className="form-control"
+                  value={formData.headerImage}
+                  onChange={(e) =>
+                    handleImageUrlChange("headerImage", e.target.value)
+                  }
+                  placeholder="https://..."
+                />
+                <CmsImagePicker
+                  value={formData.headerImage}
+                  selectedImageId={formData.headerImageId}
+                  label="header image"
+                  onChangeAction={(image) =>
+                    handleImageSelection("header", image)
+                  }
+                />
+              </div>
+            </div>
+          </AdminFormBlock>
+
+          {/* Content */}
+          <AdminFormBlock icon={contentIcon} title="Content" className="mb-0">
             <div>
               <RichContentField
-                label="Content"
+                label=""
                 value={formData.content}
                 onChange={(html) => update("content", html)}
                 storageKey="page-content-mode"
@@ -425,30 +537,6 @@ export default function PageEditor({
                 className="form-control"
                 value={formData.dateISO}
                 onChange={(e) => update("dateISO", e.target.value)}
-              />
-            </div>
-          </AdminFormBlock>
-
-          {/* Media */}
-          <AdminFormBlock icon={mediaIcon} title="Media">
-            <div className="mb-3">
-              <label className="form-label fw-semibold">
-                Featured Image URL
-              </label>
-              <input
-                className="form-control"
-                value={formData.featuredImage}
-                onChange={(e) => update("featuredImage", e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-            <div>
-              <label className="form-label fw-semibold">Header Image URL</label>
-              <input
-                className="form-control"
-                value={formData.headerImage}
-                onChange={(e) => update("headerImage", e.target.value)}
-                placeholder="https://..."
               />
             </div>
           </AdminFormBlock>

@@ -950,12 +950,47 @@ ol:not([class]) li {
   pointer-events: none;
 }
 
+.sb-site-nav-link {
+  border: 1px solid transparent;
+  color: var(--sb-muted);
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.sb-site-nav-link:hover,
+.sb-site-nav-link:focus-visible {
+  background: rgba(65, 69, 86, 0.06);
+  color: var(--sb-brand-blue);
+  border-color: rgba(65, 69, 86, 0.08);
+}
+
+.sb-site-nav-link.is-active,
+.sb-nav-dropdown.is-active .sb-site-nav-link {
+  color: #fff;
+  background: var(--sb-brand-blue);
+  border-color: var(--sb-brand-blue);
+  box-shadow: 0 12px 24px rgba(65, 69, 86, 0.2);
+}
+
+.sb-nav-dropdown-item {
+  text-decoration: none;
+  color: var(--sb-ink);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
 .sb-nav-dropdown:hover .sb-nav-dropdown-menu,
 .sb-nav-dropdown:focus-within .sb-nav-dropdown-menu {
   display: block;
   pointer-events: auto;
 }
 
+.sb-nav-dropdown-item.is-active,
 .sb-nav-dropdown-menu a:hover {
   background-color: var(--sb-soft, #f0f7f4);
   color: var(--sb-brand-blue, #0a7c5e);

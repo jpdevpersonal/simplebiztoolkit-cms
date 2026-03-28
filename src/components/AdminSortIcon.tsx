@@ -6,8 +6,7 @@ type Props = {
 export default function AdminSortIcon({ active, dir }: Props) {
   return (
     <span
-      className="admin-sort-icon"
-      style={{ opacity: active ? 1 : 0.3 }}
+      className={"admin-sort-icon" + (active ? " is-active" : "")}
       aria-hidden="true"
     >
       {active && dir === "desc" ? "▼" : "▲"}

@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MenuItem } from "@/lib/api";
+import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { revalidateMenuContent } from "@/lib/adminRevalidation";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
@@ -36,12 +38,16 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
 
       if (isNew) {
         const created = await clientApi.createMenuItem(payload);
-        router.push(`/admin/menu/${(created as MenuItem).id}/edit`);
-        router.refresh();
+        await revalidateMenuContent();
+        redirectAndRefresh(
+          router,
+          `/admin/menu/${(created as MenuItem).id}/edit`,
+        );
       } else if (menuItem?.id) {
         await clientApi.updateMenuItem(menuItem.id, payload);
+        await revalidateMenuContent();
         setMessage("Menu item saved successfully!");
-        router.refresh();
+        refreshEditor(router);
       } else {
         throw new Error("Missing menu item id for update");
       }
@@ -70,8 +76,8 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
 
     try {
       await clientApi.deleteMenuItem(menuItem!.id);
-      router.push("/admin/menu");
-      router.refresh();
+      await revalidateMenuContent();
+      redirectAndRefresh(router, "/admin/menu");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);
