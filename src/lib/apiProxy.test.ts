@@ -4,18 +4,18 @@ vi.mock("next/headers", () => ({
   headers: vi.fn(),
 }));
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("./auth", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/lib/httpTransport", () => ({
+vi.mock("./httpTransport", () => ({
   sendHttpRequest: vi.fn(),
   parseHttpResponse: vi.fn(),
 }));
 
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { parseHttpResponse, sendHttpRequest } from "@/lib/httpTransport";
+import { auth } from "./auth";
+import { parseHttpResponse, sendHttpRequest } from "./httpTransport";
 import { proxyToBackend, requireAuth } from "./apiProxy";
 
 const headersMock = vi.mocked(headers);
@@ -32,7 +32,7 @@ describe("apiProxy", () => {
 
   describe("requireAuth", () => {
     it("returns unauthorized response when no session exists", async () => {
-      authMock.mockResolvedValue(null);
+      authMock.mockResolvedValue(null as never);
 
       const result = await requireAuth();
 
@@ -61,6 +61,7 @@ describe("apiProxy", () => {
   describe("proxyToBackend", () => {
     it("forwards POST request body and auth header", async () => {
       vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("API_URL", "http://localhost:5117");
 
       const request = new Request("http://localhost/api/products", {
         method: "POST",
@@ -104,6 +105,7 @@ describe("apiProxy", () => {
 
     it("forwards multipart uploads as FormData without forcing content-type", async () => {
       vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("API_URL", "http://localhost:5117");
 
       const formData = new FormData();
       const file = new File(["binary"], "hero.webp", { type: "image/webp" });
@@ -151,6 +153,7 @@ describe("apiProxy", () => {
 
     it("forwards GET without body and uses text/plain fallback", async () => {
       vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("API_URL", "http://localhost:5117");
 
       sendHttpRequestMock.mockResolvedValue(
         new Response(null, {
