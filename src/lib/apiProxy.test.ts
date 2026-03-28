@@ -61,6 +61,7 @@ describe("apiProxy", () => {
   describe("proxyToBackend", () => {
     it("forwards POST request body and auth header", async () => {
       vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("API_URL", "http://localhost:5117");
 
       const request = new Request("http://localhost/api/products", {
         method: "POST",
@@ -104,6 +105,7 @@ describe("apiProxy", () => {
 
     it("forwards multipart uploads as FormData without forcing content-type", async () => {
       vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("API_URL", "http://localhost:5117");
 
       const formData = new FormData();
       const file = new File(["binary"], "hero.webp", { type: "image/webp" });
@@ -151,6 +153,7 @@ describe("apiProxy", () => {
 
     it("forwards GET without body and uses text/plain fallback", async () => {
       vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("API_URL", "http://localhost:5117");
 
       sendHttpRequestMock.mockResolvedValue(
         new Response(null, {
