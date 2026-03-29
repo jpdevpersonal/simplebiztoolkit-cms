@@ -4,6 +4,7 @@ const apiServiceMock = vi.hoisted(() => ({
   getPublishedMenuItems: vi.fn(),
   getMenuItems: vi.fn(),
   getMenuItemPages: vi.fn(),
+  getMenuLayoutSettings: vi.fn(),
 }));
 
 vi.mock("@/lib/api", () => ({
@@ -16,6 +17,7 @@ describe("menuContent", () => {
     apiServiceMock.getPublishedMenuItems.mockReset();
     apiServiceMock.getMenuItems.mockReset();
     apiServiceMock.getMenuItemPages.mockReset();
+    apiServiceMock.getMenuLayoutSettings.mockReset();
   });
 
   it("falls back to the single-page href when a menu item has one direct page", async () => {
@@ -157,5 +159,53 @@ describe("menuContent", () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it("orders published menu items using persisted layout ids", async () => {
+    const { getOrderedPublishedMenuItems } = await import("./menuContent");
+
+    apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
+      statusCode: 200,
+      data: [
+        { id: "menu-1", title: "One", status: "published" },
+        { id: "menu-2", title: "Two", status: "published" },
+        { id: "menu-3", title: "Three", status: "published" },
+      ],
+    });
+    apiServiceMock.getMenuLayoutSettings.mockResolvedValueOnce({
+      statusCode: 200,
+      data: {
+        menuKey: "primary",
+        orderedMenuItemIds: ["menu-3", "menu-1"],
+      },
+    });
+
+    const result = await getOrderedPublishedMenuItems();
+
+    expect(result.map((item) => item.id)).toEqual([
+      "menu-3",
+      "menu-1",
+      "menu-2",
+    ]);
+  });
+
+  it("falls back to published menu order when layout endpoint is unavailable", async () => {
+    const { getOrderedPublishedMenuItems } = await import("./menuContent");
+
+    apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
+      statusCode: 200,
+      data: [
+        { id: "menu-1", title: "One", status: "published" },
+        { id: "menu-2", title: "Two", status: "published" },
+      ],
+    });
+    apiServiceMock.getMenuLayoutSettings.mockResolvedValueOnce({
+      statusCode: 404,
+      data: null,
+    });
+
+    const result = await getOrderedPublishedMenuItems();
+
+    expect(result.map((item) => item.id)).toEqual(["menu-1", "menu-2"]);
   });
 });

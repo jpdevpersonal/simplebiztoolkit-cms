@@ -1,4 +1,11 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import SiteNavigation from "./SiteNavigation";
 
@@ -98,5 +105,61 @@ describe("SiteNavigation", () => {
     await waitFor(() => {
       expect(document.body.style.overflow).toBe("");
     });
+  });
+
+  it("interleaves CMS links with static nav when static order tokens are present", () => {
+    mockUsePathname.mockReturnValue("/");
+    render(
+      <SiteNavigation
+        menuNavItems={[
+          {
+            id: "menu-services",
+            title: "Services",
+            directHref: "/pages/services",
+          },
+        ]}
+        navOrderIds={["static:/products", "menu-services", "static:/blog"]}
+      />,
+    );
+
+    const desktopNav = document.querySelector(".sb-site-nav");
+    expect(desktopNav).toBeTruthy();
+
+    const names = within(desktopNav as HTMLElement)
+      .getAllByRole("link")
+      .map((link) => link.textContent?.trim() ?? "");
+
+    const templatesIndex = names.indexOf("Templates");
+    const servicesIndex = names.indexOf("Services");
+    const resourcesIndex = names.indexOf("Resources");
+
+    expect(templatesIndex).toBeGreaterThan(-1);
+    expect(servicesIndex).toBeGreaterThan(templatesIndex);
+    expect(resourcesIndex).toBeGreaterThan(servicesIndex);
+  });
+
+  it("hides built-in links when hidden-static tokens are present", () => {
+    mockUsePathname.mockReturnValue("/");
+    render(
+      <SiteNavigation
+        menuNavItems={[
+          {
+            id: "menu-services",
+            title: "Services",
+            directHref: "/pages/services",
+          },
+        ]}
+        navOrderIds={[
+          "static:/products",
+          "menu-services",
+          "hidden-static:/blog",
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "Templates" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Resources" }),
+    ).not.toBeInTheDocument();
   });
 });

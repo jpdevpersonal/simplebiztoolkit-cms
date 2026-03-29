@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { links } from "@/config/links";
 import { featureFlags } from "@/config/featureFlags";
+import {
+  hiddenStaticOrderIdToStaticOrderId,
+  isHiddenStaticNavOrderId,
+  isStaticNavOrderId,
+  staticNavItems,
+  toStaticNavOrderId,
+} from "@/config/staticNavItems";
 import { createPortal } from "react-dom";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
+import { normalizeOrderedMenuItemIds } from "@/lib/menuLayout";
 
 /** Shape passed from server components – fully serialisable */
 export type MenuNavPage = { id: string; title: string; href: string };
@@ -24,9 +32,27 @@ export type MenuNavItem = {
   groups?: MenuNavGroup[];
 };
 
-type Props = { menuNavItems?: MenuNavItem[] };
+type Props = { menuNavItems?: MenuNavItem[]; navOrderIds?: string[] };
 
-export default function SiteNavigation({ menuNavItems = [] }: Props) {
+type OrderedStaticNavItem = {
+  kind: "static";
+  orderId: string;
+  to: string;
+  label: string;
+};
+
+type OrderedCmsNavItem = {
+  kind: "cms";
+  orderId: string;
+  item: MenuNavItem;
+};
+
+type OrderedNavItem = OrderedStaticNavItem | OrderedCmsNavItem;
+
+export default function SiteNavigation({
+  menuNavItems = [],
+  navOrderIds = [],
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -58,15 +84,116 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
     };
   }, [isOpen]);
 
-  const navItems = [
-    { to: "/products", label: "Templates" },
-    { to: "/blog", label: "Resources" },
-    { to: "/testimonials", label: "Reviews" },
-    { to: "/faq", label: "FAQ" },
-    { to: "/help", label: "Help" },
-    { to: "/contact", label: "Contact" },
-    { to: "/about", label: "About" },
-  ];
+  const normalizedOrderIds = useMemo(
+    () => normalizeOrderedMenuItemIds(navOrderIds),
+    [navOrderIds],
+  );
+
+  const hiddenStaticOrderIds = useMemo(() => {
+    const hidden = new Set<string>();
+    for (const id of normalizedOrderIds) {
+      const mappedStaticId = hiddenStaticOrderIdToStaticOrderId(id);
+      if (mappedStaticId) {
+        hidden.add(mappedStaticId);
+      }
+    }
+    return hidden;
+  }, [normalizedOrderIds]);
+
+  const orderedStaticItems = useMemo<OrderedStaticNavItem[]>(
+    () =>
+      staticNavItems
+        .map((item) => ({
+          kind: "static" as const,
+          to: item.to,
+          label: item.label,
+          orderId: toStaticNavOrderId(item.to),
+        }))
+        .filter((item) => !hiddenStaticOrderIds.has(item.orderId)),
+    [hiddenStaticOrderIds],
+  );
+
+  const orderedCmsItems = useMemo<OrderedCmsNavItem[]>(
+    () =>
+      menuNavItems.map((item) => ({
+        kind: "cms",
+        item,
+        orderId: item.id,
+      })),
+    [menuNavItems],
+  );
+
+  const orderedNavItems = useMemo<OrderedNavItem[]>(() => {
+    if (normalizedOrderIds.length === 0) {
+      return [...orderedStaticItems, ...orderedCmsItems];
+    }
+
+    const positionalOrderIds = normalizedOrderIds.filter(
+      (id) => !isHiddenStaticNavOrderId(id),
+    );
+
+    const includesManagedStaticTokens = normalizedOrderIds.some(
+      (id) => isStaticNavOrderId(id) || isHiddenStaticNavOrderId(id),
+    );
+
+    // Backward compatibility: older settings only stored CMS ids, so keep
+    // the static links in default order and just reorder CMS entries.
+    if (!includesManagedStaticTokens) {
+      const cmsById = new Map(
+        orderedCmsItems.map((entry) => [entry.orderId, entry]),
+      );
+      const seenCms = new Set<string>();
+      const orderedCms: OrderedCmsNavItem[] = [];
+
+      for (const id of positionalOrderIds) {
+        if (seenCms.has(id)) continue;
+        const entry = cmsById.get(id);
+        if (!entry) continue;
+        seenCms.add(id);
+        orderedCms.push(entry);
+      }
+
+      for (const entry of orderedCmsItems) {
+        if (seenCms.has(entry.orderId)) continue;
+        seenCms.add(entry.orderId);
+        orderedCms.push(entry);
+      }
+
+      return [...orderedStaticItems, ...orderedCms];
+    }
+
+    const allEntries: OrderedNavItem[] = [
+      ...orderedStaticItems,
+      ...orderedCmsItems,
+    ];
+    const byId = new Map(allEntries.map((entry) => [entry.orderId, entry]));
+    const ordered: OrderedNavItem[] = [];
+    const seen = new Set<string>();
+
+    for (const rawId of positionalOrderIds) {
+      const lookupIds = rawId.startsWith("cms:")
+        ? [rawId, rawId.slice(4)]
+        : [rawId];
+
+      let matched: OrderedNavItem | undefined;
+      for (const lookupId of lookupIds) {
+        matched = byId.get(lookupId);
+        if (matched) break;
+      }
+
+      if (!matched || seen.has(matched.orderId)) continue;
+      seen.add(matched.orderId);
+      ordered.push(matched);
+    }
+
+    for (const entry of allEntries) {
+      if (seen.has(entry.orderId)) continue;
+      seen.add(entry.orderId);
+      ordered.push(entry);
+    }
+
+    return ordered;
+  }, [normalizedOrderIds, orderedCmsItems, orderedStaticItems]);
 
   const isActive = (href: string) => {
     if (!pathname) return false;
@@ -177,57 +304,59 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
         {/* Navigation Links */}
         <div style={{ flex: 1, overflowY: "auto", backgroundColor: "#fafafa" }}>
           <nav style={{ padding: "0.5rem 0" }}>
-            {navItems.map((item) => (
-              <Link
-                key={item.to}
-                onClick={closeMenu}
-                href={item.to}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "1rem 1.5rem",
-                  textDecoration: "none",
-                  color: "var(--sb-ink)",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  backgroundColor: "white",
-                  borderBottom: "1px solid #eee",
-                }}
-              >
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    backgroundColor: "var(--sb-brand-blue)",
-                    borderRadius: "50%",
-                    marginRight: "1rem",
-                  }}
-                />
-                {item.label}
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  style={{ marginLeft: "auto", opacity: 0.4 }}
-                >
-                  <path
-                    d="M9 18L15 12L9 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
-            ))}
+            {orderedNavItems.map((entry) => {
+              if (entry.kind === "static") {
+                return (
+                  <Link
+                    key={entry.orderId}
+                    onClick={closeMenu}
+                    href={entry.to}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "1rem 1.5rem",
+                      textDecoration: "none",
+                      color: "var(--sb-ink)",
+                      fontWeight: 600,
+                      fontSize: "1rem",
+                      backgroundColor: "white",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        backgroundColor: "var(--sb-brand-blue)",
+                        borderRadius: "50%",
+                        marginRight: "1rem",
+                      }}
+                    />
+                    {entry.label}
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      style={{ marginLeft: "auto", opacity: 0.4 }}
+                    >
+                      <path
+                        d="M9 18L15 12L9 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
+                );
+              }
 
-            {/* Dynamic menu items from CMS */}
-            {menuNavItems.map((item) => {
+              const item = entry.item;
               if (item.directHref) {
                 return (
                   <Link
-                    key={item.id}
+                    key={entry.orderId}
                     onClick={closeMenu}
                     href={item.directHref}
                     style={{
@@ -270,6 +399,7 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
                   </Link>
                 );
               }
+
               if (item.groups && item.groups.length > 0) {
                 return item.groups.flatMap((group) =>
                   group.pages.map((page) => (
@@ -304,6 +434,7 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
                   )),
                 );
               }
+
               return null;
             })}
           </nav>
@@ -360,42 +491,40 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
     <>
       {/* Desktop Navigation */}
       <nav className="d-none d-lg-flex align-items-center gap-2 sb-site-nav">
-        {navItems.map((item) => (
-          <Link
-            key={item.to}
-            className={
-              "px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link" +
-              (isActive(item.to) ? " is-active" : "")
-            }
-            href={item.to}
-            // Prevent automatic prefetch for the blog route to avoid
-            // preloading its CSS when users may not navigate there.
-            prefetch={item.to === "/blog" ? false : undefined}
-            style={{ transition: "all 0.2s ease" }}
-          >
-            {item.label}
-          </Link>
-        ))}
-
-        {/* Dynamic menu items from CMS */}
-        {menuNavItems.map((item) =>
-          item.directHref ? (
+        {orderedNavItems.map((entry) =>
+          entry.kind === "static" ? (
             <Link
-              key={item.id}
+              key={entry.orderId}
               className={
                 "px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link" +
-                (isActive(item.directHref) ? " is-active" : "")
+                (isActive(entry.to) ? " is-active" : "")
               }
-              href={item.directHref}
+              href={entry.to}
+              // Prevent automatic prefetch for the blog route to avoid
+              // preloading its CSS when users may not navigate there.
+              prefetch={entry.to === "/blog" ? false : undefined}
               style={{ transition: "all 0.2s ease" }}
             >
-              {item.title}
+              {entry.label}
             </Link>
-          ) : item.groups && item.groups.length > 0 ? (
-            <div
-              key={item.id}
+          ) : entry.item.directHref ? (
+            <Link
+              key={entry.orderId}
               className={
-                "sb-nav-dropdown" + (isGroupActive(item) ? " is-active" : "")
+                "px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link" +
+                (isActive(entry.item.directHref) ? " is-active" : "")
+              }
+              href={entry.item.directHref}
+              style={{ transition: "all 0.2s ease" }}
+            >
+              {entry.item.title}
+            </Link>
+          ) : entry.item.groups && entry.item.groups.length > 0 ? (
+            <div
+              key={entry.orderId}
+              className={
+                "sb-nav-dropdown" +
+                (isGroupActive(entry.item) ? " is-active" : "")
               }
               style={{ position: "relative" }}
             >
@@ -410,7 +539,7 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
                   gap: "0.25rem",
                 }}
               >
-                {item.title}
+                {entry.item.title}
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M6 9l6 6 6-6"
@@ -437,7 +566,7 @@ export default function SiteNavigation({ menuNavItems = [] }: Props) {
                   zIndex: 1050,
                 }}
               >
-                {item.groups.map((group, gi) => (
+                {entry.item.groups.map((group, gi) => (
                   <div key={group.categoryId ?? gi}>
                     {group.categoryTitle && (
                       <div

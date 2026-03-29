@@ -221,6 +221,11 @@ describe("clientApi", () => {
     await adminApi.createMenuItemPage({ title: "Page" });
     await adminApi.updateMenuItemPage("pg1", { title: "Page2" });
     await adminApi.deleteMenuItemPage("pg1");
+    await adminApi.getMenuLayoutSettings("primary");
+    await adminApi.updateMenuLayoutSettings({
+      menuKey: "primary",
+      orderedMenuItemIds: ["m1", "m2"],
+    });
     await adminApi.revalidateContent("article", "slug-1");
     await adminApi.getMenuCategories("menu-1");
     await adminApi.getMenuItemPages("cat-1", "published", "menu-1");
@@ -246,6 +251,14 @@ describe("clientApi", () => {
       expect.any(Object),
     );
     expect(sendHttpRequestMock).toHaveBeenCalledWith(
+      "/api/admin/menu-layout?menuKey=primary",
+      expect.any(Object),
+    );
+    expect(sendHttpRequestMock).toHaveBeenCalledWith(
+      "/api/admin/menu-layout",
+      expect.any(Object),
+    );
+    expect(sendHttpRequestMock).toHaveBeenCalledWith(
       "/api/revalidate",
       expect.any(Object),
     );
@@ -265,6 +278,7 @@ describe("clientApi", () => {
 
     await publicApi.getPublishedMenuItems();
     await publicApi.getPublishedMenuPages();
+    await publicApi.getMenuLayoutSettings("primary");
 
     expect(sendHttpRequestMock).toHaveBeenCalledWith(
       "/api/menuitems?status=published",
@@ -272,6 +286,10 @@ describe("clientApi", () => {
     );
     expect(sendHttpRequestMock).toHaveBeenCalledWith(
       "/api/menuitempages?status=published",
+      expect.any(Object),
+    );
+    expect(sendHttpRequestMock).toHaveBeenCalledWith(
+      "/api/menu-layout?menuKey=primary",
       expect.any(Object),
     );
   });
