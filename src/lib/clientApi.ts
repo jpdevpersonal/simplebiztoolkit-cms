@@ -1,10 +1,12 @@
 import type {
   Article,
   MenuCategory,
+  MenuLayoutSettings,
   MenuItem,
   MenuItemPage,
   ProductCategory,
   ProductItem,
+  UpdateMenuLayoutSettingsInput,
 } from "@/lib/api";
 import {
   extractErrorMessage,
@@ -238,6 +240,11 @@ export const publicApi = {
       "/api/menuitempages?status=published",
     );
   },
+
+  getMenuLayoutSettings(menuKey = "primary") {
+    const qs = `?menuKey=${encodeURIComponent(menuKey)}`;
+    return request<MenuLayoutSettings>("public", `/api/menu-layout${qs}`);
+  },
 };
 
 export const adminApi = {
@@ -421,6 +428,21 @@ export const adminApi = {
   deleteMenuItemPage(id: string) {
     return request<void>("admin", buildAdminPath("pages", id), {
       method: "DELETE",
+    });
+  },
+
+  getMenuLayoutSettings(menuKey = "primary") {
+    const qs = `?menuKey=${encodeURIComponent(menuKey)}`;
+    return request<MenuLayoutSettings>(
+      "admin",
+      `${buildAdminPath("menu-layout")}${qs}`,
+    );
+  },
+
+  updateMenuLayoutSettings(settings: UpdateMenuLayoutSettingsInput) {
+    return request<MenuLayoutSettings>("admin", buildAdminPath("menu-layout"), {
+      method: "PUT",
+      body: settings,
     });
   },
 

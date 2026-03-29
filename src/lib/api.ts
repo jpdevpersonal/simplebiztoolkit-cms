@@ -118,6 +118,25 @@ export interface MenuItemPage {
   menuItem?: MenuItem;
 }
 
+export interface MenuLayoutSettings {
+  id?: string;
+  menuKey: string;
+  orderedMenuItemIds: string[];
+  isActive?: boolean;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: string | null;
+}
+
+export interface UpdateMenuLayoutSettingsInput {
+  menuKey: string;
+  orderedMenuItemIds: string[];
+  isActive?: boolean;
+  version?: number;
+  updatedBy?: string;
+}
+
 export interface ImageAsset {
   id: string;
   url: string;
@@ -525,6 +544,40 @@ class ApiService {
       "/api/menuitems/items-tree",
       { method: "GET" },
       ["menu"],
+    );
+  }
+
+  /**
+   * Get persisted top-level menu layout settings.
+   */
+  async getMenuLayoutSettings(
+    menuKey = "primary",
+  ): Promise<ApiResponse<MenuLayoutSettings>> {
+    const qs = `?menuKey=${encodeURIComponent(menuKey)}`;
+    const useAdminRoute = Boolean(this.authToken);
+    return this.fetchApi<MenuLayoutSettings>(
+      useAdminRoute ? `/api/admin/menu-layout${qs}` : `/api/menu-layout${qs}`,
+      { method: "GET" },
+      ["menu"],
+      useAdminRoute,
+    );
+  }
+
+  /**
+   * Create or update menu layout settings (admin only).
+   */
+  async updateMenuLayoutSettings(
+    settings: UpdateMenuLayoutSettingsInput,
+  ): Promise<ApiResponse<MenuLayoutSettings>> {
+    noStore();
+    return this.fetchApi<MenuLayoutSettings>(
+      "/api/admin/menu-layout",
+      {
+        method: "PUT",
+        body: JSON.stringify(settings),
+      },
+      undefined,
+      true,
     );
   }
 

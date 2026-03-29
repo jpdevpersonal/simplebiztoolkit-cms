@@ -8,9 +8,13 @@ import SiteNavigation, { type MenuNavItem } from "./SiteNavigation";
 
 type Props = {
   menuNavItems?: MenuNavItem[];
+  navOrderIds?: string[];
 };
 
-export default function SiteHeader({ menuNavItems = [] }: Props) {
+export default function SiteHeader({
+  menuNavItems = [],
+  navOrderIds = [],
+}: Props) {
   const headerRef = useRef<HTMLElement | null>(null);
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
@@ -53,7 +57,10 @@ export default function SiteHeader({ menuNavItems = [] }: Props) {
           {!isAdmin && (
             <>
               <div className="order-3 order-lg-2 d-flex align-items-center">
-                <SiteNavigation menuNavItems={menuNavItems} />
+                <SiteNavigation
+                  menuNavItems={menuNavItems}
+                  navOrderIds={navOrderIds}
+                />
               </div>
             </>
           )}

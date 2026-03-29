@@ -15,6 +15,7 @@ const navItems = [
   { href: "/admin/articles", label: "Articles", exact: false },
   { href: "/admin/products", label: "Templates", exact: false },
   { href: "/admin/categories", label: "Template Categories", exact: false },
+  { href: "/admin/menu-manager", label: "Menu Manager", exact: false },
   { href: "/admin/menu", label: "Menu Items", exact: false },
   { href: "/admin/pages", label: "Pages", exact: false },
 ];

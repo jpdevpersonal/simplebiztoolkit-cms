@@ -5,6 +5,10 @@ import {
   type MenuItem,
   type MenuItemPage,
 } from "@/lib/api";
+import {
+  normalizeOrderedMenuItemIds,
+  orderEntitiesByIds,
+} from "@/lib/menuLayout";
 
 export type PublishedMenuCategory = MenuCategory & {
   publishedPages: MenuItemPage[];
@@ -23,6 +27,38 @@ export async function getPublishedMenuItems(): Promise<MenuItem[]> {
   }
 
   return (menuRes.data ?? []).filter((item) => item.status === "published");
+}
+
+export function orderMenuItemsByLayout(
+  items: MenuItem[],
+  orderedMenuItemIds: unknown,
+): MenuItem[] {
+  const normalizedOrder = normalizeOrderedMenuItemIds(orderedMenuItemIds);
+  return orderEntitiesByIds(items, normalizedOrder);
+}
+
+export async function getMenuLayoutOrderIds(
+  menuKey = "primary",
+): Promise<string[]> {
+  try {
+    const layoutRes = await apiService.getMenuLayoutSettings(menuKey);
+    if (layoutRes.statusCode !== 200) {
+      return [];
+    }
+
+    return normalizeOrderedMenuItemIds(layoutRes.data?.orderedMenuItemIds);
+  } catch (error) {
+    console.error("[Menu] Failed to fetch menu layout settings:", error);
+    return [];
+  }
+}
+
+export async function getOrderedPublishedMenuItems(
+  menuKey = "primary",
+): Promise<MenuItem[]> {
+  const publishedItems = await getPublishedMenuItems();
+  const orderIds = await getMenuLayoutOrderIds(menuKey);
+  return orderMenuItemsByLayout(publishedItems, orderIds);
 }
 
 export async function getPublishedMenuItemContent(
