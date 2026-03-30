@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { slugify } from "@/lib/slugify";
 import {
   getPublishedMenuItemContent,
@@ -126,7 +127,14 @@ export default async function MenuItemLandingPage({ params }: Props) {
         <div className="container">
           <div className="pages-header">
             <h1>{item.title}</h1>
-            {item.description && <p>{item.description}</p>}
+            {item.description && (
+              <div
+                className="pages-header-richtext"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(item.description),
+                }}
+              />
+            )}
           </div>
 
           {/* Categories grid */}

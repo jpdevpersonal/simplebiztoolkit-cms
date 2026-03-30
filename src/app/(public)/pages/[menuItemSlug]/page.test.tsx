@@ -115,14 +115,16 @@ describe("Menu item landing page", () => {
       {
         id: "articles",
         title: "Articles",
-        description: "Expert guidance for running a better small business.",
+        description:
+          "<p><strong>Expert guidance</strong> for running a better small business.</p>",
         status: "published",
       },
     ]);
     menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
       id: "articles",
       title: "Articles",
-      description: "Expert guidance for running a better small business.",
+      description:
+        "<p><strong>Expert guidance</strong> for running a better small business.</p>",
       status: "published",
       publishedCategories: [],
       directPages: [
@@ -145,7 +147,8 @@ describe("Menu item landing page", () => {
     );
 
     expect(
-      screen.getByText("Expert guidance for running a better small business."),
+      screen.getByText("Expert guidance", { exact: false }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Expert guidance").tagName).toBe("STRONG");
   });
 });
