@@ -1,11 +1,11 @@
-/* Blog Card Image Styles */
-.blog-card-image {
+/* Shared listing card image styles */
+.content-card-image {
   margin-bottom: 12px;
   border-radius: 8px;
   overflow: hidden;
 }
 
-.blog-card-image img {
+.content-card-image img {
   width: 100%;
   height: auto;
   display: block;
@@ -14,18 +14,17 @@
   transition: transform 0.3s ease;
 }
 
-.sb-card:hover .blog-card-image img {
+.sb-card:hover .content-card-image img {
   transform: scale(1.02);
 }
 
-/* Mobile responsiveness for blog cards */
 @media (max-width: 768px) {
-  .blog-card-image {
+  .content-card-image {
     margin-bottom: 10px;
     border-radius: 6px;
   }
 
-  .blog-card-image img {
+  .content-card-image img {
     aspect-ratio: 16 / 9;
   }
 }
@@ -36,12 +35,10 @@
   }
 }
 
-/* Ensure blog listing uses the same max-width as other site sections */
 .sb-section .container {
   max-width: 1200px;
 }
 
-/* Slightly reduce internal card padding to match other pages visually */
 .sb-card {
   padding: 20px;
 }

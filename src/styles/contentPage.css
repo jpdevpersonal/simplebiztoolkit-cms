@@ -1,23 +1,22 @@
-/* Article Layout */
-.article-page {
+/* Shared content page layout */
+.content-page {
   max-width: 980px;
   margin: 0 auto;
   padding: 36px 18px 72px;
 }
 
-/* Article Header */
-.article-header {
+.content-header {
   margin-bottom: 22px;
 }
 
-.article-badges {
+.content-badges {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-bottom: 14px;
 }
 
-.article-badge {
+.content-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -29,15 +28,14 @@
   background: rgba(0, 0, 0, 0.02);
 }
 
-/* Article Header Image */
-.article-header-image {
+.content-header-image {
   margin-bottom: 32px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.article-header-image img {
+.content-header-image img {
   width: 100%;
   height: auto;
   display: block;
@@ -46,19 +44,18 @@
 }
 
 @media (max-width: 768px) {
-  .article-header-image {
+  .content-header-image {
     margin-bottom: 24px;
     border-radius: 8px;
   }
 
-  .article-header-image img {
+  .content-header-image img {
     max-height: 300px;
   }
 }
 
-/* On large screens, make header images fill the full width and crop to fit */
 @media (min-width: 992px) {
-  .article-header-image img {
+  .content-header-image img {
     width: 100%;
     height: auto;
     object-fit: contain;
@@ -66,76 +63,73 @@
   }
 }
 
-.article-title {
+.content-title {
   margin: 0 0 10px;
 }
 
-.article-subtitle {
+.content-subtitle {
   margin: 0;
   font-size: 18px;
   opacity: 0.9;
   max-width: 860px;
 }
 
-.article-meta {
+.content-meta {
   margin-top: 12px;
   font-size: 13px;
   opacity: 0.7;
 }
 
-/* Article Content */
-.article-section {
+.content-section {
   margin-top: 28px;
 }
 
-.article-section h2 {
+.content-section h2 {
   margin-top: 0;
 }
 
-.article-section h3 {
+.content-section h3 {
   margin-top: 18px;
 }
 
-/* Callout Box */
-.article-callout {
+.content-callout {
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 16px;
   padding: 18px;
   background: rgba(0, 0, 0, 0.02);
 }
 
-.article-callout-title {
+.content-callout-title {
   font-weight: 700;
   margin-bottom: 8px;
 }
 
-.article-callout-content {
+.content-callout-content {
   opacity: 0.92;
 }
 
-/* CTA Section */
-.article-cta {
+.content-cta {
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 20px;
   padding: 22px;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.01));
 }
 
-.article-cta h2 {
+.content-cta h2 {
   margin-top: 0;
 }
 
-.article-cta-description {
+.content-cta-description {
   margin-bottom: 14px;
 }
 
-.article-cta-buttons {
+.content-cta-buttons {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.article-cta-btn {
+.content-cta-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -146,104 +140,75 @@
   font-weight: 700;
 }
 
-.article-cta-btn-primary:hover {
+.content-cta-btn-primary:hover {
   color: white;
 }
 
-.article-cta-btn-primary {
+.content-cta-btn-primary {
   background: rgba(0, 0, 0, 0.92);
   color: white;
 }
 
-.article-cta-btn-secondary {
+.content-cta-btn-secondary {
   background: transparent;
   color: inherit;
 }
 
-.article-cta-disclosure {
+.content-cta-disclosure {
   margin-top: 12px;
   font-size: 13px;
   opacity: 0.75;
 }
 
-/* Article Footer */
-.article-footer {
+.content-footer {
   margin-top: 26px;
   font-size: 13px;
   opacity: 0.75;
 }
 
-.article-footer p {
+.content-footer p {
   margin-bottom: 6px;
 }
 
-.article-footer p:last-child {
+.content-footer p:last-child {
   margin: 2rem;
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .article-page {
+  .content-page {
     padding: 24px 16px 48px;
   }
 
-  .article-title {
+  .content-title {
     font-size: 28px;
   }
 
-  .article-subtitle {
+  .content-subtitle {
     font-size: 16px;
   }
 
-  .article-badges {
+  .content-badges {
     gap: 8px;
   }
 
-  .article-badge {
+  .content-badge {
     font-size: 13px;
     padding: 5px 9px;
   }
 
-  .article-cta {
+  .content-cta {
     padding: 18px;
   }
 
-  .article-cta h2 {
+  .content-cta h2 {
     font-size: 22px;
   }
 
-  .article-cta-buttons {
+  .content-cta-buttons {
     gap: 10px;
   }
 
-  .article-cta-btn {
+  .content-cta-btn {
     padding: 9px 12px;
-    font-size: 15px;
-  }
-
-  .article-callout {
-    padding: 16px;
-  }
-}
-
-@media (max-width: 576px) {
-  .article-page {
-    padding: 20px 12px 40px;
-  }
-
-  .article-title {
-    font-size: 24px;
-  }
-
-  .article-subtitle {
-    font-size: 15px;
-  }
-
-  .article-cta-buttons {
-    flex-direction: column;
-  }
-
-  .article-cta-btn {
-    width: 100%;
   }
 }

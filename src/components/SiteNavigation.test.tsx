@@ -37,7 +37,7 @@ describe("SiteNavigation", () => {
     render(<SiteNavigation />);
 
     expect(screen.getByRole("link", { name: "Templates" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Resources" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Reviews" })).toBeInTheDocument();
   });
 
   it("applies active styles to the link matching the current path", () => {
@@ -45,10 +45,10 @@ describe("SiteNavigation", () => {
     render(<SiteNavigation />);
 
     const productsLink = screen.getByRole("link", { name: "Templates" });
-    const resourcesLink = screen.getByRole("link", { name: "Resources" });
+    const reviewsLink = screen.getByRole("link", { name: "Reviews" });
 
     expect(productsLink).toHaveClass("is-active");
-    expect(resourcesLink).not.toHaveClass("is-active");
+    expect(reviewsLink).not.toHaveClass("is-active");
   });
 
   it("marks a CMS dropdown trigger active when one of its pages matches the route", () => {
@@ -118,7 +118,7 @@ describe("SiteNavigation", () => {
             directHref: "/pages/services",
           },
         ]}
-        navOrderIds={["static:/products", "menu-services", "static:/blog"]}
+        navOrderIds={["static:/products", "menu-services", "static:/faq"]}
       />,
     );
 
@@ -131,11 +131,11 @@ describe("SiteNavigation", () => {
 
     const templatesIndex = names.indexOf("Templates");
     const servicesIndex = names.indexOf("Services");
-    const resourcesIndex = names.indexOf("Resources");
+    const faqIndex = names.indexOf("FAQ");
 
     expect(templatesIndex).toBeGreaterThan(-1);
     expect(servicesIndex).toBeGreaterThan(templatesIndex);
-    expect(resourcesIndex).toBeGreaterThan(servicesIndex);
+    expect(faqIndex).toBeGreaterThan(servicesIndex);
   });
 
   it("hides built-in links when hidden-static tokens are present", () => {
@@ -152,14 +152,12 @@ describe("SiteNavigation", () => {
         navOrderIds={[
           "static:/products",
           "menu-services",
-          "hidden-static:/blog",
+          "hidden-static:/faq",
         ]}
       />,
     );
 
     expect(screen.getByRole("link", { name: "Templates" })).toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: "Resources" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "FAQ" })).not.toBeInTheDocument();
   });
 });

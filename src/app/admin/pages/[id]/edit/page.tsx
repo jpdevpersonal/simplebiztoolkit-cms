@@ -3,9 +3,9 @@
  * Loads the page and all menu items for the PageEditor component.
  */
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import PageEditor from "../../PageEditor";
 
 interface Props {
@@ -25,6 +25,7 @@ export default async function EditPageAdminPage({ params }: Props) {
 
   const page = pageRes.data;
   const menuItems = menuRes.data || [];
+  const breadcrumbItems = [{ href: "/admin/pages", label: "Pages" }];
 
   // Resolve menu item id (might come via category)
   let menuItemId = page.menuItemId;
@@ -37,11 +38,7 @@ export default async function EditPageAdminPage({ params }: Props) {
     <div>
       <div className="admin-page-header">
         <div>
-          <div className="admin-breadcrumb">
-            <Link href="/admin/pages" className="admin-breadcrumb-link">
-              ← Pages
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <h1>Edit Page</h1>
         </div>
         <span className="admin-page-meta">ID: {id}</span>
@@ -52,6 +49,12 @@ export default async function EditPageAdminPage({ params }: Props) {
         initialMenuItemId={menuItemId}
         initialCategoryId={page.menuCategoryId}
       />
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
+      </div>
     </div>
   );
 }

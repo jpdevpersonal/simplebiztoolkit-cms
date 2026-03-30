@@ -2,7 +2,7 @@
  * EditorPolicy – allowlist controlling which node and mark types the editor
  * toolbar exposes for insertion.
  *
- * When a policy is supplied to ArticleEditor:
+ * When a policy is supplied to BlockEditor:
  *   • Toolbar buttons for disallowed types are hidden.
  *   • Insertion helper functions bail-out early with a console warning.
  *   • Existing content of a disallowed type still renders (read-only behaviour

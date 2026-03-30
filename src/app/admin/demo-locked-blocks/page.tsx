@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import type { JSONContent } from "@tiptap/core";
-import ArticleEditor, { type BlockEditorOutput } from "@/editor/ArticleEditor";
+import BlockEditor, { type BlockEditorOutput } from "@/editor/BlockEditor";
 
 // ─── Demo initial content ─────────────────────────────────────────────────────
 
@@ -154,7 +154,7 @@ export default function LockedBlocksDemoPage() {
         </ul>
       </div>
 
-      <ArticleEditor
+      <BlockEditor
         initialJson={INITIAL_CONTENT}
         onChange={setOutput}
         minHeight={500}

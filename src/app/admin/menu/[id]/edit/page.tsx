@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import MenuItemEditor from "@/components/MenuItemEditor";
 
 function StatusBadge({ status }: { status?: string }) {
@@ -46,6 +47,7 @@ export default async function EditMenuItemPage({ params }: Props) {
   const menuItem = itemResponse.data;
   const categories = catResponse.data || [];
   const allPages = pagesResponse.data || [];
+  const breadcrumbItems = [{ href: "/admin/menu", label: "Menu Items" }];
 
   const plusIcon = (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -75,15 +77,7 @@ export default async function EditMenuItemPage({ params }: Props) {
       {/* Page header */}
       <div className="admin-page-header">
         <div>
-          <div className="admin-breadcrumb">
-            <Link
-              href="/admin/menu"
-              className="admin-breadcrumb-link"
-              style={{ fontSize: "1rem" }}
-            >
-              ← Menu Items
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <h1>Edit: {menuItem.title}</h1>
         </div>
       </div>
@@ -262,20 +256,11 @@ export default async function EditMenuItemPage({ params }: Props) {
       </div>
 
       {/* Bottom breadcrumb */}
-      <div
-        style={{
-          marginTop: "1rem",
-          paddingTop: "0.5rem",
-          borderTop: "1px solid var(--sb-border)",
-        }}
-      >
-        <Link
-          href="/admin/menu"
-          className="admin-breadcrumb-link"
-          style={{ fontSize: "1rem" }}
-        >
-          ← Menu Items
-        </Link>
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
       </div>
     </div>
   );

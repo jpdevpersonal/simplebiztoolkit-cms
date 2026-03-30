@@ -5,6 +5,7 @@
 
 import Link from "next/link";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import AdminMenuManager from "@/components/AdminMenuManager";
 
 export default async function AdminMenuManagerPage() {
@@ -20,16 +21,13 @@ export default async function AdminMenuManagerPage() {
     menuLayoutResponse.statusCode === 200
       ? (menuLayoutResponse.data ?? null)
       : null;
+  const breadcrumbItems = [{ href: "/admin", label: "Dashboard" }];
 
   return (
     <div className="admin-page-shell">
       <div className="admin-page-header">
         <div className="admin-page-header-copy">
-          <div className="admin-breadcrumb">
-            <Link href="/admin" className="admin-breadcrumb-link">
-              ← Dashboard
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <div className="admin-page-eyebrow">Navigation layout</div>
           <h1>Menu Manager</h1>
           <p className="admin-page-description">
@@ -40,6 +38,13 @@ export default async function AdminMenuManagerPage() {
       </div>
 
       <AdminMenuManager menuItems={menuItems} initialLayout={initialLayout} />
+
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
+      </div>
     </div>
   );
 }

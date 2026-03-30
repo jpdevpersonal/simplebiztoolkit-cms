@@ -8,7 +8,7 @@ type EditorActionsProps = {
   saving: boolean;
   /** True when creating a new record (no existing id) */
   isCreateMode: boolean;
-  /** Entity noun used in button labels, e.g. "Product" or "Article" */
+  /** Entity noun used in button labels, e.g. "Product" or "Page" */
   entityName: string;
   /** Called when the Cancel button is clicked */
   onCancel: () => void;
@@ -53,14 +53,6 @@ export default function EditorActions({
         <button type="submit" className="admin-btn-save" disabled={saving}>
           {saveLabel}
         </button>
-        <button
-          type="button"
-          className="admin-btn-cancel"
-          onClick={onCancel}
-          disabled={saving}
-        >
-          Cancel
-        </button>
         {previewHref && (
           <Link
             href={previewHref}
@@ -102,6 +94,14 @@ export default function EditorActions({
             </svg>
           </Link>
         )}
+        <button
+          type="button"
+          className="admin-btn-cancel"
+          onClick={onCancel}
+          disabled={saving}
+        >
+          Cancel
+        </button>
       </div>
       {!isCreateMode && onDelete && (
         <button

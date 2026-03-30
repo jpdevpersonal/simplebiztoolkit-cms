@@ -630,7 +630,7 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
                   className="form-control"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g. Services, Resources"
+                  placeholder="e.g. Services, Guides"
                   required
                 />
               </div>

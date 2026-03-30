@@ -500,9 +500,6 @@ export default function SiteNavigation({
                 (isActive(entry.to) ? " is-active" : "")
               }
               href={entry.to}
-              // Prevent automatic prefetch for the blog route to avoid
-              // preloading its CSS when users may not navigate there.
-              prefetch={entry.to === "/blog" ? false : undefined}
               style={{ transition: "all 0.2s ease" }}
             >
               {entry.label}

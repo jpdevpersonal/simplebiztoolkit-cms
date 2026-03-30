@@ -1,7 +1,7 @@
 import Link from "next/link";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 
-interface ArticleCTAProps {
+interface ContentCtaProps {
   title?: string;
   description?: string;
   primaryLabel?: string;
@@ -11,7 +11,7 @@ interface ArticleCTAProps {
   disclosure?: string;
 }
 
-export function ArticleCTA({
+export function ContentCta({
   title = "Ready to get started?",
   description = "Get your free guide, then shop securely on Etsy when you're ready.",
   primaryLabel = "",
@@ -19,17 +19,17 @@ export function ArticleCTA({
   showEtsyLink = false,
   showHomeLink = false,
   disclosure,
-}: ArticleCTAProps) {
+}: ContentCtaProps) {
   return (
-    <section className="article-cta">
+    <section className="content-cta">
       <h2>{title}</h2>
-      <p className="article-cta-description">{description}</p>
+      <p className="content-cta-description">{description}</p>
 
-      <div className="article-cta-buttons">
+      <div className="content-cta-buttons">
         {primaryLabel && primaryHref && (
           <Link
             href={primaryHref}
-            className="article-cta-btn article-cta-btn-primary"
+            className="content-cta-btn content-cta-btn-primary"
           >
             {primaryLabel}
           </Link>
@@ -37,7 +37,7 @@ export function ArticleCTA({
         {showHomeLink && (
           <Link
             href="/products"
-            className="article-cta-btn article-cta-btn-secondary"
+            className="content-cta-btn content-cta-btn-secondary"
           >
             See all products
           </Link>
@@ -46,7 +46,7 @@ export function ArticleCTA({
         {showEtsyLink && <EtsyCtaButton />}
       </div>
 
-      {disclosure && <p className="article-cta-disclosure">{disclosure}</p>}
+      {disclosure && <p className="content-cta-disclosure">{disclosure}</p>}
     </section>
   );
 }

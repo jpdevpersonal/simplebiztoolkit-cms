@@ -15,7 +15,7 @@ import {
   createCollectionPageJsonLd,
   createPageMetadata,
 } from "@/lib/seo";
-import "@/styles/blog.css";
+import "@/styles/contentCards.css";
 import "@/styles/pages.css";
 
 type Props = {
@@ -81,7 +81,7 @@ export default async function CategoryPageListing({ params }: Props) {
   if (!data) notFound();
   const { item, cat, publishedPages } = data;
 
-  const articleLinkIcon = (
+  const pageLinkIcon = (
     <svg
       width="16"
       height="16"
@@ -190,7 +190,7 @@ export default async function CategoryPageListing({ params }: Props) {
                 <div className="col-lg-6" key={page.id}>
                   <article className="sb-card p-3 h-100">
                     {(page.featuredImage || page.headerImage) && (
-                      <div className="blog-card-image">
+                      <div className="content-card-image">
                         <Link href={`/${page.slug}`}>
                           <Image
                             src={page.featuredImage || page.headerImage || ""}
@@ -237,9 +237,9 @@ export default async function CategoryPageListing({ params }: Props) {
                     )}
 
                     <div className="mt-3">
-                      <Link className="sb-article-link" href={`/${page.slug}`}>
+                      <Link className="sb-content-link" href={`/${page.slug}`}>
                         <span>Read page</span>
-                        {articleLinkIcon}
+                        {pageLinkIcon}
                       </Link>
                     </div>
                   </article>

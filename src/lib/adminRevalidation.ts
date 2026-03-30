@@ -10,10 +10,6 @@ function normalizeSlugs(candidates: Array<string | undefined>): string[] {
   );
 }
 
-export async function revalidateArticleContent(slug?: string) {
-  await clientApi.revalidateContent("article", slug);
-}
-
 export async function revalidateProductContent(
   ...candidateSlugs: Array<string | undefined>
 ) {

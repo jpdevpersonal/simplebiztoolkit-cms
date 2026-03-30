@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import AdminStatCard from "@/components/AdminStatCard";
 
 interface Props {
@@ -28,24 +29,17 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
     (sum, cat) => sum + (cat.pages?.length ?? 0),
     0,
   );
+  const breadcrumbItems = [
+    { href: "/admin/menu", label: "Menu Items" },
+    { href: `/admin/menu/${menuItemId}/edit`, label: menuItem.title },
+  ];
 
   return (
     <div>
       {/* Page header */}
       <div className="admin-page-header">
         <div>
-          <div className="admin-breadcrumb">
-            <Link href="/admin/menu" className="admin-breadcrumb-link">
-              ← Menu Items
-            </Link>
-            {" / "}
-            <Link
-              href={`/admin/menu/${menuItemId}/edit`}
-              className="admin-breadcrumb-link"
-            >
-              {menuItem.title}
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <h1>Topics</h1>
         </div>
         <Link
@@ -143,6 +137,13 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
       </div>
     </div>
   );

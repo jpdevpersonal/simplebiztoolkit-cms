@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const menuContentMock = vi.hoisted(() => ({
@@ -15,7 +15,7 @@ describe("Menu item landing page", () => {
     menuContentMock.getPublishedMenuItemContent.mockReset();
   });
 
-  it("uses blog-style cards for multiple direct pages without topics", async () => {
+  it("uses shared content cards for multiple direct pages without topics", async () => {
     menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
       {
         id: "guides",
@@ -58,7 +58,7 @@ describe("Menu item landing page", () => {
 
     expect(container.querySelectorAll(".sb-card")).toHaveLength(2);
     expect(container.querySelectorAll(".page-card")).toHaveLength(0);
-    expect(container.querySelectorAll(".sb-article-link")).toHaveLength(2);
+    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(2);
   });
 
   it("keeps the existing page grid when topics exist", async () => {
@@ -107,6 +107,48 @@ describe("Menu item landing page", () => {
     );
 
     expect(container.querySelectorAll(".page-card").length).toBeGreaterThan(0);
-    expect(container.querySelectorAll(".sb-article-link")).toHaveLength(0);
+    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(0);
+  });
+
+  it("renders the menu item description when populated", async () => {
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
+      {
+        id: "articles",
+        title: "Articles",
+        description:
+          "<p><strong>Expert guidance</strong> for running a better small business.</p>",
+        status: "published",
+      },
+    ]);
+    menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
+      id: "articles",
+      title: "Articles",
+      description:
+        "<p><strong>Expert guidance</strong> for running a better small business.</p>",
+      status: "published",
+      publishedCategories: [],
+      directPages: [
+        {
+          id: "page-1",
+          slug: "how-to-budget",
+          title: "How to Budget",
+          description: "Budgeting basics",
+          status: "published",
+        },
+      ],
+      totalPages: 1,
+    });
+
+    const { default: MenuItemLandingPage } = await import("./page");
+    render(
+      await MenuItemLandingPage({
+        params: Promise.resolve({ menuItemSlug: "articles" }),
+      }),
+    );
+
+    expect(
+      screen.getByText("Expert guidance", { exact: false }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Expert guidance").tagName).toBe("STRONG");
   });
 });

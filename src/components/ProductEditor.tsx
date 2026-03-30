@@ -38,6 +38,9 @@ export default function ProductEditor({
 }: ProductEditorProps) {
   const productData = product || EMPTY_PRODUCT;
   const isCreateMode = !productData.id;
+  const previewHref = !isCreateMode
+    ? `/preview/products/${productData.id}`
+    : undefined;
   const router = useRouter();
   const [title, setTitle] = useState(productData.title || "");
   const [slug, setSlug] = useState(productData.slug || "");
@@ -136,14 +139,8 @@ export default function ProductEditor({
   }
 
   const handlePreview = () => {
-    const cat = categories.find((c) => c.id === categoryId);
-    if (cat && slug) {
-      window.open(
-        `/products/${cat.slug}/${slug}`,
-        "_blank",
-        "noopener,noreferrer",
-      );
-    }
+    if (!previewHref) return;
+    window.open(previewHref, "_blank", "noopener,noreferrer");
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -306,7 +303,7 @@ export default function ProductEditor({
               minHeight={150}
               placeholder="Describe the problem this template solves…"
               onSave={saveProduct}
-              onPreview={handlePreview}
+              onPreview={previewHref ? handlePreview : undefined}
             />
           </div>
 
@@ -320,7 +317,7 @@ export default function ProductEditor({
               minHeight={200}
               placeholder="Describe the template in detail…"
               onSave={saveProduct}
-              onPreview={handlePreview}
+              onPreview={previewHref ? handlePreview : undefined}
             />
           </div>
 
@@ -382,6 +379,7 @@ export default function ProductEditor({
         onCancel={() => router.back()}
         onDelete={handleDelete}
         deleting={deleting}
+        previewHref={previewHref}
       />
     </form>
   );

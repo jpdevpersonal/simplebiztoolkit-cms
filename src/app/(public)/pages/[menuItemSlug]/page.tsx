@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { slugify } from "@/lib/slugify";
 import {
   getPublishedMenuItemContent,
@@ -19,7 +20,7 @@ import {
   createCollectionPageJsonLd,
   createPageMetadata,
 } from "@/lib/seo";
-import "@/styles/blog.css";
+import "@/styles/contentCards.css";
 import "@/styles/pages.css";
 
 type Props = {
@@ -88,7 +89,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
     </svg>
   );
 
-  const articleLinkIcon = (
+  const pageLinkIcon = (
     <svg
       width="16"
       height="16"
@@ -126,6 +127,14 @@ export default async function MenuItemLandingPage({ params }: Props) {
         <div className="container">
           <div className="pages-header">
             <h1>{item.title}</h1>
+            {item.description && (
+              <div
+                className="pages-header-richtext"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(item.description),
+                }}
+              />
+            )}
           </div>
 
           {/* Categories grid */}
@@ -187,7 +196,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
                       <div className="col-lg-6" key={page.id}>
                         <article className="sb-card p-3 h-100">
                           {imageSrc && (
-                            <div className="blog-card-image">
+                            <div className="content-card-image">
                               <Link href={`/${page.slug}`}>
                                 <Image
                                   src={imageSrc}
@@ -239,11 +248,11 @@ export default async function MenuItemLandingPage({ params }: Props) {
 
                           <div className="mt-3">
                             <Link
-                              className="sb-article-link"
+                              className="sb-content-link"
                               href={`/${page.slug}`}
                             >
                               <span>Read page</span>
-                              {articleLinkIcon}
+                              {pageLinkIcon}
                             </Link>
                           </div>
                         </article>

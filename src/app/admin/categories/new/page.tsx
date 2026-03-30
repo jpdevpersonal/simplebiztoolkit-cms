@@ -2,23 +2,27 @@
  * New Category Page
  */
 
-import Link from "next/link";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import CategoryEditor from "@/components/CategoryEditor";
 
 export default function NewCategoryPage() {
+  const breadcrumbItems = [{ href: "/admin/categories", label: "Categories" }];
+
   return (
     <div>
       <div className="admin-page-header">
         <div>
-          <div className="admin-breadcrumb">
-            <Link href="/admin/categories" className="admin-breadcrumb-link">
-              ← Categories
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <h1>New Category</h1>
         </div>
       </div>
       <CategoryEditor isNew />
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
+      </div>
     </div>
   );
 }

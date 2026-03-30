@@ -9,19 +9,19 @@ import {
 describe("seo", () => {
   it("creates consistent metadata with canonical and social fields", () => {
     const metadata = createPageMetadata({
-      title: "Resources",
-      description: "Latest articles",
-      pathname: "/blog",
+      title: "Guides",
+      description: "Helpful page collection",
+      pathname: "/pages/guides",
     });
 
-    expect(metadata.alternates?.canonical).toBe("/blog");
-    expect(metadata.openGraph?.url).toBe("/blog");
+    expect(metadata.alternates?.canonical).toBe("/pages/guides");
+    expect(metadata.openGraph?.url).toBe("/pages/guides");
     expect(metadata.twitter?.card).toBe("summary_large_image");
   });
 
   it("builds absolute URLs from relative paths", () => {
-    expect(toAbsoluteUrl("/blog/post")).toBe(
-      "https://www.simplebiztoolkit.com/blog/post",
+    expect(toAbsoluteUrl("/pages/guides/payroll")).toBe(
+      "https://www.simplebiztoolkit.com/pages/guides/payroll",
     );
     expect(toAbsoluteUrl("https://example.com/path")).toBe(
       "https://example.com/path",
@@ -31,7 +31,7 @@ describe("seo", () => {
   it("creates breadcrumb structured data", () => {
     const jsonLd = createBreadcrumbJsonLd([
       { name: "Home", href: "/" },
-      { name: "Resources", href: "/blog" },
+      { name: "Guides", href: "/pages/guides" },
     ]);
 
     expect(jsonLd.itemListElement).toHaveLength(2);

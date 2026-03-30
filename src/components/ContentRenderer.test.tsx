@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   ContentRenderer,
   DynamicContentRenderer,
-  convertArticleToHtml,
+  convertContentToHtml,
 } from "./ContentRenderer";
 
 describe("ContentRenderer", () => {
@@ -165,12 +165,71 @@ describe("ContentRenderer", () => {
   });
 
   it("converts JSX-like tags to data-component HTML", () => {
-    const converted = convertArticleToHtml(
-      '<Section><p>Hello</p></Section><Callout title="A">B</Callout><ArticleCTA title="Try" />',
+    const converted = convertContentToHtml(
+      '<Section><p>Hello</p></Section><Callout title="A">B</Callout><ContentCta title="Try" />',
     );
 
     expect(converted).toContain('data-component="section"');
     expect(converted).toContain('data-component="callout"');
     expect(converted).toContain('data-component="article-cta"');
+  });
+
+  it("renders plain HTML when no structured blocks are present", () => {
+    render(<ContentRenderer html="<p>Loose paragraph</p>" />);
+
+    expect(screen.getByText("Loose paragraph")).toBeInTheDocument();
+    expect(screen.getByText(/About SimpleBizToolkit/i)).toBeInTheDocument();
+  });
+
+  it("falls back to info styling for unknown callout tones", () => {
+    render(
+      <ContentRenderer
+        html={
+          '<div data-sbt-block="callout" data-tone="custom"><p>Fallback callout</p></div>'
+        }
+      />,
+    );
+
+    expect(
+      screen.getByText("Fallback callout").closest(".sbt-callout"),
+    ).toHaveStyle({
+      borderLeft: "4px solid #3b82f6",
+      background: "#eff6ff",
+    });
+  });
+
+  it("renders image blocks with captions", () => {
+    render(
+      <ContentRenderer
+        html={
+          '<figure data-sbt-block="image"><img src="/images/example.webp" alt="Example image" /><figcaption>Example caption</figcaption></figure>'
+        }
+      />,
+    );
+
+    expect(screen.getByRole("img", { name: "Example image" })).toHaveAttribute(
+      "src",
+      "/images/example.webp",
+    );
+    expect(screen.getByText("Example caption")).toBeInTheDocument();
+  });
+
+  it("falls back to the first and second anchors when CTA button roles are missing", () => {
+    render(
+      <ContentRenderer
+        html={
+          '<section data-sbt-block="cta"><h2>Fallback CTA</h2><p>Two buttons</p><a href="/first">First</a><a href="/second">Second</a></section>'
+        }
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "First" })).toHaveAttribute(
+      "href",
+      "/first",
+    );
+    expect(screen.getByRole("link", { name: "Second" })).toHaveAttribute(
+      "href",
+      "/second",
+    );
   });
 });

@@ -1,17 +1,13 @@
 /**
  * Dynamic Content Renderer
  * Converts database HTML content into styled React components
- * while preserving the design system from ArticleComponents.tsx
+ * while preserving the shared content design system.
  */
 
 import React from "react";
 import Image from "next/image";
-import {
-  Section,
-  Callout,
-  ArticleFooter,
-} from "@/components/ArticleComponents";
-import { ArticleCTA } from "@/components/ArticleCTA";
+import { Section, Callout, ContentFooter } from "@/components/ContentBlocks";
+import { ContentCta } from "@/components/ContentCta";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 /**
@@ -34,9 +30,9 @@ interface ContentBlock {
     | "section"
     | "callout"
     | "article-cta"
+    | "sbt-cta"
     | "html"
     | "sbt-callout"
-    | "sbt-cta"
     | "sbt-image";
   content: string;
   // legacy callout / article-cta
@@ -413,7 +409,7 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
 
     case "article-cta":
       return (
-        <ArticleCTA
+        <ContentCta
           key={index}
           title={block.title}
           description={block.description}
@@ -687,7 +683,7 @@ export function ContentRenderer({ html }: { html: string }) {
   return (
     <>
       {blocks.map((block, index) => renderBlock(block, index))}
-      <ArticleFooter />
+      <ContentFooter />
     </>
   );
 }
@@ -707,7 +703,7 @@ function parseContentServer(html: string): ContentBlock[] {
     /<aside[^>]*data-component="callout"[^>]*data-title="([^"]*)"[^>]*>([\s\S]*?)<\/aside>/gi;
 
   // Match legacy article CTA placeholders
-  const articleCtaRegex =
+  const legacyCtaRegex =
     /<(section|div)\b([^>]*)data-component="article-cta"([^>]*)>([\s\S]*?)<\/\1>/gi;
 
   // Block-editor: sbt-callout  <div data-sbt-block="callout" ...>...</div>
@@ -746,7 +742,7 @@ function parseContentServer(html: string): ContentBlock[] {
   }
 
   // Find all legacy article CTA blocks
-  while ((match = articleCtaRegex.exec(html)) !== null) {
+  while ((match = legacyCtaRegex.exec(html)) !== null) {
     const attributes = `${match[2]} ${match[3]}`;
     matches.push({
       index: match.index,
@@ -997,14 +993,13 @@ function parseContentServer(html: string): ContentBlock[] {
 }
 
 /**
- * Utility: Convert existing React article to HTML format
- * Use this to export current articles for database import
+ * Utility: Convert JSX-style shared content blocks to HTML data attributes.
  */
-export function convertArticleToHtml(articleJsx: string): string {
-  // This is a helper for migration
-  // Convert JSX patterns to data-attribute HTML
+export function convertContentToHtml(contentJsx: string): string {
+  // This is a helper for migration.
+  // Convert JSX patterns to data-attribute HTML.
 
-  let html = articleJsx;
+  let html = contentJsx;
 
   // Convert <Section> tags
   html = html.replace(
@@ -1018,10 +1013,10 @@ export function convertArticleToHtml(articleJsx: string): string {
     '<aside data-component="callout" data-title="$1">$2</aside>',
   );
 
-  // Convert self-closing <ArticleCTA ... /> tags
+  // Convert self-closing CTA tags
   html = html.replace(
-    /<ArticleCTA\s+([^>]*)\/>/g,
-    '<section data-component="article-cta" $1></section>',
+    /<(ArticleCTA|ContentCta)\s+([^>]*)\/>/g,
+    '<section data-component="article-cta" $2></section>',
   );
 
   return html;

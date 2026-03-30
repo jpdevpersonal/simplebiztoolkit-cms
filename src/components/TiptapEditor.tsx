@@ -4,8 +4,7 @@
  * Accepts and outputs standard HTML, making it compatible with any content
  * pipeline that currently uses raw HTML strings.
  *
- * Used by RichContentField (and re-exported from ArticleEditor-tiptap.tsx
- * for backwards compatibility).
+ * Used by RichContentField and other shared CMS entry points.
  */
 
 "use client";
@@ -18,7 +17,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
-import { LegacyArticleCtaBlock } from "@/editor/extensions/LegacyArticleCtaBlock";
+import { LegacyCtaBlock } from "@/editor/extensions/LegacyCtaBlock";
 import { Callout } from "@/editor/extensions/Callout";
 import { CTA } from "@/editor/extensions/CTA";
 import { ImageBlock } from "@/editor/extensions/ImageBlock";
@@ -71,7 +70,7 @@ export default function TiptapEditor({
           HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
         },
       }),
-      LegacyArticleCtaBlock,
+      LegacyCtaBlock,
       Image.configure({ inline: false }),
       Callout,
       CTA,
@@ -142,7 +141,7 @@ export default function TiptapEditor({
       <style>
         {getTiptapScopedStyles({
           minHeight,
-          legacyArticleCtaLabel: "Article CTA block",
+          legacyCtaLabel: "Legacy CTA block",
           includeLegacySelectedBorder: true,
         })}
       </style>

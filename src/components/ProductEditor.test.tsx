@@ -130,6 +130,41 @@ describe("ProductEditor", () => {
     });
   });
 
+  it("renders preview links for an existing saved draft template", () => {
+    render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "Old Product",
+          slug: "old-product",
+          problem: "",
+          description: "",
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: /preview/i })).toHaveAttribute(
+      "href",
+      "/preview/products/p-1",
+    );
+  });
+
+  it("does not render preview links for a new unsaved template", () => {
+    render(<ProductEditor categories={categories} />);
+
+    expect(
+      screen.queryByRole("link", { name: /preview/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows error message when save fails in edit mode", async () => {
     vi.mocked(clientApi.updateProduct).mockRejectedValueOnce(
       new Error("Network timeout"),
