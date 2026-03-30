@@ -1,13 +1,13 @@
 export function getTiptapScopedStyles(options: {
   minHeight: number;
-  /** Label shown for legacy article CTA placeholder nodes */
-  legacyArticleCtaLabel?: string;
+  /** Label shown for legacy CTA placeholder nodes */
+  legacyCtaLabel?: string;
   /** Whether to style selected legacy CTA nodes */
   includeLegacySelectedBorder?: boolean;
 }): string {
   const {
     minHeight,
-    legacyArticleCtaLabel = "Article CTA block (legacy)",
+    legacyCtaLabel = "Legacy CTA block",
     includeLegacySelectedBorder = false,
   } = options;
 
@@ -68,7 +68,7 @@ export function getTiptapScopedStyles(options: {
       position: relative;
     }
     .tiptap section[data-component="article-cta"]::before {
-      content: "${legacyArticleCtaLabel}";
+      content: "${legacyCtaLabel}";
       font-size: 0.8125rem;
       font-weight: 600;
       color: #495057;

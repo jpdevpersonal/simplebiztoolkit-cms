@@ -22,12 +22,7 @@ describe("EditorActions", () => {
 
     it("shows 'Creating...' while saving", () => {
       render(
-        <EditorActions
-          saving
-          isCreateMode
-          entityName="Article"
-          onCancel={noop}
-        />,
+        <EditorActions saving isCreateMode entityName="Page" onCancel={noop} />,
       );
       expect(screen.getByRole("button", { name: "Creating..." })).toBeTruthy();
     });
@@ -64,7 +59,7 @@ describe("EditorActions", () => {
         <EditorActions
           saving
           isCreateMode={false}
-          entityName="Article"
+          entityName="Page"
           onCancel={noop}
         />,
       );
@@ -134,12 +129,12 @@ describe("EditorActions", () => {
         <EditorActions
           saving={false}
           isCreateMode={false}
-          entityName="Article"
+          entityName="Page"
           onCancel={noop}
           onDelete={onDelete}
         />,
       );
-      fireEvent.click(screen.getByRole("button", { name: "Delete Article" }));
+      fireEvent.click(screen.getByRole("button", { name: "Delete Page" }));
       expect(onDelete).toHaveBeenCalledTimes(1);
     });
 

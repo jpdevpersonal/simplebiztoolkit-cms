@@ -77,43 +77,6 @@ describe("clientApi", () => {
     expect(result).toEqual({ id: "p1", title: "Test" });
   });
 
-  it("uses /api/admin/articles paths for admin article calls", async () => {
-    sendHttpRequestMock.mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "OK",
-    } as Response);
-    parseHttpResponseMock.mockResolvedValue({
-      payload: { data: { id: "a1" } },
-      isJson: true,
-      contentType: "application/json",
-    });
-
-    await adminApi.createArticle({ title: "Article" });
-    await adminApi.updateArticle("a1", { title: "Updated" });
-
-    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
-      1,
-      "/api/admin/articles",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Article" }),
-      },
-    );
-    expect(sendHttpRequestMock).toHaveBeenNthCalledWith(
-      2,
-      "/api/admin/articles/a1",
-      {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Updated" }),
-      },
-    );
-  });
-
   it("throws extracted ProblemDetails-friendly error for non-ok response", async () => {
     sendHttpRequestMock.mockResolvedValue({
       ok: false,
@@ -149,10 +112,10 @@ describe("clientApi", () => {
       contentType: "application/json",
     });
 
-    await publicApi.getPublishedArticles();
+    await publicApi.getPublishedMenuItems();
 
     expect(sendHttpRequestMock).toHaveBeenCalledWith(
-      "/api/articles?status=published",
+      "/api/menuitems?status=published",
       {
         method: "GET",
         credentials: "include",
@@ -199,9 +162,6 @@ describe("clientApi", () => {
       contentType: "application/json",
     });
 
-    await adminApi.getArticles();
-    await adminApi.getArticleById("a1");
-    await adminApi.deleteArticle("a1");
     await adminApi.getAllProductCategories();
     await adminApi.getProductById("p1");
     await adminApi.getProductCategories();
@@ -226,18 +186,10 @@ describe("clientApi", () => {
       menuKey: "primary",
       orderedMenuItemIds: ["m1", "m2"],
     });
-    await adminApi.revalidateContent("article", "slug-1");
+    await adminApi.revalidateContent("all");
     await adminApi.getMenuCategories("menu-1");
     await adminApi.getMenuItemPages("cat-1", "published", "menu-1");
 
-    expect(sendHttpRequestMock).toHaveBeenCalledWith(
-      "/api/admin/articles",
-      expect.any(Object),
-    );
-    expect(sendHttpRequestMock).toHaveBeenCalledWith(
-      "/api/admin/articles/a1",
-      expect.any(Object),
-    );
     expect(sendHttpRequestMock).toHaveBeenCalledWith(
       "/api/admin/products/p1",
       expect.any(Object),

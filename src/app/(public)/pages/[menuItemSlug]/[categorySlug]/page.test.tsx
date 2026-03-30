@@ -17,7 +17,7 @@ describe("Category page listing", () => {
     apiServiceMock.getMenuItems.mockReset();
   });
 
-  it("renders topic pages as blog-style cards", async () => {
+  it("renders topic pages as shared content cards", async () => {
     apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
       statusCode: 200,
       data: [
@@ -65,7 +65,7 @@ describe("Category page listing", () => {
     );
 
     expect(container.querySelectorAll(".sb-card")).toHaveLength(2);
-    expect(container.querySelectorAll(".sb-article-link")).toHaveLength(2);
+    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(2);
     expect(container.querySelectorAll(".page-card")).toHaveLength(0);
   });
 });

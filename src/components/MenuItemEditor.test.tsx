@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MenuItemEditor from "./MenuItemEditor";
 import { clientApi } from "@/lib/clientApi";
+import { revalidateMenuContent } from "@/lib/adminRevalidation";
 
 const routerPush = vi.fn();
 const routerRefresh = vi.fn();
@@ -27,8 +28,11 @@ vi.mock("@/lib/clientApi", () => ({
     createMenuItem: vi.fn(),
     updateMenuItem: vi.fn(),
     deleteMenuItem: vi.fn(),
-    revalidateContent: vi.fn(),
   },
+}));
+
+vi.mock("@/lib/adminRevalidation", () => ({
+  revalidateMenuContent: vi.fn(),
 }));
 
 describe("MenuItemEditor", () => {
@@ -38,13 +42,11 @@ describe("MenuItemEditor", () => {
 
   it("revalidates menu content after updating a menu item", async () => {
     vi.mocked(clientApi.updateMenuItem).mockResolvedValueOnce({} as never);
-    vi.mocked(clientApi.revalidateContent).mockResolvedValueOnce(
-      undefined as never,
-    );
+    vi.mocked(revalidateMenuContent).mockResolvedValueOnce(undefined as never);
 
     render(
       <MenuItemEditor
-        menuItem={{ id: "menu-1", title: "Resources", status: "draft" } as any}
+        menuItem={{ id: "menu-1", title: "Guides", status: "draft" } as any}
       />,
     );
 
@@ -55,7 +57,7 @@ describe("MenuItemEditor", () => {
         "menu-1",
         expect.any(Object),
       );
-      expect(clientApi.revalidateContent).toHaveBeenCalledWith("page");
+      expect(revalidateMenuContent).toHaveBeenCalledTimes(1);
       expect(routerRefresh).toHaveBeenCalled();
     });
   });

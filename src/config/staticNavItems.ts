@@ -8,7 +8,6 @@ export const HIDDEN_STATIC_NAV_ORDER_PREFIX = "hidden-static:";
 
 export const staticNavItems: StaticNavItem[] = [
   { to: "/products", label: "Templates" },
-  { to: "/blog", label: "Resources" },
   { to: "/testimonials", label: "Reviews" },
   { to: "/faq", label: "FAQ" },
   { to: "/help", label: "Help" },

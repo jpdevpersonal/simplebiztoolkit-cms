@@ -1,20 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ArticleCTA } from "./ArticleCTA";
+import { ContentCta } from "./ContentCta";
 
 vi.mock("@/components/EtsyCtaButton", () => ({
   default: () => <span>Etsy CTA Button</span>,
 }));
 
-describe("ArticleCTA", () => {
+describe("ContentCta", () => {
   it("renders default content", () => {
-    render(<ArticleCTA />);
+    render(<ContentCta />);
     expect(screen.getByText("Ready to get started?")).toBeInTheDocument();
   });
 
   it("renders optional links and disclosure", () => {
     render(
-      <ArticleCTA
+      <ContentCta
         primaryLabel="Shop now"
         primaryHref="/shop"
         showHomeLink

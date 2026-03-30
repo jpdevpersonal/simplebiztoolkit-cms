@@ -6,10 +6,9 @@ function parseBooleanAttribute(value?: string | null): boolean {
 }
 
 /**
- * Backward-compat with older article content that used:
- * <section data-component="article-cta" ...data-* />
+ * Backward-compatible support for older CTA placeholder content.
  */
-export const LegacyArticleCtaBlock = Node.create({
+export const LegacyCtaBlock = Node.create({
   name: "ctaBlock",
   group: "block",
   atom: true,

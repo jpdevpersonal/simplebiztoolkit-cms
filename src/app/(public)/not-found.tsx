@@ -15,8 +15,8 @@ export default function NotFound() {
           <Link className="btn sb-btn-ghost" href="/products">
             Browse templates
           </Link>
-          <Link className="btn sb-btn-ghost" href="/blog" prefetch={false}>
-            Read resources
+          <Link className="btn sb-btn-ghost" href="/pages">
+            Browse pages
           </Link>
         </div>
       </div>

@@ -115,35 +115,6 @@ export function createCollectionPageJsonLd(input: {
   };
 }
 
-export function createArticleJsonLd(input: {
-  headline: string;
-  description?: string;
-  href: string;
-  datePublished?: string;
-  dateModified?: string;
-  image?: string | null;
-}): JsonLd {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: input.headline,
-    description: input.description,
-    datePublished: input.datePublished,
-    dateModified: input.dateModified ?? input.datePublished,
-    url: toAbsoluteUrl(input.href),
-    image: input.image ? [toAbsoluteUrl(input.image)] : undefined,
-    author: {
-      "@type": "Person",
-      name: "Julian (Simple Biz Toolkit)",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: site.name,
-      url: site.url,
-    },
-  };
-}
-
 export function createProductJsonLd(input: {
   name: string;
   description?: string;

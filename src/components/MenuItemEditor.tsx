@@ -119,7 +119,7 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
               className="form-control"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Products, Resources"
+              placeholder="e.g. Products, Guides"
               required
             />
             <div className="form-text">

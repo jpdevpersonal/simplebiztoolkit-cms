@@ -8,7 +8,7 @@ type EditorActionsProps = {
   saving: boolean;
   /** True when creating a new record (no existing id) */
   isCreateMode: boolean;
-  /** Entity noun used in button labels, e.g. "Product" or "Article" */
+  /** Entity noun used in button labels, e.g. "Product" or "Page" */
   entityName: string;
   /** Called when the Cancel button is clicked */
   onCancel: () => void;

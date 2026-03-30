@@ -7,7 +7,7 @@ const pages = [
     id: "p-2",
     title: "Zebra Page",
     slug: "zebra-page",
-    menuItemTitle: "Resources",
+    menuItemTitle: "Guides",
     categoryTitle: "Tips",
     status: "draft",
     dateISO: "2024-06-01",
