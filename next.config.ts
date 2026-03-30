@@ -104,7 +104,7 @@ const nextConfig: NextConfig = {
       {
         // Match /api/* paths that do NOT start with one of the Next.js-handled prefixes.
         source:
-          "/api/:path((?!auth/|products|revalidate|articles|menuitems|menucategories|menuitempages).*)",
+          "/api/:path((?!auth/|products|revalidate|articles|menuitems|menucategories|menuitempages|menu-layout).*)",
         destination: `${apiUrl}/api/:path`,
       },
     ];

@@ -13,9 +13,11 @@ import ScrollToTop from "../ScrollToTop";
 import type { MenuNavItem } from "@/components/SiteNavigation";
 import { createWebsiteJsonLd } from "@/lib/seo";
 import {
+  getMenuLayoutOrderIds,
   getMenuItemLandingHref,
-  getPublishedMenuItemContent,
   getPublishedMenuItems,
+  getPublishedMenuItemContent,
+  orderMenuItemsByLayout,
 } from "@/lib/menuContent";
 
 export const metadata: Metadata = {
@@ -86,8 +88,18 @@ export default async function PublicLayout({
 }>) {
   // Build dynamic navigation items from published menu items
   const menuNavItems: MenuNavItem[] = [];
+  let navOrderIds: string[] = [];
   try {
-    const publishedItems = await getPublishedMenuItems();
+    const [publishedItemsRaw, layoutOrderIds] = await Promise.all([
+      getPublishedMenuItems(),
+      getMenuLayoutOrderIds("primary"),
+    ]);
+
+    navOrderIds = layoutOrderIds;
+    const publishedItems = orderMenuItemsByLayout(
+      publishedItemsRaw,
+      layoutOrderIds,
+    );
 
     for (const item of publishedItems) {
       const content = await getPublishedMenuItemContent(item);
@@ -115,7 +127,7 @@ export default async function PublicLayout({
         Skip to content
       </a>
 
-      <SiteHeader menuNavItems={menuNavItems} />
+      <SiteHeader menuNavItems={menuNavItems} navOrderIds={navOrderIds} />
       <main id="content">{children}</main>
       <SiteFooter />
       <StickyMobileCta />
