@@ -1,5 +1,4 @@
 import type {
-  Article,
   MenuCategory,
   MenuLayoutSettings,
   MenuItem,
@@ -226,10 +225,6 @@ export function clearAdminAuthToken() {
 }
 
 export const publicApi = {
-  getPublishedArticles() {
-    return request<Article[]>("public", "/api/articles?status=published");
-  },
-
   getPublishedMenuItems() {
     return request<MenuItem[]>("public", "/api/menuitems?status=published");
   },
@@ -248,34 +243,6 @@ export const publicApi = {
 };
 
 export const adminApi = {
-  getArticles() {
-    return request<Article[]>("admin", buildAdminPath("articles"));
-  },
-
-  getArticleById(id: string) {
-    return request<Article>("admin", buildAdminPath("articles", id));
-  },
-
-  createArticle(article: Partial<Article>) {
-    return request<Article>("admin", buildAdminPath("articles"), {
-      method: "POST",
-      body: article,
-    });
-  },
-
-  updateArticle(id: string, article: Partial<Article>) {
-    return request<Article>("admin", buildAdminPath("articles", id), {
-      method: "PUT",
-      body: article,
-    });
-  },
-
-  deleteArticle(id: string) {
-    return request<void>("admin", buildAdminPath("articles", id), {
-      method: "DELETE",
-    });
-  },
-
   getAllProductCategories() {
     return request<ProductCategory[]>("admin", buildAdminPath("categories"));
   },
@@ -447,7 +414,7 @@ export const adminApi = {
   },
 
   revalidateContent(
-    type: "article" | "product" | "page",
+    type: "product" | "category" | "page" | "all",
     slug?: string,
     previousSlug?: string,
   ) {

@@ -12,7 +12,7 @@ import {
   createPageMetadata,
   createWebPageJsonLd,
 } from "@/lib/seo";
-import "@/styles/articleStyle.css";
+import "@/styles/contentPage.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -20,7 +20,7 @@ type Props = {
 
 /**
  * Generate static params for ISR – pre-renders published menu item pages at
- * build time (same pattern as blog article pages).
+ * build time (same pattern as other public CMS pages).
  */
 export async function generateStaticParams() {
   const response = await apiService.getMenuItemPages();
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     pathname: `/${page.slug}`,
     canonical: page.canonicalUrl || undefined,
     image: ogImage || undefined,
-    openGraphType: "article",
+    openGraphType: "website",
   });
 }
 
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  *
  * Menu item pages are linked from the site navigation as `/${page.slug}`.
  * This dynamic route catches those slugs and renders the page content,
- * mirroring the behaviour of blog article pages.
+ * mirroring the behaviour of other public CMS content pages.
  */
 export default async function MenuItemPageView({ params }: Props) {
   const { slug } = await params;
@@ -105,7 +105,7 @@ export default async function MenuItemPageView({ params }: Props) {
       {breadcrumbJsonLd ? <JsonLd json={breadcrumbJsonLd} /> : null}
       <JsonLd json={pageJsonLd} />
 
-      <main className="article-page">
+      <main className="content-page">
         {/* Breadcrumb back to the menu item pages listing */}
         {parentMenuItem ? (
           <nav className="sb-breadcrumb" aria-label="Breadcrumb">
@@ -134,14 +134,14 @@ export default async function MenuItemPageView({ params }: Props) {
           </nav>
         ) : null}
 
-        <header className="article-header">
-          {/* <h1 className="article-title">{page.title}</h1>
-          {page.subtitle && <p className="article-subtitle">{page.subtitle}</p>} */}
+        <header className="content-header">
+          {/* <h1 className="content-title">{page.title}</h1>
+          {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>} */}
         </header>
 
         {/* Header image */}
         {page.headerImage && (
-          <div className="article-header-image">
+          <div className="content-header-image">
             <Image
               src={page.headerImage}
               alt={page.title}

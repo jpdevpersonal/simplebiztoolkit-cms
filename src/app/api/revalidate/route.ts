@@ -5,13 +5,11 @@
  * Usage from C# API:
  * POST /api/revalidate
  * Headers: X-Revalidation-Secret: [your-secret]
- * Body: { "type": "article", "slug": "bookkeeping-made-simple" }
+ * Body: { "type": "product", "slug": "budget-planner" }
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import {
-  revalidateArticle,
-  revalidateAllArticles,
   revalidateProduct,
   revalidateCategory,
   revalidateAllProducts,
@@ -38,14 +36,6 @@ export async function POST(request: NextRequest) {
 
     // Revalidate based on type
     switch (type) {
-      case "article":
-        if (slug) {
-          await revalidateArticle(slug);
-        } else {
-          await revalidateAllArticles();
-        }
-        break;
-
       case "product":
         if (slug) {
           await revalidateProduct(slug);
@@ -69,7 +59,6 @@ export async function POST(request: NextRequest) {
         break;
 
       case "all":
-        await revalidateAllArticles();
         await revalidateAllProducts();
         await revalidateAllPages();
         break;

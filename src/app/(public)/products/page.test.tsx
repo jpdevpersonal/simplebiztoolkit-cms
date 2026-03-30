@@ -52,4 +52,16 @@ describe("Products page", () => {
       screen.getByRole("link", { name: /Accounting Ledger/i }),
     ).toHaveAttribute("href", "/products/accounting-ledger");
   });
+
+  it("treats an undefined categories payload as an empty list", async () => {
+    getProductCategoriesMock.mockResolvedValueOnce({ data: undefined });
+
+    const { default: ProductsPage } = await import("./page");
+    render(await ProductsPage());
+
+    expect(
+      screen.getByRole("heading", { name: "Template Categories" }),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole("link")).toHaveLength(0);
+  });
 });

@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { ArticleFooter, Badge, Callout, Section } from "./ArticleComponents";
+import { Badge, Callout, ContentFooter, Section } from "./ContentBlocks";
 
-describe("ArticleComponents", () => {
+describe("ContentBlocks", () => {
   it("renders Badge, Section, and Callout", () => {
     render(
       <>
@@ -18,8 +18,8 @@ describe("ArticleComponents", () => {
     expect(screen.getByText("Callout body")).toBeInTheDocument();
   });
 
-  it("renders ArticleFooter text", () => {
-    render(<ArticleFooter />);
+  it("renders ContentFooter text", () => {
+    render(<ContentFooter />);
     expect(screen.getByText(/About SimpleBizToolkit/i)).toBeInTheDocument();
   });
 });

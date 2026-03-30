@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  revalidateArticleContent,
   revalidateMenuContent,
   revalidatePageContent,
   revalidateProductContent,
@@ -14,15 +13,6 @@ vi.mock("@/lib/clientApi", () => ({
 }));
 
 describe("adminRevalidation", () => {
-  it("revalidates an article by slug", async () => {
-    await revalidateArticleContent("article-slug");
-
-    expect(clientApi.revalidateContent).toHaveBeenCalledWith(
-      "article",
-      "article-slug",
-    );
-  });
-
   it("revalidates unique product slugs only", async () => {
     await revalidateProductContent("prod-1", "prod-1", "prod-2", " ");
 

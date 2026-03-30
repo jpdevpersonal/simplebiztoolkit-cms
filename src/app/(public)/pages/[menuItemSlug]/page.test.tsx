@@ -15,7 +15,7 @@ describe("Menu item landing page", () => {
     menuContentMock.getPublishedMenuItemContent.mockReset();
   });
 
-  it("uses blog-style cards for multiple direct pages without topics", async () => {
+  it("uses shared content cards for multiple direct pages without topics", async () => {
     menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
       {
         id: "guides",
@@ -58,7 +58,7 @@ describe("Menu item landing page", () => {
 
     expect(container.querySelectorAll(".sb-card")).toHaveLength(2);
     expect(container.querySelectorAll(".page-card")).toHaveLength(0);
-    expect(container.querySelectorAll(".sb-article-link")).toHaveLength(2);
+    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(2);
   });
 
   it("keeps the existing page grid when topics exist", async () => {
@@ -107,6 +107,6 @@ describe("Menu item landing page", () => {
     );
 
     expect(container.querySelectorAll(".page-card").length).toBeGreaterThan(0);
-    expect(container.querySelectorAll(".sb-article-link")).toHaveLength(0);
+    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(0);
   });
 });

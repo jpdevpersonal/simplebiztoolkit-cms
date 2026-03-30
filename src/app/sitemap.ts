@@ -5,7 +5,7 @@ import {
   getPublishedMenuItemContent,
   getPublishedMenuItems,
 } from "@/lib/menuContent";
-import { getApiService, Article } from "@/lib/api";
+import { getApiService } from "@/lib/api";
 import { toAbsoluteUrl } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 
@@ -15,14 +15,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const api = getApiService();
-  const [productsResp, articlesResp, menuItems] = await Promise.all([
+  const [productsResp, menuItems] = await Promise.all([
     api.getAllProducts(),
-    api.getArticles(),
     getPublishedMenuItems(),
   ]);
 
   const categories = productsResp.data ?? [];
-  const posts = articlesResp.data ?? [];
   const menuContent = await Promise.all(
     menuItems.map((item) => getPublishedMenuItemContent(item)),
   );
@@ -30,7 +28,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: site.url, lastModified: now },
     { url: `${site.url}/products`, lastModified: now },
-    { url: `${site.url}/blog`, lastModified: now },
     { url: `${site.url}/pages`, lastModified: now },
     { url: `${site.url}/about`, lastModified: now },
     { url: `${site.url}/testimonials`, lastModified: now },
@@ -59,11 +56,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
     }),
   );
-
-  const blogRoutes: MetadataRoute.Sitemap = posts.map((p: Article) => ({
-    url: toAbsoluteUrl(p.canonicalUrl || `/blog/${p.slug}`),
-    lastModified: (p.dateISO as string) || now,
-  }));
 
   const menuLandingRoutes: MetadataRoute.Sitemap = menuContent
     .filter((item) => item.totalPages > 0)
@@ -103,7 +95,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categoryRoutes,
     ...productRoutes,
     ...featuredProductRoutes,
-    ...blogRoutes,
     ...menuLandingRoutes,
     ...menuCategoryRoutes,
     ...menuPageRoutes,

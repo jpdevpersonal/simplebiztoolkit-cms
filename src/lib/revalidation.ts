@@ -22,21 +22,6 @@ function revalidatePublicPagePaths(slugs?: string[]) {
 }
 
 /**
- * Revalidate specific article
- */
-export async function revalidateArticle(slug: string) {
-  revalidateTag("articles");
-  revalidateTag(`article-${slug}`);
-}
-
-/**
- * Revalidate all articles
- */
-export async function revalidateAllArticles() {
-  revalidateTag("articles");
-}
-
-/**
  * Revalidate specific product
  */
 export async function revalidateProduct(slug: string) {

@@ -78,7 +78,7 @@ describe("AdminMenuManager", () => {
     render(
       <AdminMenuManager
         menuItems={[
-          { id: "menu-1", title: "Resources", status: "published" } as any,
+          { id: "menu-1", title: "Guides", status: "published" } as any,
         ]}
       />,
     );
@@ -104,7 +104,7 @@ describe("AdminMenuManager", () => {
     render(
       <AdminMenuManager
         menuItems={[
-          { id: "menu-1", title: "Resources", status: "published" } as any,
+          { id: "menu-1", title: "Guides", status: "published" } as any,
         ]}
       />,
     );
@@ -118,7 +118,7 @@ describe("AdminMenuManager", () => {
 
     await waitFor(() => {
       expect(clientApi.updateMenuItem).toHaveBeenCalledWith("menu-1", {
-        title: "Resources",
+        title: "Guides",
         description: undefined,
         status: "draft",
       });
@@ -161,7 +161,7 @@ describe("AdminMenuManager", () => {
           isActive: true,
           orderedMenuItemIds: expect.arrayContaining([
             "static:/products",
-            "static:/blog",
+            "static:/faq",
             "menu-1",
             "menu-2",
           ]),

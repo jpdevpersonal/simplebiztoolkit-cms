@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const revalidationMocks = vi.hoisted(() => ({
-  revalidateArticle: vi.fn(),
-  revalidateAllArticles: vi.fn(),
   revalidateProduct: vi.fn(),
   revalidateCategory: vi.fn(),
   revalidateAllProducts: vi.fn(),
@@ -11,8 +9,6 @@ const revalidationMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/revalidation", () => ({
-  revalidateArticle: revalidationMocks.revalidateArticle,
-  revalidateAllArticles: revalidationMocks.revalidateAllArticles,
   revalidateProduct: revalidationMocks.revalidateProduct,
   revalidateCategory: revalidationMocks.revalidateCategory,
   revalidateAllProducts: revalidationMocks.revalidateAllProducts,
@@ -43,7 +39,7 @@ describe("POST /api/revalidate", () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
       headers: { "X-Revalidation-Secret": "wrong" },
-      body: JSON.stringify({ type: "article", slug: "a" }),
+      body: JSON.stringify({ type: "product", slug: "prod-1" }),
     });
 
     const response = await POST(request as never);
@@ -51,26 +47,6 @@ describe("POST /api/revalidate", () => {
 
     expect(response.status).toBe(401);
     expect(json).toEqual({ error: "Unauthorized" });
-  });
-
-  it("revalidates a specific article when slug is present", async () => {
-    const request = new Request("http://localhost/api/revalidate", {
-      method: "POST",
-      headers: { "X-Revalidation-Secret": "secret-123" },
-      body: JSON.stringify({ type: "article", slug: "hello-world" }),
-    });
-
-    const response = await POST(request as never);
-    const json = await response.json();
-
-    expect(revalidationMocks.revalidateArticle).toHaveBeenCalledWith(
-      "hello-world",
-    );
-    expect(revalidationMocks.revalidateAllArticles).not.toHaveBeenCalled();
-    expect(response.status).toBe(200);
-    expect(json.revalidated).toBe(true);
-    expect(json.type).toBe("article");
-    expect(json.slug).toBe("hello-world");
   });
 
   it("revalidates a specific product when slug is present", async () => {
@@ -139,7 +115,7 @@ describe("POST /api/revalidate", () => {
     expect(json.slug).toBe("updated-page");
   });
 
-  it("revalidates all products when type is all", async () => {
+  it("revalidates all supported content when type is all", async () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
       headers: { "X-Revalidation-Secret": "secret-123" },
@@ -149,7 +125,6 @@ describe("POST /api/revalidate", () => {
     const response = await POST(request as never);
 
     expect(response.status).toBe(200);
-    expect(revalidationMocks.revalidateAllArticles).toHaveBeenCalledTimes(1);
     expect(revalidationMocks.revalidateAllProducts).toHaveBeenCalledTimes(1);
     expect(revalidationMocks.revalidateAllPages).toHaveBeenCalledTimes(1);
   });

@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import PageEditor from "./PageEditor";
 import { clientApi } from "@/lib/clientApi";
 
@@ -65,7 +65,31 @@ vi.mock("@/lib/clientApi", () => ({
   },
 }));
 
+function getInputForLabel(labelText: string) {
+  const label = screen.getByText(labelText);
+  const control = label.parentElement?.querySelector("input, textarea, select");
+
+  if (
+    !(
+      control instanceof HTMLInputElement ||
+      control instanceof HTMLTextAreaElement ||
+      control instanceof HTMLSelectElement
+    )
+  ) {
+    throw new Error(`Unable to find control for label: ${labelText}`);
+  }
+
+  return control;
+}
+
 describe("PageEditor", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    routerPush.mockReset();
+    routerRefresh.mockReset();
+    vi.mocked(clientApi.getMenuCategories).mockResolvedValue([] as never);
+  });
+
   it("sends image ids and omits legacy image url fields when saving a page", async () => {
     const user = userEvent.setup();
     vi.mocked(clientApi.updateMenuItemPage).mockResolvedValueOnce({
@@ -119,5 +143,118 @@ describe("PageEditor", () => {
       "page-slug",
     );
     expect(routerRefresh).toHaveBeenCalled();
+  });
+
+  it("creates a page with an auto-generated slug and selected topic", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(clientApi.getMenuCategories).mockResolvedValueOnce([
+      { id: "cat-1", title: "Payroll", status: "draft" } as any,
+    ] as never);
+    vi.mocked(clientApi.createMenuItemPage).mockResolvedValueOnce({
+      slug: "new-page-title",
+    } as never);
+    vi.mocked(clientApi.revalidateContent).mockResolvedValueOnce(
+      undefined as never,
+    );
+
+    render(
+      <PageEditor
+        isNew
+        menuItems={[
+          {
+            id: "menu-1",
+            title: "Guides",
+            status: "draft",
+            categories: [{ id: "cat-1", title: "Payroll", status: "draft" }],
+          } as any,
+        ]}
+      />,
+    );
+
+    await user.type(getInputForLabel("Title *"), "New Page Title");
+    await user.clear(getInputForLabel("Slug *"));
+    await user.type(getInputForLabel("Slug *"), "new-page-title");
+
+    const [menuItemSelect, topicSelect] = screen.getAllByRole("combobox");
+    await user.selectOptions(menuItemSelect, "menu-1");
+    await waitFor(() => {
+      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
+    });
+    await user.selectOptions(topicSelect, "cat-1");
+    await user.click(screen.getByRole("button", { name: "Create Page" }));
+
+    await waitFor(() => {
+      expect(clientApi.createMenuItemPage).toHaveBeenCalled();
+    });
+
+    expect(vi.mocked(clientApi.createMenuItemPage).mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        title: "New Page Title",
+        slug: "new-page-title",
+        menuCategoryId: "cat-1",
+        menuItemId: undefined,
+      }),
+    );
+    expect(clientApi.revalidateContent).toHaveBeenCalledWith(
+      "page",
+      "new-page-title",
+      undefined,
+    );
+    expect(routerPush).toHaveBeenCalledWith("/admin/pages");
+    expect(routerRefresh).toHaveBeenCalled();
+  });
+
+  it("shows an error instead of saving when no menu item is selected", async () => {
+    const user = userEvent.setup();
+
+    render(<PageEditor isNew menuItems={[]} />);
+
+    await user.type(getInputForLabel("Title *"), "Draft page");
+    await user.clear(getInputForLabel("Slug *"));
+    await user.type(getInputForLabel("Slug *"), "draft-page");
+    fireEvent.submit(
+      screen.getByRole("button", { name: "Create Page" }).closest("form")!,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Please select a Menu Item.",
+    );
+    expect(clientApi.createMenuItemPage).not.toHaveBeenCalled();
+  });
+
+  it("shows a delete error when removing an existing page fails", async () => {
+    const user = userEvent.setup();
+
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+    vi.mocked(clientApi.deleteMenuItemPage).mockRejectedValueOnce(
+      new Error("Delete failed"),
+    );
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "existing-page",
+            title: "Existing Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Delete Page" }));
+
+    await waitFor(() => {
+      expect(clientApi.deleteMenuItemPage).toHaveBeenCalledWith("page-1");
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent("Delete failed");
+    expect(routerPush).not.toHaveBeenCalled();
   });
 });
