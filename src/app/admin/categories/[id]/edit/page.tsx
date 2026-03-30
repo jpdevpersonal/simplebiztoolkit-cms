@@ -2,9 +2,9 @@
  * Edit Category Page
  */
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import CategoryEditor from "@/components/CategoryEditor";
 
 type Props = {
@@ -19,6 +19,7 @@ export default async function EditCategoryPage({ params }: Props) {
   const categories = response.data || [];
 
   const category = categories.find((c) => c.id === id);
+  const breadcrumbItems = [{ href: "/admin/categories", label: "Categories" }];
 
   if (!category) {
     notFound();
@@ -28,11 +29,7 @@ export default async function EditCategoryPage({ params }: Props) {
     <div>
       <div className="admin-page-header">
         <div>
-          <div className="admin-breadcrumb">
-            <Link href="/admin/categories" className="admin-breadcrumb-link">
-              ← Categories
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <h1>Edit Category</h1>
         </div>
         <span className="admin-page-meta admin-page-meta-lg">
@@ -40,6 +37,12 @@ export default async function EditCategoryPage({ params }: Props) {
         </span>
       </div>
       <CategoryEditor category={category} />
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
+      </div>
     </div>
   );
 }

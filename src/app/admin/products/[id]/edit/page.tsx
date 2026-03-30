@@ -2,8 +2,8 @@
  * Edit Product Page
  */
 
-import Link from "next/link";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import ProductEditor from "@/components/ProductEditor";
 import ProductEditorLoader from "@/components/ProductEditorLoader";
 
@@ -12,18 +12,12 @@ type Props = {
 };
 
 function PageHeader({ id }: { id: string }) {
+  const breadcrumbItems = [{ href: "/admin/products", label: "Templates" }];
+
   return (
     <div className="admin-page-header">
       <div>
-        <div className="admin-breadcrumb">
-          <Link
-            href="/admin/products"
-            className="admin-breadcrumb-link"
-            style={{ fontSize: "1rem" }}
-          >
-            ← Templates
-          </Link>
-        </div>
+        <AdminBreadcrumbs items={breadcrumbItems} />
         <h1>Edit Template</h1>
       </div>
       <span className="admin-page-meta">ID: {id}</span>
@@ -33,6 +27,7 @@ function PageHeader({ id }: { id: string }) {
 
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
+  const breadcrumbItems = [{ href: "/admin/products", label: "Templates" }];
 
   const { service } = await getAdminApiService();
 
@@ -54,9 +49,10 @@ export default async function EditProductPage({ params }: Props) {
         <PageHeader id={id} />
         <ProductEditorLoader id={id} />
         <div className="admin-page-footer-link">
-          <Link href="/admin/products" className="admin-breadcrumb-link">
-            ← Templates
-          </Link>
+          <AdminBreadcrumbs
+            items={breadcrumbItems}
+            ariaLabel="Breadcrumb footer"
+          />
         </div>
       </div>
     );
@@ -67,9 +63,10 @@ export default async function EditProductPage({ params }: Props) {
       <PageHeader id={id} />
       <ProductEditor product={product} categories={categories} />
       <div className="admin-page-footer-link">
-        <Link href="/admin/products" className="admin-breadcrumb-link">
-          ← Templates
-        </Link>
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
       </div>
     </div>
   );

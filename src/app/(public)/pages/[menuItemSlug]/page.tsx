@@ -126,6 +126,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
         <div className="container">
           <div className="pages-header">
             <h1>{item.title}</h1>
+            {item.description && <p>{item.description}</p>}
           </div>
 
           {/* Categories grid */}

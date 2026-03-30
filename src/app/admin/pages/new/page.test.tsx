@@ -44,7 +44,8 @@ describe("NewPageAdminPage", () => {
     expect(
       screen.getByRole("heading", { name: "New Page" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "← Pages" })).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Pages" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Pages" })[0]).toHaveAttribute(
       "href",
       "/admin/pages",
     );

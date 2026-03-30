@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import MenuCategoryEditor from "@/components/MenuCategoryEditor";
 
 interface Props {
@@ -25,6 +26,10 @@ export default async function EditMenuCategoryPage({ params }: Props) {
 
   const category = catResponse.data;
   const pages = pagesResponse.data || [];
+  const breadcrumbItems = [
+    { href: "/admin/menu", label: "Menu Items" },
+    { href: `/admin/menu/${category.menuItemId}/edit`, label: "Menu Item" },
+  ];
 
   const plusIcon = (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -53,18 +58,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
     <div>
       <div className="admin-page-header">
         <div>
-          <div className="admin-breadcrumb">
-            <Link href="/admin/menu" className="admin-breadcrumb-link">
-              ← Menu Items
-            </Link>
-            {" / "}
-            <Link
-              href={`/admin/menu/${category.menuItemId}/edit`}
-              className="admin-breadcrumb-link"
-            >
-              Menu Item
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <h1>Edit Topic: {category.title}</h1>
         </div>
       </div>
@@ -166,6 +160,13 @@ export default async function EditMenuCategoryPage({ params }: Props) {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
       </div>
     </div>
   );
