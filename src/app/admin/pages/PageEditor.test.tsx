@@ -223,6 +223,44 @@ describe("PageEditor", () => {
     expect(clientApi.createMenuItemPage).not.toHaveBeenCalled();
   });
 
+  it("shows the preview link for an existing saved draft page", async () => {
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "draft-page",
+            title: "Draft Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
+    });
+
+    expect(screen.getByRole("link", { name: /preview/i })).toHaveAttribute(
+      "href",
+      "/preview/pages/page-1",
+    );
+  });
+
+  it("hides the preview link for a new unsaved page", async () => {
+    render(<PageEditor isNew menuItems={[]} />);
+
+    await waitFor(() => {
+      expect(clientApi.getMenuCategories).not.toHaveBeenCalled();
+    });
+
+    expect(
+      screen.queryByRole("link", { name: /preview/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows a delete error when removing an existing page fails", async () => {
     const user = userEvent.setup();
 

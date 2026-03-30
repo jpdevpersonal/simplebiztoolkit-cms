@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const menuContentMock = vi.hoisted(() => ({
@@ -108,5 +108,44 @@ describe("Menu item landing page", () => {
 
     expect(container.querySelectorAll(".page-card").length).toBeGreaterThan(0);
     expect(container.querySelectorAll(".sb-content-link")).toHaveLength(0);
+  });
+
+  it("renders the menu item description when populated", async () => {
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
+      {
+        id: "articles",
+        title: "Articles",
+        description: "Expert guidance for running a better small business.",
+        status: "published",
+      },
+    ]);
+    menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
+      id: "articles",
+      title: "Articles",
+      description: "Expert guidance for running a better small business.",
+      status: "published",
+      publishedCategories: [],
+      directPages: [
+        {
+          id: "page-1",
+          slug: "how-to-budget",
+          title: "How to Budget",
+          description: "Budgeting basics",
+          status: "published",
+        },
+      ],
+      totalPages: 1,
+    });
+
+    const { default: MenuItemLandingPage } = await import("./page");
+    render(
+      await MenuItemLandingPage({
+        params: Promise.resolve({ menuItemSlug: "articles" }),
+      }),
+    );
+
+    expect(
+      screen.getByText("Expert guidance for running a better small business."),
+    ).toBeInTheDocument();
   });
 });

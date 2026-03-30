@@ -4,8 +4,8 @@
  * Supports ?menuItemId= and ?categoryId= query params for pre-selection.
  */
 
-import Link from "next/link";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import PageEditor from "../PageEditor";
 
 type Props = {
@@ -15,6 +15,7 @@ type Props = {
 export default async function NewPageAdminPage({ searchParams }: Props) {
   const { menuItemId, categoryId } = await searchParams;
   const { service } = await getAdminApiService();
+  const breadcrumbItems = [{ href: "/admin/pages", label: "Pages" }];
 
   const menuRes = await service.getMenuItems();
   const menuItems = menuRes.data || [];
@@ -23,11 +24,7 @@ export default async function NewPageAdminPage({ searchParams }: Props) {
     <div>
       <div className="admin-page-header">
         <div>
-          <div className="admin-breadcrumb">
-            <Link href="/admin/pages" className="admin-breadcrumb-link">
-              ← Pages
-            </Link>
-          </div>
+          <AdminBreadcrumbs items={breadcrumbItems} />
           <h1>New Page</h1>
         </div>
       </div>
@@ -37,6 +34,12 @@ export default async function NewPageAdminPage({ searchParams }: Props) {
         initialCategoryId={categoryId}
         isNew
       />
+      <div className="admin-page-footer-link">
+        <AdminBreadcrumbs
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumb footer"
+        />
+      </div>
     </div>
   );
 }

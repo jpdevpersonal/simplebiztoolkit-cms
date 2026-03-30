@@ -53,14 +53,6 @@ export default function EditorActions({
         <button type="submit" className="admin-btn-save" disabled={saving}>
           {saveLabel}
         </button>
-        <button
-          type="button"
-          className="admin-btn-cancel"
-          onClick={onCancel}
-          disabled={saving}
-        >
-          Cancel
-        </button>
         {previewHref && (
           <Link
             href={previewHref}
@@ -102,6 +94,14 @@ export default function EditorActions({
             </svg>
           </Link>
         )}
+        <button
+          type="button"
+          className="admin-btn-cancel"
+          onClick={onCancel}
+          disabled={saving}
+        >
+          Cancel
+        </button>
       </div>
       {!isCreateMode && onDelete && (
         <button

@@ -88,6 +88,9 @@ export default function AdminPagesTable({ pages }: Props) {
     [sortBy],
   );
 
+  const getPreviewHref = (page: AdminPageRow) =>
+    page.status === "published" ? `/${page.slug}` : `/preview/pages/${page.id}`;
+
   return (
     <div className="admin-table-wrap">
       <table className="admin-table">
@@ -193,7 +196,7 @@ export default function AdminPagesTable({ pages }: Props) {
               </td>
               <td className="admin-cell-actions" data-label="Preview">
                 <Link
-                  href={`/${page.slug}`}
+                  href={getPreviewHref(page)}
                   className="admin-btn-action"
                   target="_blank"
                   rel="noopener noreferrer"

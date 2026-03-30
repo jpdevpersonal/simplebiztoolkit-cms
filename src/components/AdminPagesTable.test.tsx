@@ -53,12 +53,12 @@ describe("AdminPagesTable", () => {
     expect(firstCell?.textContent).toContain("Apple Page");
   });
 
-  it("renders View links to public page URL", () => {
+  it("renders View links to the correct preview target for published and draft pages", () => {
     render(<AdminPagesTable pages={pages} />);
 
     const viewLinks = screen.getAllByRole("link", { name: /view/i });
     expect(viewLinks[0]?.getAttribute("href")).toBe("/apple-page");
-    expect(viewLinks[1]?.getAttribute("href")).toBe("/zebra-page");
+    expect(viewLinks[1]?.getAttribute("href")).toBe("/preview/pages/p-2");
   });
 
   it("shows empty state when pages is empty", () => {

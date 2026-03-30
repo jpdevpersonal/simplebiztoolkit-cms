@@ -41,6 +41,8 @@ export default function PageEditor({
   isNew = false,
 }: Props) {
   const router = useRouter();
+  const previewHref =
+    !isNew && page?.id ? `/preview/pages/${page.id}` : undefined;
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -266,6 +268,11 @@ export default function PageEditor({
     }
   }
 
+  const handlePreview = () => {
+    if (!previewHref) return;
+    window.open(previewHref, "_blank", "noopener,noreferrer");
+  };
+
   /* ── Icons ──────────────────────────────────── */
   const contentIcon = (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -448,6 +455,7 @@ export default function PageEditor({
                 placeholder="Start writing your page content here…"
                 minHeight={420}
                 onSave={savePage}
+                onPreview={previewHref ? handlePreview : undefined}
               />
               <div className="form-text mt-1">
                 Use the toggle above to switch between HTML and the rich-text
@@ -591,7 +599,7 @@ export default function PageEditor({
         onCancel={() => router.push("/admin/pages")}
         onDelete={!isNew && page ? handleDelete : undefined}
         deleting={deleting}
-        previewHref={formData.slug ? `/${formData.slug}` : undefined}
+        previewHref={previewHref}
         previewLabel="Preview"
       />
     </form>
