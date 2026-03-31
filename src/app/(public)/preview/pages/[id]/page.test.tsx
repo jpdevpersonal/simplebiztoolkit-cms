@@ -72,8 +72,10 @@ describe("PagePreview", () => {
       "Previewing saved draft page.",
     );
     expect(screen.getByText("Draft body")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /back to guides/i }),
-    ).toHaveAttribute("href", "/pages/guides");
+    expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
+      "href",
+      "/pages/guides",
+    );
+    expect(screen.getByText("Draft Page")).toBeInTheDocument();
   });
 });

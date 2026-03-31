@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
+import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import ProductDetailClient from "./ProductDetailClient";
 import { apiService } from "@/lib/api";
 import {
@@ -105,33 +106,32 @@ export default async function ProductDetailPage({ params }: Props) {
 
       <section className="sb-section">
         <div className="container">
-          {/* Breadcrumb Navigation */}
-          <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-            <Link
-              href={`/products/${category.slug}`}
-              className="sb-breadcrumb-link"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                className="sb-breadcrumb-icon"
-              >
-                <path
-                  d="M10 3l-5 5 5 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back to {category.name}
-            </Link>
-          </nav>
+          <SiteBreadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Products", href: "/products" },
+              { name: category.name, href: `/products/${category.slug}` },
+              {
+                name: product.title,
+                href: `/products/${categorySlug}/${productSlug}`,
+              },
+            ]}
+          />
 
           <ProductDetailClient product={product} />
+
+          <SiteBreadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Products", href: "/products" },
+              { name: category.name, href: `/products/${category.slug}` },
+              {
+                name: product.title,
+                href: `/products/${categorySlug}/${productSlug}`,
+              },
+            ]}
+            bottom
+          />
         </div>
       </section>
     </>

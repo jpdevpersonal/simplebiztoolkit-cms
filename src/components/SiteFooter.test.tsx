@@ -11,7 +11,7 @@ describe("SiteFooter", () => {
   it("renders key links and current year", () => {
     render(<SiteFooter />);
 
-    expect(screen.getByRole("link", { name: "Templates" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "All Templates" })).toHaveAttribute(
       "href",
       "/products",
     );

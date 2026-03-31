@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import ProductDetailClient from "@/app/(public)/products/[categorySlug]/[productSlug]/ProductDetailClient";
@@ -47,30 +47,17 @@ export default async function ProductPreviewPage({ params }: Props) {
       <section className="sb-section">
         <div className="container">
           {category ? (
-            <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-              <Link
-                href={`/products/${category.slug}`}
-                className="sb-breadcrumb-link"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  aria-hidden="true"
-                  className="sb-breadcrumb-icon"
-                >
-                  <path
-                    d="M10 3l-5 5 5 5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Back to {category.name}
-              </Link>
-            </nav>
+            <SiteBreadcrumb
+              items={[
+                { name: "Home", href: "/" },
+                { name: "Products", href: "/products" },
+                { name: category.name, href: `/products/${category.slug}` },
+                {
+                  name: product.title,
+                  href: `/products/${category.slug}/${product.slug ?? product.id}`,
+                },
+              ]}
+            />
           ) : null}
 
           <ProductDetailClient product={product} />
