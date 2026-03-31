@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
-import Link from "next/link";
+import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { apiService } from "@/lib/api";
+import { getPublishedMenuItems } from "@/lib/menuContent";
 import {
   createBreadcrumbJsonLd,
   createPageMetadata,
@@ -67,19 +68,55 @@ export default async function MenuItemPageView({ params }: Props) {
 
   const page = response.data;
 
-  // Resolve parent menu item for breadcrumb (may be provided inline or referenced by id)
-  let parentMenuItem = page.menuItem ?? page.menuCategory?.menuItem;
-  if (!parentMenuItem && page.menuItemId) {
-    const mi = await apiService.getMenuItemById(page.menuItemId);
-    parentMenuItem = mi.data;
+  let parentCategory = page.menuCategory;
+  if (!parentCategory && page.menuCategoryId) {
+    const categoryResponse = await apiService.getMenuCategoryById(
+      page.menuCategoryId,
+    );
+    parentCategory = categoryResponse.data;
   }
-  if (!parentMenuItem && page.menuCategoryId) {
-    const cat = await apiService.getMenuCategoryById(page.menuCategoryId);
-    if (cat.data?.menuItemId) {
-      const mi = await apiService.getMenuItemById(cat.data.menuItemId);
-      parentMenuItem = mi.data;
+
+  // Resolve parent menu item for breadcrumb (may be provided inline or referenced by id)
+  let parentMenuItem = page.menuItem ?? parentCategory?.menuItem;
+  if (!parentMenuItem && page.menuItemId) {
+    const menuItemResponse = await apiService.getMenuItemById(page.menuItemId);
+    parentMenuItem = menuItemResponse.data;
+  }
+  if (!parentMenuItem && parentCategory?.menuItemId) {
+    const menuItemResponse = await apiService.getMenuItemById(
+      parentCategory.menuItemId,
+    );
+    parentMenuItem = menuItemResponse.data;
+  }
+  // Fallback: scan the published menu items list (same reliable source used for navigation)
+  if (!parentMenuItem) {
+    const targetId = page.menuItemId ?? parentCategory?.menuItemId;
+    if (targetId) {
+      const allItems = await getPublishedMenuItems();
+      parentMenuItem = allItems.find((i) => i.id === targetId);
     }
   }
+
+  const breadcrumbItems = [{ name: "Home", href: "/" }];
+  const parentMenuItemSlug = parentMenuItem
+    ? slugify(parentMenuItem.title)
+    : null;
+
+  if (parentMenuItem && parentMenuItemSlug) {
+    breadcrumbItems.push({
+      name: parentMenuItem.title,
+      href: `/pages/${parentMenuItemSlug}`,
+    });
+  }
+
+  if (parentCategory && parentMenuItemSlug) {
+    breadcrumbItems.push({
+      name: parentCategory.title,
+      href: `/pages/${parentMenuItemSlug}/${slugify(parentCategory.title)}`,
+    });
+  }
+
+  breadcrumbItems.push({ name: page.title, href: `/${page.slug}` });
 
   const pageJsonLd = createWebPageJsonLd({
     name: page.title,
@@ -89,50 +126,15 @@ export default async function MenuItemPageView({ params }: Props) {
     dateModified: page.dateModified,
     image: page.headerImage,
   });
-  const breadcrumbJsonLd = parentMenuItem
-    ? createBreadcrumbJsonLd([
-        { name: "Home", href: "/" },
-        {
-          name: parentMenuItem.title,
-          href: `/pages/${slugify(parentMenuItem.title)}`,
-        },
-        { name: page.title, href: `/${page.slug}` },
-      ])
-    : null;
+  const breadcrumbJsonLd = createBreadcrumbJsonLd(breadcrumbItems);
 
   return (
     <>
-      {breadcrumbJsonLd ? <JsonLd json={breadcrumbJsonLd} /> : null}
+      <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={pageJsonLd} />
 
       <main className="content-page">
-        {/* Breadcrumb back to the menu item pages listing */}
-        {parentMenuItem ? (
-          <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-            <Link
-              href={`/pages/${slugify(parentMenuItem.title)}`}
-              className="sb-breadcrumb-link"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                className="sb-breadcrumb-icon"
-              >
-                <path
-                  d="M10 3l-5 5 5 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back to {parentMenuItem.title}
-            </Link>
-          </nav>
-        ) : null}
+        <SiteBreadcrumb items={breadcrumbItems} />
 
         <header className="content-header">
           {/* <h1 className="content-title">{page.title}</h1>
@@ -158,6 +160,8 @@ export default async function MenuItemPageView({ params }: Props) {
         <article>
           <ContentRenderer html={page.content ?? ""} />
         </article>
+
+        <SiteBreadcrumb items={breadcrumbItems} bottom />
       </main>
     </>
   );

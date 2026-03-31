@@ -273,66 +273,6 @@
   line-height: 1.5;
 }
 
-/* =============================================
-   Breadcrumb Navigation
-   ============================================= */
-
-.sb-breadcrumb {
-  margin-bottom: 1.5rem;
-}
-
-.sb-breadcrumb-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--sb-muted);
-  text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  /* Ensure adequate touch target for mobile (min 44x44px) */
-  min-height: 44px;
-}
-
-.sb-breadcrumb-link:hover {
-  color: var(--sb-ink);
-  background-color: var(--sb-soft);
-  opacity: 1;
-}
-
-.sb-breadcrumb-icon {
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.sb-breadcrumb-link:hover .sb-breadcrumb-icon {
-  transform: translateX(-2px);
-}
-
-/* Active/focus states for accessibility */
-.sb-breadcrumb-link:focus {
-  outline: 2px solid var(--sb-blue);
-  outline-offset: 2px;
-}
-
-.sb-breadcrumb-link:active {
-  transform: scale(0.98);
-}
-
-/* Responsive adjustments */
-@media (max-width: 576px) {
-  .sb-breadcrumb {
-    margin-bottom: 1rem;
-  }
-
-  .sb-breadcrumb-link {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.5rem;
-  }
-}
-
 /* CSS Grid for responsive category layout */
 .category-grid {
   display: grid;

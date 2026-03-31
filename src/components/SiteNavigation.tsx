@@ -490,17 +490,16 @@ export default function SiteNavigation({
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="d-none d-lg-flex align-items-center gap-2 sb-site-nav">
+      <nav className="d-none d-lg-flex align-items-center sb-site-nav">
         {orderedNavItems.map((entry) =>
           entry.kind === "static" ? (
             <Link
               key={entry.orderId}
               className={
-                "px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link" +
+                "px-3 py-2 text-decoration-none nav-link sb-site-nav-link" +
                 (isActive(entry.to) ? " is-active" : "")
               }
               href={entry.to}
-              style={{ transition: "all 0.2s ease" }}
             >
               {entry.label}
             </Link>
@@ -508,11 +507,10 @@ export default function SiteNavigation({
             <Link
               key={entry.orderId}
               className={
-                "px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link" +
+                "px-3 py-2 text-decoration-none nav-link sb-site-nav-link" +
                 (isActive(entry.item.directHref) ? " is-active" : "")
               }
               href={entry.item.directHref}
-              style={{ transition: "all 0.2s ease" }}
             >
               {entry.item.title}
             </Link>
@@ -526,14 +524,15 @@ export default function SiteNavigation({
               style={{ position: "relative" }}
             >
               <button
-                className="px-3 py-2 text-decoration-none sb-muted rounded-pill nav-link sb-site-nav-link sb-nav-dropdown-trigger"
+                className="px-3 py-2 text-decoration-none nav-link sb-site-nav-link sb-nav-dropdown-trigger"
                 type="button"
                 style={{
                   border: "none",
+                  background: "transparent",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: "0.25rem",
+                  gap: "0.35rem",
                 }}
               >
                 {entry.item.title}
@@ -552,14 +551,15 @@ export default function SiteNavigation({
                 className="sb-nav-dropdown-menu"
                 style={{
                   position: "absolute",
-                  top: "calc(100% + 4px)",
-                  left: 0,
-                  minWidth: "220px",
+                  top: "calc(100% + 8px)",
+                  left: "-0.5rem",
+                  minWidth: "240px",
                   background: "white",
-                  border: "1px solid var(--sb-border)",
-                  borderRadius: "10px",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                  padding: "0.5rem 0",
+                  border: "1px solid rgba(0,0,0,0.06)",
+                  borderRadius: "12px",
+                  boxShadow:
+                    "0 4px 6px -1px rgba(0,0,0,0.07), 0 12px 28px -4px rgba(0,0,0,0.12)",
+                  padding: "0.375rem",
                   zIndex: 1050,
                 }}
               >
@@ -568,15 +568,16 @@ export default function SiteNavigation({
                     {group.categoryTitle && (
                       <div
                         style={{
-                          padding: "0.35rem 1rem",
-                          fontSize: "0.7rem",
+                          padding: "0.5rem 0.75rem 0.25rem",
+                          fontSize: "0.6875rem",
                           fontWeight: 700,
                           textTransform: "uppercase",
-                          letterSpacing: "0.06em",
+                          letterSpacing: "0.08em",
                           color: "var(--sb-muted)",
                           borderTop:
                             gi > 0 ? "1px solid var(--sb-border)" : undefined,
-                          marginTop: gi > 0 ? "0.4rem" : undefined,
+                          marginTop: gi > 0 ? "0.25rem" : undefined,
+                          paddingTop: gi > 0 ? "0.625rem" : undefined,
                         }}
                       >
                         {group.categoryTitle}
@@ -592,9 +593,10 @@ export default function SiteNavigation({
                         }
                         style={{
                           display: "block",
-                          padding: "0.5rem 1rem",
+                          padding: "0.5rem 0.75rem",
                           fontSize: "0.9rem",
                           fontWeight: 500,
+                          borderRadius: "8px",
                         }}
                       >
                         {page.title}

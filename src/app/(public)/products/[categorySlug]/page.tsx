@@ -4,6 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
+import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import ProductGrid from "@/components/ProductGrid";
 import { apiService } from "@/lib/api";
 import { links } from "@/config/links";
@@ -85,27 +86,13 @@ export default async function CategoryPage({ params }: Props) {
 
       <section className="sb-section">
         <div className="container">
-          <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-            <Link href="/products" className="sb-breadcrumb-link">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                className="sb-breadcrumb-icon"
-              >
-                <path
-                  d="M10 3l-5 5 5 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back to Categories
-            </Link>
-          </nav>
+          <SiteBreadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Products", href: "/products" },
+              { name: category.name, href: `/products/${category.slug}` },
+            ]}
+          />
 
           <div className="row g-4 align-items-center">
             <div className="col-lg-7">
