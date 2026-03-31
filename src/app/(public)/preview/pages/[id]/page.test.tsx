@@ -76,6 +76,8 @@ describe("PagePreview", () => {
       "href",
       "/pages/guides",
     );
-    expect(screen.getByText("Draft Page")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Draft Page" }),
+    ).toBeInTheDocument();
   });
 });
