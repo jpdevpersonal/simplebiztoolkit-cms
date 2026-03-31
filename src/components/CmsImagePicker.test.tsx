@@ -43,7 +43,7 @@ describe("CmsImagePicker", () => {
     render(<CmsImagePicker label="featured image" onChangeAction={onChange} />);
 
     await user.click(
-      screen.getByRole("button", { name: "Manage featured image" }),
+      screen.getByRole("button", { name: "Edit featured image" }),
     );
 
     await waitFor(() => {
@@ -67,7 +67,7 @@ describe("CmsImagePicker", () => {
 
     render(<CmsImagePicker label="featured image" />);
     await user.click(
-      screen.getByRole("button", { name: "Manage featured image" }),
+      screen.getByRole("button", { name: "Edit featured image" }),
     );
 
     const fileInput = screen.getByLabelText("File") as HTMLInputElement;
@@ -104,9 +104,7 @@ describe("CmsImagePicker", () => {
     vi.mocked(imageApi.deleteImage).mockResolvedValueOnce(undefined as never);
 
     render(<CmsImagePicker label="header image" onChangeAction={onChange} />);
-    await user.click(
-      screen.getByRole("button", { name: "Manage header image" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Edit header image" }));
 
     await waitFor(() => {
       expect(imageApi.getImages).toHaveBeenCalled();
@@ -139,7 +137,7 @@ describe("CmsImagePicker", () => {
 
     render(<CmsImagePicker label="featured image" onChangeAction={onChange} />);
     await user.click(
-      screen.getByRole("button", { name: "Manage featured image" }),
+      screen.getByRole("button", { name: "Edit featured image" }),
     );
 
     await user.upload(
@@ -196,9 +194,7 @@ describe("CmsImagePicker", () => {
     } as never);
 
     render(<CmsImagePicker label="header image" onChangeAction={onChange} />);
-    await user.click(
-      screen.getByRole("button", { name: "Manage header image" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Edit header image" }));
     await waitFor(() => {
       expect(imageApi.getImages).toHaveBeenCalled();
     });
@@ -244,7 +240,7 @@ describe("CmsImagePicker", () => {
 
     render(<CmsImagePicker label="featured image" />);
     await user.click(
-      screen.getByRole("button", { name: "Manage featured image" }),
+      screen.getByRole("button", { name: "Edit featured image" }),
     );
 
     await waitFor(() => {
@@ -252,5 +248,100 @@ describe("CmsImagePicker", () => {
         "Unable to load library.",
       );
     });
+  });
+
+  it("disables save button when no edits have been made", async () => {
+    const user = userEvent.setup();
+    vi.mocked(imageApi.getImages).mockResolvedValueOnce([
+      {
+        id: "img-5",
+        url: "https://cdn.example.com/photo.webp",
+        blobName: "photo.webp",
+        altText: "Photo alt",
+        caption: "Photo caption",
+        createdUtc: "2026-03-20T00:00:00Z",
+        updatedUtc: "2026-03-21T00:00:00Z",
+      },
+    ]);
+
+    render(<CmsImagePicker label="featured image" />);
+    await user.click(
+      screen.getByRole("button", { name: "Edit featured image" }),
+    );
+    await waitFor(() => {
+      expect(imageApi.getImages).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("button", { name: /photo.webp/i }));
+
+    expect(
+      screen.getByRole("button", { name: "Save image details" }),
+    ).toBeDisabled();
+  });
+
+  it("enables save button after editing alt text", async () => {
+    const user = userEvent.setup();
+    vi.mocked(imageApi.getImages).mockResolvedValueOnce([
+      {
+        id: "img-6",
+        url: "https://cdn.example.com/banner.webp",
+        blobName: "banner.webp",
+        altText: "Banner",
+        caption: "",
+        createdUtc: "2026-03-20T00:00:00Z",
+        updatedUtc: "2026-03-21T00:00:00Z",
+      },
+    ]);
+
+    render(<CmsImagePicker label="featured image" />);
+    await user.click(
+      screen.getByRole("button", { name: "Edit featured image" }),
+    );
+    await waitFor(() => {
+      expect(imageApi.getImages).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("button", { name: /banner.webp/i }));
+
+    expect(
+      screen.getByRole("button", { name: "Save image details" }),
+    ).toBeDisabled();
+
+    await user.clear(screen.getAllByLabelText("Alt text")[1]);
+    await user.type(screen.getAllByLabelText("Alt text")[1], "New alt text");
+
+    expect(
+      screen.getByRole("button", { name: "Save image details" }),
+    ).toBeEnabled();
+  });
+
+  it("opens in a modal dialog", async () => {
+    const user = userEvent.setup();
+    vi.mocked(imageApi.getImages).mockResolvedValueOnce([]);
+
+    render(<CmsImagePicker label="featured image" />);
+    await user.click(
+      screen.getByRole("button", { name: "Edit featured image" }),
+    );
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toBeInTheDocument();
+  });
+
+  it("closes the modal when the close button is clicked", async () => {
+    const user = userEvent.setup();
+    vi.mocked(imageApi.getImages).mockResolvedValueOnce([]);
+
+    render(<CmsImagePicker label="featured image" />);
+    await user.click(
+      screen.getByRole("button", { name: "Edit featured image" }),
+    );
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

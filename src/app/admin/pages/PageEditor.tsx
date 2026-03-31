@@ -160,19 +160,6 @@ export default function PageEditor({
     }));
   }
 
-  function handleImageUrlChange(
-    field: "featuredImage" | "headerImage",
-    value: string,
-  ) {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-      ...(field === "featuredImage"
-        ? { featuredImageId: "" }
-        : { headerImageId: "" }),
-    }));
-  }
-
   // Auto-generate slug
   useEffect(() => {
     if (isNew && formData.title && !formData.slug) {
@@ -399,48 +386,26 @@ export default function PageEditor({
           {/* Media */}
           <AdminFormBlock icon={mediaIcon} title="Media">
             <div className="mb-3">
-              <label className="form-label fw-semibold">
-                Featured Image URL
-              </label>
-              <div className="cms-image-inline-field">
-                <input
-                  className="form-control"
-                  value={formData.featuredImage}
-                  onChange={(e) =>
-                    handleImageUrlChange("featuredImage", e.target.value)
-                  }
-                  placeholder="https://..."
-                />
-                <CmsImagePicker
-                  value={formData.featuredImage}
-                  selectedImageId={formData.featuredImageId}
-                  label="featured image"
-                  onChangeAction={(image) =>
-                    handleImageSelection("featured", image)
-                  }
-                />
-              </div>
+              <label className="form-label fw-semibold">Featured Image</label>
+              <CmsImagePicker
+                value={formData.featuredImage}
+                selectedImageId={formData.featuredImageId}
+                label="featured image"
+                onChangeAction={(image) =>
+                  handleImageSelection("featured", image)
+                }
+              />
             </div>
             <div>
-              <label className="form-label fw-semibold">Header Image URL</label>
-              <div className="cms-image-inline-field">
-                <input
-                  className="form-control"
-                  value={formData.headerImage}
-                  onChange={(e) =>
-                    handleImageUrlChange("headerImage", e.target.value)
-                  }
-                  placeholder="https://..."
-                />
-                <CmsImagePicker
-                  value={formData.headerImage}
-                  selectedImageId={formData.headerImageId}
-                  label="header image"
-                  onChangeAction={(image) =>
-                    handleImageSelection("header", image)
-                  }
-                />
-              </div>
+              <label className="form-label fw-semibold">Header Image</label>
+              <CmsImagePicker
+                value={formData.headerImage}
+                selectedImageId={formData.headerImageId}
+                label="header image"
+                onChangeAction={(image) =>
+                  handleImageSelection("header", image)
+                }
+              />
             </div>
           </AdminFormBlock>
 

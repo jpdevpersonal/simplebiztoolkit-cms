@@ -214,4 +214,28 @@ describe("AdminProductsTable", () => {
     // $12 (Zeta) first
     expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
+
+  it("has data-label attributes on all visible cells for mobile card layout", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const { container } = render(
+      <AdminProductsTable products={products} categories={categories} />,
+    );
+
+    const firstRow = container.querySelector("tbody tr")!;
+    const cells = firstRow.querySelectorAll("td");
+    const expectedLabels = [
+      "Title",
+      "Category",
+      "Price",
+      "Status",
+      "Preview",
+      "Actions",
+    ];
+
+    cells.forEach((cell, i) => {
+      expect(cell.getAttribute("data-label")).toBe(expectedLabels[i]);
+    });
+  });
 });

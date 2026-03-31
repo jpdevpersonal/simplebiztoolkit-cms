@@ -12,6 +12,7 @@
  * </section>
  */
 
+import { useState } from "react";
 import { Node, mergeAttributes } from "@tiptap/core";
 import {
   ReactNodeViewRenderer,
@@ -216,6 +217,7 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
   const secondButtonRadius = node.attrs.secondButtonRadius as
     | number
     | undefined;
+  const [isExpanded, setIsExpanded] = useState(false);
   const isLocked = node.attrs.locked === true;
   const lockReason = node.attrs.lockReason as string | null | undefined;
   const buttonBg = node.attrs.buttonBg as string | undefined;
@@ -398,255 +400,58 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
         >
           CTA Block
           {isLocked && <LockedBadge reason={lockReason} />}
+          <button
+            type="button"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            aria-expanded={isExpanded}
+            aria-label={
+              isExpanded ? "Collapse CTA settings" : "Expand CTA settings"
+            }
+            style={{
+              marginLeft: "auto",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "2px 8px",
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              color: "#6b7280",
+              background: "#e5e7eb",
+              border: "1px solid #d1d5db",
+              borderRadius: 4,
+              cursor: "pointer",
+              textTransform: "none",
+              letterSpacing: "normal",
+            }}
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              style={{
+                transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.15s ease",
+              }}
+            >
+              <path
+                d="M2.5 4.5L6 8L9.5 4.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {isExpanded ? "Hide settings" : "Settings"}
+          </button>
         </div>
 
         {/* Style controls */}
-        <div style={controlsPanelStyle}>
-          <div style={controlSectionStyle}>
-            <div style={sectionTitleStyle}>CTA section</div>
-            <div style={colorRowStyle}>
-              <label
-                style={{
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  width: 110,
-                  flexShrink: 0,
-                }}
-              >
-                CTA background
-              </label>
-              <input
-                type="color"
-                value={resolvedBackgroundColor}
-                onChange={(e) =>
-                  updateAttributes({ backgroundColor: e.target.value })
-                }
-                disabled={isLocked}
-                style={{
-                  width: 48,
-                  height: 28,
-                  border: "none",
-                  padding: 0,
-                  flexShrink: 0,
-                }}
-              />
-              <input
-                type="text"
-                value={resolvedBackgroundColor}
-                onChange={(e) =>
-                  updateAttributes({ backgroundColor: e.target.value })
-                }
-                disabled={isLocked}
-                style={{
-                  width: 96,
-                  fontSize: "0.8125rem",
-                  padding: "4px 8px",
-                }}
-              />
-            </div>
-
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Border width (px)
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={String(resolvedBorderWidth)}
-                onChange={(e) =>
-                  updateAttributes({ borderWidth: Number(e.target.value) })
-                }
-                disabled={isLocked}
-                style={{ width: 96, padding: "4px 8px" }}
-              />
-            </div>
-          </div>
-
-          <div style={controlSectionStyle}>
-            <div style={sectionTitleStyle}>Primary button</div>
-            <div style={colorRowStyle}>
-              <label
-                style={{
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  width: 110,
-                  flexShrink: 0,
-                }}
-              >
-                Button background
-              </label>
-              <input
-                type="color"
-                value={buttonBg || CTA_BUTTON_DEFAULT_BG}
-                onChange={(e) => updateAttributes({ buttonBg: e.target.value })}
-                disabled={isLocked}
-                style={{
-                  width: 48,
-                  height: 28,
-                  border: "none",
-                  padding: 0,
-                  flexShrink: 0,
-                }}
-              />
-              <input
-                type="text"
-                value={buttonBg || CTA_BUTTON_DEFAULT_BG}
-                onChange={(e) => updateAttributes({ buttonBg: e.target.value })}
-                disabled={isLocked}
-                style={{
-                  width: 96,
-                  fontSize: "0.8125rem",
-                  padding: "4px 8px",
-                }}
-              />
-            </div>
-
-            <div style={colorRowStyle}>
-              <label
-                style={{
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  width: 110,
-                  flexShrink: 0,
-                }}
-              >
-                Button color
-              </label>
-              <input
-                type="color"
-                value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
-                onChange={(e) =>
-                  updateAttributes({ buttonColor: e.target.value })
-                }
-                disabled={isLocked}
-                style={{
-                  width: 48,
-                  height: 28,
-                  border: "none",
-                  padding: 0,
-                  flexShrink: 0,
-                }}
-              />
-              <input
-                type="text"
-                value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
-                onChange={(e) =>
-                  updateAttributes({ buttonColor: e.target.value })
-                }
-                disabled={isLocked}
-                style={{
-                  width: 96,
-                  fontSize: "0.8125rem",
-                  padding: "4px 8px",
-                }}
-              />
-            </div>
-
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Button spacing (px)
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={String(resolvedButtonGap)}
-                onChange={(e) =>
-                  updateAttributes({ buttonGap: Number(e.target.value) })
-                }
-                disabled={isLocked}
-                style={{ width: 96, padding: "4px 8px" }}
-              />
-            </div>
-
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Button align
-              </label>
-              <select
-                value={resolvedButtonAlign}
-                onChange={(e) =>
-                  updateAttributes({
-                    buttonAlign: e.target.value as CTAButtonAlignment,
-                  })
-                }
-                disabled={isLocked}
-                style={{ width: 96, padding: "4px 8px" }}
-              >
-                {CTA_BUTTON_ALIGNMENT_OPTIONS.map((alignment) => (
-                  <option key={alignment} value={alignment}>
-                    {alignment === "none"
-                      ? "None"
-                      : alignment[0].toUpperCase() + alignment.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Padding (px)
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={String(buttonPadding ?? CTA_BUTTON_DEFAULT_PADDING)}
-                onChange={(e) =>
-                  updateAttributes({ buttonPadding: Number(e.target.value) })
-                }
-                disabled={isLocked}
-                style={{ width: 96, padding: "4px 8px" }}
-              />
-            </div>
-
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Radius (px)
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={String(buttonRadius ?? CTA_BUTTON_DEFAULT_RADIUS)}
-                onChange={(e) =>
-                  updateAttributes({ buttonRadius: Number(e.target.value) })
-                }
-                disabled={isLocked}
-                style={{ width: 96, padding: "4px 8px" }}
-              />
-            </div>
-
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Show second button
-              </label>
-              <input
-                type="checkbox"
-                checked={!!showSecondButton}
-                onChange={(e) =>
-                  updateAttributes({ showSecondButton: e.target.checked })
-                }
-                disabled={isLocked}
-                style={{ width: 20, height: 20 }}
-              />
-            </div>
-          </div>
-
-          {showSecondButton && (
-            <>
-              <hr style={dividerStyle} />
+        {isExpanded && (
+          <>
+            <div style={controlsPanelStyle}>
               <div style={controlSectionStyle}>
-                <div style={sectionTitleStyle}>Second button</div>
+                <div style={sectionTitleStyle}>CTA section</div>
                 <div style={colorRowStyle}>
                   <label
                     style={{
@@ -656,15 +461,13 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                       flexShrink: 0,
                     }}
                   >
-                    2nd button background
+                    CTA background
                   </label>
                   <input
                     type="color"
-                    value={resolvedSecondButtonBg || CTA_BUTTON_DEFAULT_BG}
+                    value={resolvedBackgroundColor}
                     onChange={(e) =>
-                      updateAttributes({
-                        secondButtonBg: e.target.value || null,
-                      })
+                      updateAttributes({ backgroundColor: e.target.value })
                     }
                     disabled={isLocked}
                     style={{
@@ -677,58 +480,9 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                   />
                   <input
                     type="text"
-                    value={resolvedSecondButtonBg || ""}
+                    value={resolvedBackgroundColor}
                     onChange={(e) =>
-                      updateAttributes({
-                        secondButtonBg: e.target.value || null,
-                      })
-                    }
-                    disabled={isLocked}
-                    style={{
-                      width: 96,
-                      fontSize: "0.8125rem",
-                      padding: "4px 8px",
-                    }}
-                  />
-                </div>
-
-                <div style={colorRowStyle}>
-                  <label
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      width: 110,
-                      flexShrink: 0,
-                    }}
-                  >
-                    2nd button color
-                  </label>
-                  <input
-                    type="color"
-                    value={
-                      resolvedSecondButtonColor || CTA_BUTTON_DEFAULT_COLOR
-                    }
-                    onChange={(e) =>
-                      updateAttributes({
-                        secondButtonColor: e.target.value || null,
-                      })
-                    }
-                    disabled={isLocked}
-                    style={{
-                      width: 48,
-                      height: 28,
-                      border: "none",
-                      padding: 0,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <input
-                    type="text"
-                    value={resolvedSecondButtonColor || ""}
-                    onChange={(e) =>
-                      updateAttributes({
-                        secondButtonColor: e.target.value || null,
-                      })
+                      updateAttributes({ backgroundColor: e.target.value })
                     }
                     disabled={isLocked}
                     style={{
@@ -743,13 +497,134 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                   <label
                     style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
                   >
-                    2nd button align
+                    Border width (px)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={String(resolvedBorderWidth)}
+                    onChange={(e) =>
+                      updateAttributes({ borderWidth: Number(e.target.value) })
+                    }
+                    disabled={isLocked}
+                    style={{ width: 96, padding: "4px 8px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={controlSectionStyle}>
+                <div style={sectionTitleStyle}>Primary button</div>
+                <div style={colorRowStyle}>
+                  <label
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      width: 110,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Button background
+                  </label>
+                  <input
+                    type="color"
+                    value={buttonBg || CTA_BUTTON_DEFAULT_BG}
+                    onChange={(e) =>
+                      updateAttributes({ buttonBg: e.target.value })
+                    }
+                    disabled={isLocked}
+                    style={{
+                      width: 48,
+                      height: 28,
+                      border: "none",
+                      padding: 0,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={buttonBg || CTA_BUTTON_DEFAULT_BG}
+                    onChange={(e) =>
+                      updateAttributes({ buttonBg: e.target.value })
+                    }
+                    disabled={isLocked}
+                    style={{
+                      width: 96,
+                      fontSize: "0.8125rem",
+                      padding: "4px 8px",
+                    }}
+                  />
+                </div>
+
+                <div style={colorRowStyle}>
+                  <label
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      width: 110,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Button color
+                  </label>
+                  <input
+                    type="color"
+                    value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
+                    onChange={(e) =>
+                      updateAttributes({ buttonColor: e.target.value })
+                    }
+                    disabled={isLocked}
+                    style={{
+                      width: 48,
+                      height: 28,
+                      border: "none",
+                      padding: 0,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
+                    onChange={(e) =>
+                      updateAttributes({ buttonColor: e.target.value })
+                    }
+                    disabled={isLocked}
+                    style={{
+                      width: 96,
+                      fontSize: "0.8125rem",
+                      padding: "4px 8px",
+                    }}
+                  />
+                </div>
+
+                <div style={controlRowStyle}>
+                  <label
+                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                  >
+                    Button spacing (px)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={String(resolvedButtonGap)}
+                    onChange={(e) =>
+                      updateAttributes({ buttonGap: Number(e.target.value) })
+                    }
+                    disabled={isLocked}
+                    style={{ width: 96, padding: "4px 8px" }}
+                  />
+                </div>
+
+                <div style={controlRowStyle}>
+                  <label
+                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                  >
+                    Button align
                   </label>
                   <select
-                    value={resolvedSecondButtonAlign}
+                    value={resolvedButtonAlign}
                     onChange={(e) =>
                       updateAttributes({
-                        secondButtonAlign: e.target.value as CTAButtonAlignment,
+                        buttonAlign: e.target.value as CTAButtonAlignment,
                       })
                     }
                     disabled={isLocked}
@@ -769,19 +644,15 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                   <label
                     style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
                   >
-                    2nd padding (px)
+                    Padding (px)
                   </label>
                   <input
                     type="number"
                     min={0}
-                    value={String(
-                      resolvedSecondButtonPadding ??
-                        buttonPadding ??
-                        CTA_BUTTON_DEFAULT_PADDING,
-                    )}
+                    value={String(buttonPadding ?? CTA_BUTTON_DEFAULT_PADDING)}
                     onChange={(e) =>
                       updateAttributes({
-                        secondButtonPadding: Number(e.target.value),
+                        buttonPadding: Number(e.target.value),
                       })
                     }
                     disabled={isLocked}
@@ -793,141 +664,304 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                   <label
                     style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
                   >
-                    2nd radius (px)
+                    Radius (px)
                   </label>
                   <input
                     type="number"
                     min={0}
-                    value={String(
-                      resolvedSecondButtonRadius ??
-                        buttonRadius ??
-                        CTA_BUTTON_DEFAULT_RADIUS,
-                    )}
+                    value={String(buttonRadius ?? CTA_BUTTON_DEFAULT_RADIUS)}
                     onChange={(e) =>
-                      updateAttributes({
-                        secondButtonRadius: Number(e.target.value),
-                      })
+                      updateAttributes({ buttonRadius: Number(e.target.value) })
                     }
                     disabled={isLocked}
                     style={{ width: 96, padding: "4px 8px" }}
                   />
                 </div>
+
+                <div style={controlRowStyle}>
+                  <label
+                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                  >
+                    Show second button
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={!!showSecondButton}
+                    onChange={(e) =>
+                      updateAttributes({ showSecondButton: e.target.checked })
+                    }
+                    disabled={isLocked}
+                    style={{ width: 20, height: 20 }}
+                  />
+                </div>
               </div>
-            </>
-          )}
 
-          <hr style={dividerStyle} />
+              {showSecondButton && (
+                <>
+                  <hr style={dividerStyle} />
+                  <div style={controlSectionStyle}>
+                    <div style={sectionTitleStyle}>Second button</div>
+                    <div style={colorRowStyle}>
+                      <label
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          width: 110,
+                          flexShrink: 0,
+                        }}
+                      >
+                        2nd button background
+                      </label>
+                      <input
+                        type="color"
+                        value={resolvedSecondButtonBg || CTA_BUTTON_DEFAULT_BG}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonBg: e.target.value || null,
+                          })
+                        }
+                        disabled={isLocked}
+                        style={{
+                          width: 48,
+                          height: 28,
+                          border: "none",
+                          padding: 0,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={resolvedSecondButtonBg || ""}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonBg: e.target.value || null,
+                          })
+                        }
+                        disabled={isLocked}
+                        style={{
+                          width: 96,
+                          fontSize: "0.8125rem",
+                          padding: "4px 8px",
+                        }}
+                      />
+                    </div>
 
-          <div style={controlSectionStyle}>
-            <div style={sectionTitleStyle}>Typography</div>
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Title size
-              </label>
-              <select
-                value={resolvedTitleLevel}
-                onChange={(e) =>
-                  updateAttributes({
-                    titleLevel: e.target.value as HeadingLevel,
-                  })
-                }
-                disabled={isLocked}
-                style={{ width: 96, padding: "4px 8px" }}
-              >
-                {CTA_HEADING_OPTIONS.map((level) => (
-                  <option key={level} value={level}>
-                    {level.toUpperCase()}
-                  </option>
-                ))}
-              </select>
+                    <div style={colorRowStyle}>
+                      <label
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          width: 110,
+                          flexShrink: 0,
+                        }}
+                      >
+                        2nd button color
+                      </label>
+                      <input
+                        type="color"
+                        value={
+                          resolvedSecondButtonColor || CTA_BUTTON_DEFAULT_COLOR
+                        }
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonColor: e.target.value || null,
+                          })
+                        }
+                        disabled={isLocked}
+                        style={{
+                          width: 48,
+                          height: 28,
+                          border: "none",
+                          padding: 0,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={resolvedSecondButtonColor || ""}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonColor: e.target.value || null,
+                          })
+                        }
+                        disabled={isLocked}
+                        style={{
+                          width: 96,
+                          fontSize: "0.8125rem",
+                          padding: "4px 8px",
+                        }}
+                      />
+                    </div>
+
+                    <div style={controlRowStyle}>
+                      <label
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          width: 110,
+                        }}
+                      >
+                        2nd button align
+                      </label>
+                      <select
+                        value={resolvedSecondButtonAlign}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonAlign: e.target
+                              .value as CTAButtonAlignment,
+                          })
+                        }
+                        disabled={isLocked}
+                        style={{ width: 96, padding: "4px 8px" }}
+                      >
+                        {CTA_BUTTON_ALIGNMENT_OPTIONS.map((alignment) => (
+                          <option key={alignment} value={alignment}>
+                            {alignment === "none"
+                              ? "None"
+                              : alignment[0].toUpperCase() + alignment.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={controlRowStyle}>
+                      <label
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          width: 110,
+                        }}
+                      >
+                        2nd padding (px)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={String(
+                          resolvedSecondButtonPadding ??
+                            buttonPadding ??
+                            CTA_BUTTON_DEFAULT_PADDING,
+                        )}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonPadding: Number(e.target.value),
+                          })
+                        }
+                        disabled={isLocked}
+                        style={{ width: 96, padding: "4px 8px" }}
+                      />
+                    </div>
+
+                    <div style={controlRowStyle}>
+                      <label
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          width: 110,
+                        }}
+                      >
+                        2nd radius (px)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={String(
+                          resolvedSecondButtonRadius ??
+                            buttonRadius ??
+                            CTA_BUTTON_DEFAULT_RADIUS,
+                        )}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonRadius: Number(e.target.value),
+                          })
+                        }
+                        disabled={isLocked}
+                        style={{ width: 96, padding: "4px 8px" }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <hr style={dividerStyle} />
+
+              <div style={controlSectionStyle}>
+                <div style={sectionTitleStyle}>Typography</div>
+                <div style={controlRowStyle}>
+                  <label
+                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                  >
+                    Title size
+                  </label>
+                  <select
+                    value={resolvedTitleLevel}
+                    onChange={(e) =>
+                      updateAttributes({
+                        titleLevel: e.target.value as HeadingLevel,
+                      })
+                    }
+                    disabled={isLocked}
+                    style={{ width: 96, padding: "4px 8px" }}
+                  >
+                    {CTA_HEADING_OPTIONS.map((level) => (
+                      <option key={level} value={level}>
+                        {level.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={controlRowStyle}>
+                  <label
+                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                  >
+                    Subtitle size
+                  </label>
+                  <select
+                    value={resolvedTextLevel}
+                    onChange={(e) =>
+                      updateAttributes({
+                        textLevel: e.target.value as HeadingLevel,
+                      })
+                    }
+                    disabled={isLocked}
+                    style={{ width: 96, padding: "4px 8px" }}
+                  >
+                    {CTA_HEADING_OPTIONS.map((level) => (
+                      <option key={level} value={level}>
+                        {level.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div style={controlRowStyle}>
-              <label
-                style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-              >
-                Subtitle size
-              </label>
-              <select
-                value={resolvedTextLevel}
-                onChange={(e) =>
-                  updateAttributes({
-                    textLevel: e.target.value as HeadingLevel,
-                  })
-                }
-                disabled={isLocked}
-                style={{ width: 96, padding: "4px 8px" }}
-              >
-                {CTA_HEADING_OPTIONS.map((level) => (
-                  <option key={level} value={level}>
-                    {level.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              <div>
+                <span style={labelStyle}>Title</span>
+                <input
+                  type="text"
+                  value={title || ""}
+                  onChange={(e) => updateAttributes({ title: e.target.value })}
+                  placeholder="Start Growing Your Business"
+                  readOnly={isLocked}
+                  style={fieldStyle}
+                />
+              </div>
 
-        <div style={{ display: "grid", gap: 8 }}>
-          <div>
-            <span style={labelStyle}>Title</span>
-            <input
-              type="text"
-              value={title || ""}
-              onChange={(e) => updateAttributes({ title: e.target.value })}
-              placeholder="Start Growing Your Business"
-              readOnly={isLocked}
-              style={fieldStyle}
-            />
-          </div>
+              <div>
+                <span style={labelStyle}>Supporting text</span>
+                <input
+                  type="text"
+                  value={text || ""}
+                  onChange={(e) => updateAttributes({ text: e.target.value })}
+                  placeholder="Add a supporting description…"
+                  readOnly={isLocked}
+                  style={fieldStyle}
+                />
+              </div>
 
-          <div>
-            <span style={labelStyle}>Supporting text</span>
-            <input
-              type="text"
-              value={text || ""}
-              onChange={(e) => updateAttributes({ text: e.target.value })}
-              placeholder="Add a supporting description…"
-              readOnly={isLocked}
-              style={fieldStyle}
-            />
-          </div>
-
-          <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
-          >
-            <div>
-              <span style={labelStyle}>Button label</span>
-              <input
-                type="text"
-                value={buttonText || ""}
-                onChange={(e) =>
-                  updateAttributes({ buttonText: e.target.value })
-                }
-                placeholder="Try Now"
-                readOnly={isLocked}
-                style={fieldStyle}
-              />
-            </div>
-            <div>
-              <span style={labelStyle}>Button URL</span>
-              <input
-                type="text"
-                value={buttonUrl || ""}
-                onChange={(e) =>
-                  updateAttributes({ buttonUrl: e.target.value })
-                }
-                placeholder="/tools"
-                readOnly={isLocked}
-                style={fieldStyle}
-              />
-            </div>
-          </div>
-
-          {showSecondButton && (
-            <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
               <div
                 style={{
                   display: "grid",
@@ -936,39 +970,78 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                 }}
               >
                 <div>
-                  <span style={labelStyle}>2nd button label</span>
+                  <span style={labelStyle}>Button label</span>
                   <input
                     type="text"
-                    value={secondButtonText || ""}
+                    value={buttonText || ""}
                     onChange={(e) =>
-                      updateAttributes({
-                        secondButtonText: e.target.value || null,
-                      })
+                      updateAttributes({ buttonText: e.target.value })
                     }
-                    placeholder="Secondary"
+                    placeholder="Try Now"
                     readOnly={isLocked}
                     style={fieldStyle}
                   />
                 </div>
                 <div>
-                  <span style={labelStyle}>2nd button URL</span>
+                  <span style={labelStyle}>Button URL</span>
                   <input
                     type="text"
-                    value={secondButtonUrl || ""}
+                    value={buttonUrl || ""}
                     onChange={(e) =>
-                      updateAttributes({
-                        secondButtonUrl: e.target.value || null,
-                      })
+                      updateAttributes({ buttonUrl: e.target.value })
                     }
-                    placeholder="/"
+                    placeholder="/tools"
                     readOnly={isLocked}
                     style={fieldStyle}
                   />
                 </div>
               </div>
+
+              {showSecondButton && (
+                <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 8,
+                    }}
+                  >
+                    <div>
+                      <span style={labelStyle}>2nd button label</span>
+                      <input
+                        type="text"
+                        value={secondButtonText || ""}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonText: e.target.value || null,
+                          })
+                        }
+                        placeholder="Secondary"
+                        readOnly={isLocked}
+                        style={fieldStyle}
+                      />
+                    </div>
+                    <div>
+                      <span style={labelStyle}>2nd button URL</span>
+                      <input
+                        type="text"
+                        value={secondButtonUrl || ""}
+                        onChange={(e) =>
+                          updateAttributes({
+                            secondButtonUrl: e.target.value || null,
+                          })
+                        }
+                        placeholder="/"
+                        readOnly={isLocked}
+                        style={fieldStyle}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* Live preview */}
         <div
