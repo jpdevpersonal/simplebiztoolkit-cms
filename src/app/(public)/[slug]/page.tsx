@@ -137,8 +137,8 @@ export default async function MenuItemPageView({ params }: Props) {
         <SiteBreadcrumb items={breadcrumbItems} />
 
         <header className="content-header">
-          {/* <h1 className="content-title">{page.title}</h1>
-          {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>} */}
+          <h1 className="content-title">{page.title}</h1>
+          {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
         </header>
 
         {/* Header image */}
@@ -151,7 +151,6 @@ export default async function MenuItemPageView({ params }: Props) {
               height={630}
               sizes="(max-width: 768px) 100vw, 1200px"
               loading="lazy"
-              style={{ width: "100%", height: "auto" }}
             />
           </div>
         )}

@@ -71,7 +71,10 @@ export default async function PagePreview({ params }: Props) {
           />
         ) : null}
 
-        <header className="content-header" />
+        <header className="content-header">
+          <h1 className="content-title">{page.title}</h1>
+          {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
+        </header>
 
         {page.headerImage && (
           <div className="content-header-image">
@@ -82,7 +85,6 @@ export default async function PagePreview({ params }: Props) {
               height={630}
               sizes="(max-width: 768px) 100vw, 1200px"
               loading="lazy"
-              style={{ width: "100%", height: "auto" }}
             />
           </div>
         )}
