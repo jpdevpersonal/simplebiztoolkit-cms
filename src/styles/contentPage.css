@@ -1,12 +1,13 @@
-/* Shared content page layout */
+/* Shared content page layout – width matches the .sb-section .container (1200px cap) */
 .content-page {
-  max-width: 980px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 48px 20px 80px;
+  padding: 48px 0.75rem 80px;
 }
 
 .content-header {
   margin-bottom: 28px;
+  text-align: center;
 }
 
 .content-badges {
@@ -39,10 +40,10 @@
 
 .content-header-image img {
   width: 100%;
-  height: auto;
+  height: 420px;
   display: block;
-  object-fit: contain;
-  max-height: 500px;
+  object-fit: cover;
+  object-position: center top;
 }
 
 @media (max-width: 768px) {
@@ -52,28 +53,60 @@
   }
 
   .content-header-image img {
-    max-height: 300px;
+    height: 240px;
   }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 769px) and (max-width: 991px) {
   .content-header-image img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    max-height: none;
+    height: 320px;
   }
 }
 
 .content-title {
-  margin: 0 0 10px;
+  margin: 0 auto 12px;
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  max-width: 860px;
 }
 
 .content-subtitle {
-  margin: 0;
-  font-size: 18px;
-  opacity: 0.9;
-  max-width: 860px;
+  margin: 0 auto;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  opacity: 0.75;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+/* Scoped heading scale for article body — always subordinate to .content-title */
+.content-page article h1,
+.content-page article h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.625rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.content-page article h3 {
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.content-page article h4,
+.content-page article h5,
+.content-page article h6 {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-top: 1.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .content-meta {
@@ -192,17 +225,17 @@
   margin: 2rem;
 }
 
+@media (max-width: 991px) {
+  .content-page {
+    /* Tighten vertical rhythm on tablet and below */
+    padding-top: 32px;
+    padding-bottom: 56px;
+  }
+}
+
 @media (max-width: 768px) {
   .content-page {
-    padding: 24px 16px 48px;
-  }
-
-  .content-title {
-    font-size: 28px;
-  }
-
-  .content-subtitle {
-    font-size: 16px;
+    padding: 24px 1rem 48px;
   }
 
   .content-badges {

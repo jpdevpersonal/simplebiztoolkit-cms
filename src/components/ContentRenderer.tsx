@@ -678,7 +678,9 @@ export function DynamicContentRenderer({ html }: { html: string }) {
  * Uses regex parsing to avoid DOMParser on server
  */
 export function ContentRenderer({ html }: { html: string }) {
-  const blocks = parseContentServer(sanitizeHtml(html));
+  // Demote any <h1> in body content to <h2> — the page title is the only H1.
+  const sanitized = sanitizeHtml(html).replace(/<(\/?)h1(\s|>)/gi, "<$1h2$2");
+  const blocks = parseContentServer(sanitized);
 
   return (
     <>
