@@ -31,12 +31,14 @@ export default function SiteHeader({
           right: 0,
           width: "100%",
           zIndex: 1030,
-          background: "rgba(255,255,255,0.96)",
-          backdropFilter: "blur(12px)",
+          background: "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
           borderBottom: "1px solid var(--sb-border)",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02)",
         }}
       >
-        <div className="container py-3 d-flex align-items-center justify-content-between gap-3 flex-nowrap sb-site-header-inner">
+        <div className="container py-3 py-lg-2 d-flex align-items-center justify-content-between gap-3 flex-nowrap sb-site-header-inner">
           <Link
             href="/"
             className="d-flex align-items-center gap-2 text-decoration-none sb-site-header-brand flex-shrink-0"
@@ -46,6 +48,7 @@ export default function SiteHeader({
               alt="Simple Biz Toolkit"
               width={72}
               height={72}
+              className="sb-header-logo"
               style={{ borderRadius: 10, border: "1px solid var(--sb-border)" }}
               priority
             />

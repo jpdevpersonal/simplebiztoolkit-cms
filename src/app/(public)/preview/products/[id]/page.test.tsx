@@ -83,9 +83,10 @@ describe("ProductPreviewPage", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Previewing saved draft template.",
     );
-    expect(screen.getByText("Draft Template")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /back to spreadsheets/i }),
-    ).toHaveAttribute("href", "/products/spreadsheets");
+    expect(screen.getAllByText("Draft Template")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Spreadsheets" })).toHaveAttribute(
+      "href",
+      "/products/spreadsheets",
+    );
   });
 });

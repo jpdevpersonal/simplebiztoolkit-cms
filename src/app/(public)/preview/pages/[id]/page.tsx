@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import { ContentRenderer } from "@/components/ContentRenderer";
@@ -59,30 +59,16 @@ export default async function PagePreview({ params }: Props) {
 
       <main className="content-page">
         {parentMenuItem ? (
-          <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-            <Link
-              href={`/pages/${slugify(parentMenuItem.title)}`}
-              className="sb-breadcrumb-link"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                className="sb-breadcrumb-icon"
-              >
-                <path
-                  d="M10 3l-5 5 5 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back to {parentMenuItem.title}
-            </Link>
-          </nav>
+          <SiteBreadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              {
+                name: parentMenuItem.title,
+                href: `/pages/${slugify(parentMenuItem.title)}`,
+              },
+              { name: page.title, href: `/${page.slug}` },
+            ]}
+          />
         ) : null}
 
         <header className="content-header" />

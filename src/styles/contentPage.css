@@ -2,11 +2,11 @@
 .content-page {
   max-width: 980px;
   margin: 0 auto;
-  padding: 36px 18px 72px;
+  padding: 48px 20px 80px;
 }
 
 .content-header {
-  margin-bottom: 22px;
+  margin-bottom: 28px;
 }
 
 .content-badges {
@@ -29,10 +29,12 @@
 }
 
 .content-header-image {
-  margin-bottom: 32px;
-  border-radius: 12px;
+  margin-bottom: 36px;
+  border-radius: var(--sb-radius, 16px);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 12px 40px rgba(0, 0, 0, 0.04);
 }
 
 .content-header-image img {
@@ -109,10 +111,26 @@
 }
 
 .content-cta {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 20px;
-  padding: 22px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.01));
+  border: 1px solid var(--sb-border, rgba(0, 0, 0, 0.08));
+  border-radius: var(--sb-radius-lg, 22px);
+  padding: 2rem;
+  background: linear-gradient(180deg, var(--sb-soft, #f8f9fb) 0%, #fff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.content-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    135deg,
+    var(--sb-green, #1a7f5a),
+    var(--sb-brand-blue, #414556)
+  );
 }
 
 .content-cta h2 {

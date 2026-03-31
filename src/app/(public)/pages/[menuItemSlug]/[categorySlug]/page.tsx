@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
+import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { apiService } from "@/lib/api";
 import { slugify } from "@/lib/slugify";
 import {
@@ -128,51 +129,16 @@ export default async function CategoryPageListing({ params }: Props) {
       <JsonLd json={collectionJsonLd} />
       <section className="sb-section">
         <div className="container">
-          {/* Breadcrumb */}
-          <nav className="sb-breadcrumb" aria-label="Breadcrumb">
-            <Link href="/pages" className="sb-breadcrumb-link">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                className="sb-breadcrumb-icon"
-              >
-                <path
-                  d="M10 3l-5 5 5 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              All Pages
-            </Link>
-
-            <Link
-              href={`/pages/${menuItemSlug}`}
-              className="sb-breadcrumb-link"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-                className="sb-breadcrumb-icon"
-              >
-                <path
-                  d="M10 3l-5 5 5 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back to {item.title}
-            </Link>
-          </nav>
+          <SiteBreadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: item.title, href: `/pages/${menuItemSlug}` },
+              {
+                name: cat.title,
+                href: `/pages/${menuItemSlug}/${categorySlug}`,
+              },
+            ]}
+          />
 
           <div className="pages-header">
             <h1>{cat.title}</h1>

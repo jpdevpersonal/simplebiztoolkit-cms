@@ -315,32 +315,6 @@ export default function ProductDetailClient({ product }: Props) {
           </a>
         </div>
       </div> */}
-
-      {/* Duplicate breadcrumb at bottom of main content */}
-      <nav
-        className="sb-breadcrumb sb-breadcrumb--bottom"
-        aria-label="Breadcrumb"
-      >
-        <Link href="/products" className="sb-breadcrumb-link">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden="true"
-            className="sb-breadcrumb-icon"
-          >
-            <path
-              d="M10 3l-5 5 5 5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Back to Products
-        </Link>
-      </nav>
     </>
   );
 }
