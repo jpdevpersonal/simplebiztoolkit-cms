@@ -68,4 +68,25 @@ describe("AdminPagesTable", () => {
       screen.getByText(/No pages found. Create your first page!/i),
     ).toBeTruthy();
   });
+
+  it("has data-label attributes on all visible cells for mobile card layout", () => {
+    const { container } = render(<AdminPagesTable pages={pages} />);
+
+    const firstRow = container.querySelector("tbody tr")!;
+    const cells = firstRow.querySelectorAll("td");
+    const expectedLabels = [
+      "Title",
+      "Slug",
+      "Menu Item",
+      "Topic",
+      "Status",
+      "Published",
+      "Preview",
+      "Actions",
+    ];
+
+    cells.forEach((cell, i) => {
+      expect(cell.getAttribute("data-label")).toBe(expectedLabels[i]);
+    });
+  });
 });
