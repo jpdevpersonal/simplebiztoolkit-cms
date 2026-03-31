@@ -72,20 +72,41 @@
   background: #fff;
   border: 1px solid var(--sb-border);
   border-radius: var(--sb-radius);
-  padding: 1.5rem 1.25rem;
+  padding: 1.75rem 1.5rem;
   height: 100%;
   display: flex;
   flex-direction: column;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(135deg, var(--sb-green), var(--sb-brand-blue));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-  border-color: var(--sb-brand-blue);
+  transform: translateY(-6px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 20px 56px rgba(0, 0, 0, 0.05);
+  border-color: rgba(65, 69, 86, 0.15);
+}
+
+.page-card:hover::before {
+  transform: scaleX(1);
 }
 
 .page-card-title {

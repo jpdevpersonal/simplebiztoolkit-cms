@@ -79,12 +79,15 @@ export default function HomePage() {
             </span>
 
             <h1 className="sb-hero-title">
-              Run your business smarter with templates that work for you
+              Run your business smarter with
+              <br />
+              <em>templates that actually work</em>
             </h1>
 
             <p className="sb-hero-subtitle">
-              Ready-to-use, printable downloads that cut admin time, keep you
-              organised, and require zero tech skills.
+              Ready-to-use, printable downloads designed for small business
+              owners. Cut admin time, stay organised, and get back to doing what
+              you love.
             </p>
 
             <div className="sb-hero-stars" aria-label="Five star rated on Etsy">
@@ -489,7 +492,7 @@ export default function HomePage() {
         <div className="container">
           <div className="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3 sb-testimonial-header">
             <div>
-              <span className="sb-section-eyebrow">Testamonials</span>
+              <span className="sb-section-eyebrow">Testimonials</span>
               <h2 style={{ fontWeight: 700 }}>What customers say</h2>
               <p className="sb-muted mb-0">Real feedback from Etsy buyers.</p>
             </div>
