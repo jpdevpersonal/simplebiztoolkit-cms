@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import AdminModal from "@/components/AdminModal";
 import EditorFeedback from "@/components/EditorFeedback";
 import { imageApi, validateImageFile, type ImageAsset } from "@/lib/imageApi";
 
@@ -53,9 +60,26 @@ export default function CmsImagePicker({
   const [replacementFile, setReplacementFile] = useState<File | null>(null);
   const [editAltText, setEditAltText] = useState("");
   const [editCaption, setEditCaption] = useState("");
+  const [hoveredImage, setHoveredImage] = useState<ImageAsset | null>(null);
+  const [zoomPosition, setZoomPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const previewUrl = selectedImage?.url ?? value ?? "";
   const linkedToLibrary = Boolean(selectedImage?.id);
+
+  const isEditDirty = useMemo(() => {
+    if (!selectedImage) return false;
+    return (
+      editAltText !== (selectedImage.altText ?? "") ||
+      editCaption !== (selectedImage.caption ?? "") ||
+      replacementFile !== null
+    );
+  }, [selectedImage, editAltText, editCaption, replacementFile]);
+
+  const handleClose = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
     if (!value && !selectedImageId) {
@@ -305,8 +329,45 @@ export default function CmsImagePicker({
     }
   }
 
+  function handleThumbnailMouseEnter(
+    image: ImageAsset,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) {
+    const target = event.currentTarget;
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      const rect = target.getBoundingClientRect();
+      const previewSize = 288; // 18rem
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let top = rect.top;
+      let left = rect.right + 12;
+
+      if (left + previewSize > viewportWidth) {
+        left = rect.left - previewSize - 12;
+      }
+      if (top + previewSize > viewportHeight) {
+        top = viewportHeight - previewSize - 12;
+      }
+      if (top < 12) top = 12;
+
+      setHoveredImage(image);
+      setZoomPosition({ top, left });
+    }, 200);
+  }
+
+  function handleThumbnailMouseLeave() {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setHoveredImage(null);
+    setZoomPosition(null);
+  }
+
   return (
-    <div className={`cms-image-picker${className ? ` ${className}` : ""}`}>
+    <div className={className}>
       <div className="cms-image-picker-trigger-row">
         <div className="cms-image-picker-thumb" aria-hidden="true">
           {previewUrl ? (
@@ -320,15 +381,25 @@ export default function CmsImagePicker({
           )}
         </div>
 
+        <div className="cms-image-picker-trigger-info">
+          <span className="cms-image-picker-trigger-title">
+            {selectedImage?.blobName ?? (previewUrl ? "External URL" : "None")}
+          </span>
+          {selectedImage?.altText ? (
+            <span className="cms-image-picker-trigger-subtitle">
+              {selectedImage.altText}
+            </span>
+          ) : null}
+        </div>
+
         <div className="cms-image-picker-actions">
           <button
             type="button"
             className="admin-btn-action"
-            onClick={() => setIsOpen((open) => !open)}
+            onClick={() => setIsOpen(true)}
             disabled={disabled}
-            aria-expanded={isOpen}
           >
-            {isOpen ? `Close ${label}` : `Manage ${label}`}
+            {`Edit ${label}`}
           </button>
           <button
             type="button"
@@ -341,11 +412,13 @@ export default function CmsImagePicker({
         </div>
       </div>
 
-      {isOpen && (
-        <div
-          className="cms-image-picker-panel"
-          onKeyDownCapture={handlePanelKeyDown}
-        >
+      <AdminModal
+        isOpen={isOpen}
+        onCloseAction={handleClose}
+        title={`Edit ${label}`}
+        size="lg"
+      >
+        <div onKeyDownCapture={handlePanelKeyDown}>
           <EditorFeedback message={message} error={error} />
 
           <section className="cms-image-picker-section">
@@ -386,7 +459,12 @@ export default function CmsImagePicker({
               <h3>Image library</h3>
               {libraryLoading ? (
                 <span className="cms-image-picker-meta-pill">Loading…</span>
-              ) : null}
+              ) : (
+                <span className="cms-image-picker-meta-pill">
+                  {libraryItems.length} image
+                  {libraryItems.length !== 1 ? "s" : ""}
+                </span>
+              )}
             </div>
 
             {libraryItems.length > 0 ? (
@@ -397,20 +475,18 @@ export default function CmsImagePicker({
                     type="button"
                     className={`cms-image-picker-library-item${selectedImage?.id === image.id ? " is-selected" : ""}`}
                     onClick={() => handleChooseExisting(image)}
+                    onMouseEnter={(e) => handleThumbnailMouseEnter(image, e)}
+                    onMouseLeave={handleThumbnailMouseLeave}
                     disabled={disabled}
+                    title={image.blobName}
                   >
                     <img
                       src={image.url}
                       alt={image.altText ?? ""}
                       className="cms-image-picker-library-thumb"
                     />
-                    <span className="cms-image-picker-library-copy">
-                      <span className="cms-image-picker-library-title">
-                        {image.blobName}
-                      </span>
-                      <span className="cms-image-picker-library-caption">
-                        {image.altText || image.caption || image.url}
-                      </span>
+                    <span className="cms-image-picker-library-name">
+                      {image.blobName}
                     </span>
                   </button>
                 ))}
@@ -418,6 +494,19 @@ export default function CmsImagePicker({
             ) : libraryLoading ? null : (
               <p className="cms-image-picker-empty">No images found yet.</p>
             )}
+
+            {hoveredImage && zoomPosition ? (
+              <div
+                className="cms-image-picker-zoom-preview"
+                style={{ top: zoomPosition.top, left: zoomPosition.left }}
+                data-testid="zoom-preview"
+              >
+                <img src={hoveredImage.url} alt={hoveredImage.altText ?? ""} />
+                <div className="cms-image-picker-zoom-info">
+                  {hoveredImage.blobName}
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <section className="cms-image-picker-section">
@@ -544,7 +633,7 @@ export default function CmsImagePicker({
                   <button
                     type="button"
                     className="admin-btn-save cms-image-picker-submit"
-                    disabled={disabled || savingMetadata}
+                    disabled={disabled || savingMetadata || !isEditDirty}
                     onClick={() => void handleSaveMetadata()}
                   >
                     {savingMetadata ? "Saving…" : "Save image details"}
@@ -566,7 +655,7 @@ export default function CmsImagePicker({
             )}
           </section>
         </div>
-      )}
+      </AdminModal>
     </div>
   );
 }
