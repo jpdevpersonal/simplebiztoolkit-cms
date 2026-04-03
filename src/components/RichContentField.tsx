@@ -15,8 +15,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import HtmlCodeEditor from "@/components/HtmlCodeEditor";
 import TiptapEditor from "@/components/TiptapEditor";
 import type { EditorPolicy } from "@/editor/EditorToolbar";
+import { formatHtmlForEditing } from "@/lib/htmlFormatter";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,6 +53,12 @@ export interface RichContentFieldProps {
   onPreview?: () => void;
   /** Optional policy to restrict which block types / marks are available */
   policy?: EditorPolicy;
+  /** Enables readable HTML formatting controls in HTML mode */
+  enableHtmlFormatting?: boolean;
+  /** Auto-formats the HTML when switching from Tiptap into HTML mode */
+  formatHtmlOnModeSwitch?: boolean;
+  /** Visual treatment for the HTML editor */
+  htmlEditorVariant?: "plain" | "code";
 }
 
 // ─── Toggle pill ──────────────────────────────────────────────────────────────
@@ -127,6 +135,9 @@ export default function RichContentField({
   onSave,
   onPreview,
   policy,
+  enableHtmlFormatting = false,
+  formatHtmlOnModeSwitch = false,
+  htmlEditorVariant = "plain",
 }: RichContentFieldProps) {
   // Always start with "html" so server and client render identically (avoids
   // hydration mismatches). After the component mounts, we restore the stored
@@ -145,12 +156,34 @@ export default function RichContentField({
     }
   }, [storageKey]);
 
+  const applyFormattedHtml = () => {
+    if (!enableHtmlFormatting) return;
+
+    const formatted = formatHtmlForEditing(value);
+    if (formatted && formatted !== value) {
+      onChange(formatted);
+    }
+  };
+
   const handleModeChange = (m: EditorMode) => {
+    const previousMode = mode;
     setMode(m);
     try {
       localStorage.setItem(storageKey, m);
     } catch {
       // ignore
+    }
+
+    if (
+      enableHtmlFormatting &&
+      formatHtmlOnModeSwitch &&
+      previousMode === "tiptap" &&
+      m === "html"
+    ) {
+      const formatted = formatHtmlForEditing(value);
+      if (formatted && formatted !== value) {
+        onChange(formatted);
+      }
     }
   };
 
@@ -169,20 +202,56 @@ export default function RichContentField({
           {label}
           {required && " *"}
         </label>
-        <ModeToggle mode={mode} onChange={handleModeChange} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+          }}
+        >
+          {mode === "html" && enableHtmlFormatting && (
+            <button
+              type="button"
+              onClick={applyFormattedHtml}
+              disabled={!value.trim()}
+              className="btn btn-sm btn-outline-secondary"
+            >
+              Format HTML
+            </button>
+          )}
+          <ModeToggle mode={mode} onChange={handleModeChange} />
+        </div>
       </div>
 
       {/* Editor */}
       {mode === "html" ? (
         <>
-          <textarea
-            className="form-control"
-            rows={htmlRows}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            required={required}
-            style={{ fontFamily: "monospace", fontSize: "0.8125rem" }}
-          />
+          {htmlEditorVariant === "code" ? (
+            <HtmlCodeEditor
+              value={value}
+              onChange={onChange}
+              rows={htmlRows}
+              required={required}
+              ariaLabel={label || "HTML source editor"}
+            />
+          ) : (
+            <textarea
+              className="form-control"
+              rows={htmlRows}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              required={required}
+              spellCheck={false}
+              wrap="off"
+              style={{
+                fontFamily:
+                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontSize: "0.8125rem",
+                lineHeight: 1.65,
+                tabSize: 2,
+              }}
+            />
+          )}
           {hint && (
             <small style={{ color: "var(--sb-muted)", fontSize: "0.8125rem" }}>
               {hint}

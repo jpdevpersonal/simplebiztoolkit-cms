@@ -11,6 +11,8 @@ type AdminFormBlockProps = {
   children: React.ReactNode;
   /** Extra classes appended to the outer wrapper (e.g. "mb-0") */
   className?: string;
+  /** Optional actions rendered on the right side of the header */
+  headerActions?: React.ReactNode;
 };
 
 /**
@@ -23,18 +25,26 @@ export default function AdminFormBlock({
   title,
   children,
   className,
+  headerActions,
 }: AdminFormBlockProps) {
+  const hasBody = React.Children.toArray(children).length > 0;
+
   return (
     <div className={`admin-form-block${className ? ` ${className}` : ""}`}>
       <div className="admin-form-block-header">
-        <span className="admin-form-block-icon" aria-hidden="true">
-          {icon}
-        </span>
-        <div className="admin-form-block-title-wrap">
-          <span className="admin-form-block-title">{title}</span>
+        <div className="admin-form-block-heading">
+          <span className="admin-form-block-icon" aria-hidden="true">
+            {icon}
+          </span>
+          <div className="admin-form-block-title-wrap">
+            <span className="admin-form-block-title">{title}</span>
+          </div>
         </div>
+        {headerActions ? (
+          <div className="admin-form-block-actions">{headerActions}</div>
+        ) : null}
       </div>
-      <div className="admin-form-block-body">{children}</div>
+      {hasBody ? <div className="admin-form-block-body">{children}</div> : null}
     </div>
   );
 }

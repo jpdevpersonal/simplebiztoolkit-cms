@@ -3,6 +3,10 @@
    Mirrors the product category pattern
    ============================================= */
 
+.pages-section {
+  padding-top: 48px;
+}
+
 .pages-header {
   text-align: center;
   margin-bottom: 3rem;
@@ -184,4 +188,16 @@
   font-size: 0.95rem;
   max-width: 400px;
   margin: 0 auto;
+}
+
+@media (max-width: 991px) {
+  .pages-section {
+    padding-top: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pages-section {
+    padding-top: 24px;
+  }
 }

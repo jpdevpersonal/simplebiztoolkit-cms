@@ -127,7 +127,7 @@ export default async function CategoryPageListing({ params }: Props) {
     <>
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={collectionJsonLd} />
-      <section className="sb-section">
+      <section className="sb-section pages-section">
         <div className="container">
           <SiteBreadcrumb
             items={[

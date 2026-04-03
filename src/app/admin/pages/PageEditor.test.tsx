@@ -108,7 +108,8 @@ describe("PageEditor", () => {
             slug: "page-slug",
             title: "Existing Page",
             description: "Description",
-            content: "<p>content</p>",
+            content:
+              "<div>\n  <p>content</p>\n  <p><strong>more</strong></p>\n</div>",
             dateISO: "2026-03-24",
             dateModified: "2026-03-24",
             status: "draft",
@@ -134,6 +135,7 @@ describe("PageEditor", () => {
     expect(payload).toMatchObject({
       featuredImageId: "img-featured",
       headerImageId: "img-header",
+      content: "<div><p>content</p><p><strong>more</strong></p></div>",
     });
     expect(payload).not.toHaveProperty("featuredImage");
     expect(payload).not.toHaveProperty("headerImage");
@@ -259,6 +261,163 @@ describe("PageEditor", () => {
     expect(
       screen.queryByRole("link", { name: /preview/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("collapses and expands page sections", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "draft-page",
+            title: "Draft Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    expect(screen.getByText("Title *")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "Collapse Page Content" }),
+    );
+
+    expect(screen.queryByText("Title *")).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: "Expand Page Content" }),
+    );
+
+    expect(screen.getByText("Title *")).toBeInTheDocument();
+  });
+
+  it("tracks sidebar collapse state classes without hiding the sidebar", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "draft-page",
+            title: "Draft Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    const layout = screen.getByTestId("page-editor-layout");
+
+    expect(layout.className).toContain("page-editor-layout");
+    expect(layout.className).not.toContain(
+      "page-editor-layout--sidebar-relaxed",
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Collapse Assignment" }),
+    );
+    expect(layout.className).toContain("page-editor-layout--sidebar-relaxed");
+
+    await user.click(screen.getByRole("button", { name: "Collapse Publish" }));
+    expect(layout.className).toContain("page-editor-layout--sidebar-compact");
+  });
+
+  it("keeps collapsed sidebar sections visible so they can be expanded again", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "draft-page",
+            title: "Draft Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Collapse Assignment" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Collapse Publish" }));
+
+    expect(
+      screen.getByRole("button", { name: "Expand Assignment" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Expand Publish" }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders SEO in the main column before the content editor", async () => {
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "draft-page",
+            title: "Draft Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
+    });
+
+    const seoToggle = screen.getByRole("button", { name: "Collapse SEO" });
+    const contentToggle = screen.getByRole("button", {
+      name: "Collapse Content",
+    });
+
+    expect(
+      seoToggle.compareDocumentPosition(contentToggle) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("renders the content editor in its own full-width row", async () => {
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "draft-page",
+            title: "Draft Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
+    });
+
+    const contentRow = screen.getByTestId("page-editor-content-row");
+    const contentToggle = screen.getByRole("button", {
+      name: "Collapse Content",
+    });
+
+    expect(contentRow).toContainElement(contentToggle);
   });
 
   it("shows a delete error when removing an existing page fails", async () => {
