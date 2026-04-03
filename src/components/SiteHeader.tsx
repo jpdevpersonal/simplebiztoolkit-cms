@@ -4,7 +4,8 @@ import React, { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import SiteNavigation, { type MenuNavItem } from "./SiteNavigation";
+import SiteNavigation from "./SiteNavigation";
+import type { MenuNavItem } from "@/lib/siteMenu";
 
 type Props = {
   menuNavItems?: MenuNavItem[];
