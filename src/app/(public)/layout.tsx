@@ -10,7 +10,11 @@ import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "../BootstrapClient";
 import ScrollToTop from "../ScrollToTop";
-import type { MenuNavItem } from "@/components/SiteNavigation";
+import {
+  FOOTER_MENU_LOCATION_KEY,
+  PRIMARY_MENU_LOCATION_KEY,
+} from "@/lib/menuLocations";
+import type { MenuNavItem } from "@/lib/siteMenu";
 import { createWebsiteJsonLd } from "@/lib/seo";
 import {
   getMenuLayoutOrderIds,
@@ -86,16 +90,20 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Build dynamic navigation items from published menu items
+  // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
   let navOrderIds: string[] = [];
+  let footerOrderIds: string[] = [];
   try {
-    const [publishedItemsRaw, layoutOrderIds] = await Promise.all([
-      getPublishedMenuItems(),
-      getMenuLayoutOrderIds("primary"),
-    ]);
+    const [publishedItemsRaw, layoutOrderIds, footerLayoutOrderIds] =
+      await Promise.all([
+        getPublishedMenuItems(),
+        getMenuLayoutOrderIds(PRIMARY_MENU_LOCATION_KEY),
+        getMenuLayoutOrderIds(FOOTER_MENU_LOCATION_KEY),
+      ]);
 
     navOrderIds = layoutOrderIds;
+    footerOrderIds = footerLayoutOrderIds;
     const publishedItems = orderMenuItemsByLayout(
       publishedItemsRaw,
       layoutOrderIds,
@@ -129,7 +137,7 @@ export default async function PublicLayout({
 
       <SiteHeader menuNavItems={menuNavItems} navOrderIds={navOrderIds} />
       <main id="content">{children}</main>
-      <SiteFooter />
+      <SiteFooter menuNavItems={menuNavItems} navOrderIds={footerOrderIds} />
       <StickyMobileCta />
     </>
   );

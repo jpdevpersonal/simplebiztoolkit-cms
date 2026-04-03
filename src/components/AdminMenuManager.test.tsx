@@ -281,4 +281,43 @@ describe("AdminMenuManager", () => {
       ).not.toContain("hidden-static:/products");
     });
   });
+
+  it("saves footer layout independently from the primary navigation", async () => {
+    const user = userEvent.setup();
+    vi.mocked(clientApi.updateMenuLayoutSettings).mockResolvedValueOnce(
+      {} as never,
+    );
+    vi.mocked(revalidateMenuContent).mockResolvedValueOnce(undefined as never);
+
+    render(
+      <AdminMenuManager
+        menuItems={[
+          { id: "menu-1", title: "Guides", status: "published" } as any,
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole("tab", { name: "Footer links" }));
+
+    const templatesRow = screen
+      .getByText("Templates")
+      .closest(".admin-menu-manager-row") as HTMLElement;
+
+    await user.click(
+      within(templatesRow).getByRole("button", { name: "Hide" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Save Order" }));
+
+    await waitFor(() => {
+      expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          menuKey: "sb-footer-main",
+          orderedMenuItemIds: expect.arrayContaining([
+            "hidden-static:/products",
+            "menu-1",
+          ]),
+        }),
+      );
+    });
+  });
 });

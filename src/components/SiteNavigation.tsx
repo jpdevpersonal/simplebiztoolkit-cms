@@ -5,49 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { links } from "@/config/links";
 import { featureFlags } from "@/config/featureFlags";
-import {
-  hiddenStaticOrderIdToStaticOrderId,
-  isHiddenStaticNavOrderId,
-  isStaticNavOrderId,
-  staticNavItems,
-  toStaticNavOrderId,
-} from "@/config/staticNavItems";
 import { createPortal } from "react-dom";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
-import { normalizeOrderedMenuItemIds } from "@/lib/menuLayout";
-
-/** Shape passed from server components – fully serialisable */
-export type MenuNavPage = { id: string; title: string; href: string };
-export type MenuNavGroup = {
-  categoryId?: string;
-  categoryTitle?: string;
-  pages: MenuNavPage[];
-};
-export type MenuNavItem = {
-  id: string;
-  title: string;
-  /** Set when the item links directly to a single page (no dropdown needed) */
-  directHref?: string;
-  /** Set when the item should render as a dropdown */
-  groups?: MenuNavGroup[];
-};
+import {
+  composeOrderedMenuEntries,
+  type MenuNavItem,
+  type OrderedMenuEntry,
+} from "@/lib/siteMenu";
 
 type Props = { menuNavItems?: MenuNavItem[]; navOrderIds?: string[] };
-
-type OrderedStaticNavItem = {
-  kind: "static";
-  orderId: string;
-  to: string;
-  label: string;
-};
-
-type OrderedCmsNavItem = {
-  kind: "cms";
-  orderId: string;
-  item: MenuNavItem;
-};
-
-type OrderedNavItem = OrderedStaticNavItem | OrderedCmsNavItem;
 
 export default function SiteNavigation({
   menuNavItems = [],
@@ -84,116 +50,10 @@ export default function SiteNavigation({
     };
   }, [isOpen]);
 
-  const normalizedOrderIds = useMemo(
-    () => normalizeOrderedMenuItemIds(navOrderIds),
-    [navOrderIds],
+  const orderedNavItems = useMemo<OrderedMenuEntry[]>(
+    () => composeOrderedMenuEntries(menuNavItems, navOrderIds),
+    [menuNavItems, navOrderIds],
   );
-
-  const hiddenStaticOrderIds = useMemo(() => {
-    const hidden = new Set<string>();
-    for (const id of normalizedOrderIds) {
-      const mappedStaticId = hiddenStaticOrderIdToStaticOrderId(id);
-      if (mappedStaticId) {
-        hidden.add(mappedStaticId);
-      }
-    }
-    return hidden;
-  }, [normalizedOrderIds]);
-
-  const orderedStaticItems = useMemo<OrderedStaticNavItem[]>(
-    () =>
-      staticNavItems
-        .map((item) => ({
-          kind: "static" as const,
-          to: item.to,
-          label: item.label,
-          orderId: toStaticNavOrderId(item.to),
-        }))
-        .filter((item) => !hiddenStaticOrderIds.has(item.orderId)),
-    [hiddenStaticOrderIds],
-  );
-
-  const orderedCmsItems = useMemo<OrderedCmsNavItem[]>(
-    () =>
-      menuNavItems.map((item) => ({
-        kind: "cms",
-        item,
-        orderId: item.id,
-      })),
-    [menuNavItems],
-  );
-
-  const orderedNavItems = useMemo<OrderedNavItem[]>(() => {
-    if (normalizedOrderIds.length === 0) {
-      return [...orderedStaticItems, ...orderedCmsItems];
-    }
-
-    const positionalOrderIds = normalizedOrderIds.filter(
-      (id) => !isHiddenStaticNavOrderId(id),
-    );
-
-    const includesManagedStaticTokens = normalizedOrderIds.some(
-      (id) => isStaticNavOrderId(id) || isHiddenStaticNavOrderId(id),
-    );
-
-    // Backward compatibility: older settings only stored CMS ids, so keep
-    // the static links in default order and just reorder CMS entries.
-    if (!includesManagedStaticTokens) {
-      const cmsById = new Map(
-        orderedCmsItems.map((entry) => [entry.orderId, entry]),
-      );
-      const seenCms = new Set<string>();
-      const orderedCms: OrderedCmsNavItem[] = [];
-
-      for (const id of positionalOrderIds) {
-        if (seenCms.has(id)) continue;
-        const entry = cmsById.get(id);
-        if (!entry) continue;
-        seenCms.add(id);
-        orderedCms.push(entry);
-      }
-
-      for (const entry of orderedCmsItems) {
-        if (seenCms.has(entry.orderId)) continue;
-        seenCms.add(entry.orderId);
-        orderedCms.push(entry);
-      }
-
-      return [...orderedStaticItems, ...orderedCms];
-    }
-
-    const allEntries: OrderedNavItem[] = [
-      ...orderedStaticItems,
-      ...orderedCmsItems,
-    ];
-    const byId = new Map(allEntries.map((entry) => [entry.orderId, entry]));
-    const ordered: OrderedNavItem[] = [];
-    const seen = new Set<string>();
-
-    for (const rawId of positionalOrderIds) {
-      const lookupIds = rawId.startsWith("cms:")
-        ? [rawId, rawId.slice(4)]
-        : [rawId];
-
-      let matched: OrderedNavItem | undefined;
-      for (const lookupId of lookupIds) {
-        matched = byId.get(lookupId);
-        if (matched) break;
-      }
-
-      if (!matched || seen.has(matched.orderId)) continue;
-      seen.add(matched.orderId);
-      ordered.push(matched);
-    }
-
-    for (const entry of allEntries) {
-      if (seen.has(entry.orderId)) continue;
-      seen.add(entry.orderId);
-      ordered.push(entry);
-    }
-
-    return ordered;
-  }, [normalizedOrderIds, orderedCmsItems, orderedStaticItems]);
 
   const isActive = (href: string) => {
     if (!pathname) return false;

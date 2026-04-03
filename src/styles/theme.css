@@ -1242,8 +1242,18 @@ ol:not([class]) li {
 
 .sb-footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
   gap: 2.5rem;
+}
+
+@media (max-width: 1100px) {
+  .sb-footer-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sb-footer-brand {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 767px) {
