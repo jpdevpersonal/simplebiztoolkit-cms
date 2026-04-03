@@ -1,8 +1,68 @@
 import Link from "next/link";
 import { links } from "@/config/links";
+import {
+  composeOrderedMenuEntries,
+  getOrderedMenuEntryHref,
+  type MenuNavItem,
+} from "../lib/siteMenu";
 
-export default function SiteFooter() {
+type FooterLink = {
+  id: string;
+  href: string;
+  label: string;
+};
+
+type Props = {
+  menuNavItems?: MenuNavItem[];
+  navOrderIds?: string[];
+};
+
+export default function SiteFooter({
+  menuNavItems = [],
+  navOrderIds = [],
+}: Props) {
   const year = new Date().getFullYear();
+  const managedFooterEntries = composeOrderedMenuEntries(
+    menuNavItems,
+    navOrderIds,
+  )
+    .map((entry) => ({
+      id: entry.orderId,
+      href: getOrderedMenuEntryHref(entry),
+      label: entry.kind === "static" ? entry.label : entry.item.title,
+      kind: entry.kind,
+    }))
+    .filter(
+      (
+        entry,
+      ): entry is FooterLink & {
+        kind: "static" | "cms";
+      } => Boolean(entry.href),
+    );
+
+  const staticEntries = managedFooterEntries.filter(
+    (entry) => entry.kind === "static",
+  );
+  const exploreEntries = managedFooterEntries.filter(
+    (entry) => entry.kind === "cms",
+  );
+
+  function getStaticLink(path: string): FooterLink | undefined {
+    return staticEntries.find((entry) => entry.href === path);
+  }
+
+  const shopLinks = [
+    getStaticLink("/products"),
+    getStaticLink("/testimonials"),
+  ].filter((entry): entry is FooterLink => Boolean(entry));
+  const supportLinks = [
+    getStaticLink("/faq"),
+    getStaticLink("/help"),
+    getStaticLink("/contact"),
+  ].filter((entry): entry is FooterLink => Boolean(entry));
+  const companyLinks = [getStaticLink("/about")].filter(
+    (entry): entry is FooterLink => Boolean(entry),
+  );
 
   return (
     <footer className="sb-footer">
@@ -44,11 +104,15 @@ export default function SiteFooter() {
               </p>
             </div>
 
-            {/* Quick Links */}
+            {/* Shop */}
             <div className="sb-footer-col">
               <h4 className="sb-footer-heading">Shop</h4>
               <nav className="sb-footer-nav">
-                <Link href="/products">All Templates</Link>
+                {shopLinks.map((entry) => (
+                  <Link key={entry.id} href={entry.href}>
+                    {entry.label}
+                  </Link>
+                ))}
                 <a
                   href={links.etsyShopUrl}
                   target="_blank"
@@ -56,17 +120,18 @@ export default function SiteFooter() {
                 >
                   Etsy Shop
                 </a>
-                <Link href="/testimonials">Reviews</Link>
               </nav>
             </div>
 
-            {/* Help */}
+            {/* Support */}
             <div className="sb-footer-col">
               <h4 className="sb-footer-heading">Support</h4>
               <nav className="sb-footer-nav">
-                <Link href="/faq">FAQ</Link>
-                <Link href="/help">Help</Link>
-                <Link href="/contact">Contact</Link>
+                {supportLinks.map((entry) => (
+                  <Link key={entry.id} href={entry.href}>
+                    {entry.label}
+                  </Link>
+                ))}
               </nav>
             </div>
 
@@ -74,7 +139,23 @@ export default function SiteFooter() {
             <div className="sb-footer-col">
               <h4 className="sb-footer-heading">Company</h4>
               <nav className="sb-footer-nav">
-                <Link href="/about">About</Link>
+                {companyLinks.map((entry) => (
+                  <Link key={entry.id} href={entry.href}>
+                    {entry.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+
+            {/* Explore */}
+            <div className="sb-footer-col">
+              <h4 className="sb-footer-heading">Explore</h4>
+              <nav className="sb-footer-nav">
+                {exploreEntries.map((entry) => (
+                  <Link key={entry.id} href={entry.href}>
+                    {entry.label}
+                  </Link>
+                ))}
               </nav>
             </div>
           </div>

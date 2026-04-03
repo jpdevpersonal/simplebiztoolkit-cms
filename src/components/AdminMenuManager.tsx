@@ -35,10 +35,18 @@ import {
   normalizeOrderedMenuItemIds,
   orderEntitiesByIds,
 } from "@/lib/menuLayout";
+import {
+  getMenuLocationOption,
+  menuLocationOptions,
+  PRIMARY_MENU_LOCATION_KEY,
+  type MenuLocationKey,
+} from "@/lib/menuLocations";
 
 type Props = {
   menuItems: MenuItem[];
   initialLayout?: MenuLayoutSettings | null;
+  initialLayouts?: Partial<Record<MenuLocationKey, MenuLayoutSettings | null>>;
+  defaultLocation?: MenuLocationKey;
 };
 
 type ManagedStaticNavItem = {
@@ -55,6 +63,13 @@ type ManagedCmsNavItem = {
 };
 
 type ManagedNavItem = ManagedStaticNavItem | ManagedCmsNavItem;
+
+type ManagedLocationState = {
+  items: ManagedNavItem[];
+  savedOrderIds: string[];
+  hiddenStaticNavIds: string[];
+  savedHiddenStaticNavIds: string[];
+};
 
 type SortableRowProps = {
   item: ManagedNavItem;
@@ -74,6 +89,62 @@ function StatusBadge({ status }: { status?: string }) {
       {published ? "Published" : "Draft"}
     </span>
   );
+}
+
+function createManagedLocationState(
+  menuItems: MenuItem[],
+  allStaticItems: ManagedStaticNavItem[],
+  initialLayout?: MenuLayoutSettings | null,
+): ManagedLocationState {
+  const initialLayoutOrderIds = normalizeOrderedMenuItemIds(
+    initialLayout?.orderedMenuItemIds,
+  );
+
+  const availableStaticIds = new Set(allStaticItems.map((item) => item.id));
+  const hiddenIds = new Set<string>();
+
+  for (const rawId of initialLayoutOrderIds) {
+    const staticId = hiddenStaticOrderIdToStaticOrderId(rawId);
+    if (!staticId || !availableStaticIds.has(staticId)) continue;
+    hiddenIds.add(staticId);
+  }
+
+  const initialHiddenStaticNavIds = allStaticItems
+    .map((item) => item.id)
+    .filter((id) => hiddenIds.has(id));
+
+  const positionalOrderIds = initialLayoutOrderIds.filter(
+    (id) => hiddenStaticOrderIdToStaticOrderId(id) === null,
+  );
+  const visibleStaticItems = allStaticItems.filter(
+    (item) => !initialHiddenStaticNavIds.includes(item.id),
+  );
+  const cmsItems = orderEntitiesByIds(menuItems, positionalOrderIds).map(
+    (item) => ({
+      id: item.id,
+      kind: "cms" as const,
+      item,
+    }),
+  );
+
+  const includesManagedStaticTokens = initialLayoutOrderIds.some(
+    (id) =>
+      isStaticNavOrderId(id) || hiddenStaticOrderIdToStaticOrderId(id) !== null,
+  );
+
+  const items = includesManagedStaticTokens
+    ? orderEntitiesByIds(
+        [...visibleStaticItems, ...cmsItems],
+        positionalOrderIds,
+      )
+    : [...visibleStaticItems, ...cmsItems];
+
+  return {
+    items,
+    savedOrderIds: items.map((item) => item.id),
+    hiddenStaticNavIds: initialHiddenStaticNavIds,
+    savedHiddenStaticNavIds: initialHiddenStaticNavIds,
+  };
 }
 
 function SortableMenuRow({
@@ -169,7 +240,12 @@ function SortableMenuRow({
   );
 }
 
-export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
+export default function AdminMenuManager({
+  menuItems,
+  initialLayout,
+  initialLayouts,
+  defaultLocation = PRIMARY_MENU_LOCATION_KEY,
+}: Props) {
   const newTitleInputId = "menu-manager-new-title";
   const newStatusInputId = "menu-manager-new-status";
 
@@ -184,71 +260,35 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
     [],
   );
 
-  const initialLayoutOrderIds = useMemo(
-    () => normalizeOrderedMenuItemIds(initialLayout?.orderedMenuItemIds),
-    [initialLayout?.orderedMenuItemIds],
-  );
+  const initialLocationStates = useMemo(() => {
+    const initialLayoutMap = {
+      ...Object.fromEntries(
+        menuLocationOptions.map((option) => [option.key, null]),
+      ),
+      ...initialLayouts,
+    } as Partial<Record<MenuLocationKey, MenuLayoutSettings | null>>;
 
-  const initialHiddenStaticNavIds = useMemo(() => {
-    const availableStaticIds = new Set(allStaticItems.map((item) => item.id));
-    const hiddenIds = new Set<string>();
-
-    for (const rawId of initialLayoutOrderIds) {
-      const staticId = hiddenStaticOrderIdToStaticOrderId(rawId);
-      if (!staticId || !availableStaticIds.has(staticId)) continue;
-      hiddenIds.add(staticId);
+    if (!initialLayouts?.[PRIMARY_MENU_LOCATION_KEY] && initialLayout) {
+      initialLayoutMap[PRIMARY_MENU_LOCATION_KEY] = initialLayout;
     }
 
-    return allStaticItems
-      .map((item) => item.id)
-      .filter((id) => hiddenIds.has(id));
-  }, [allStaticItems, initialLayoutOrderIds]);
+    return Object.fromEntries(
+      menuLocationOptions.map((option) => [
+        option.key,
+        createManagedLocationState(
+          menuItems,
+          allStaticItems,
+          initialLayoutMap[option.key] ?? null,
+        ),
+      ]),
+    ) as Record<MenuLocationKey, ManagedLocationState>;
+  }, [allStaticItems, initialLayout, initialLayouts, menuItems]);
 
-  const initialOrder = useMemo<ManagedNavItem[]>(() => {
-    const positionalOrderIds = initialLayoutOrderIds.filter(
-      (id) => hiddenStaticOrderIdToStaticOrderId(id) === null,
-    );
-    const visibleStaticItems = allStaticItems.filter(
-      (item) => !initialHiddenStaticNavIds.includes(item.id),
-    );
-    const cmsItems = orderEntitiesByIds(menuItems, positionalOrderIds).map(
-      (item) => ({
-        id: item.id,
-        kind: "cms" as const,
-        item,
-      }),
-    );
-
-    const includesManagedStaticTokens = initialLayoutOrderIds.some(
-      (id) =>
-        isStaticNavOrderId(id) ||
-        hiddenStaticOrderIdToStaticOrderId(id) !== null,
-    );
-    if (!includesManagedStaticTokens) {
-      return [...visibleStaticItems, ...cmsItems];
-    }
-
-    return orderEntitiesByIds(
-      [...visibleStaticItems, ...cmsItems],
-      positionalOrderIds,
-    );
-  }, [
-    allStaticItems,
-    initialHiddenStaticNavIds,
-    initialLayoutOrderIds,
-    menuItems,
-  ]);
-
-  const [items, setItems] = useState<ManagedNavItem[]>(initialOrder);
-  const [savedOrderIds, setSavedOrderIds] = useState<string[]>(
-    initialOrder.map((item) => item.id),
-  );
-  const [hiddenStaticNavIds, setHiddenStaticNavIds] = useState<string[]>(
-    initialHiddenStaticNavIds,
-  );
-  const [savedHiddenStaticNavIds, setSavedHiddenStaticNavIds] = useState<
-    string[]
-  >(initialHiddenStaticNavIds);
+  const [selectedLocation, setSelectedLocation] =
+    useState<MenuLocationKey>(defaultLocation);
+  const [locationState, setLocationState] = useState<
+    Record<MenuLocationKey, ManagedLocationState>
+  >(initialLocationStates);
   const [newTitle, setNewTitle] = useState("");
   const [newStatus, setNewStatus] = useState<"draft" | "published">("draft");
   const [adding, setAdding] = useState(false);
@@ -263,6 +303,14 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
+
+  const currentLocationOption =
+    getMenuLocationOption(selectedLocation) ?? menuLocationOptions[0];
+  const currentState = locationState[selectedLocation];
+  const items = currentState.items;
+  const savedOrderIds = currentState.savedOrderIds;
+  const hiddenStaticNavIds = currentState.hiddenStaticNavIds;
+  const savedHiddenStaticNavIds = currentState.savedHiddenStaticNavIds;
 
   const orderSignature = items.map((item) => item.id).join("|");
   const savedSignature = savedOrderIds.join("|");
@@ -303,15 +351,49 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
     [allStaticItems, normalizedHiddenStaticNavIds],
   );
 
+  function updateCurrentLocationState(
+    updater: (state: ManagedLocationState) => ManagedLocationState,
+  ) {
+    setLocationState((prev) => ({
+      ...prev,
+      [selectedLocation]: updater(prev[selectedLocation]),
+    }));
+  }
+
+  function updateAllLocationStates(
+    updater: (
+      state: ManagedLocationState,
+      locationKey: MenuLocationKey,
+    ) => ManagedLocationState,
+  ) {
+    setLocationState((prev) => {
+      const next = { ...prev };
+
+      for (const option of menuLocationOptions) {
+        next[option.key] = updater(prev[option.key], option.key);
+      }
+
+      return next;
+    });
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    setItems((prev) => {
-      const oldIndex = prev.findIndex((item) => item.id === String(active.id));
-      const newIndex = prev.findIndex((item) => item.id === String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return prev;
-      return arrayMove(prev, oldIndex, newIndex);
+    updateCurrentLocationState((state) => {
+      const oldIndex = state.items.findIndex(
+        (item) => item.id === String(active.id),
+      );
+      const newIndex = state.items.findIndex(
+        (item) => item.id === String(over.id),
+      );
+      if (oldIndex === -1 || newIndex === -1) return state;
+
+      return {
+        ...state,
+        items: arrayMove(state.items, oldIndex, newIndex),
+      };
     });
   }
 
@@ -344,10 +426,17 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
         item: createdItem,
       };
 
-      setItems((prev) => [...prev, createdManagedItem]);
+      updateAllLocationStates((state) => ({
+        ...state,
+        items: state.items.some((item) => item.id === createdManagedItem.id)
+          ? state.items
+          : [...state.items, createdManagedItem],
+      }));
       setNewTitle("");
       setNewStatus("draft");
-      setMessage(`Added menu item \"${createdItem.title}\".`);
+      setMessage(
+        `Added menu item \"${createdItem.title}\". Save each location after arranging it.`,
+      );
       await revalidateMenuContent();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -369,13 +458,14 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
         description: item.item.description,
         status: nextStatus,
       });
-      setItems((prev) =>
-        prev.map((candidate) =>
+      updateAllLocationStates((state) => ({
+        ...state,
+        items: state.items.map((candidate) =>
           candidate.id === item.id && candidate.kind === "cms"
             ? { ...candidate, item: { ...candidate.item, status: nextStatus } }
             : candidate,
         ),
-      );
+      }));
       await revalidateMenuContent();
       setMessage(
         `${item.item.title} is now ${nextStatus === "published" ? "published" : "hidden"}.`,
@@ -402,8 +492,11 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
 
     try {
       await clientApi.deleteMenuItem(item.id);
-      setItems((prev) => prev.filter((candidate) => candidate.id !== item.id));
-      setSavedOrderIds((prev) => prev.filter((id) => id !== item.id));
+      updateAllLocationStates((state) => ({
+        ...state,
+        items: state.items.filter((candidate) => candidate.id !== item.id),
+        savedOrderIds: state.savedOrderIds.filter((id) => id !== item.id),
+      }));
       await revalidateMenuContent();
       setMessage(`Deleted menu item \"${item.item.title}\".`);
     } catch (err: unknown) {
@@ -423,16 +516,20 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
     }
 
     setError(null);
-    setItems((prev) => prev.filter((candidate) => candidate.id !== item.id));
-    setHiddenStaticNavIds((prev) => {
-      const nextSet = new Set(prev);
+    updateCurrentLocationState((state) => {
+      const nextSet = new Set(state.hiddenStaticNavIds);
       nextSet.add(item.id);
-      return allStaticItems
-        .map((candidate) => candidate.id)
-        .filter((id) => nextSet.has(id));
+
+      return {
+        ...state,
+        items: state.items.filter((candidate) => candidate.id !== item.id),
+        hiddenStaticNavIds: allStaticItems
+          .map((candidate) => candidate.id)
+          .filter((id) => nextSet.has(id)),
+      };
     });
     setMessage(
-      `Built-in link \"${item.label}\" hidden. Click Save Order to persist.`,
+      `Built-in link \"${item.label}\" hidden for ${currentLocationOption.label}. Click Save Order to persist.`,
     );
   }
 
@@ -441,22 +538,33 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
     if (!staticItem) return;
 
     setError(null);
-    setHiddenStaticNavIds((prev) => prev.filter((id) => id !== itemId));
-    setItems((prev) => {
-      if (prev.some((candidate) => candidate.id === itemId)) {
-        return prev;
+    updateCurrentLocationState((state) => {
+      if (state.items.some((candidate) => candidate.id === itemId)) {
+        return {
+          ...state,
+          hiddenStaticNavIds: state.hiddenStaticNavIds.filter(
+            (id) => id !== itemId,
+          ),
+        };
       }
 
-      const next = [...prev];
-      const firstCmsIndex = next.findIndex(
+      const nextItems = [...state.items];
+      const firstCmsIndex = nextItems.findIndex(
         (candidate) => candidate.kind === "cms",
       );
-      const insertAt = firstCmsIndex === -1 ? next.length : firstCmsIndex;
-      next.splice(insertAt, 0, staticItem);
-      return next;
+      const insertAt = firstCmsIndex === -1 ? nextItems.length : firstCmsIndex;
+      nextItems.splice(insertAt, 0, staticItem);
+
+      return {
+        ...state,
+        hiddenStaticNavIds: state.hiddenStaticNavIds.filter(
+          (id) => id !== itemId,
+        ),
+        items: nextItems,
+      };
     });
     setMessage(
-      `Built-in link \"${staticItem.label}\" restored. Click Save Order to persist.`,
+      `Built-in link \"${staticItem.label}\" restored for ${currentLocationOption.label}. Click Save Order to persist.`,
     );
   }
 
@@ -476,14 +584,17 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
       ];
 
       await clientApi.updateMenuLayoutSettings({
-        menuKey: "primary",
+        menuKey: selectedLocation,
         orderedMenuItemIds,
         isActive: true,
       });
-      setSavedOrderIds(orderedVisibleIds);
-      setSavedHiddenStaticNavIds(normalizedHiddenStaticNavIds);
+      updateCurrentLocationState((state) => ({
+        ...state,
+        savedOrderIds: orderedVisibleIds,
+        savedHiddenStaticNavIds: normalizedHiddenStaticNavIds,
+      }));
       await revalidateMenuContent();
-      setMessage("Menu order saved.");
+      setMessage(`${currentLocationOption.label} order saved.`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -531,12 +642,44 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
 
       <div className="row g-3">
         <div className="col-12 col-xl-8">
-          <AdminFormBlock icon={managerIcon} title="Top-level Menu Order">
+          <AdminFormBlock icon={managerIcon} title="Menu Placement">
+            <div className="mb-3" role="tablist" aria-label="Menu locations">
+              <div className="d-flex flex-wrap gap-2">
+                {menuLocationOptions.map((option) => {
+                  const selected = option.key === selectedLocation;
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      className={
+                        selected ? "admin-btn-save" : "admin-btn-action"
+                      }
+                      onClick={() => setSelectedLocation(option.key)}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <p className="admin-page-description mb-3">
-              Drag to reorder the full header sequence. Static links and CMS
-              items are shown together so you can place CMS entries anywhere in
-              the existing navigation.
+              Editing {currentLocationOption.label.toLowerCase()}. Static links
+              and CMS items are shown together so you can decide what appears in
+              this location and in what order.
             </p>
+            <p className="admin-page-meta mb-3">
+              {currentLocationOption.description}. Saving one location does not
+              change the other.
+            </p>
+            {selectedLocation === "sb-footer-main" && (
+              <p className="admin-page-meta mb-3">
+                Footer built-ins render in fixed Shop, Support, and Company
+                sections. Custom CMS pages render under Explore.
+              </p>
+            )}
 
             {items.length === 0 ? (
               <div className="admin-empty-state admin-menu-manager-empty">
@@ -596,8 +739,8 @@ export default function AdminMenuManager({ menuItems, initialLayout }: Props) {
 
             <div className="admin-menu-manager-footer">
               <span className="admin-page-meta">
-                {cmsItemCount} CMS items · {visibleStaticItemCount} visible
-                static links
+                {currentLocationOption.label} · {cmsItemCount} CMS items ·{" "}
+                {visibleStaticItemCount} visible static links
                 {hiddenStaticItems.length > 0
                   ? ` · ${hiddenStaticItems.length} hidden built-ins`
                   : ""}
