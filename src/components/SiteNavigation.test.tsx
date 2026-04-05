@@ -33,7 +33,7 @@ vi.mock("@/components/EtsyCtaButton", () => ({
 
 describe("SiteNavigation", () => {
   it("renders desktop links", () => {
-    mockUsePathname.mockReturnValue("/products");
+    mockUsePathname.mockReturnValue("/templates");
     render(<SiteNavigation />);
 
     expect(screen.getByRole("link", { name: "Templates" })).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("SiteNavigation", () => {
   });
 
   it("applies active styles to the link matching the current path", () => {
-    mockUsePathname.mockReturnValue("/products");
+    mockUsePathname.mockReturnValue("/templates");
     render(<SiteNavigation />);
 
     const productsLink = screen.getByRole("link", { name: "Templates" });

@@ -25,6 +25,7 @@ import { revalidateMenuContent } from "@/lib/adminRevalidation";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorFeedback from "@/components/EditorFeedback";
 import {
+  canonicalizeStaticNavOrderId,
   hiddenStaticOrderIdToStaticOrderId,
   isStaticNavOrderId,
   staticNavItems,
@@ -96,8 +97,12 @@ function createManagedLocationState(
   allStaticItems: ManagedStaticNavItem[],
   initialLayout?: MenuLayoutSettings | null,
 ): ManagedLocationState {
-  const initialLayoutOrderIds = normalizeOrderedMenuItemIds(
-    initialLayout?.orderedMenuItemIds,
+  const initialLayoutOrderIds = Array.from(
+    new Set(
+      normalizeOrderedMenuItemIds(initialLayout?.orderedMenuItemIds).map((id) =>
+        canonicalizeStaticNavOrderId(id),
+      ),
+    ),
   );
 
   const availableStaticIds = new Set(allStaticItems.map((item) => item.id));

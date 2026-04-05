@@ -71,7 +71,7 @@ describe("AdminNav", () => {
   });
 
   it("marks the active nav link based on pathname", () => {
-    mockPathname = "/admin/products";
+    mockPathname = "/admin/templates";
     render(<AdminNav userEmail="admin@example.com" />);
 
     const templatesLink = screen.getByText("Templates").closest("a")!;

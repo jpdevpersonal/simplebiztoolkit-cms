@@ -9,7 +9,7 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-describe("Products page", () => {
+describe("Templates page", () => {
   beforeEach(() => {
     vi.resetModules();
     getProductCategoriesMock.mockReset();
@@ -50,7 +50,7 @@ describe("Products page", () => {
     expect(screen.getByText("Track your transactions")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Accounting Ledger/i }),
-    ).toHaveAttribute("href", "/products/accounting-ledger");
+    ).toHaveAttribute("href", "/templates/accounting-ledger");
   });
 
   it("treats an undefined categories payload as an empty list", async () => {

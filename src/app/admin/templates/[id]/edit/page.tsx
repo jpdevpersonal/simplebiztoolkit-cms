@@ -12,7 +12,7 @@ type Props = {
 };
 
 function PageHeader({ id }: { id: string }) {
-  const breadcrumbItems = [{ href: "/admin/products", label: "Templates" }];
+  const breadcrumbItems = [{ href: "/admin/templates", label: "Templates" }];
 
   return (
     <div className="admin-page-header">
@@ -27,7 +27,7 @@ function PageHeader({ id }: { id: string }) {
 
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
-  const breadcrumbItems = [{ href: "/admin/products", label: "Templates" }];
+  const breadcrumbItems = [{ href: "/admin/templates", label: "Templates" }];
 
   const { service } = await getAdminApiService();
 

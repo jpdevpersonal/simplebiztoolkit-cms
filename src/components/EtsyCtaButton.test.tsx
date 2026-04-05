@@ -30,7 +30,7 @@ describe("EtsyCtaButton", () => {
   });
 
   it("renders on non-home routes with default hideOnHome", () => {
-    mockUsePathname.mockReturnValue("/products");
+    mockUsePathname.mockReturnValue("/templates");
     render(<EtsyCtaButton />);
     expect(screen.getByRole("link")).toHaveAttribute(
       "href",

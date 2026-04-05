@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
@@ -60,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
     title: product.title,
     description,
-    pathname: `/products/${categorySlug}/${productSlug}`,
+    pathname: `/templates/${categorySlug}/${productSlug}`,
     image: product.image || undefined,
   });
 }
@@ -86,7 +85,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const jsonLd = createProductJsonLd({
     name: product.title,
     description: product.problem,
-    href: `/products/${categorySlug}/${productSlug}`,
+    href: `/templates/${categorySlug}/${productSlug}`,
     image: product.image,
     price: product.price,
     offerUrl: product.etsyUrl,
@@ -94,9 +93,9 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
-    { name: "Products", href: "/products" },
-    { name: category.name, href: `/products/${category.slug}` },
-    { name: product.title, href: `/products/${categorySlug}/${productSlug}` },
+    { name: "Templates", href: "/templates" },
+    { name: category.name, href: `/templates/${category.slug}` },
+    { name: product.title, href: `/templates/${categorySlug}/${productSlug}` },
   ]);
 
   return (
@@ -109,11 +108,11 @@ export default async function ProductDetailPage({ params }: Props) {
           <SiteBreadcrumb
             items={[
               { name: "Home", href: "/" },
-              { name: "Products", href: "/products" },
-              { name: category.name, href: `/products/${category.slug}` },
+              { name: "Templates", href: "/templates" },
+              { name: category.name, href: `/templates/${category.slug}` },
               {
                 name: product.title,
-                href: `/products/${categorySlug}/${productSlug}`,
+                href: `/templates/${categorySlug}/${productSlug}`,
               },
             ]}
           />
@@ -123,11 +122,11 @@ export default async function ProductDetailPage({ params }: Props) {
           <SiteBreadcrumb
             items={[
               { name: "Home", href: "/" },
-              { name: "Products", href: "/products" },
-              { name: category.name, href: `/products/${category.slug}` },
+              { name: "Templates", href: "/templates" },
+              { name: category.name, href: `/templates/${category.slug}` },
               {
                 name: product.title,
-                href: `/products/${categorySlug}/${productSlug}`,
+                href: `/templates/${categorySlug}/${productSlug}`,
               },
             ]}
             bottom

@@ -100,7 +100,7 @@ export default function HomePage() {
             </div>
 
             <div className="sb-hero-actions">
-              <Link href="/products" className="btn sb-btn-primary sb-btn-lg">
+              <Link href="/templates" className="btn sb-btn-primary sb-btn-lg">
                 Browse All Templates
                 <svg
                   className="sb-btn-arrow"

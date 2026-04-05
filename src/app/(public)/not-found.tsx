@@ -12,7 +12,7 @@ export default function NotFound() {
           <Link className="btn sb-btn-primary" href="/">
             Go home
           </Link>
-          <Link className="btn sb-btn-ghost" href="/products">
+          <Link className="btn sb-btn-ghost" href="/templates">
             Browse templates
           </Link>
           <Link className="btn sb-btn-ghost" href="/pages">

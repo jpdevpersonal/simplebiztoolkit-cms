@@ -12,7 +12,7 @@ export const featuredProducts: Product[] = [
       "https://www.etsy.com/listing/1194290286/printable-accounting-ledger-general",
     price: "$1.93",
     productPageUrl:
-      "/products/accounting-ledger/printable-monthly-accounting-ledger-start-end-balance",
+      "/templates/accounting-ledger/printable-monthly-accounting-ledger-start-end-balance",
   },
   {
     title:
@@ -24,7 +24,7 @@ export const featuredProducts: Product[] = [
       "https://www.etsy.com/listing/4436102417/printable-employee-time-sheet-template",
     price: "$2.00",
     productPageUrl:
-      "/products/time-sheet/printable-employee-time-sheet-weekly-tracker-digital",
+      "/templates/time-sheet/printable-employee-time-sheet-weekly-tracker-digital",
   },
   {
     title:
@@ -36,6 +36,6 @@ export const featuredProducts: Product[] = [
       "https://www.etsy.com/listing/1421249069/estimate-and-quote-template-fillable-and",
     price: "$3.45",
     productPageUrl:
-      "/products/estimates/estimate-quote-template-fillable-printable",
+      "/templates/estimates/estimate-quote-template-fillable-printable",
   },
 ];

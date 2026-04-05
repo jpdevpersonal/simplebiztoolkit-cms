@@ -13,7 +13,7 @@ import { signOut } from "next-auth/react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", exact: true },
-  { href: "/admin/products", label: "Templates", exact: false },
+  { href: "/admin/templates", label: "Templates", exact: false },
   { href: "/admin/categories", label: "Template Categories", exact: false },
   { href: "/admin/menu-manager", label: "Menu Manager", exact: false },
   { href: "/admin/menu", label: "Menu Items", exact: false },
