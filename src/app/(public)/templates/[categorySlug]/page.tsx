@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
@@ -50,7 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
     title: category.name,
     description,
-    pathname: `/products/${category.slug}`,
+    pathname: `/templates/${category.slug}`,
     image: category.heroImage || undefined,
   });
 }
@@ -70,13 +69,13 @@ export default async function CategoryPage({ params }: Props) {
   const jsonLd = createCollectionPageJsonLd({
     name: category.name,
     description: category.summary,
-    href: `/products/${category.slug}`,
+    href: `/templates/${category.slug}`,
   });
 
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
-    { name: "Products", href: "/products" },
-    { name: category.name, href: `/products/${category.slug}` },
+    { name: "Templates", href: "/templates" },
+    { name: category.name, href: `/templates/${category.slug}` },
   ]);
 
   return (
@@ -89,8 +88,8 @@ export default async function CategoryPage({ params }: Props) {
           <SiteBreadcrumb
             items={[
               { name: "Home", href: "/" },
-              { name: "Products", href: "/products" },
-              { name: category.name, href: `/products/${category.slug}` },
+              { name: "Templates", href: "/templates" },
+              { name: category.name, href: `/templates/${category.slug}` },
             ]}
           />
 

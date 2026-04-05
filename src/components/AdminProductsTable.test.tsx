@@ -63,6 +63,19 @@ const products: ProductItem[] = [
 ];
 
 describe("AdminProductsTable", () => {
+  it("defaults to category sort ascending", () => {
+    vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
+      new Error("ignore"),
+    );
+    const { container } = render(
+      <AdminProductsTable products={products} categories={categories} />,
+    );
+
+    const rows = container.querySelectorAll("tbody tr");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
+    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+  });
+
   it("renders rows and edit links", () => {
     vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
       new Error("ignore"),
@@ -71,7 +84,7 @@ describe("AdminProductsTable", () => {
 
     expect(screen.getByText("Alpha")).toBeInTheDocument();
     const editLinks = screen.getAllByRole("link", { name: "Edit" });
-    expect(editLinks[0]).toHaveAttribute("href", "/admin/products/p-1/edit");
+    expect(editLinks[0]).toHaveAttribute("href", "/admin/templates/p-1/edit");
   });
 
   it("sorts by status when header is clicked", () => {
@@ -115,7 +128,7 @@ describe("AdminProductsTable", () => {
     );
 
     const viewLink = screen.getByRole("link", { name: /View/i });
-    expect(viewLink).toHaveAttribute("href", "/products/cat-1/alpha");
+    expect(viewLink).toHaveAttribute("href", "/templates/cat-1/alpha");
     expect(viewLink).toHaveAttribute("target", "_blank");
   });
 
@@ -142,17 +155,18 @@ describe("AdminProductsTable", () => {
       <AdminProductsTable products={products} categories={categories} />,
     );
 
-    // Default: title asc -> Alpha first
+    // Default: category asc -> Alpha first because Apples sorts before Zucchini
     let rows = container.querySelectorAll("tbody tr");
     expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
 
-    // Click Title header to flip to desc -> Zeta first
-    fireEvent.click(screen.getByRole("columnheader", { name: /title/i }));
+    const titleHeader = screen.getByRole("columnheader", { name: /title/i });
+    fireEvent.click(titleHeader); // asc by title
+    fireEvent.click(titleHeader); // desc by title
     rows = container.querySelectorAll("tbody tr");
     expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
   });
 
-  it("sorts by category asc when Category header is clicked", () => {
+  it("sorts by category desc when Category header is clicked from default state", () => {
     vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
       new Error("ignore"),
     );
@@ -162,12 +176,11 @@ describe("AdminProductsTable", () => {
 
     fireEvent.click(screen.getByRole("columnheader", { name: /category/i }));
     const rows = container.querySelectorAll("tbody tr");
-    // Apples (cat-1 → Alpha) before Zucchini (cat-2 → Zeta)
-    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
-    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[1]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
   });
 
-  it("sorts by category desc on second click of Category header", () => {
+  it("sorts by category asc on second click of Category header", () => {
     vi.mocked(clientApi.getAllProductCategories).mockRejectedValueOnce(
       new Error("ignore"),
     );
@@ -178,10 +191,10 @@ describe("AdminProductsTable", () => {
     const categoryHeader = screen.getByRole("columnheader", {
       name: /category/i,
     });
-    fireEvent.click(categoryHeader); // asc
     fireEvent.click(categoryHeader); // desc
+    fireEvent.click(categoryHeader); // asc
     const rows = container.querySelectorAll("tbody tr");
-    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Zeta");
+    expect(within(rows[0]!).getAllByRole("cell")[0]).toHaveTextContent("Alpha");
   });
 
   it("sorts by price asc when Price header is clicked", () => {

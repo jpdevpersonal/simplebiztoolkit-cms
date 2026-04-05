@@ -27,13 +27,13 @@ describe("revalidation", () => {
 
     expect(revalidateTagMock).toHaveBeenCalledWith("products");
     expect(revalidateTagMock).toHaveBeenCalledWith("product-product-slug");
-    expect(revalidatePathMock).toHaveBeenCalledWith("/products");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/templates");
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/products/[categorySlug]",
+      "/templates/[categorySlug]",
       "page",
     );
     expect(revalidatePathMock).toHaveBeenCalledWith(
-      "/products/[categorySlug]/[productSlug]",
+      "/templates/[categorySlug]/[productSlug]",
       "page",
     );
   });

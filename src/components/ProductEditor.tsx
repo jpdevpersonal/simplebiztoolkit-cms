@@ -7,6 +7,7 @@ import { redirectAndRefresh } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
 import { revalidateProductContent } from "@/lib/adminRevalidation";
 import { slugify } from "@/lib/slugify";
+import { toTemplatesRoute } from "@/lib/templatesRoute";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
@@ -39,7 +40,7 @@ export default function ProductEditor({
   const productData = product || EMPTY_PRODUCT;
   const isCreateMode = !productData.id;
   const previewHref = !isCreateMode
-    ? `/preview/products/${productData.id}`
+    ? `/preview/templates/${productData.id}`
     : undefined;
   const router = useRouter();
   const [title, setTitle] = useState(productData.title || "");
@@ -52,7 +53,7 @@ export default function ProductEditor({
   const [image, setImage] = useState(productData.image || "");
   const [etsyUrl, setEtsyUrl] = useState(productData.etsyUrl || "");
   const [productPageUrl, setProductPageUrl] = useState(
-    productData.productPageUrl || "",
+    toTemplatesRoute(productData.productPageUrl) || "",
   );
   const [price, setPrice] = useState(productData.price || "");
   const [categoryId, setCategoryId] = useState(productData.categoryId || "");
@@ -99,7 +100,7 @@ export default function ProductEditor({
         bullets: bulletsArray,
         image: image || undefined,
         etsyUrl: etsyUrl || undefined,
-        productPageUrl: productPageUrl || undefined,
+        productPageUrl: toTemplatesRoute(productPageUrl) || undefined,
         price: price || undefined,
         categoryId,
         status,
@@ -112,7 +113,7 @@ export default function ProductEditor({
       await revalidateProductContent(productData.slug, saved?.slug, slug);
 
       if (isCreateMode) {
-        redirectAndRefresh(router, "/admin/products");
+        redirectAndRefresh(router, "/admin/templates");
       } else {
         // Keep local form state in sync in case a user navigates back quickly.
         if (saved && typeof saved === "object") {
@@ -123,13 +124,15 @@ export default function ProductEditor({
           setBullets(((saved.bullets as string[]) || []).join("\n") || bullets);
           setImage((saved.image as string) || image);
           setEtsyUrl((saved.etsyUrl as string) || etsyUrl);
-          setProductPageUrl((saved.productPageUrl as string) || productPageUrl);
+          setProductPageUrl(
+            toTemplatesRoute(saved.productPageUrl as string) || productPageUrl,
+          );
           setPrice((saved.price as string) || price);
           setCategoryId((saved.categoryId as string) || categoryId);
           setStatus((saved.status as "draft" | "published") || status);
         }
 
-        redirectAndRefresh(router, "/admin/products");
+        redirectAndRefresh(router, "/admin/templates");
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -165,7 +168,7 @@ export default function ProductEditor({
       await clientApi.deleteProduct(productData.id);
       await revalidateProductContent(productData.slug);
       setMessage("Template deleted!");
-      redirectAndRefresh(router, "/admin/products");
+      redirectAndRefresh(router, "/admin/templates");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);

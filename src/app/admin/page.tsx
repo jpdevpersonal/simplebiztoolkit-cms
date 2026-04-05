@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
 
   const quickLinks = [
     {
-      href: "/admin/products",
+      href: "/admin/templates",
       label: "Manage Templates",
       description: `${products.length} templates`,
     },
@@ -218,7 +218,7 @@ export default async function AdminDashboard() {
               </div>
             </div>
             <div className="d-flex flex-column gap-2">
-              <Link href="/admin/products/new" className="admin-quick-link">
+              <Link href="/admin/templates/new" className="admin-quick-link">
                 <span className="admin-quick-link-icon">
                   <PlusIcon />
                 </span>

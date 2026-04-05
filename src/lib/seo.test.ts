@@ -41,7 +41,7 @@ describe("seo", () => {
     const jsonLd = createProductJsonLd({
       name: "Budget Planner",
       description: "A simple planner",
-      href: "/products/planners/budget-planner",
+      href: "/templates/planners/budget-planner",
       price: "$12.00",
       offerUrl: "https://etsy.example/listing/123",
     });

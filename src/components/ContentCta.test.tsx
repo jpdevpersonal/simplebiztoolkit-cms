@@ -28,8 +28,8 @@ describe("ContentCta", () => {
       "/shop",
     );
     expect(
-      screen.getByRole("link", { name: "See all products" }),
-    ).toHaveAttribute("href", "/products");
+      screen.getByRole("link", { name: "See all templates" }),
+    ).toHaveAttribute("href", "/templates");
     expect(screen.getByText("Etsy CTA Button")).toBeInTheDocument();
     expect(screen.getByText("Affiliate disclosure")).toBeInTheDocument();
   });

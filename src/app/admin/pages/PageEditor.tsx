@@ -17,11 +17,22 @@ import type {
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
 import { revalidatePageContent } from "@/lib/adminRevalidation";
+import { compactHtmlForStorage } from "@/lib/htmlFormatter";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
 import CmsImagePicker from "@/components/CmsImagePicker";
+
+type SectionKey =
+  | "pageContent"
+  | "media"
+  | "content"
+  | "assignment"
+  | "publish"
+  | "seo";
+
+const SIDEBAR_SECTION_KEYS: SectionKey[] = ["assignment", "publish"];
 
 type Props = {
   page?: MenuItemPage;
@@ -47,6 +58,16 @@ export default function PageEditor({
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<
+    Record<SectionKey, boolean>
+  >({
+    pageContent: false,
+    media: false,
+    content: false,
+    assignment: false,
+    publish: false,
+    seo: false,
+  });
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -183,10 +204,14 @@ export default function PageEditor({
     setError(null);
 
     try {
+      const normalizedFormData = {
+        ...formData,
+        content: compactHtmlForStorage(formData.content),
+      };
       const featuredImageId = formData.featuredImageId;
       const headerImageId = formData.headerImageId;
       const pageFields = Object.fromEntries(
-        Object.entries(formData).filter(
+        Object.entries(normalizedFormData).filter(
           ([key]) =>
             ![
               "featuredImage",
@@ -260,6 +285,46 @@ export default function PageEditor({
     window.open(previewHref, "_blank", "noopener,noreferrer");
   };
 
+  const toggleSection = (section: SectionKey) => {
+    setCollapsedSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }));
+  };
+
+  const sidebarCollapsedCount = SIDEBAR_SECTION_KEYS.filter(
+    (section) => collapsedSections[section],
+  ).length;
+
+  const layoutClassName = [
+    "page-editor-layout",
+    sidebarCollapsedCount >= 3
+      ? "page-editor-layout--sidebar-minimized"
+      : sidebarCollapsedCount >= 2
+        ? "page-editor-layout--sidebar-compact"
+        : sidebarCollapsedCount >= 1
+          ? "page-editor-layout--sidebar-relaxed"
+          : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const renderSectionToggle = (section: SectionKey, title: string) => {
+    const collapsed = collapsedSections[section];
+
+    return (
+      <button
+        type="button"
+        className="page-editor-section-toggle"
+        onClick={() => toggleSection(section)}
+        aria-expanded={!collapsed}
+        aria-label={`${collapsed ? "Expand" : "Collapse"} ${title}`}
+      >
+        {collapsed ? "+ Expand" : "- Collapse"}
+      </button>
+    );
+  };
+
   /* ── Icons ──────────────────────────────────── */
   const contentIcon = (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -331,150 +396,224 @@ export default function PageEditor({
     <form onSubmit={handleSubmit}>
       <EditorFeedback message={message} error={error} />
 
-      <div className="row g-3">
+      <div className={layoutClassName} data-testid="page-editor-layout">
         {/* Main column */}
-        <div className="col-lg-8">
+        <div className="page-editor-main">
           <AdminFormBlock
             icon={contentIcon}
             title="Page Content"
-            className="mb-0"
+            className={
+              collapsedSections.pageContent
+                ? "admin-form-block--collapsed"
+                : undefined
+            }
+            headerActions={renderSectionToggle("pageContent", "Page Content")}
           >
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Title *</label>
-              <input
-                className="form-control"
-                value={formData.title}
-                onChange={(e) => update("title", e.target.value)}
-                required
-              />
-            </div>
+            {!collapsedSections.pageContent && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Title *</label>
+                  <input
+                    className="form-control"
+                    value={formData.title}
+                    onChange={(e) => update("title", e.target.value)}
+                    required
+                  />
+                </div>
 
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Subtitle</label>
-              <input
-                className="form-control"
-                value={formData.subtitle}
-                onChange={(e) => update("subtitle", e.target.value)}
-              />
-            </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Subtitle</label>
+                  <input
+                    className="form-control"
+                    value={formData.subtitle}
+                    onChange={(e) => update("subtitle", e.target.value)}
+                  />
+                </div>
 
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Slug *</label>
-              <input
-                className="form-control"
-                value={formData.slug}
-                onChange={(e) => update("slug", e.target.value)}
-                required
-              />
-              <div className="form-text">
-                URL path segment, e.g. <code>getting-started</code>. The page
-                will be accessible at <code>/{formData.slug || "..."}</code>
-              </div>
-            </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Slug *</label>
+                  <input
+                    className="form-control"
+                    value={formData.slug}
+                    onChange={(e) => update("slug", e.target.value)}
+                    required
+                  />
+                  <div className="form-text">
+                    URL path segment, e.g. <code>getting-started</code>. The
+                    page will be accessible at{" "}
+                    <code>/{formData.slug || "..."}</code>
+                  </div>
+                </div>
 
-            <div className="mb-0">
-              <label className="form-label fw-semibold">Description</label>
-              <textarea
-                className="form-control"
-                value={formData.description}
-                onChange={(e) => update("description", e.target.value)}
-                rows={3}
-              />
-            </div>
+                <div className="mb-0">
+                  <label className="form-label fw-semibold">Description</label>
+                  <textarea
+                    className="form-control"
+                    value={formData.description}
+                    onChange={(e) => update("description", e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </>
+            )}
           </AdminFormBlock>
 
           {/* Media */}
-          <AdminFormBlock icon={mediaIcon} title="Media">
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Featured Image</label>
-              <CmsImagePicker
-                value={formData.featuredImage}
-                selectedImageId={formData.featuredImageId}
-                label="featured image"
-                onChangeAction={(image) =>
-                  handleImageSelection("featured", image)
-                }
-              />
-            </div>
-            <div>
-              <label className="form-label fw-semibold">Header Image</label>
-              <CmsImagePicker
-                value={formData.headerImage}
-                selectedImageId={formData.headerImageId}
-                label="header image"
-                onChangeAction={(image) =>
-                  handleImageSelection("header", image)
-                }
-              />
-            </div>
+          <AdminFormBlock
+            icon={mediaIcon}
+            title="Media"
+            className={
+              collapsedSections.media
+                ? "admin-form-block--collapsed"
+                : undefined
+            }
+            headerActions={renderSectionToggle("media", "Media")}
+          >
+            {!collapsedSections.media && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    Featured Image
+                  </label>
+                  <CmsImagePicker
+                    value={formData.featuredImage}
+                    selectedImageId={formData.featuredImageId}
+                    label="featured image"
+                    onChangeAction={(image) =>
+                      handleImageSelection("featured", image)
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="form-label fw-semibold">Header Image</label>
+                  <CmsImagePicker
+                    value={formData.headerImage}
+                    selectedImageId={formData.headerImageId}
+                    label="header image"
+                    onChangeAction={(image) =>
+                      handleImageSelection("header", image)
+                    }
+                  />
+                </div>
+              </>
+            )}
           </AdminFormBlock>
 
-          {/* Content */}
-          <AdminFormBlock icon={contentIcon} title="Content" className="mb-0">
-            <div>
-              <RichContentField
-                label=""
-                value={formData.content}
-                onChange={(html) => update("content", html)}
-                storageKey="page-content-mode"
-                placeholder="Start writing your page content here…"
-                minHeight={420}
-                onSave={savePage}
-                onPreview={previewHref ? handlePreview : undefined}
-              />
-              <div className="form-text mt-1">
-                Use the toggle above to switch between HTML and the rich-text
-                editor.
-              </div>
-            </div>
+          {/* SEO */}
+          <AdminFormBlock
+            icon={seoIcon}
+            title="SEO"
+            className={
+              collapsedSections.seo ? "admin-form-block--collapsed" : undefined
+            }
+            headerActions={renderSectionToggle("seo", "SEO")}
+          >
+            {!collapsedSections.seo && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">SEO Title</label>
+                  <input
+                    className="form-control"
+                    value={formData.seoTitle}
+                    onChange={(e) => update("seoTitle", e.target.value)}
+                    placeholder="Leave blank to use page title"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">
+                    SEO Description
+                  </label>
+                  <textarea
+                    className="form-control"
+                    value={formData.seoDescription}
+                    onChange={(e) => update("seoDescription", e.target.value)}
+                    rows={3}
+                    placeholder="Leave blank to use page description"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">OG Image URL</label>
+                  <input
+                    className="form-control"
+                    value={formData.ogImage}
+                    onChange={(e) => update("ogImage", e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="form-label fw-semibold">
+                    Canonical URL
+                  </label>
+                  <input
+                    className="form-control"
+                    value={formData.canonicalUrl}
+                    onChange={(e) => update("canonicalUrl", e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+              </>
+            )}
           </AdminFormBlock>
         </div>
 
         {/* Sidebar column */}
-        <div className="col-lg-4">
+        <div className="page-editor-sidebar">
           {/* Assignment */}
-          <AdminFormBlock icon={settingsIcon} title="Assignment">
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Menu Item *</label>
-              <select
-                className="form-select"
-                value={selectedMenuItemId}
-                onChange={(e) => setSelectedMenuItemId(e.target.value)}
-                required
-              >
-                <option value="">— Select a menu item —</option>
-                {menuItems.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.title}
-                    {m.status === "published" ? "" : " (draft)"}
-                  </option>
-                ))}
-              </select>
-              <div className="form-text">
-                Every page must belong to a menu item.
-              </div>
-            </div>
+          <AdminFormBlock
+            icon={settingsIcon}
+            title="Assignment"
+            className={
+              collapsedSections.assignment
+                ? "admin-form-block--collapsed"
+                : undefined
+            }
+            headerActions={renderSectionToggle("assignment", "Assignment")}
+          >
+            {!collapsedSections.assignment && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Menu Item *</label>
+                  <select
+                    className="form-select"
+                    value={selectedMenuItemId}
+                    onChange={(e) => setSelectedMenuItemId(e.target.value)}
+                    required
+                  >
+                    <option value="">— Select a menu item —</option>
+                    {menuItems.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.title}
+                        {m.status === "published" ? "" : " (draft)"}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="form-text">
+                    Every page must belong to a menu item.
+                  </div>
+                </div>
 
-            <div className="mb-0">
-              <label className="form-label fw-semibold">Topic</label>
-              <select
-                className="form-select"
-                value={selectedCategoryId}
-                onChange={(e) => setSelectedCategoryId(e.target.value)}
-                disabled={!selectedMenuItemId || loadingCats}
-              >
-                <option value="">— No topic (direct page) —</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.title}
-                    {cat.status === "published" ? "" : " (draft)"}
-                  </option>
-                ))}
-              </select>
-              <div className="form-text">
-                Optional. Assign to a topic to group related pages.
-              </div>
-            </div>
+                <div className="mb-0">
+                  <label className="form-label fw-semibold">Topic</label>
+                  <select
+                    className="form-select"
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    disabled={!selectedMenuItemId || loadingCats}
+                  >
+                    <option value="">— No topic (direct page) —</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.title}
+                        {cat.status === "published" ? "" : " (draft)"}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="form-text">
+                    Optional. Assign to a topic to group related pages.
+                  </div>
+                </div>
+              </>
+            )}
           </AdminFormBlock>
 
           {/* Publish */}
@@ -491,68 +630,75 @@ export default function PageEditor({
               </svg>
             }
             title="Publish"
+            className={
+              collapsedSections.publish
+                ? "admin-form-block--collapsed"
+                : undefined
+            }
+            headerActions={renderSectionToggle("publish", "Publish")}
           >
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Status</label>
-              <select
-                className="form-select"
-                value={formData.status}
-                onChange={(e) => update("status", e.target.value)}
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-              </select>
-            </div>
-            <div>
-              <label className="form-label fw-semibold">Publish Date</label>
-              <input
-                type="date"
-                className="form-control"
-                value={formData.dateISO}
-                onChange={(e) => update("dateISO", e.target.value)}
-              />
-            </div>
+            {!collapsedSections.publish && (
+              <>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Status</label>
+                  <select
+                    className="form-select"
+                    value={formData.status}
+                    onChange={(e) => update("status", e.target.value)}
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label fw-semibold">Publish Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={formData.dateISO}
+                    onChange={(e) => update("dateISO", e.target.value)}
+                  />
+                </div>
+              </>
+            )}
           </AdminFormBlock>
+        </div>
 
-          {/* SEO */}
-          <AdminFormBlock icon={seoIcon} title="SEO" className="mb-0">
-            <div className="mb-3">
-              <label className="form-label fw-semibold">SEO Title</label>
-              <input
-                className="form-control"
-                value={formData.seoTitle}
-                onChange={(e) => update("seoTitle", e.target.value)}
-                placeholder="Leave blank to use page title"
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label fw-semibold">SEO Description</label>
-              <textarea
-                className="form-control"
-                value={formData.seoDescription}
-                onChange={(e) => update("seoDescription", e.target.value)}
-                rows={3}
-                placeholder="Leave blank to use page description"
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label fw-semibold">OG Image URL</label>
-              <input
-                className="form-control"
-                value={formData.ogImage}
-                onChange={(e) => update("ogImage", e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-            <div>
-              <label className="form-label fw-semibold">Canonical URL</label>
-              <input
-                className="form-control"
-                value={formData.canonicalUrl}
-                onChange={(e) => update("canonicalUrl", e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
+        <div
+          className="page-editor-content-row"
+          data-testid="page-editor-content-row"
+        >
+          <AdminFormBlock
+            icon={contentIcon}
+            title="Content"
+            className={
+              collapsedSections.content
+                ? "admin-form-block--collapsed"
+                : undefined
+            }
+            headerActions={renderSectionToggle("content", "Content")}
+          >
+            {!collapsedSections.content && (
+              <div>
+                <RichContentField
+                  label=""
+                  value={formData.content}
+                  onChange={(html) => update("content", html)}
+                  storageKey="page-content-mode"
+                  placeholder="Start writing your page content here…"
+                  minHeight={420}
+                  onSave={savePage}
+                  onPreview={previewHref ? handlePreview : undefined}
+                  enableHtmlFormatting
+                  formatHtmlOnModeSwitch
+                  htmlEditorVariant="code"
+                />
+                <div className="form-text mt-1">
+                  Use the toggle above to switch between HTML and the rich-text
+                  editor.
+                </div>
+              </div>
+            )}
           </AdminFormBlock>
         </div>
       </div>

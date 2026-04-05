@@ -35,7 +35,7 @@ vi.mock("@/app/admin/_lib/getAdminApiService", () => ({
 }));
 
 vi.mock(
-  "@/app/(public)/products/[categorySlug]/[productSlug]/ProductDetailClient",
+  "@/app/(public)/templates/[categorySlug]/[productSlug]/ProductDetailClient",
   () => ({
     __esModule: true,
     default: ({ product }: { product: { title: string } }) => (
@@ -83,10 +83,10 @@ describe("ProductPreviewPage", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Previewing saved draft template.",
     );
-    expect(screen.getAllByText("Draft Template")).toHaveLength(2);
+    expect(screen.getByText("Draft Template")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Spreadsheets" })).toHaveAttribute(
       "href",
-      "/products/spreadsheets",
+      "/templates/spreadsheets",
     );
   });
 });

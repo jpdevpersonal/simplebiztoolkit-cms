@@ -91,7 +91,7 @@ export default function AboutPage() {
 
           <div className="mt-4 d-flex gap-2 flex-wrap">
             <Link
-              href="/products"
+              href="/templates"
               style={{
                 display: "flex",
                 alignItems: "center",

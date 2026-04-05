@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
-import ProductDetailClient from "@/app/(public)/products/[categorySlug]/[productSlug]/ProductDetailClient";
+import ProductDetailClient from "@/app/(public)/templates/[categorySlug]/[productSlug]/ProductDetailClient";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -50,11 +50,11 @@ export default async function ProductPreviewPage({ params }: Props) {
             <SiteBreadcrumb
               items={[
                 { name: "Home", href: "/" },
-                { name: "Products", href: "/products" },
-                { name: category.name, href: `/products/${category.slug}` },
+                { name: "Templates", href: "/templates" },
+                { name: category.name, href: `/templates/${category.slug}` },
                 {
                   name: product.title,
-                  href: `/products/${category.slug}/${product.slug ?? product.id}`,
+                  href: `/templates/${category.slug}/${product.slug ?? product.id}`,
                 },
               ]}
             />

@@ -92,6 +92,41 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  async redirects() {
+    return [
+      {
+        source: "/products",
+        destination: "/templates",
+        permanent: true,
+      },
+      {
+        source: "/products/:categorySlug",
+        destination: "/templates/:categorySlug",
+        permanent: true,
+      },
+      {
+        source: "/products/:categorySlug/:productSlug",
+        destination: "/templates/:categorySlug/:productSlug",
+        permanent: true,
+      },
+      {
+        source: "/preview/products/:id",
+        destination: "/preview/templates/:id",
+        permanent: true,
+      },
+      {
+        source: "/admin/products",
+        destination: "/admin/templates",
+        permanent: true,
+      },
+      {
+        source: "/admin/products/:path*",
+        destination: "/admin/templates/:path*",
+        permanent: true,
+      },
+    ];
+  },
+
   async rewrites() {
     // Proxy API requests to the backend, but only when `NEXT_PUBLIC_API_URL`
     // is provided (e.g. in environments that have an upstream backend).

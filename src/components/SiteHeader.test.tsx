@@ -29,7 +29,7 @@ describe("SiteHeader", () => {
   });
 
   it("hides nav and CTA on admin routes", () => {
-    mockUsePathname.mockReturnValue("/admin/products");
+    mockUsePathname.mockReturnValue("/admin/templates");
     render(<SiteHeader />);
 
     expect(screen.queryByText("Site nav component")).not.toBeInTheDocument();

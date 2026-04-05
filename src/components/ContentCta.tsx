@@ -36,10 +36,10 @@ export function ContentCta({
         )}
         {showHomeLink && (
           <Link
-            href="/products"
+            href="/templates"
             className="content-cta-btn content-cta-btn-secondary"
           >
-            See all products
+            See all templates
           </Link>
         )}
 

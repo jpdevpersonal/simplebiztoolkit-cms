@@ -13,14 +13,14 @@ export const testimonials: Testimonial[] = [
     name: "Angie",
     role: "Buyer",
     productLink:
-      "/products/time-sheet/printable-employee-time-sheet-hours-worked-weekly",
+      "/templates/time-sheet/printable-employee-time-sheet-hours-worked-weekly",
   },
   {
     id: 2,
     quote: "⭐⭐⭐⭐ Easy and convenient to download.",
     name: "Kristen",
     role: "Small business owner",
-    productLink: "/products/rent-payment-ledger/printable-rent-payment-ledger",
+    productLink: "/templates/rent-payment-ledger/printable-rent-payment-ledger",
   },
   {
     id: 3,
@@ -29,7 +29,7 @@ export const testimonials: Testimonial[] = [
     name: "Becky",
     role: "Etsy seller",
     productLink:
-      "/products/accounting-ledger/accounting-ledger-general-ledger-sheets-6-colors",
+      "/templates/accounting-ledger/accounting-ledger-general-ledger-sheets-6-colors",
   },
   {
     id: 4,
@@ -38,7 +38,7 @@ export const testimonials: Testimonial[] = [
     name: "Laura",
     role: "Buyer",
     productLink:
-      "/products/accounting-ledger/fillable-printable-accounting-ledger-pdf",
+      "/templates/accounting-ledger/fillable-printable-accounting-ledger-pdf",
   },
   {
     id: 5,
@@ -47,7 +47,7 @@ export const testimonials: Testimonial[] = [
     name: "Diane",
     role: "Business owner",
     productLink:
-      "products/payment-tracker/payment-tracker-client-payment-history-log",
+      "/templates/payment-tracker/payment-tracker-client-payment-history-log",
   },
   {
     id: 6,
@@ -55,13 +55,13 @@ export const testimonials: Testimonial[] = [
     name: "Audria",
     role: "Buyer",
     productLink:
-      "/products/accounting-ledger/printable-monthly-accounting-ledger-start-end-balance",
+      "/templates/accounting-ledger/printable-monthly-accounting-ledger-start-end-balance",
   },
   {
     id: 7,
     quote: "⭐⭐⭐⭐ This is a great payment ledger",
     name: "Jordalina",
     role: "Buyer",
-    productLink: "/products/rent-payment-ledger/printable-rent-payment-ledger",
+    productLink: "/templates/rent-payment-ledger/printable-rent-payment-ledger",
   },
 ];

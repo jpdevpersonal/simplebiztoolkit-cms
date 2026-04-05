@@ -10,13 +10,19 @@ type Props = {
 
 /**
  * Unified breadcrumb navigation trail used across all public pages.
- * Renders: ‹ Home › Section › Current Page
+ * Renders navigable ancestors only — the current page is intentionally
+ * omitted so every visible item is a clickable back-navigation link.
  *
- * All ancestor links are clickable; the last item is the current page
- * rendered as a non-linked span so screen readers announce aria-current.
- * The first link gets a subtle left-chevron icon to reinforce "back" navigation.
+ * Pass the full trail (including current page as the last item);
+ * the component automatically drops the final entry.
+ * On narrow screens (≤576 px) only the direct parent is shown.
  */
 export default function SiteBreadcrumb({ items, bottom = false }: Props) {
+  // Show only navigable ancestors — drop the current page (last item)
+  const ancestors = items.slice(0, -1);
+
+  if (ancestors.length === 0) return null;
+
   const navClass = ["sb-breadcrumb", bottom ? "sb-breadcrumb--bottom" : ""]
     .filter(Boolean)
     .join(" ");
@@ -24,39 +30,33 @@ export default function SiteBreadcrumb({ items, bottom = false }: Props) {
   return (
     <nav className={navClass} aria-label="Breadcrumb">
       <ol className="sb-breadcrumb-list" role="list">
-        {items.map((item, index) => {
+        {ancestors.map((item, index) => {
           const isFirst = index === 0;
-          const isLast = index === items.length - 1;
+          const isLast = index === ancestors.length - 1;
 
           return (
             <li className="sb-breadcrumb-item" key={item.href}>
-              {isLast ? (
-                <span className="sb-breadcrumb-current" aria-current="page">
-                  {item.name}
-                </span>
-              ) : (
-                <Link href={item.href} className="sb-breadcrumb-link">
-                  {isFirst && (
-                    <svg
-                      width="11"
-                      height="11"
-                      viewBox="0 0 11 11"
-                      fill="none"
-                      aria-hidden="true"
-                      className="sb-breadcrumb-back-icon"
-                    >
-                      <path
-                        d="M7.5 1.5L3.5 5.5l4 4"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                  {item.name}
-                </Link>
-              )}
+              <Link href={item.href} className="sb-breadcrumb-link">
+                {isFirst && (
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    aria-hidden="true"
+                    className="sb-breadcrumb-back-icon"
+                  >
+                    <path
+                      d="M8 2L4 6l4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+                {item.name}
+              </Link>
               {!isLast && (
                 <span className="sb-breadcrumb-sep" aria-hidden="true">
                   ›

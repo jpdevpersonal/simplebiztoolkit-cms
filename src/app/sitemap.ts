@@ -8,6 +8,7 @@ import {
 import { getApiService } from "@/lib/api";
 import { toAbsoluteUrl } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
+import { toTemplatesRoute } from "@/lib/templatesRoute";
 
 export const dynamic = "force-static";
 
@@ -27,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: site.url, lastModified: now },
-    { url: `${site.url}/products`, lastModified: now },
+    { url: `${site.url}/templates`, lastModified: now },
     { url: `${site.url}/pages`, lastModified: now },
     { url: `${site.url}/about`, lastModified: now },
     { url: `${site.url}/testimonials`, lastModified: now },
@@ -38,21 +39,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({
-    url: `${site.url}/products/${c.slug}`,
+    url: `${site.url}/templates/${c.slug}`,
     lastModified: now,
   }));
 
   // product detail routes: flatten all category items and use their productPageUrl
   const productRoutes: MetadataRoute.Sitemap = categories
     .flatMap((c) => c.items || [])
-    .map((p) => ({
-      url: `${site.url}${p.productPageUrl}`,
-      lastModified: now,
-    }));
+    .flatMap((p) => {
+      const productUrl = toTemplatesRoute(p.productPageUrl);
+      return productUrl
+        ? [
+            {
+              url: `${site.url}${productUrl}`,
+              lastModified: now,
+            },
+          ]
+        : [];
+    });
 
   const featuredProductRoutes: MetadataRoute.Sitemap = featuredProducts.map(
     (p) => ({
-      url: `${site.url}${p.productPageUrl}`,
+      url: `${site.url}${toTemplatesRoute(p.productPageUrl) ?? p.productPageUrl}`,
       lastModified: now,
     }),
   );

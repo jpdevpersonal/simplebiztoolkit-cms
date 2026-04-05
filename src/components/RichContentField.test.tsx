@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RichContentField from "./RichContentField";
 
@@ -38,6 +39,23 @@ vi.mock("@/components/TiptapEditor", () => ({
   ),
 }));
 
+vi.mock("@/components/HtmlCodeEditor", () => ({
+  __esModule: true,
+  default: ({ value, onChange, rows, required, ariaLabel }: any) => (
+    <div
+      data-testid="html-code-editor"
+      data-rows={String(rows)}
+      data-required={required ? "yes" : "no"}
+      data-aria-label={ariaLabel}
+    >
+      <span>{value}</span>
+      <button type="button" onClick={() => onChange("<p>Code edit</p>")}>
+        Emit code change
+      </button>
+    </div>
+  ),
+}));
+
 describe("RichContentField", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -61,6 +79,9 @@ describe("RichContentField", () => {
     expect(screen.getByText("Body *")).toBeInTheDocument();
     expect(screen.getByRole("textbox")).toHaveValue("<p>Hello</p>");
     expect(screen.getByText("Plain HTML hint")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Format HTML" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByTestId("tiptap-editor")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("textbox"), {
@@ -151,6 +172,114 @@ describe("RichContentField", () => {
 
     expect(screen.getByRole("textbox")).toBeInTheDocument();
     expect(setItemSpy).toHaveBeenCalledWith("body-mode", "html");
+  });
+
+  it("formats compact HTML on demand when enabled", async () => {
+    const user = userEvent.setup();
+
+    function TestHost() {
+      const [value, setValue] = useState(
+        "<div><p>Hello</p><p><strong>World</strong></p></div>",
+      );
+
+      return (
+        <RichContentField
+          label="Body"
+          value={value}
+          onChange={setValue}
+          storageKey="body-mode"
+          enableHtmlFormatting
+        />
+      );
+    }
+
+    render(<TestHost />);
+
+    await user.click(screen.getByRole("button", { name: "Format HTML" }));
+
+    expect(screen.getByRole("textbox")).toHaveValue(
+      [
+        "<div>",
+        "  <p>Hello</p>",
+        "  <p><strong>World</strong></p>",
+        "</div>",
+      ].join("\n"),
+    );
+  });
+
+  it("renders the code-style HTML editor when requested", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    render(
+      <RichContentField
+        label="Body"
+        value="<p>Hello</p>"
+        onChange={onChange}
+        storageKey="body-mode"
+        enableHtmlFormatting
+        htmlEditorVariant="code"
+        required
+        htmlRows={14}
+      />,
+    );
+
+    expect(screen.getByTestId("html-code-editor")).toBeInTheDocument();
+    expect(screen.getByTestId("html-code-editor")).toHaveAttribute(
+      "data-rows",
+      "14",
+    );
+    expect(screen.getByTestId("html-code-editor")).toHaveAttribute(
+      "data-required",
+      "yes",
+    );
+    expect(screen.getByTestId("html-code-editor")).toHaveAttribute(
+      "data-aria-label",
+      "Body",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Emit code change" }));
+
+    expect(onChange).toHaveBeenCalledWith("<p>Code edit</p>");
+  });
+
+  it("formats HTML when switching from tiptap mode when enabled", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("body-mode", "tiptap");
+
+    function TestHost() {
+      const [value, setValue] = useState(
+        "<div><p>Hello</p><p><strong>World</strong></p></div>",
+      );
+
+      return (
+        <RichContentField
+          label="Body"
+          value={value}
+          onChange={setValue}
+          storageKey="body-mode"
+          enableHtmlFormatting
+          formatHtmlOnModeSwitch
+        />
+      );
+    }
+
+    render(<TestHost />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("tiptap-editor")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: "HTML" }));
+
+    expect(screen.getByRole("textbox")).toHaveValue(
+      [
+        "<div>",
+        "  <p>Hello</p>",
+        "  <p><strong>World</strong></p>",
+        "</div>",
+      ].join("\n"),
+    );
   });
 
   it("keeps HTML mode when storage access fails or contains an invalid value", async () => {

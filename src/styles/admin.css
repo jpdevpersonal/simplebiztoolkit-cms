@@ -865,7 +865,8 @@
 .admin-form-block-header {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  justify-content: space-between;
+  gap: 0.875rem;
   padding: 1rem 1.25rem;
   background: linear-gradient(
     135deg,
@@ -873,6 +874,14 @@
     var(--sb-brand-blue-dark) 100%
   );
   border-bottom: 1px solid rgba(45, 48, 57, 0.5);
+}
+
+.admin-form-block-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .admin-form-block-icon {
@@ -891,6 +900,13 @@
   min-width: 0;
 }
 
+.admin-form-block-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .admin-form-block-title {
   font-size: 0.75rem !important;
   font-weight: 700 !important;
@@ -902,6 +918,100 @@
 
 .admin-form-block-body {
   padding: 1.35rem;
+}
+
+.admin-form-block--collapsed .admin-form-block-header {
+  border-bottom: none;
+}
+
+.page-editor-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.page-editor-main,
+.page-editor-sidebar {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  align-content: start;
+}
+
+.page-editor-main > .admin-form-block,
+.page-editor-sidebar > .admin-form-block {
+  margin-bottom: 0;
+}
+
+.page-editor-content-row {
+  min-width: 0;
+}
+
+.page-editor-content-row > .admin-form-block {
+  margin-bottom: 0;
+}
+
+.page-editor-section-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.page-editor-section-toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.36);
+}
+
+.page-editor-section-toggle:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+.page-editor-section-toggle[aria-expanded="false"] {
+  background: rgba(26, 127, 90, 0.22);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+@media (min-width: 992px) {
+  .page-editor-layout {
+    grid-template-columns: minmax(0, 2.35fr) minmax(260px, 0.75fr);
+    align-items: start;
+  }
+
+  .page-editor-content-row {
+    grid-column: 1 / -1;
+  }
+
+  .page-editor-layout--sidebar-relaxed {
+    grid-template-columns: minmax(0, 2.35fr) minmax(260px, 0.75fr);
+  }
+
+  .page-editor-layout--sidebar-compact {
+    grid-template-columns: minmax(0, 2.35fr) minmax(260px, 0.75fr);
+  }
+
+  .page-editor-layout--sidebar-minimized {
+    grid-template-columns: minmax(0, 2.35fr) minmax(260px, 0.75fr);
+  }
+
+  .page-editor-layout--sidebar-compact .page-editor-sidebar,
+  .page-editor-layout--sidebar-minimized .page-editor-sidebar {
+    width: auto;
+    min-width: 0;
+    overflow: visible;
+  }
 }
 
 /* ---- Form actions bar ---- */

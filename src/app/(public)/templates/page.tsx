@@ -16,19 +16,19 @@ const productsDescription =
 export const metadata: Metadata = createPageMetadata({
   title: "Templates",
   description: productsDescription,
-  pathname: "/products",
+  pathname: "/templates",
 });
 
 export default async function ProductsPage() {
   const categories = (await apiService.getProductCategories()).data || [];
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
-    { name: "Templates", href: "/products" },
+    { name: "Templates", href: "/templates" },
   ]);
   const collectionJsonLd = createCollectionPageJsonLd({
     name: "Template Categories",
     description: productsDescription,
-    href: "/products",
+    href: "/templates",
   });
 
   return (
@@ -48,7 +48,7 @@ export default async function ProductsPage() {
           <div className="category-grid">
             {categories.map((c) => (
               <Link
-                href={`/products/${c.slug}`}
+                href={`/templates/${c.slug}`}
                 className="category-card-link"
                 key={c.slug}
               >

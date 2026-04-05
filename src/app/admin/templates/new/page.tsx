@@ -10,7 +10,7 @@ export default async function NewProductPage() {
   const { service } = await getAdminApiService();
   const categoriesResponse = await service.getProductCategories();
   const categories = categoriesResponse.data || [];
-  const breadcrumbItems = [{ href: "/admin/products", label: "Templates" }];
+  const breadcrumbItems = [{ href: "/admin/templates", label: "Templates" }];
 
   return (
     <div>

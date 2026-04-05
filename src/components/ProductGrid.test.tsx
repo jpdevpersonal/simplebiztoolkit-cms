@@ -76,7 +76,7 @@ describe("ProductGrid", () => {
       expect(ctaAnchors.length).toBe(3);
       expect(ctaAnchors[0]).toHaveAttribute(
         "href",
-        "/products/test-category/test-product-1",
+        "/templates/test-category/test-product-1",
       );
       expect(ctaAnchors[0]).toHaveAttribute("rel", "noopener noreferrer");
     });
@@ -90,7 +90,7 @@ describe("ProductGrid", () => {
       expect(thumbnailLinks.length).toBe(3);
       expect(thumbnailLinks[0]).toHaveAttribute(
         "href",
-        "/products/test-category/test-product-1",
+        "/templates/test-category/test-product-1",
       );
     });
 

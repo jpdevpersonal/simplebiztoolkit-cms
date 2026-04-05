@@ -9,9 +9,15 @@ test.describe("Smoke", () => {
     ).toBeVisible();
   });
 
-  test("products page is reachable", async ({ page }) => {
+  test("templates page is reachable", async ({ page }) => {
+    await page.goto("/templates");
+    await expect(page).toHaveURL(/\/templates/);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  });
+
+  test("legacy products page redirects to templates", async ({ page }) => {
     await page.goto("/products");
-    await expect(page).toHaveURL(/\/products/);
+    await expect(page).toHaveURL(/\/templates/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 

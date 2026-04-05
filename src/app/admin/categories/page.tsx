@@ -81,7 +81,7 @@ export default async function CategoriesPage() {
                 </td>
                 <td>
                   <Link
-                    href={`/products/${category.slug}`}
+                    href={`/templates/${category.slug}`}
                     className="admin-btn-action"
                     target="_blank"
                     rel="noopener noreferrer"
