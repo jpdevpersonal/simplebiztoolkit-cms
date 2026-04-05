@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { toTemplatesRoute } from "@/lib/templatesRoute";
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   return (
@@ -12,7 +13,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
             <article className="template-thumbnail sb-card h-100 product-card">
               <div className="overflow-hidden product-thumb-wrap">
                 <Link
-                  href={p ? p.productPageUrl || "#" : "#"}
+                  href={p ? toTemplatesRoute(p.productPageUrl) || "#" : "#"}
                   className="product-thumbnail-clickable product-thumb-link"
                 >
                   <picture className="product-thumb-picture">
@@ -68,7 +69,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                         </svg>
                       </span>
                       <a
-                        href={p.productPageUrl || "#"}
+                        href={toTemplatesRoute(p.productPageUrl) || "#"}
                         rel="noopener noreferrer"
                         className="product-card-link"
                       >

@@ -53,7 +53,7 @@ export default function FreebiePage() {
             </p>
             <div className="d-flex gap-2 flex-wrap justify-content-center">
               <EtsyCtaButton />
-              <Link className="btn sb-btn-ghost" href="/products">
+              <Link className="btn sb-btn-ghost" href="/templates">
                 Browse All Templates
               </Link>
             </div>
@@ -204,7 +204,7 @@ export default function FreebiePage() {
                 />
                 <Link
                   className="btn sb-btn-ghost flex-grow-1 justify-content-center"
-                  href="/products"
+                  href="/templates"
                 >
                   Browse All Templates
                 </Link>

@@ -1,4 +1,5 @@
 import {
+  canonicalizeStaticNavOrderId,
   hiddenStaticOrderIdToStaticOrderId,
   isHiddenStaticNavOrderId,
   isStaticNavOrderId,
@@ -41,7 +42,13 @@ export function composeOrderedMenuEntries(
   menuNavItems: MenuNavItem[] = [],
   navOrderIds: string[] = [],
 ): OrderedMenuEntry[] {
-  const normalizedOrderIds = normalizeOrderedMenuItemIds(navOrderIds);
+  const normalizedOrderIds = Array.from(
+    new Set(
+      normalizeOrderedMenuItemIds(navOrderIds).map((id) =>
+        canonicalizeStaticNavOrderId(id),
+      ),
+    ),
+  );
   const hiddenStaticOrderIds = new Set<string>();
 
   for (const id of normalizedOrderIds) {

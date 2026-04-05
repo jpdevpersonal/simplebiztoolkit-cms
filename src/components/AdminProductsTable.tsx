@@ -6,6 +6,7 @@ import type { ProductItem, ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import AdminSortIcon from "@/components/AdminSortIcon";
 import { compareSortValues, parseCurrencyValue } from "@/lib/sortUtils";
+import { toTemplatesRoute } from "@/lib/templatesRoute";
 
 type Props = {
   products: ProductItem[];
@@ -15,7 +16,7 @@ type Props = {
 type SortCol = "title" | "status" | "category" | "price";
 
 export default function AdminProductsTable({ products, categories }: Props) {
-  const [sortBy, setSortBy] = useState<SortCol>("title");
+  const [sortBy, setSortBy] = useState<SortCol>("category");
   const [dir, setDir] = useState<"asc" | "desc">("asc");
 
   const [localCategories, setLocalCategories] =
@@ -154,6 +155,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
           )}
           {sorted.map((product) => {
             const categoryName = categoryNameMap[product.categoryId] ?? "—";
+            const productPageUrl = toTemplatesRoute(product.productPageUrl);
             return (
               <tr key={product.id}>
                 <td className="admin-cell-strong" data-label="Title">
@@ -181,9 +183,9 @@ export default function AdminProductsTable({ products, categories }: Props) {
                   </span>
                 </td>
                 <td className="admin-cell-actions" data-label="Preview">
-                  {product.productPageUrl ? (
+                  {productPageUrl ? (
                     <Link
-                      href={product.productPageUrl}
+                      href={productPageUrl}
                       className="admin-btn-action"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -227,7 +229,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
                 </td>
                 <td className="admin-cell-actions" data-label="Actions">
                   <Link
-                    href={`/admin/products/${product.id}/edit`}
+                    href={`/admin/templates/${product.id}/edit`}
                     className="admin-btn-action"
                   >
                     Edit

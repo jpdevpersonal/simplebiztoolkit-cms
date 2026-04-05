@@ -38,7 +38,7 @@ describe("ContentRenderer", () => {
     expect(screen.getByText("Try Adobe Express")).toBeInTheDocument();
     expect(screen.getByText("Faster design workflow")).toBeInTheDocument();
     expect(screen.getByText("Explore Adobe Express")).toBeInTheDocument();
-    expect(screen.getByText("See all products")).toBeInTheDocument();
+    expect(screen.getByText("See all templates")).toBeInTheDocument();
   });
 
   it("renders saved CTA button styles from block HTML", () => {

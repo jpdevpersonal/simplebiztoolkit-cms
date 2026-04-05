@@ -30,7 +30,7 @@ export default async function ProductsPage() {
           <span className="admin-page-meta">
             {categories.length} categories
           </span>
-          <Link href="/admin/products/new" className="admin-btn-save">
+          <Link href="/admin/templates/new" className="admin-btn-save">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <line
                 x1="12"

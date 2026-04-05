@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import type { Product } from "@/types/product";
 import { sanitizeHtml } from "@/lib/sanitize";
 import "@/styles/products.css";

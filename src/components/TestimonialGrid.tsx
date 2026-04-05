@@ -1,5 +1,6 @@
 import { testimonials } from "../data/testimonials";
 import Link from "next/link";
+import { toTemplatesRoute } from "@/lib/templatesRoute";
 
 type TestimonialGridProps = {
   count?: number;
@@ -125,20 +126,24 @@ export default function TestimonialGrid({ count }: TestimonialGridProps) {
 
   return (
     <div className="row g-3">
-      {items.map((t) => (
-        <div className="col-md-4" key={t.id}>
-          {t.productLink ? (
-            <Link
-              href={t.productLink}
-              className="text-reset text-decoration-none"
-            >
-              {card(t)}
-            </Link>
-          ) : (
-            card(t)
-          )}
-        </div>
-      ))}
+      {items.map((t) => {
+        const productHref = toTemplatesRoute(t.productLink);
+
+        return (
+          <div className="col-md-4" key={t.id}>
+            {productHref ? (
+              <Link
+                href={productHref}
+                className="text-reset text-decoration-none"
+              >
+                {card(t)}
+              </Link>
+            ) : (
+              card(t)
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

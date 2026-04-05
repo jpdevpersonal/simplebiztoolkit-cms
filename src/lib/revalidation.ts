@@ -6,9 +6,9 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 
 function revalidatePublicProductPaths() {
-  revalidatePath("/products");
-  revalidatePath("/products/[categorySlug]", "page");
-  revalidatePath("/products/[categorySlug]/[productSlug]", "page");
+  revalidatePath("/templates");
+  revalidatePath("/templates/[categorySlug]", "page");
+  revalidatePath("/templates/[categorySlug]/[productSlug]", "page");
 }
 
 function revalidatePublicPagePaths(slugs?: string[]) {

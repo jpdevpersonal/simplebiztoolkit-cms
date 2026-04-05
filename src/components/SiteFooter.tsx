@@ -52,7 +52,7 @@ export default function SiteFooter({
   }
 
   const shopLinks = [
-    getStaticLink("/products"),
+    getStaticLink("/templates"),
     getStaticLink("/testimonials"),
   ].filter((entry): entry is FooterLink => Boolean(entry));
   const supportLinks = [

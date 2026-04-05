@@ -80,6 +80,11 @@ describe("AdminMenuManager", () => {
         menuItems={[
           { id: "menu-1", title: "Guides", status: "published" } as any,
         ]}
+        initialLayout={{
+          menuKey: "primary",
+          isActive: true,
+          orderedMenuItemIds: ["static:/products", "static:/faq", "menu-1"],
+        }}
       />,
     );
 
@@ -160,7 +165,7 @@ describe("AdminMenuManager", () => {
           menuKey: "primary",
           isActive: true,
           orderedMenuItemIds: expect.arrayContaining([
-            "static:/products",
+            "static:/templates",
             "static:/faq",
             "menu-1",
             "menu-2",
@@ -173,7 +178,7 @@ describe("AdminMenuManager", () => {
   it("keeps current order state and shows error when save fails", async () => {
     const user = userEvent.setup();
     const staticSlotError = Object.assign(
-      new Error("Bad Request: Invalid menu item id: static:/products"),
+      new Error("Bad Request: Invalid menu item id: static:/templates"),
       { status: 400 },
     );
 
@@ -206,7 +211,7 @@ describe("AdminMenuManager", () => {
         expect.objectContaining({
           menuKey: "primary",
           orderedMenuItemIds: expect.arrayContaining([
-            "static:/products",
+            "static:/templates",
             "menu-1",
             "menu-2",
           ]),
@@ -214,7 +219,7 @@ describe("AdminMenuManager", () => {
       );
       expect(screen.getByRole("alert")).toBeTruthy();
       expect(
-        screen.getByText(/invalid menu item id: static:\/products/i),
+        screen.getByText(/invalid menu item id: static:\/templates/i),
       ).toBeTruthy();
     });
   });
@@ -251,7 +256,7 @@ describe("AdminMenuManager", () => {
         expect.objectContaining({
           menuKey: "primary",
           orderedMenuItemIds: expect.arrayContaining([
-            "hidden-static:/products",
+            "hidden-static:/templates",
             "menu-1",
           ]),
         }),
@@ -267,7 +272,7 @@ describe("AdminMenuManager", () => {
         expect.objectContaining({
           menuKey: "primary",
           orderedMenuItemIds: expect.arrayContaining([
-            "static:/products",
+            "static:/templates",
             "menu-1",
           ]),
         }),
@@ -278,7 +283,7 @@ describe("AdminMenuManager", () => {
             orderedMenuItemIds?: string[];
           }
         ).orderedMenuItemIds,
-      ).not.toContain("hidden-static:/products");
+      ).not.toContain("hidden-static:/templates");
     });
   });
 
@@ -313,7 +318,7 @@ describe("AdminMenuManager", () => {
         expect.objectContaining({
           menuKey: "sb-footer-main",
           orderedMenuItemIds: expect.arrayContaining([
-            "hidden-static:/products",
+            "hidden-static:/templates",
             "menu-1",
           ]),
         }),

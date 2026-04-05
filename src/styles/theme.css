@@ -392,12 +392,12 @@ h3 {
    ============================================= */
 
 nav.sb-breadcrumb {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 nav.sb-breadcrumb.sb-breadcrumb--bottom {
   margin-bottom: 0;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--sb-border, #e2e5ea);
 }
@@ -421,26 +421,33 @@ nav.sb-breadcrumb.sb-breadcrumb--bottom {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--sb-muted, #475569);
   text-decoration: none;
   line-height: 1.5;
+  padding: 0.25rem 0.125rem;
+  border-radius: 3px;
   transition: color 0.15s ease;
 }
 
 .sb-breadcrumb-link:hover {
   color: var(--sb-green, #1a7f5a);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .sb-breadcrumb-back-icon {
   flex-shrink: 0;
-  opacity: 0.4;
-  transition: opacity 0.15s ease;
+  opacity: 0.55;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .sb-breadcrumb-link:hover .sb-breadcrumb-back-icon {
-  opacity: 0.72;
+  opacity: 0.85;
+  transform: translateX(-2px);
 }
 
 .sb-breadcrumb-link:focus-visible {
@@ -451,18 +458,11 @@ nav.sb-breadcrumb.sb-breadcrumb--bottom {
 
 .sb-breadcrumb-sep {
   display: inline-block;
-  padding: 0 0.3rem;
+  padding: 0 0.375rem;
   font-size: 0.75rem;
   color: var(--sb-muted, #475569);
-  opacity: 0.3;
+  opacity: 0.35;
   user-select: none;
-}
-
-.sb-breadcrumb-current {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--sb-ink, #0f1724);
-  line-height: 1.5;
 }
 
 @media (max-width: 576px) {
@@ -470,9 +470,21 @@ nav.sb-breadcrumb.sb-breadcrumb--bottom {
     margin-bottom: 1rem;
   }
 
-  .sb-breadcrumb-link,
-  .sb-breadcrumb-current {
-    font-size: 0.75rem;
+  /* On narrow screens show only the direct parent (last ancestor) */
+  .sb-breadcrumb-item:not(:last-child) {
+    display: none;
+  }
+
+  .sb-breadcrumb-link {
+    font-size: 0.8125rem;
+    /* Larger tap target on touch devices */
+    padding: 0.375rem 0.125rem;
+  }
+
+  /* Restore back icon visibility on the sole displayed item */
+  .sb-breadcrumb-back-icon {
+    display: inline-block !important;
+    opacity: 0.6;
   }
 }
 

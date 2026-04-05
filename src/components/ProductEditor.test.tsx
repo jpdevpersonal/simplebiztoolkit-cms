@@ -73,7 +73,7 @@ describe("ProductEditor", () => {
         "product",
         "my-product",
       );
-      expect(routerPush).toHaveBeenCalledWith("/admin/products");
+      expect(routerPush).toHaveBeenCalledWith("/admin/templates");
       expect(routerRefresh).toHaveBeenCalled();
     });
   });
@@ -125,7 +125,7 @@ describe("ProductEditor", () => {
         "product",
         "old-product",
       );
-      expect(routerPush).toHaveBeenCalledWith("/admin/products");
+      expect(routerPush).toHaveBeenCalledWith("/admin/templates");
       expect(routerRefresh).toHaveBeenCalled();
     });
   });
@@ -153,7 +153,7 @@ describe("ProductEditor", () => {
 
     expect(screen.getByRole("link", { name: /preview/i })).toHaveAttribute(
       "href",
-      "/preview/products/p-1",
+      "/preview/templates/p-1",
     );
   });
 
@@ -234,7 +234,7 @@ describe("ProductEditor", () => {
         "product",
         "old-product",
       );
-      expect(routerPush).toHaveBeenCalledWith("/admin/products");
+      expect(routerPush).toHaveBeenCalledWith("/admin/templates");
     });
   });
 });

@@ -13,7 +13,7 @@ describe("SiteFooter", () => {
 
     expect(screen.getByRole("link", { name: "Templates" })).toHaveAttribute(
       "href",
-      "/products",
+      "/templates",
     );
     expect(screen.getByRole("link", { name: "Etsy Shop" })).toHaveAttribute(
       "href",
@@ -50,7 +50,10 @@ describe("SiteFooter", () => {
       />,
     );
 
-    expect(screen.getByRole("link", { name: "Templates" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Templates" })).toHaveAttribute(
+      "href",
+      "/templates",
+    );
     expect(screen.getByRole("link", { name: "Guides" })).toHaveAttribute(
       "href",
       "/pages/guides",
