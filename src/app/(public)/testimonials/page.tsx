@@ -20,11 +20,39 @@ export default function TestimonialsPage() {
   return (
     <section className="sb-section">
       <div className="container">
-        <h1 style={{ fontWeight: 900 }}>Reviews</h1>
-        <p className="sb-muted">
-          Here&apos;s what some of our customers are saying about Simple Biz
-          Toolkit
-        </p>
+        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+          <h1
+            style={{
+              fontWeight: 800,
+              fontSize: "clamp(1.875rem, 4.5vw, 3rem)",
+              letterSpacing: "-0.035em",
+              lineHeight: 1.15,
+              background:
+                "linear-gradient(135deg, var(--sb-ink) 0%, var(--sb-brand-blue-light) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              marginBottom: 0,
+            }}
+          >
+            Reviews
+          </h1>
+          <div
+            aria-hidden="true"
+            style={{
+              width: 48,
+              height: 3,
+              background:
+                "linear-gradient(90deg, var(--sb-green), var(--sb-brand-blue))",
+              borderRadius: 999,
+              margin: "0.875rem auto 1rem",
+            }}
+          />
+          <p className="sb-muted" style={{ maxWidth: 520, margin: "0 auto" }}>
+            Here&apos;s what some of our customers are saying about Simple Biz
+            Toolkit
+          </p>
+        </div>
 
         <TestimonialGrid />
 

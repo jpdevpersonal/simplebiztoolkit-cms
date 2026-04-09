@@ -67,7 +67,7 @@ export default async function PagesOverview() {
     <>
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={collectionJsonLd} />
-      <section className="sb-section pages-section">
+      <section className="sb-section">
         <div className="container">
           <div className="pages-header">
             <h1>Pages</h1>
