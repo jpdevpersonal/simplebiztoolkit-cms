@@ -11,7 +11,6 @@ import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { slugify } from "@/lib/slugify";
-import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import {
   getPublishedMenuItemContent,
   getPublishedMenuItems,
@@ -124,15 +123,8 @@ export default async function MenuItemLandingPage({ params }: Props) {
     <>
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={collectionJsonLd} />
-      <section className="sb-section pages-section">
+      <section className="sb-section">
         <div className="container">
-          <SiteBreadcrumb
-            items={[
-              { name: "Home", href: "/" },
-              { name: item.title, href: `/pages/${menuItemSlug}` },
-            ]}
-          />
-
           <div className="pages-header">
             <h1>{item.title}</h1>
             {item.description && (
