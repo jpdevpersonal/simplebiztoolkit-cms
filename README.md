@@ -101,4 +101,5 @@ This repo is configured to deploy to Azure Static Web Apps via GitHub Actions.
 
 - Workflow: `.github/workflows/azure-static-web-apps-salmon-mushroom-09d02e403.yml`
 - The Azure SWA build must receive `API_URL` and `NEXT_PUBLIC_API_URL` so `next build` can generate sitemap and static routes in production.
+- After product or CMS page updates, the backend should trigger `POST /api/revalidate` so Next.js refreshes cached public routes and `/sitemap.xml` without waiting for a redeploy.
 - Static Web Apps routing/headers: `staticwebapp.config.json`

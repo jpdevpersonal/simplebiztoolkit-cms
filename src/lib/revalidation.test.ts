@@ -36,6 +36,7 @@ describe("revalidation", () => {
       "/templates/[categorySlug]/[productSlug]",
       "page",
     );
+    expect(revalidatePathMock).toHaveBeenCalledWith("/sitemap.xml");
   });
 
   it("revalidates category tags and public product routes", async () => {
@@ -46,7 +47,8 @@ describe("revalidation", () => {
 
     expect(revalidateTagMock).toHaveBeenCalledWith("products");
     expect(revalidateTagMock).toHaveBeenCalledWith("category-category-slug");
-    expect(revalidatePathMock).toHaveBeenCalledTimes(3);
+    expect(revalidatePathMock).toHaveBeenCalledTimes(4);
+    expect(revalidatePathMock).toHaveBeenCalledWith("/sitemap.xml");
   });
 
   it("revalidates all public product routes", async () => {
@@ -56,7 +58,8 @@ describe("revalidation", () => {
     await revalidateAllProducts();
 
     expect(revalidateTagMock).toHaveBeenCalledWith("products");
-    expect(revalidatePathMock).toHaveBeenCalledTimes(3);
+    expect(revalidatePathMock).toHaveBeenCalledTimes(4);
+    expect(revalidatePathMock).toHaveBeenCalledWith("/sitemap.xml");
   });
 
   it("revalidates page tags and public page routes", async () => {
@@ -79,6 +82,7 @@ describe("revalidation", () => {
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/updated-page");
     expect(revalidatePathMock).toHaveBeenCalledWith("/old-page");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/sitemap.xml");
   });
 
   it("revalidates all public page routes", async () => {
@@ -98,5 +102,6 @@ describe("revalidation", () => {
       "/pages/[menuItemSlug]/[categorySlug]",
       "page",
     );
+    expect(revalidatePathMock).toHaveBeenCalledWith("/sitemap.xml");
   });
 });
