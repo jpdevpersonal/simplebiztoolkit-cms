@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { site } from "@/config/site";
 import { featuredProducts } from "@/data/featured";
 import {
+  getMenuItemLandingHref,
   getPublishedMenuItemContent,
   getPublishedMenuItems,
 } from "@/lib/menuContent";
@@ -10,14 +11,14 @@ import { toAbsoluteUrl } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 
-export const dynamic = "force-static";
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const api = getApiService();
   const [productsResp, menuItems] = await Promise.all([
-    api.getAllProducts(),
+    api.getProductCategories(),
     getPublishedMenuItems(),
   ]);
 
@@ -67,14 +68,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const menuLandingRoutes: MetadataRoute.Sitemap = menuContent
     .filter((item) => item.totalPages > 0)
-    .filter(
-      (item) =>
-        !(
-          item.publishedCategories.length === 0 && item.directPages.length === 1
-        ),
-    )
     .map((item) => ({
-      url: `${site.url}/pages/${slugify(item.title)}`,
+      url: toAbsoluteUrl(getMenuItemLandingHref(item)),
       lastModified: now,
     }));
 

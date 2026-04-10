@@ -5,10 +5,15 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 
+function revalidateSitemap() {
+  revalidatePath("/sitemap.xml");
+}
+
 function revalidatePublicProductPaths() {
   revalidatePath("/templates");
   revalidatePath("/templates/[categorySlug]", "page");
   revalidatePath("/templates/[categorySlug]/[productSlug]", "page");
+  revalidateSitemap();
 }
 
 function revalidatePublicPagePaths(slugs?: string[]) {
@@ -19,6 +24,8 @@ function revalidatePublicPagePaths(slugs?: string[]) {
   for (const slug of slugs ?? []) {
     revalidatePath(`/${slug}`);
   }
+
+  revalidateSitemap();
 }
 
 /**
