@@ -8,6 +8,7 @@ import {
 } from "@/lib/menuContent";
 import { getApiService } from "@/lib/api";
 import { toAbsoluteUrl } from "@/lib/seo";
+import { toSitemapLastModified } from "@/lib/sitemap";
 import { slugify } from "@/lib/slugify";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 
@@ -88,10 +89,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         (category) => category.publishedPages,
       ),
     ])
-    .map((page) => ({
-      url: toAbsoluteUrl(page.canonicalUrl || `/${page.slug}`),
-      lastModified: page.dateModified || page.dateISO || now,
-    }));
+    .map((page) => {
+      const lastModified = toSitemapLastModified(
+        page.dateModified,
+        page.dateISO,
+      );
+
+      return {
+        url: toAbsoluteUrl(page.canonicalUrl || `/${page.slug}`),
+        ...(lastModified ? { lastModified } : {}),
+      };
+    });
 
   const allRoutes = [
     ...staticRoutes,
