@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { site } from "@/config/site";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -90,6 +91,8 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
   let navOrderIds: string[] = [];
@@ -126,6 +129,23 @@ export default async function PublicLayout({
 
   return (
     <>
+      {gaId ? (
+        <>
+          <Script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga-init" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', '${gaId}');`}
+          </Script>
+        </>
+      ) : null}
+
       <BootstrapClient />
       <ScrollToTop />
 
