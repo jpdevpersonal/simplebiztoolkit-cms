@@ -1,0 +1,89 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - staging
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - staging
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
+      NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run full test suite
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke tests
+        run: npm run e2e
+
+  deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    needs: quality
+    runs-on: ubuntu-latest
+    name: Deploy to Azure
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Build and Deploy
+        uses: Azure/static-web-apps-deploy@v1
+        env:
+          API_URL: https://simplebiztoolkit-api-live.azurewebsites.net
+          NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-live.azurewebsites.net
+          NEXT_PUBLIC_SHOW_FREE_GUIDE_BUTTON: "false"
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_SALMON_MUSHROOM_09D02E403 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          api_location: ""
+          output_location: ".next"
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_SALMON_MUSHROOM_09D02E403 }}
+          app_location: "/"
+          action: "close"
