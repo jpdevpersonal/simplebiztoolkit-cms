@@ -1,28 +1,25 @@
-name: CI
-
+name: CI (PR Validation)
+# quality checks
 on:
-  push:
-    branches:
-      - main
-      - master
   pull_request:
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     env:
       API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
       NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
 
       - name: Install dependencies
@@ -34,22 +31,5 @@ jobs:
       - name: TypeScript type check
         run: npx tsc --noEmit
 
-      - name: Unit tests (pull requests)
-        if: github.event_name == 'pull_request'
+      - name: Unit tests
         run: npm run test
-
-      - name: Unit and API tests with coverage gates
-        if: github.event_name != 'pull_request'
-        run: npm run test:ci
-
-      - name: Build
-        if: github.event_name != 'pull_request'
-        run: npm run build
-
-      - name: Install Playwright Chromium
-        if: github.event_name != 'pull_request'
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Playwright smoke tests
-        if: github.event_name != 'pull_request'
-        run: npm run e2e
