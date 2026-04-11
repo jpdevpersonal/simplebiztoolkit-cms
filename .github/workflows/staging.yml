@@ -50,7 +50,7 @@ jobs:
         run: npm run e2e
 
   deploy:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
     needs: quality
     runs-on: ubuntu-latest
     name: Deploy to Azure
