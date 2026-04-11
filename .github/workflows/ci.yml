@@ -1,5 +1,5 @@
 name: CI (PR Validation)
-
+# quality checks
 on:
   pull_request:
 
