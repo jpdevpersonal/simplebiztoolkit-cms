@@ -41,6 +41,24 @@ describe("toSitemapLastModified", () => {
     expect(lastModified).toBeUndefined();
   });
 
+  it("rejects datetime strings without a timezone", () => {
+    const lastModified = toSitemapLastModified(
+      "2026-04-07T14:56:18.5877076",
+      undefined,
+    );
+
+    expect(lastModified).toBeUndefined();
+  });
+
+  it("falls back when the first datetime is missing a timezone", () => {
+    const lastModified = toSitemapLastModified(
+      "2026-04-07T14:56:18.5877076",
+      "2026-04-10T21:35:35.243Z",
+    );
+
+    expect(lastModified?.toISOString()).toBe("2026-04-10T21:35:35.243Z");
+  });
+
   it("ignores invalid Date instances", () => {
     const lastModified = toSitemapLastModified(
       new Date("not-a-date"),
