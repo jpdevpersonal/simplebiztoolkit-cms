@@ -24,7 +24,6 @@ vi.mock("@/lib/clientApi", () => ({
     createProduct: vi.fn(),
     updateProduct: vi.fn(),
     deleteProduct: vi.fn(),
-    revalidateContent: vi.fn(),
   },
 }));
 
@@ -69,10 +68,6 @@ describe("ProductEditor", () => {
 
     await waitFor(() => {
       expect(clientApi.createProduct).toHaveBeenCalled();
-      expect(clientApi.revalidateContent).toHaveBeenCalledWith(
-        "product",
-        "my-product",
-      );
       expect(routerPush).toHaveBeenCalledWith("/admin/templates");
       expect(routerRefresh).toHaveBeenCalled();
     });
@@ -120,10 +115,6 @@ describe("ProductEditor", () => {
       expect(clientApi.updateProduct).toHaveBeenCalledWith(
         "p-1",
         expect.any(Object),
-      );
-      expect(clientApi.revalidateContent).toHaveBeenCalledWith(
-        "product",
-        "old-product",
       );
       expect(routerPush).toHaveBeenCalledWith("/admin/templates");
       expect(routerRefresh).toHaveBeenCalled();
@@ -230,10 +221,6 @@ describe("ProductEditor", () => {
 
     await waitFor(() => {
       expect(clientApi.deleteProduct).toHaveBeenCalledWith("p-1");
-      expect(clientApi.revalidateContent).toHaveBeenCalledWith(
-        "product",
-        "old-product",
-      );
       expect(routerPush).toHaveBeenCalledWith("/admin/templates");
     });
   });

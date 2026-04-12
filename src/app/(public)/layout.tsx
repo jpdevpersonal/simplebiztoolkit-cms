@@ -25,6 +25,8 @@ import {
   orderMenuItemsByLayout,
 } from "@/lib/menuContent";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   applicationName: site.name,

@@ -15,6 +15,8 @@ type Props = {
   params: Promise<{ categorySlug: string; productSlug: string }>;
 };
 
+export const revalidate = 300;
+
 /**
  * Generate static params for ISR
  * Pre-renders all product pages at build time
@@ -48,7 +50,15 @@ export async function generateStaticParams() {
  */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug, productSlug } = await params;
-  const response = await apiService.getProductBySlug(categorySlug, productSlug);
+  const categoryResponse = await apiService.getCategoryBySlug(categorySlug);
+  const productId = categoryResponse.data?.items?.find(
+    (item) => item.slug === productSlug,
+  )?.id;
+  const response = await apiService.getProductBySlug(
+    categorySlug,
+    productSlug,
+    productId,
+  );
 
   if (!response.data) return {};
 
@@ -71,11 +81,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductDetailPage({ params }: Props) {
   const { categorySlug, productSlug } = await params;
 
-  // Fetch product and category in parallel
-  const [productResponse, categoryResponse] = await Promise.all([
-    apiService.getProductBySlug(categorySlug, productSlug),
-    apiService.getCategoryBySlug(categorySlug),
-  ]);
+  const categoryResponse = await apiService.getCategoryBySlug(categorySlug);
+  const productId = categoryResponse.data?.items?.find(
+    (item) => item.slug === productSlug,
+  )?.id;
+  const productResponse = await apiService.getProductBySlug(
+    categorySlug,
+    productSlug,
+    productId,
+  );
 
   if (!productResponse.data || !categoryResponse.data) notFound();
 

@@ -13,6 +13,8 @@ import {
 const productsDescription =
   "Browse categories like accounting ledgers, time sheets, and rent trackers. Each tool links to Etsy for secure checkout.";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = createPageMetadata({
   title: "Templates",
   description: productsDescription,

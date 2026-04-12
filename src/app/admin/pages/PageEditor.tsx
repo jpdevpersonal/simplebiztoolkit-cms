@@ -16,7 +16,6 @@ import type {
 } from "@/lib/api";
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
-import { revalidatePageContent } from "@/lib/adminRevalidation";
 import { compactHtmlForStorage } from "@/lib/htmlFormatter";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
@@ -241,12 +240,10 @@ export default function PageEditor({
       }
 
       if (isNew) {
-        const saved = await clientApi.createMenuItemPage(payload);
-        await revalidatePageContent(saved?.slug ?? formData.slug);
+        await clientApi.createMenuItemPage(payload);
         redirectAndRefresh(router, "/admin/pages");
       } else if (page?.id) {
-        const saved = await clientApi.updateMenuItemPage(page.id, payload);
-        await revalidatePageContent(saved?.slug ?? formData.slug, page.slug);
+        await clientApi.updateMenuItemPage(page.id, payload);
         setMessage("Page saved successfully!");
         refreshEditor(router);
       } else {
@@ -272,7 +269,6 @@ export default function PageEditor({
 
     try {
       await clientApi.deleteMenuItemPage(page!.id);
-      await revalidatePageContent(undefined, page?.slug);
       redirectAndRefresh(router, "/admin/pages");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");

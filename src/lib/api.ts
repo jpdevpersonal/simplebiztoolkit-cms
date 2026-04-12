@@ -192,7 +192,7 @@ class ApiService {
           ...this.getHeaders(requiresAuth),
           ...options?.headers,
         },
-        next: tags ? { tags } : undefined,
+        next: tags ? { revalidate: 300, tags } : undefined,
       };
 
       const response = await sendHttpRequest(url, fetchOptions);
@@ -269,11 +269,12 @@ class ApiService {
   async getProductBySlug(
     categorySlug: string,
     productSlug: string,
+    productId?: string,
   ): Promise<ApiResponse<ProductItem>> {
     return this.fetchApi<ProductItem>(
       `/api/products/slug/${categorySlug}/${productSlug}`,
       { method: "GET" },
-      ["products", `product-${productSlug}`],
+      productId ? ["products", `product-${productId}`] : ["products"],
     );
   }
 
@@ -394,7 +395,7 @@ class ApiService {
     return this.fetchApi<MenuItem[]>(
       useAdminRoute ? "/api/admin/menus" : "/api/menuitems",
       { method: "GET" },
-      ["menu"],
+      undefined,
       useAdminRoute,
     );
   }
@@ -408,7 +409,7 @@ class ApiService {
     return this.fetchApi<MenuItem[]>(
       "/api/menuitems/items-tree",
       { method: "GET" },
-      ["menu"],
+      undefined,
     );
   }
 
@@ -423,7 +424,7 @@ class ApiService {
     return this.fetchApi<MenuLayoutSettings>(
       useAdminRoute ? `/api/admin/menu-layout${qs}` : `/api/menu-layout${qs}`,
       { method: "GET" },
-      ["menu"],
+      undefined,
       useAdminRoute,
     );
   }
@@ -525,7 +526,7 @@ class ApiService {
         ? `/api/admin/menucategories${qs}`
         : `/api/menucategories${qs}`,
       { method: "GET" },
-      ["menu"],
+      undefined,
       useAdminRoute,
     );
   }
@@ -619,7 +620,7 @@ class ApiService {
     return this.fetchApi<MenuItemPage[]>(
       useAdminRoute ? `/api/admin/pages${qs}` : `/api/menuitempages${qs}`,
       { method: "GET" },
-      ["menu"],
+      undefined,
       useAdminRoute,
     );
   }
@@ -633,7 +634,7 @@ class ApiService {
     return this.fetchApi<MenuItemPage>(
       `/api/menuitempages/slug/${slug}`,
       { method: "GET" },
-      ["menu", `menupage-${slug}`],
+      [`page-${slug}`],
     );
   }
 
