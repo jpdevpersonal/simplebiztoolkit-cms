@@ -27,6 +27,8 @@ type Props = {
   params: Promise<{ menuItemSlug: string }>;
 };
 
+export const revalidate = 300;
+
 /** Resolve a menu item by matching slugified title against the URL slug. */
 async function resolveMenuItem(slug: string) {
   const items = await getPublishedMenuItems();

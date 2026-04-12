@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import type { MenuItem } from "@/lib/api";
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
-import { revalidateMenuContent } from "@/lib/adminRevalidation";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
@@ -38,14 +37,12 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
 
       if (isNew) {
         const created = await clientApi.createMenuItem(payload);
-        await revalidateMenuContent();
         redirectAndRefresh(
           router,
           `/admin/menu/${(created as MenuItem).id}/edit`,
         );
       } else if (menuItem?.id) {
         await clientApi.updateMenuItem(menuItem.id, payload);
-        await revalidateMenuContent();
         setMessage("Menu item saved successfully!");
         refreshEditor(router);
       } else {
@@ -76,7 +73,6 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
 
     try {
       await clientApi.deleteMenuItem(menuItem!.id);
-      await revalidateMenuContent();
       redirectAndRefresh(router, "/admin/menu");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");

@@ -151,7 +151,16 @@ export default function ProductDetailClient({ product }: Props) {
             <div className="product-detail-price-cta-row">
               <div className="product-detail-price-wrapper">
                 <span className="product-detail-price">
-                  {product.price || "See our shop for pricing"}
+                  {product.price ? (
+                    <span style={{ fontSize: "1rem" }}>
+                      From{"   "}
+                      <span style={{ fontSize: "2rem" }}>{product.price}</span>
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: "1.2rem" }}>
+                      See our Etsy shop for pricing
+                    </span>
+                  )}
                 </span>
               </div>
               <a
@@ -264,14 +273,14 @@ export default function ProductDetailClient({ product }: Props) {
           </div>
 
           {/* Secondary CTA - Desktop only, less prominent */}
-          <div className="product-detail-cta product-detail-cta--secondary">
+          <div className="product-detail-cta product-detail-cta--primary">
             <a
               href={product.etsyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn sb-btn-primary product-detail-cta-btn"
+              className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
             >
-              <span>More about this item</span>
+              <span>Get It Now</span>
               <svg
                 width="18"
                 height="18"
@@ -290,6 +299,10 @@ export default function ProductDetailClient({ product }: Props) {
             </a>
             <p className="product-detail-cta-note">
               ✓ Secure payment via Etsy • Digital download available immediately
+            </p>
+
+            <p className="product-detail-cta-note">
+              Price shown on Etsy may vary by currency and location
             </p>
           </div>
         </div>

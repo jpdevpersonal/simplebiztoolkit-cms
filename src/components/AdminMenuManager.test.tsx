@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AdminMenuManager from "./AdminMenuManager";
 import { clientApi } from "../lib/clientApi";
-import { revalidateMenuContent } from "../lib/adminRevalidation";
 
 vi.mock("@dnd-kit/core", () => ({
   DndContext: ({ children }: { children: ReactNode }) => <>{children}</>,
@@ -52,10 +51,6 @@ vi.mock("@/lib/clientApi", () => ({
   },
 }));
 
-vi.mock("@/lib/adminRevalidation", () => ({
-  revalidateMenuContent: vi.fn(),
-}));
-
 describe("AdminMenuManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -73,7 +68,6 @@ describe("AdminMenuManager", () => {
       title: "Services",
       status: "draft",
     } as never);
-    vi.mocked(revalidateMenuContent).mockResolvedValueOnce(undefined as never);
 
     render(
       <AdminMenuManager
@@ -96,7 +90,6 @@ describe("AdminMenuManager", () => {
         title: "Services",
         status: "draft",
       });
-      expect(revalidateMenuContent).toHaveBeenCalledTimes(1);
       expect(screen.getByText("Services")).toBeTruthy();
     });
   });
@@ -104,7 +97,6 @@ describe("AdminMenuManager", () => {
   it("toggles published item to draft when Hide is clicked", async () => {
     const user = userEvent.setup();
     vi.mocked(clientApi.updateMenuItem).mockResolvedValueOnce({} as never);
-    vi.mocked(revalidateMenuContent).mockResolvedValueOnce(undefined as never);
 
     render(
       <AdminMenuManager
@@ -127,7 +119,6 @@ describe("AdminMenuManager", () => {
         description: undefined,
         status: "draft",
       });
-      expect(revalidateMenuContent).toHaveBeenCalledTimes(1);
       expect(screen.getByText("Draft")).toBeTruthy();
     });
   });
@@ -142,9 +133,6 @@ describe("AdminMenuManager", () => {
     vi.mocked(clientApi.updateMenuLayoutSettings).mockResolvedValueOnce(
       {} as never,
     );
-    vi.mocked(revalidateMenuContent)
-      .mockResolvedValueOnce(undefined as never)
-      .mockResolvedValueOnce(undefined as never);
 
     render(
       <AdminMenuManager
@@ -190,7 +178,6 @@ describe("AdminMenuManager", () => {
     vi.mocked(clientApi.updateMenuLayoutSettings).mockRejectedValueOnce(
       staticSlotError as never,
     );
-    vi.mocked(revalidateMenuContent).mockResolvedValue(undefined as never);
 
     render(
       <AdminMenuManager
@@ -229,9 +216,6 @@ describe("AdminMenuManager", () => {
     vi.mocked(clientApi.updateMenuLayoutSettings)
       .mockResolvedValueOnce({} as never)
       .mockResolvedValueOnce({} as never);
-    vi.mocked(revalidateMenuContent)
-      .mockResolvedValueOnce(undefined as never)
-      .mockResolvedValueOnce(undefined as never);
 
     render(
       <AdminMenuManager
@@ -292,7 +276,6 @@ describe("AdminMenuManager", () => {
     vi.mocked(clientApi.updateMenuLayoutSettings).mockResolvedValueOnce(
       {} as never,
     );
-    vi.mocked(revalidateMenuContent).mockResolvedValueOnce(undefined as never);
 
     render(
       <AdminMenuManager

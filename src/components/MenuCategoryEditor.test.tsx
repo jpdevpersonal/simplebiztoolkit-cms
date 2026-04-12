@@ -22,7 +22,6 @@ vi.mock("@/lib/clientApi", () => ({
     createMenuCategory: vi.fn(),
     updateMenuCategory: vi.fn(),
     deleteMenuCategory: vi.fn(),
-    revalidateContent: vi.fn(),
   },
 }));
 
@@ -31,11 +30,8 @@ describe("MenuCategoryEditor", () => {
     vi.clearAllMocks();
   });
 
-  it("revalidates menu content after updating a topic", async () => {
+  it("updates a topic without client-side revalidation", async () => {
     vi.mocked(clientApi.updateMenuCategory).mockResolvedValueOnce({} as never);
-    vi.mocked(clientApi.revalidateContent).mockResolvedValueOnce(
-      undefined as never,
-    );
 
     render(
       <MenuCategoryEditor
@@ -51,7 +47,6 @@ describe("MenuCategoryEditor", () => {
         "cat-1",
         expect.any(Object),
       );
-      expect(clientApi.revalidateContent).toHaveBeenCalledWith("page");
       expect(routerRefresh).toHaveBeenCalled();
     });
   });

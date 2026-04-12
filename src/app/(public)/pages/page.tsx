@@ -20,6 +20,8 @@ import "@/styles/pages.css";
 
 const pagesDescription = "Browse our content pages by topic.";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = createPageMetadata({
   title: "Pages",
   description: pagesDescription,

@@ -61,7 +61,6 @@ vi.mock("@/lib/clientApi", () => ({
     updateMenuItemPage: vi.fn(),
     createMenuItemPage: vi.fn(),
     deleteMenuItemPage: vi.fn(),
-    revalidateContent: vi.fn(),
   },
 }));
 
@@ -95,9 +94,6 @@ describe("PageEditor", () => {
     vi.mocked(clientApi.updateMenuItemPage).mockResolvedValueOnce({
       slug: "page-slug",
     } as never);
-    vi.mocked(clientApi.revalidateContent).mockResolvedValueOnce(
-      undefined as never,
-    );
 
     render(
       <PageEditor
@@ -139,11 +135,6 @@ describe("PageEditor", () => {
     });
     expect(payload).not.toHaveProperty("featuredImage");
     expect(payload).not.toHaveProperty("headerImage");
-    expect(clientApi.revalidateContent).toHaveBeenCalledWith(
-      "page",
-      "page-slug",
-      "page-slug",
-    );
     expect(routerRefresh).toHaveBeenCalled();
   });
 
@@ -156,9 +147,6 @@ describe("PageEditor", () => {
     vi.mocked(clientApi.createMenuItemPage).mockResolvedValueOnce({
       slug: "new-page-title",
     } as never);
-    vi.mocked(clientApi.revalidateContent).mockResolvedValueOnce(
-      undefined as never,
-    );
 
     render(
       <PageEditor
@@ -197,11 +185,6 @@ describe("PageEditor", () => {
         menuCategoryId: "cat-1",
         menuItemId: undefined,
       }),
-    );
-    expect(clientApi.revalidateContent).toHaveBeenCalledWith(
-      "page",
-      "new-page-title",
-      undefined,
     );
     expect(routerPush).toHaveBeenCalledWith("/admin/pages");
     expect(routerRefresh).toHaveBeenCalled();

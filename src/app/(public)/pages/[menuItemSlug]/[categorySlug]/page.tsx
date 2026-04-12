@@ -23,6 +23,8 @@ type Props = {
   params: Promise<{ menuItemSlug: string; categorySlug: string }>;
 };
 
+export const revalidate = 300;
+
 /** Resolve menu item + category by their slugified titles. */
 async function resolve(menuSlug: string, catSlug: string) {
   let menuRes = await apiService.getPublishedMenuItems();
