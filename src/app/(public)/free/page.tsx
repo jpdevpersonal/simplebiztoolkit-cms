@@ -5,19 +5,11 @@ import Link from "next/link";
 import EmailCaptureForm from "@/components/EmailCaptureForm";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 import { featureFlags } from "@/config/featureFlags";
+import { getFreePageMetadata } from "@/lib/freePageMetadata";
 
-export const metadata: Metadata = {
-  title: "Free AI Guide",
-  description:
-    "Get your free guide delivered by email. Start grow you business smarter.",
-  alternates: { canonical: "/free" },
-  openGraph: {
-    title: "Free AI Guide | Simple Biz Toolkit",
-    description:
-      "Get your free guide delivered by email. Start grow you business smarter.",
-    url: "/free",
-  },
-};
+export function generateMetadata(): Metadata {
+  return getFreePageMetadata(featureFlags.showFreeGuideButton);
+}
 
 export default function FreebiePage() {
   if (!featureFlags.showFreeGuideButton) {

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { featureFlags } from "@/config/featureFlags";
 import { site } from "@/config/site";
 import { featuredProducts } from "@/data/featured";
 import {
@@ -8,15 +9,39 @@ import {
 } from "@/lib/menuContent";
 import { getApiService } from "@/lib/api";
 import { toAbsoluteUrl } from "@/lib/seo";
-import { toSitemapLastModified } from "@/lib/sitemap";
+import {
+  toLatestSitemapLastModified,
+  toSitemapLastModified,
+} from "@/lib/sitemap";
 import { slugify } from "@/lib/slugify";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 
 export const revalidate = 3600;
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+type DatedPage = {
+  dateISO?: string | null;
+  dateModified?: string | null;
+};
 
+function getPageDateCandidates(
+  pages: DatedPage[],
+): Array<string | null | undefined> {
+  return pages.flatMap((page) => [page.dateModified, page.dateISO]);
+}
+
+function createSitemapEntry(
+  url: string,
+  ...lastModifiedCandidates: Array<Date | string | null | undefined>
+): MetadataRoute.Sitemap[number] {
+  const lastModified = toLatestSitemapLastModified(...lastModifiedCandidates);
+
+  return {
+    url,
+    ...(lastModified ? { lastModified } : {}),
+  };
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const api = getApiService();
   const [productsResp, menuItems] = await Promise.all([
     api.getProductCategories(),
@@ -28,21 +53,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     menuItems.map((item) => getPublishedMenuItemContent(item)),
   );
 
+  const allMenuPages = menuContent.flatMap((item) => [
+    ...item.directPages,
+    ...item.publishedCategories.flatMap((category) => category.publishedPages),
+  ]);
+
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: site.url, lastModified: now },
-    { url: `${site.url}/templates`, lastModified: now },
-    { url: `${site.url}/pages`, lastModified: now },
-    { url: `${site.url}/about`, lastModified: now },
-    { url: `${site.url}/testimonials`, lastModified: now },
-    { url: `${site.url}/faq`, lastModified: now },
-    { url: `${site.url}/help`, lastModified: now },
-    { url: `${site.url}/contact`, lastModified: now },
-    { url: `${site.url}/free`, lastModified: now },
+    { url: site.url },
+    { url: `${site.url}/templates` },
+    createSitemapEntry(
+      `${site.url}/pages`,
+      ...getPageDateCandidates(allMenuPages),
+    ),
+    { url: `${site.url}/about` },
+    { url: `${site.url}/testimonials` },
+    { url: `${site.url}/faq` },
+    { url: `${site.url}/help` },
+    { url: `${site.url}/contact` },
+    ...(featureFlags.showFreeGuideButton ? [{ url: `${site.url}/free` }] : []),
   ];
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({
     url: `${site.url}/templates/${c.slug}`,
-    lastModified: now,
   }));
 
   // product detail routes: flatten all category items and use their productPageUrl
@@ -54,7 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ? [
             {
               url: `${site.url}${productUrl}`,
-              lastModified: now,
             },
           ]
         : [];
@@ -63,23 +94,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const featuredProductRoutes: MetadataRoute.Sitemap = featuredProducts.map(
     (p) => ({
       url: `${site.url}${toTemplatesRoute(p.productPageUrl) ?? p.productPageUrl}`,
-      lastModified: now,
     }),
   );
 
   const menuLandingRoutes: MetadataRoute.Sitemap = menuContent
     .filter((item) => item.totalPages > 0)
-    .map((item) => ({
-      url: toAbsoluteUrl(getMenuItemLandingHref(item)),
-      lastModified: now,
-    }));
+    .map((item) =>
+      createSitemapEntry(
+        toAbsoluteUrl(getMenuItemLandingHref(item)),
+        ...getPageDateCandidates([
+          ...item.directPages,
+          ...item.publishedCategories.flatMap(
+            (category) => category.publishedPages,
+          ),
+        ]),
+      ),
+    );
 
   const menuCategoryRoutes: MetadataRoute.Sitemap = menuContent.flatMap(
     (item) =>
-      item.publishedCategories.map((category) => ({
-        url: `${site.url}/pages/${slugify(item.title)}/${slugify(category.title)}`,
-        lastModified: now,
-      })),
+      item.publishedCategories.map((category) =>
+        createSitemapEntry(
+          `${site.url}/pages/${slugify(item.title)}/${slugify(category.title)}`,
+          ...getPageDateCandidates(category.publishedPages),
+        ),
+      ),
   );
 
   const menuPageRoutes: MetadataRoute.Sitemap = menuContent

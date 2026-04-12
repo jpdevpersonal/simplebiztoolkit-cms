@@ -7,6 +7,7 @@ import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { apiService } from "@/lib/api";
+import { withAssetVersion } from "@/lib/assetUrl";
 import { getPublishedMenuItems } from "@/lib/menuContent";
 import {
   createBreadcrumbJsonLd,
@@ -43,7 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!response.data) return {};
 
   const page = response.data;
-  const ogImage = page.ogImage || page.featuredImage || page.headerImage;
+  const pageAssetVersion = page.dateModified || page.dateISO;
+  const ogImage = withAssetVersion(
+    page.ogImage || page.featuredImage || page.headerImage,
+    pageAssetVersion,
+  );
 
   return createPageMetadata({
     title: page.seoTitle || page.title,
@@ -69,6 +74,12 @@ export default async function MenuItemPageView({ params }: Props) {
   if (!response.data) notFound();
 
   const page = response.data;
+  const pageAssetVersion = page.dateModified || page.dateISO;
+  const socialImage = withAssetVersion(
+    page.ogImage || page.featuredImage || page.headerImage,
+    pageAssetVersion,
+  );
+  const headerImage = withAssetVersion(page.headerImage, pageAssetVersion);
 
   let parentCategory = page.menuCategory;
   if (!parentCategory && page.menuCategoryId) {
@@ -126,7 +137,7 @@ export default async function MenuItemPageView({ params }: Props) {
     href: `/${page.slug}`,
     datePublished: page.dateISO,
     dateModified: page.dateModified,
-    image: page.headerImage,
+    image: socialImage ?? headerImage,
   });
   const breadcrumbJsonLd = createBreadcrumbJsonLd(breadcrumbItems);
 
@@ -144,10 +155,10 @@ export default async function MenuItemPageView({ params }: Props) {
         </header>
 
         {/* Header image */}
-        {page.headerImage && (
+        {headerImage && (
           <div className="content-header-image">
             <Image
-              src={page.headerImage}
+              src={headerImage}
               alt={page.title}
               width={1200}
               height={630}

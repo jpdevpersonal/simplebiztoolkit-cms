@@ -5,6 +5,8 @@ const cacheMocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
+const fetchMock = vi.hoisted(() => vi.fn());
+
 vi.mock("next/cache", () => ({
   revalidatePath: cacheMocks.revalidatePath,
   revalidateTag: cacheMocks.revalidateTag,
@@ -15,7 +17,14 @@ import { POST } from "./route";
 describe("POST /api/revalidate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockResolvedValue({ ok: true, status: 200 });
     process.env.REVALIDATE_SECRET = "secret-123";
+    delete process.env.REVALIDATION_SECRET;
+    delete process.env.REVALIDATE_WARMING_ENABLED;
+    delete process.env.REVALIDATE_WARM_BASE_URL;
+    delete process.env.EDGE_CACHE_PURGE_URL;
+    delete process.env.EDGE_CACHE_PURGE_TOKEN;
   });
 
   it("returns 401 when secret header is invalid", async () => {
@@ -60,6 +69,12 @@ describe("POST /api/revalidate", () => {
       "/templates/category-a",
     ]);
     expect(json.tags).toEqual(["product-1", "products"]);
+    expect(json.warm).toEqual({
+      attempted: false,
+      warmedPaths: [],
+      failedPaths: [],
+    });
+    expect(json.edgePurge).toEqual({ attempted: false });
   });
 
   it("returns a safe no-op response when paths and tags are omitted", async () => {
@@ -135,5 +150,70 @@ describe("POST /api/revalidate", () => {
       "/templates/[categorySlug]/[productSlug]",
       "page",
     );
+  });
+
+  it("warms concrete public paths after revalidation when enabled", async () => {
+    process.env.REVALIDATE_WARMING_ENABLED = "true";
+    process.env.REVALIDATE_WARM_BASE_URL = "https://www.simplebiztoolkit.com/";
+
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({
+        paths: ["/templates", "/pages/example", "/templates/[categorySlug]"],
+      }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://www.simplebiztoolkit.com/templates",
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://www.simplebiztoolkit.com/pages/example",
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
+    expect(json.warm).toEqual({
+      attempted: true,
+      baseUrl: "https://www.simplebiztoolkit.com",
+      warmedPaths: ["/templates", "/pages/example"],
+      failedPaths: [],
+    });
+  });
+
+  it("posts to the edge purge webhook when configured", async () => {
+    process.env.EDGE_CACHE_PURGE_URL = "https://purge.example.com/webhook";
+    process.env.EDGE_CACHE_PURGE_TOKEN = "purge-token";
+
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({
+        paths: ["/templates", "/templates/[categorySlug]"],
+        tags: ["products"],
+      }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://purge.example.com/webhook",
+      expect.objectContaining({
+        method: "POST",
+        cache: "no-store",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          Authorization: "Bearer purge-token",
+        }),
+      }),
+    );
+    expect(json.edgePurge).toEqual({
+      attempted: true,
+      ok: true,
+      status: 200,
+    });
   });
 });

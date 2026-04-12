@@ -102,4 +102,7 @@ This repo is configured to deploy to Azure Static Web Apps via GitHub Actions.
 - Workflow: `.github/workflows/azure-static-web-apps-salmon-mushroom-09d02e403.yml`
 - The Azure SWA build must receive `API_URL` and `NEXT_PUBLIC_API_URL` so `next build` can generate sitemap and static routes in production.
 - After product or CMS page updates, the backend should trigger `POST /api/revalidate` so Next.js refreshes cached public routes and `/sitemap.xml` without waiting for a redeploy.
+- If `NEXT_PUBLIC_SHOW_FREE_GUIDE_BUTTON` is `false`, `/free` is automatically omitted from the sitemap and rendered with `noindex` metadata.
+- To warm freshly revalidated public URLs through Azure after an admin save, set `REVALIDATE_WARMING_ENABLED=true`. Optionally set `REVALIDATE_WARM_BASE_URL` if the public origin differs from the canonical site URL.
+- To hook in Azure edge cache purge automation, set `EDGE_CACHE_PURGE_URL` and optionally `EDGE_CACHE_PURGE_TOKEN`. The revalidation route will POST the affected paths/tags to that webhook after revalidation succeeds.
 - Static Web Apps routing/headers: `staticwebapp.config.json`

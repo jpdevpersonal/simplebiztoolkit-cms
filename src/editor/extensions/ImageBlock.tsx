@@ -12,6 +12,8 @@
  * </figure>
  */
 
+/* eslint-disable @next/next/no-img-element */
+
 import { Node, mergeAttributes } from "@tiptap/core";
 import {
   ReactNodeViewRenderer,

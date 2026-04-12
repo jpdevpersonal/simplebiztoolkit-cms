@@ -135,6 +135,8 @@ export interface UpdateImageInput {
   caption?: string;
 }
 
+const PUBLIC_CONTENT_REVALIDATE_SECONDS = 60;
+
 // API Service Class
 class ApiService {
   private baseUrl: string;
@@ -184,15 +186,22 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`;
+      const requestMethod = (options?.method ?? "GET").toUpperCase();
+      const shouldCachePublicGet = requestMethod === "GET" && !requiresAuth;
 
-      // For Next.js ISR with revalidation tags
+      // Cache public content reads with a short TTL and attach tags when available.
       const fetchOptions: RequestInit = {
         ...options,
         headers: {
           ...this.getHeaders(requiresAuth),
           ...options?.headers,
         },
-        next: tags ? { revalidate: 300, tags } : undefined,
+        next: shouldCachePublicGet
+          ? {
+              revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS,
+              ...(tags && tags.length > 0 ? { tags } : {}),
+            }
+          : undefined,
       };
 
       const response = await sendHttpRequest(url, fetchOptions);
@@ -282,8 +291,11 @@ class ApiService {
    * Get product by ID (admin only)
    */
   async getProductById(id: string): Promise<ApiResponse<ProductItem>> {
-    noStore(); // Don't cache in admin
     const useAdminRoute = Boolean(this.authToken);
+    if (useAdminRoute) {
+      noStore();
+    }
+
     return this.fetchApi<ProductItem>(
       useAdminRoute ? `/api/admin/products/${id}` : `/api/products/${id}`,
       {
@@ -451,8 +463,11 @@ class ApiService {
    * Get menu item by ID (admin only)
    */
   async getMenuItemById(id: string): Promise<ApiResponse<MenuItem>> {
-    noStore();
     const useAdminRoute = Boolean(this.authToken);
+    if (useAdminRoute) {
+      noStore();
+    }
+
     return this.fetchApi<MenuItem>(
       useAdminRoute ? `/api/admin/menus/${id}` : `/api/menuitems/${id}`,
       { method: "GET" },
@@ -535,8 +550,11 @@ class ApiService {
    * Get menu category by ID (public)
    */
   async getMenuCategoryById(id: string): Promise<ApiResponse<MenuCategory>> {
-    noStore();
     const useAdminRoute = Boolean(this.authToken);
+    if (useAdminRoute) {
+      noStore();
+    }
+
     return this.fetchApi<MenuCategory>(
       useAdminRoute
         ? `/api/admin/menucategories/${id}`
@@ -642,8 +660,11 @@ class ApiService {
    * Get menu item page by ID (admin only)
    */
   async getMenuItemPageById(id: string): Promise<ApiResponse<MenuItemPage>> {
-    noStore();
     const useAdminRoute = Boolean(this.authToken);
+    if (useAdminRoute) {
+      noStore();
+    }
+
     return this.fetchApi<MenuItemPage>(
       useAdminRoute ? `/api/admin/pages/${id}` : `/api/menuitempages/${id}`,
       {

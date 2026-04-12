@@ -10,6 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { withAssetVersion } from "@/lib/assetUrl";
 import { slugify } from "@/lib/slugify";
 import {
   getPublishedMenuItemContent,
@@ -191,7 +192,10 @@ export default async function MenuItemLandingPage({ params }: Props) {
               {showDirectPageCards ? (
                 <div className="row g-3 mt-2">
                   {directPages.map((page) => {
-                    const imageSrc = page.featuredImage || page.headerImage;
+                    const imageSrc = withAssetVersion(
+                      page.featuredImage || page.headerImage,
+                      page.dateModified || page.dateISO,
+                    );
                     const pageDate = formatPageDate(page.dateISO);
 
                     return (

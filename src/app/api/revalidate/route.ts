@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { site } from "@/config/site";
 
 type RevalidateRequestBody = {
   paths?: unknown;
@@ -12,6 +13,20 @@ type RevalidateRequestBody = {
 type RevalidatePathTarget = {
   path: string;
   type?: "page" | "layout";
+};
+
+type WarmResult = {
+  attempted: boolean;
+  baseUrl?: string;
+  warmedPaths: string[];
+  failedPaths: string[];
+};
+
+type EdgePurgeResult = {
+  attempted: boolean;
+  ok?: boolean;
+  status?: number;
+  error?: string;
 };
 
 function parseStringArray(value: unknown, field: "paths" | "tags") {
@@ -44,6 +59,148 @@ function uniquePathTargets(targets: RevalidatePathTarget[]) {
       ]),
     ).values(),
   );
+}
+
+function isConcretePublicPath(path: string) {
+  return (
+    path.startsWith("/") && !path.startsWith("/api") && !/\[[^/]+\]/.test(path)
+  );
+}
+
+function getWarmBaseUrl() {
+  const configuredBaseUrl = process.env.REVALIDATE_WARM_BASE_URL?.trim();
+  const baseUrl = configuredBaseUrl || site.url;
+
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    return undefined;
+  }
+
+  return baseUrl.replace(/\/+$/, "");
+}
+
+async function warmConcretePaths(
+  targets: RevalidatePathTarget[],
+): Promise<WarmResult> {
+  if (process.env.REVALIDATE_WARMING_ENABLED !== "true") {
+    return {
+      attempted: false,
+      warmedPaths: [],
+      failedPaths: [],
+    };
+  }
+
+  const baseUrl = getWarmBaseUrl();
+  if (!baseUrl) {
+    return {
+      attempted: false,
+      warmedPaths: [],
+      failedPaths: [],
+    };
+  }
+
+  const concretePaths = Array.from(
+    new Set(targets.map((target) => target.path).filter(isConcretePublicPath)),
+  );
+
+  if (concretePaths.length === 0) {
+    return {
+      attempted: true,
+      baseUrl,
+      warmedPaths: [],
+      failedPaths: [],
+    };
+  }
+
+  const warmAttempts = await Promise.allSettled(
+    concretePaths.map(async (path) => {
+      const response = await fetch(`${baseUrl}${path}`, {
+        method: "GET",
+        cache: "no-store",
+        headers: {
+          "x-revalidate-warm": "1",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return path;
+    }),
+  );
+
+  const warmedPaths: string[] = [];
+  const failedPaths: string[] = [];
+
+  warmAttempts.forEach((attempt, index) => {
+    const path = concretePaths[index];
+    if (attempt.status === "fulfilled") {
+      warmedPaths.push(attempt.value);
+    } else {
+      failedPaths.push(path);
+    }
+  });
+
+  return {
+    attempted: true,
+    baseUrl,
+    warmedPaths,
+    failedPaths,
+  };
+}
+
+async function triggerEdgePurge(
+  targets: RevalidatePathTarget[],
+  tags: string[],
+): Promise<EdgePurgeResult> {
+  const purgeUrl = process.env.EDGE_CACHE_PURGE_URL?.trim();
+  if (!purgeUrl) {
+    return { attempted: false };
+  }
+
+  const token = process.env.EDGE_CACHE_PURGE_TOKEN?.trim();
+  const requestedPaths = targets.map((target) => target.path);
+  const concretePaths = requestedPaths.filter(isConcretePublicPath);
+
+  try {
+    const response = await fetch(purgeUrl, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        requestedPaths,
+        concretePaths,
+        tags,
+        siteUrl: getWarmBaseUrl() ?? site.url,
+        source: "/api/revalidate",
+        timestamp: new Date().toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      return {
+        attempted: true,
+        ok: false,
+        status: response.status,
+        error: `HTTP ${response.status}`,
+      };
+    }
+
+    return {
+      attempted: true,
+      ok: true,
+      status: response.status,
+    };
+  } catch (error) {
+    return {
+      attempted: true,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 function normalizeLegacyTargets(body: RevalidateRequestBody): {
@@ -191,11 +348,29 @@ export async function POST(request: NextRequest) {
       revalidateTag(tag);
     }
 
+    const [warmResult, edgePurgeResult] = await Promise.all([
+      warmConcretePaths(paths),
+      triggerEdgePurge(paths, tags),
+    ]);
+
+    if (warmResult.failedPaths.length > 0) {
+      console.warn("[revalidate] Warm-up failed for some paths", {
+        baseUrl: warmResult.baseUrl,
+        failedPaths: warmResult.failedPaths,
+      });
+    }
+
+    if (edgePurgeResult.attempted && edgePurgeResult.ok === false) {
+      console.warn("[revalidate] Edge purge webhook failed", edgePurgeResult);
+    }
+
     return NextResponse.json({
       revalidated: true,
       mode,
       paths: paths.map((target) => target.path),
       tags,
+      warm: warmResult,
+      edgePurge: edgePurgeResult,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

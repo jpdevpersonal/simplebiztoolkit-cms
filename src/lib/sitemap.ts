@@ -44,3 +44,22 @@ export function toSitemapLastModified(
 
   return undefined;
 }
+
+export function toLatestSitemapLastModified(
+  ...values: SitemapLastModifiedInput[]
+): Date | undefined {
+  let latest: Date | undefined;
+
+  for (const value of values) {
+    const parsedDate = toValidSitemapDate(value);
+    if (!parsedDate) {
+      continue;
+    }
+
+    if (!latest || parsedDate.getTime() > latest.getTime()) {
+      latest = parsedDate;
+    }
+  }
+
+  return latest;
+}
