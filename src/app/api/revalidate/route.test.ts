@@ -1,30 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const revalidationMocks = vi.hoisted(() => ({
-  revalidateProduct: vi.fn(),
-  revalidateCategory: vi.fn(),
-  revalidateAllProducts: vi.fn(),
-  revalidatePage: vi.fn(),
-  revalidateAllPages: vi.fn(),
+const cacheMocks = vi.hoisted(() => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/revalidation", () => ({
-  revalidateProduct: revalidationMocks.revalidateProduct,
-  revalidateCategory: revalidationMocks.revalidateCategory,
-  revalidateAllProducts: revalidationMocks.revalidateAllProducts,
-  revalidatePage: revalidationMocks.revalidatePage,
-  revalidateAllPages: revalidationMocks.revalidateAllPages,
-}));
-
-// Mock requireAuth so tests don't import NextAuth runtime during test runs.
-vi.mock("@/lib/apiProxy", () => ({
-  requireAuth: vi.fn().mockResolvedValue({
-    ok: false,
-    response: new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "content-type": "application/json" },
-    }),
-  }),
+vi.mock("next/cache", () => ({
+  revalidatePath: cacheMocks.revalidatePath,
+  revalidateTag: cacheMocks.revalidateTag,
 }));
 
 import { POST } from "./route";
@@ -32,14 +15,14 @@ import { POST } from "./route";
 describe("POST /api/revalidate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.REVALIDATION_SECRET = "secret-123";
+    process.env.REVALIDATE_SECRET = "secret-123";
   });
 
   it("returns 401 when secret header is invalid", async () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
-      headers: { "X-Revalidation-Secret": "wrong" },
-      body: JSON.stringify({ type: "product", slug: "prod-1" }),
+      headers: { "x-revalidate-secret": "wrong" },
+      body: JSON.stringify({ paths: ["/templates"] }),
     });
 
     const response = await POST(request as never);
@@ -49,103 +32,74 @@ describe("POST /api/revalidate", () => {
     expect(json).toEqual({ error: "Unauthorized" });
   });
 
-  it("revalidates a specific product when slug is present", async () => {
+  it("revalidates supplied paths and tags", async () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
-      headers: { "X-Revalidation-Secret": "secret-123" },
-      body: JSON.stringify({ type: "product", slug: "prod-1" }),
-    });
-
-    const response = await POST(request as never);
-    const json = await response.json();
-
-    expect(revalidationMocks.revalidateProduct).toHaveBeenCalledWith("prod-1");
-    expect(response.status).toBe(200);
-    expect(json.revalidated).toBe(true);
-    expect(json.type).toBe("product");
-    expect(json.slug).toBe("prod-1");
-  });
-
-  it("revalidates all products when product type without slug", async () => {
-    const request = new Request("http://localhost/api/revalidate", {
-      method: "POST",
-      headers: { "X-Revalidation-Secret": "secret-123" },
-      body: JSON.stringify({ type: "product" }),
-    });
-
-    const response = await POST(request as never);
-
-    expect(response.status).toBe(200);
-    expect(revalidationMocks.revalidateAllProducts).toHaveBeenCalledTimes(1);
-  });
-
-  it("revalidates a category when slug is present", async () => {
-    const request = new Request("http://localhost/api/revalidate", {
-      method: "POST",
-      headers: { "X-Revalidation-Secret": "secret-123" },
-      body: JSON.stringify({ type: "category", slug: "books" }),
-    });
-
-    const response = await POST(request as never);
-
-    expect(revalidationMocks.revalidateCategory).toHaveBeenCalledWith("books");
-    expect(response.status).toBe(200);
-  });
-
-  it("revalidates a specific page when slug is present", async () => {
-    const request = new Request("http://localhost/api/revalidate", {
-      method: "POST",
-      headers: { "X-Revalidation-Secret": "secret-123" },
+      headers: { "x-revalidate-secret": "secret-123" },
       body: JSON.stringify({
-        type: "page",
-        slug: "updated-page",
-        previousSlug: "old-page",
+        paths: ["/templates/product-a", " /templates/category-a "],
+        tags: ["product-1", "products", " product-1 "],
       }),
     });
 
     const response = await POST(request as never);
     const json = await response.json();
 
-    expect(revalidationMocks.revalidatePage).toHaveBeenCalledWith(
-      "updated-page",
-      "old-page",
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith(
+      "/templates/product-a",
     );
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith(
+      "/templates/category-a",
+    );
+    expect(cacheMocks.revalidateTag).toHaveBeenCalledWith("product-1");
+    expect(cacheMocks.revalidateTag).toHaveBeenCalledWith("products");
     expect(response.status).toBe(200);
-    expect(json.type).toBe("page");
-    expect(json.slug).toBe("updated-page");
+    expect(json.revalidated).toBe(true);
+    expect(json.paths).toEqual([
+      "/templates/product-a",
+      "/templates/category-a",
+    ]);
+    expect(json.tags).toEqual(["product-1", "products"]);
   });
 
-  it("revalidates all supported content when type is all", async () => {
+  it("returns a safe no-op response when paths and tags are omitted", async () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
-      headers: { "X-Revalidation-Secret": "secret-123" },
-      body: JSON.stringify({ type: "all" }),
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({}),
     });
 
     const response = await POST(request as never);
+    const json = await response.json();
 
     expect(response.status).toBe(200);
-    expect(revalidationMocks.revalidateAllProducts).toHaveBeenCalledTimes(1);
-    expect(revalidationMocks.revalidateAllPages).toHaveBeenCalledTimes(1);
+    expect(cacheMocks.revalidatePath).not.toHaveBeenCalled();
+    expect(cacheMocks.revalidateTag).not.toHaveBeenCalled();
+    expect(json).toEqual({
+      revalidated: false,
+      paths: [],
+      tags: [],
+      message: "No paths or tags provided",
+    });
   });
 
-  it("returns 400 for invalid revalidation type", async () => {
+  it("returns 400 for invalid paths payload", async () => {
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
-      headers: { "X-Revalidation-Secret": "secret-123" },
-      body: JSON.stringify({ type: "invalid" }),
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({ paths: "not-an-array" }),
     });
 
     const response = await POST(request as never);
     const json = await response.json();
 
     expect(response.status).toBe(400);
-    expect(json).toEqual({ error: "Invalid revalidation type" });
+    expect(json).toEqual({ error: "Invalid paths payload" });
   });
 
   it("returns 500 when request body parsing throws", async () => {
     const fakeRequest = {
-      headers: new Headers({ "X-Revalidation-Secret": "secret-123" }),
+      headers: new Headers({ "x-revalidate-secret": "secret-123" }),
       json: vi.fn().mockRejectedValue(new Error("bad json")),
     };
 
@@ -156,24 +110,30 @@ describe("POST /api/revalidate", () => {
     expect(json).toEqual({ error: "Revalidation failed" });
   });
 
-  it("allows revalidation when secret invalid but requireAuth ok", async () => {
-    // Make requireAuth resolve to ok:true for this test
-    const apiProxy = await import("@/lib/apiProxy");
-    // @ts-ignore - set mock implementation
-    apiProxy.requireAuth.mockResolvedValue({
-      ok: true,
-      response: new Response(null, { status: 200 }),
-    });
+  it("accepts the legacy env var, header, and payload shape for local compatibility", async () => {
+    delete process.env.REVALIDATE_SECRET;
+    process.env.REVALIDATION_SECRET = "legacy-secret";
 
     const request = new Request("http://localhost/api/revalidate", {
       method: "POST",
-      headers: { "X-Revalidation-Secret": "wrong" },
-      body: JSON.stringify({ type: "product", slug: "prod-2" }),
+      headers: { "x-revalidation-secret": "legacy-secret" },
+      body: JSON.stringify({ type: "product", slug: "budget-planner" }),
     });
 
     const response = await POST(request as never);
+    const json = await response.json();
 
-    expect(revalidationMocks.revalidateProduct).toHaveBeenCalledWith("prod-2");
     expect(response.status).toBe(200);
+    expect(json.mode).toBe("legacy");
+    expect(cacheMocks.revalidateTag).toHaveBeenCalledWith("products");
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith("/templates");
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith(
+      "/templates/[categorySlug]",
+      "page",
+    );
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith(
+      "/templates/[categorySlug]/[productSlug]",
+      "page",
+    );
   });
 });

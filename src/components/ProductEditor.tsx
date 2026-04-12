@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { redirectAndRefresh } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
-import { revalidateProductContent } from "@/lib/adminRevalidation";
 import { slugify } from "@/lib/slugify";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 import RichContentField from "@/components/RichContentField";
@@ -110,8 +109,6 @@ export default function ProductEditor({
         ? await clientApi.createProduct(payload)
         : await clientApi.updateProduct(productData.id, payload);
 
-      await revalidateProductContent(productData.slug, saved?.slug, slug);
-
       if (isCreateMode) {
         redirectAndRefresh(router, "/admin/templates");
       } else {
@@ -166,7 +163,6 @@ export default function ProductEditor({
 
     try {
       await clientApi.deleteProduct(productData.id);
-      await revalidateProductContent(productData.slug);
       setMessage("Template deleted!");
       redirectAndRefresh(router, "/admin/templates");
     } catch (err: unknown) {

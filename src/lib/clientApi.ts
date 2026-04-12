@@ -412,17 +412,6 @@ export const adminApi = {
       body: settings,
     });
   },
-
-  revalidateContent(
-    type: "product" | "category" | "page" | "all",
-    slug?: string,
-    previousSlug?: string,
-  ) {
-    return request<void>("admin", "/api/revalidate", {
-      method: "POST",
-      body: { type, slug, previousSlug },
-    });
-  },
 };
 
 // Backward-compatible alias used by existing admin components.

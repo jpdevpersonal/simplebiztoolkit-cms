@@ -18,6 +18,8 @@ type Props = {
   params: Promise<{ categorySlug: string }>;
 };
 
+export const revalidate = 300;
+
 /**
  * Generate static params for ISR
  * Pre-renders all category pages at build time

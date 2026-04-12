@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import type { MenuCategory } from "@/lib/api";
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
-import { revalidateMenuContent } from "@/lib/adminRevalidation";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
@@ -50,14 +49,12 @@ export default function MenuCategoryEditor({
 
       if (isNew) {
         const created = await clientApi.createMenuCategory(payload);
-        await revalidateMenuContent();
         redirectAndRefresh(
           router,
           `/admin/menu/categories/${(created as MenuCategory).id}/edit`,
         );
       } else if (category?.id) {
         await clientApi.updateMenuCategory(category.id, payload);
-        await revalidateMenuContent();
         setMessage("Topic saved successfully!");
         refreshEditor(router);
       } else {
@@ -83,7 +80,6 @@ export default function MenuCategoryEditor({
 
     try {
       await clientApi.deleteMenuCategory(category!.id);
-      await revalidateMenuContent();
       redirectAndRefresh(router, backHref);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");

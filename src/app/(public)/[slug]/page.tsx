@@ -19,6 +19,8 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+export const revalidate = 300;
+
 /**
  * Generate static params for ISR – pre-renders published menu item pages at
  * build time (same pattern as other public CMS pages).
