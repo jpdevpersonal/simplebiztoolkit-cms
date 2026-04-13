@@ -371,11 +371,15 @@ export default function CmsImagePicker({
       <div className="cms-image-picker-trigger-row">
         <div className="cms-image-picker-thumb" aria-hidden="true">
           {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt=""
-              className="cms-image-picker-thumb-image"
-            />
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- Admin picker previews may point at arbitrary external URLs that are not compatible with next/image optimization. */}
+              <img
+                src={previewUrl}
+                alt=""
+                className="cms-image-picker-thumb-image"
+                decoding="async"
+              />
+            </>
           ) : (
             <span className="cms-image-picker-thumb-empty">No image</span>
           )}
@@ -435,10 +439,12 @@ export default function CmsImagePicker({
 
             {previewUrl ? (
               <div className="cms-image-picker-preview-card">
+                {/* eslint-disable-next-line @next/next/no-img-element -- The selected preview can be a manual external URL, so this remains a plain img with async decoding. */}
                 <img
                   src={previewUrl}
                   alt={selectedImage?.altText ?? ""}
                   className="cms-image-picker-preview-image"
+                  decoding="async"
                 />
                 <div className="cms-image-picker-preview-copy">
                   <div className="cms-image-picker-preview-title">
@@ -480,10 +486,13 @@ export default function CmsImagePicker({
                     disabled={disabled}
                     title={image.blobName}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- Library thumbnails are rendered from mixed remote sources; keep plain img and lazy-load the grid. */}
                     <img
                       src={image.url}
                       alt={image.altText ?? ""}
                       className="cms-image-picker-library-thumb"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <span className="cms-image-picker-library-name">
                       {image.blobName}
@@ -501,7 +510,13 @@ export default function CmsImagePicker({
                 style={{ top: zoomPosition.top, left: zoomPosition.left }}
                 data-testid="zoom-preview"
               >
-                <img src={hoveredImage.url} alt={hoveredImage.altText ?? ""} />
+                {/* eslint-disable-next-line @next/next/no-img-element -- Hover zoom previews use arbitrary library URLs and should not invoke Next image optimization in the editor modal. */}
+                <img
+                  src={hoveredImage.url}
+                  alt={hoveredImage.altText ?? ""}
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="cms-image-picker-zoom-info">
                   {hoveredImage.blobName}
                 </div>

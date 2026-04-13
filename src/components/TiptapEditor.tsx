@@ -62,7 +62,7 @@ export default function TiptapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3, 4, 5] },
+        heading: { levels: [2, 3, 4, 5] },
         codeBlock: { languageClassPrefix: "language-" },
         // Configured here to avoid duplicate-extension warnings in TipTap v3
         link: {

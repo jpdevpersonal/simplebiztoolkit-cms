@@ -3,7 +3,6 @@
  * Creates a new MenuCategory under the given menu item
  */
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";

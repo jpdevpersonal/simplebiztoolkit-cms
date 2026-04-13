@@ -403,6 +403,10 @@
 .product-detail-layout {
   display: grid;
   grid-template-columns: 1fr;
+  grid-template-areas:
+    "title"
+    "image"
+    "content";
   gap: 2rem;
   margin-bottom: 5rem; /* Space for sticky CTA on mobile */
 }
@@ -410,14 +414,22 @@
 @media (min-width: 992px) {
   .product-detail-layout {
     grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "image title"
+      "image content";
     gap: 3rem;
     align-items: start;
     margin-bottom: 2rem; /* Less space on desktop (no sticky CTA) */
   }
 }
 
+.product-detail-title-wrap {
+  grid-area: title;
+}
+
 /* Image Container */
 .product-detail-image-container {
+  grid-area: image;
   width: 100%;
 }
 
@@ -444,6 +456,7 @@
 
 /* Content Section */
 .product-detail-content {
+  grid-area: content;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -463,21 +476,9 @@
   margin: 0;
 }
 
-/* Mobile-only title that appears above image on small screens */
-.product-detail-title--mobile {
-  display: none;
-}
-
 @media (max-width: 991px) {
-  /* Show the mobile title above the image and hide the in-content title */
-  .product-detail-title--mobile {
-    display: block;
+  .product-detail-title {
     font-size: clamp(1.25rem, 4vw, 1.5rem);
-    margin: 0 0 1rem 0;
-  }
-
-  .product-detail-content .product-detail-title {
-    display: none;
   }
 }
 
@@ -896,6 +897,29 @@
   color: var(--sb-ink);
   margin: 1.25rem 0 0.75rem 0;
   line-height: 1.4;
+}
+
+.product-description-content h2,
+.product-description-content h3,
+.product-description-content h4,
+.product-description-content h5 {
+  font-weight: 700;
+  color: var(--sb-ink);
+  line-height: 1.4;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.product-description-content h2 {
+  font-size: 1.25rem;
+}
+
+.product-description-content h3 {
+  font-size: 1.125rem;
+}
+
+.product-description-content h4,
+.product-description-content h5 {
+  font-size: 1rem;
 }
 
 /* Lists within description */

@@ -85,9 +85,12 @@ function ImageBlockView({ node, updateAttributes }: NodeViewProps) {
 
         {/* Preview */}
         {src && (
+          /* eslint-disable-next-line @next/next/no-img-element -- TipTap node previews can reference arbitrary authored URLs and are intentionally rendered as plain img elements. */
           <img
             src={src}
             alt={alt || ""}
+            loading="lazy"
+            decoding="async"
             style={{
               maxWidth: "100%",
               maxHeight: 200,
