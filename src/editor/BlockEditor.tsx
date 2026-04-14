@@ -55,7 +55,7 @@ export default function BlockEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3, 4, 5] },
+        heading: { levels: [2, 3, 4, 5] },
         codeBlock: { languageClassPrefix: "language-" },
         link: {
           openOnClick: false,

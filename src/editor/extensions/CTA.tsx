@@ -48,7 +48,8 @@ type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5";
 type CTAButtonAlignment = "none" | "left" | "center" | "right";
 type CTAButtonRole = "primary" | "secondary";
 
-const CTA_HEADING_OPTIONS: HeadingLevel[] = ["h1", "h2", "h3", "h4", "h5"];
+const CTA_HEADING_LEVELS: HeadingLevel[] = ["h1", "h2", "h3", "h4", "h5"];
+const CTA_HEADING_OPTIONS: HeadingLevel[] = ["h2", "h3", "h4", "h5"];
 const CTA_BUTTON_ALIGNMENT_OPTIONS: CTAButtonAlignment[] = [
   "none",
   "left",
@@ -81,7 +82,13 @@ const CTA_BUTTON_WHITE_BORDER = "1px solid rgba(0, 0, 0, .2)";
 type CTAButtonStyleVars = React.CSSProperties & Record<`--${string}`, string>;
 
 function isHeadingLevel(value: unknown): value is HeadingLevel {
-  return CTA_HEADING_OPTIONS.includes(value as HeadingLevel);
+  return CTA_HEADING_LEVELS.includes(value as HeadingLevel);
+}
+
+function normalizeEditableHeadingLevel(
+  level: HeadingLevel,
+): Exclude<HeadingLevel, "h1"> {
+  return level === "h1" ? "h2" : level;
 }
 
 function isCTAButtonAlignment(value: unknown): value is CTAButtonAlignment {
@@ -1169,17 +1176,29 @@ export const CTA = Node.create({
         parseHTML: (el: HTMLElement) => {
           const heading = el.querySelector("h1, h2, h3, h4, h5");
           const explicitLevel = heading?.getAttribute("data-title-level");
-          if (isHeadingLevel(explicitLevel)) return explicitLevel;
+          if (isHeadingLevel(explicitLevel)) {
+            return normalizeEditableHeadingLevel(explicitLevel);
+          }
           const legacySize = heading?.getAttribute("data-title-size");
-          if (legacySize) return levelFromLegacySize(Number(legacySize));
+          if (legacySize) {
+            return normalizeEditableHeadingLevel(
+              levelFromLegacySize(Number(legacySize)),
+            );
+          }
           if (heading && isHeadingLevel(heading.tagName.toLowerCase())) {
-            return heading.tagName.toLowerCase() as HeadingLevel;
+            return normalizeEditableHeadingLevel(
+              heading.tagName.toLowerCase() as HeadingLevel,
+            );
           }
           return "h2";
         },
         renderHTML: (attrs: { titleLevel?: HeadingLevel }) =>
           attrs.titleLevel && isHeadingLevel(attrs.titleLevel)
-            ? { "data-title-level": attrs.titleLevel }
+            ? {
+                "data-title-level": normalizeEditableHeadingLevel(
+                  attrs.titleLevel,
+                ),
+              }
             : {},
       },
       textLevel: {

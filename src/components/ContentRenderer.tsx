@@ -8,7 +8,7 @@ import React from "react";
 import Image from "next/image";
 import { Section, Callout, ContentFooter } from "@/components/ContentBlocks";
 import { ContentCta } from "@/components/ContentCta";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml, sanitizePublicContentHtml } from "@/lib/sanitize";
 
 /**
  * Content structure parser
@@ -78,7 +78,7 @@ type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5";
 type CTAButtonAlignment = "none" | "left" | "center" | "right";
 type CTAButtonRole = "primary" | "secondary";
 
-const CTA_HEADING_OPTIONS: HeadingLevel[] = ["h1", "h2", "h3", "h4", "h5"];
+const CTA_HEADING_LEVELS: HeadingLevel[] = ["h1", "h2", "h3", "h4", "h5"];
 
 const CTA_LEVEL_FONT_SIZES: Record<HeadingLevel, string> = {
   h1: "2.25rem",
@@ -97,7 +97,13 @@ const CTA_BUTTON_WHITE_BORDER = "1px solid rgba(0, 0, 0, .2)";
 type CTAButtonStyleVars = React.CSSProperties & Record<`--${string}`, string>;
 
 function isHeadingLevel(value: unknown): value is HeadingLevel {
-  return CTA_HEADING_OPTIONS.includes(value as HeadingLevel);
+  return CTA_HEADING_LEVELS.includes(value as HeadingLevel);
+}
+
+function normalizePublicHeadingLevel(
+  level: HeadingLevel,
+): Exclude<HeadingLevel, "h1"> {
+  return level === "h1" ? "h2" : level;
 }
 
 function isCTAButtonAlignment(value: unknown): value is CTAButtonAlignment {
@@ -457,10 +463,11 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
     }
 
     case "sbt-cta": {
-      const titleLevel =
+      const requestedTitleLevel =
         block.ctaTitleLevel && isHeadingLevel(block.ctaTitleLevel)
           ? block.ctaTitleLevel
           : "h2";
+      const titleLevel = normalizePublicHeadingLevel(requestedTitleLevel);
       const textLevel =
         block.ctaTextLevel && isHeadingLevel(block.ctaTextLevel)
           ? block.ctaTextLevel
@@ -523,7 +530,7 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
             <TitleTag
               style={{
                 marginBottom: 8,
-                fontSize: CTA_LEVEL_FONT_SIZES[titleLevel],
+                fontSize: CTA_LEVEL_FONT_SIZES[requestedTitleLevel],
               }}
             >
               {block.ctaTitle}
@@ -678,8 +685,7 @@ export function DynamicContentRenderer({ html }: { html: string }) {
  * Uses regex parsing to avoid DOMParser on server
  */
 export function ContentRenderer({ html }: { html: string }) {
-  // Demote any <h1> in body content to <h2> — the page title is the only H1.
-  const sanitized = sanitizeHtml(html).replace(/<(\/?)h1(\s|>)/gi, "<$1h2$2");
+  const sanitized = sanitizePublicContentHtml(html);
   const blocks = parseContentServer(sanitized);
 
   return (
