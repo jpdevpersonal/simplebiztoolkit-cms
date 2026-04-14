@@ -6,6 +6,8 @@
 
 import DOMPurify from "isomorphic-dompurify";
 
+const BODY_H1_REGEX = /<(\/?)h1(\s|>)/gi;
+
 /**
  * Sanitize an HTML string, removing all XSS vectors.
  * Safe to call on both server and client.
@@ -98,6 +100,15 @@ export function sanitizeHtml(html: string): string {
     RETURN_DOM: false,
     RETURN_DOM_FRAGMENT: false,
   });
+}
+
+export function demoteBodyH1ToH2(html: string): string {
+  if (!html) return "";
+  return html.replace(BODY_H1_REGEX, "<$1h2$2");
+}
+
+export function sanitizePublicContentHtml(html: string): string {
+  return demoteBodyH1ToH2(sanitizeHtml(html));
 }
 
 /**
