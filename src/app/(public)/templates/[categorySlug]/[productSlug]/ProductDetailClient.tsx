@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import type { Product } from "@/types/product";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizePublicContentHtml } from "@/lib/sanitize";
 import "@/styles/products.css";
 
 type Props = {
@@ -19,7 +19,9 @@ function ProductDescription({ description }: { description: string }) {
     return (
       <div
         className="product-description-content"
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
+        dangerouslySetInnerHTML={{
+          __html: sanitizePublicContentHtml(description),
+        }}
       />
     );
   }
@@ -110,14 +112,11 @@ export default function ProductDetailClient({ product }: Props) {
 
   return (
     <>
-      {/* Two Column Layout */}
       <div className="product-detail-layout">
-        {/* Mobile-only title shown above the image on small screens */}
-        <h1 className="product-detail-title product-detail-title--mobile">
-          {product.title}
-        </h1>
+        <div className="product-detail-title-wrap">
+          <h1 className="product-detail-title">{product.title}</h1>
+        </div>
 
-        {/* Left Column - Image */}
         <div
           className="product-detail-image-container"
           style={{
@@ -142,12 +141,8 @@ export default function ProductDetailClient({ product }: Props) {
           </div>
         </div>
 
-        {/* Right Column - Description */}
         <div className="product-detail-content">
           <div className="product-detail-header">
-            <h1 className="product-detail-title">{product.title}</h1>
-
-            {/* Price and Primary CTA Row (mobile optimized) */}
             <div className="product-detail-price-cta-row">
               <div className="product-detail-price-wrapper">
                 <span className="product-detail-price">
@@ -188,7 +183,6 @@ export default function ProductDetailClient({ product }: Props) {
               </a>
             </div>
 
-            {/* Trust indicators */}
             <div className="product-detail-trust">
               <div className="product-detail-trust-item">
                 <svg

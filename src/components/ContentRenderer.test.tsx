@@ -132,10 +132,10 @@ describe("ContentRenderer", () => {
 
     const heading = screen.getByRole("heading", {
       name: "Large CTA",
-      level: 1,
+      level: 2,
     });
 
-    expect(heading.tagName).toBe("H1");
+    expect(heading.tagName).toBe("H2");
     expect(heading).toHaveStyle({
       fontSize: "2.25rem",
     });
@@ -152,10 +152,10 @@ describe("ContentRenderer", () => {
 
     const legacyHeading = screen.getByRole("heading", {
       name: "Legacy CTA",
-      level: 1,
+      level: 2,
     });
 
-    expect(legacyHeading.tagName).toBe("H1");
+    expect(legacyHeading.tagName).toBe("H2");
     expect(legacyHeading).toHaveStyle({
       fontSize: "2.25rem",
     });
