@@ -6,11 +6,16 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     env:
       API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
       NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+      REVALIDATION_SECRET: ${{ secrets.REVALIDATION_SECRET }}
 
     steps:
       - name: Checkout
@@ -39,6 +44,12 @@ jobs:
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
+
+      - name: Verify API is reachable
+        run: |
+          curl --fail --silent --show-error --max-time 15 \
+            https://simplebiztoolkit-api-test.azurewebsites.net/api/menuitems \
+            > /dev/null
 
       - name: Run Playwright e2e tests
         run: npm run e2e
