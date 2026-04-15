@@ -1,5 +1,5 @@
 name: PR Validation Quality Checks
-# quality checks
+# quality checks and playwright.
 on:
   pull_request:
 
