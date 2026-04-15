@@ -6,7 +6,7 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     env:
       API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
@@ -32,4 +32,13 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Unit tests
-        run: npm run test
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright e2e tests
+        run: npm run e2e
