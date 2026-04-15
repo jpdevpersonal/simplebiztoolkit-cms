@@ -6,7 +6,7 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     env:
       API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
