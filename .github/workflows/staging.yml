@@ -10,48 +10,16 @@ on:
       - staging
 
 jobs:
-  quality:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    env:
-      API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
-      NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: TypeScript type check
-        run: npx tsc --noEmit
-
-      - name: Run full test suite
-        run: npm run test:ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Playwright smoke tests
-        run: npm run e2e
+  deploy_smoke_checks:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    uses: ./.github/workflows/reusable-deploy-smoke-checks.yml
+    with:
+      api_url: https://simplebiztoolkit-api-test.azurewebsites.net
+    secrets: inherit
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
-    needs: quality
+    needs: deploy_smoke_checks
     runs-on: ubuntu-latest
     name: Deploy to Azure
 
