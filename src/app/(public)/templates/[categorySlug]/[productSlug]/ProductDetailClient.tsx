@@ -180,7 +180,7 @@ export default function ProductDetailClient({ product }: Props) {
             <div className="product-detail-related-links-stack">
               {relatedLinksBlocks.map((block, index) => (
                 <RelatedLinksBlock
-                  key={`${product.slug}-related-links-${index}`}
+                  key={`${block.title}-${index}`}
                   title={block.title}
                   items={block.items}
                   backgroundColor={block.backgroundColor}
