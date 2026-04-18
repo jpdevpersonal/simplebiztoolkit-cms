@@ -20,6 +20,8 @@ type MetadataInput = {
 };
 
 const DEFAULT_OG_IMAGE = "/images/hero-image-desk.webp";
+const ABSOLUTE_HTTP_URL_REGEX = /^https?:\/\//i;
+const DISALLOWED_URL_SCHEME_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 
 function ensureLeadingSlash(value: string): string {
   if (!value) {
@@ -29,16 +31,59 @@ function ensureLeadingSlash(value: string): string {
   return value.startsWith("/") ? value : `/${value}`;
 }
 
-export function toAbsoluteUrl(pathOrUrl?: string | null): string {
+export function normalizePublicUrl(
+  pathOrUrl?: string | null,
+): string | undefined {
   if (!pathOrUrl) {
+    return undefined;
+  }
+
+  const trimmed = pathOrUrl.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (ABSOLUTE_HTTP_URL_REGEX.test(trimmed)) {
+    try {
+      return new URL(trimmed).toString();
+    } catch {
+      return undefined;
+    }
+  }
+
+  if (trimmed.startsWith("//")) {
+    try {
+      return new URL(trimmed, site.url).toString();
+    } catch {
+      return undefined;
+    }
+  }
+
+  // Reject non-web schemes such as file:, mailto:, and Windows drive paths.
+  if (trimmed.includes("\\") || DISALLOWED_URL_SCHEME_REGEX.test(trimmed)) {
+    return undefined;
+  }
+
+  try {
+    const normalized = new URL(ensureLeadingSlash(trimmed), site.url);
+    return `${normalized.pathname}${normalized.search}${normalized.hash}`;
+  } catch {
+    return undefined;
+  }
+}
+
+export function toAbsoluteUrl(pathOrUrl?: string | null): string {
+  const normalized = normalizePublicUrl(pathOrUrl);
+
+  if (!normalized) {
     return site.url;
   }
 
-  if (/^https?:\/\//i.test(pathOrUrl)) {
-    return pathOrUrl;
+  if (ABSOLUTE_HTTP_URL_REGEX.test(normalized)) {
+    return normalized;
   }
 
-  const pathname = ensureLeadingSlash(pathOrUrl);
+  const pathname = ensureLeadingSlash(normalized);
   return pathname === "/" ? site.url : `${site.url}${pathname}`;
 }
 
@@ -52,9 +97,11 @@ export function createPageMetadata({
   image,
   openGraphType = "website",
 }: MetadataInput): Metadata {
-  const canonicalHref = canonical ?? pathname ?? "/";
+  const normalizedPathname = normalizePublicUrl(pathname);
+  const canonicalHref =
+    normalizePublicUrl(canonical) ?? normalizedPathname ?? "/";
   const resolvedDescription = description ?? site.description;
-  const resolvedImage = image ?? DEFAULT_OG_IMAGE;
+  const resolvedImage = normalizePublicUrl(image) ?? DEFAULT_OG_IMAGE;
 
   return {
     title,
@@ -66,7 +113,7 @@ export function createPageMetadata({
       type: openGraphType,
       title: openGraphTitle ?? title,
       description: resolvedDescription,
-      url: pathname ?? canonicalHref,
+      url: normalizedPathname ?? canonicalHref,
       images: resolvedImage ? [{ url: resolvedImage }] : undefined,
     },
     twitter: {
@@ -124,12 +171,14 @@ export function createProductJsonLd(input: {
   currency?: string;
   offerUrl?: string;
 }): JsonLd {
+  const image = normalizePublicUrl(input.image);
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: input.name,
     description: input.description,
-    image: input.image ? toAbsoluteUrl(input.image) : undefined,
+    image: image ? toAbsoluteUrl(image) : undefined,
     url: toAbsoluteUrl(input.href),
     brand: {
       "@type": "Organization",
@@ -155,6 +204,8 @@ export function createWebPageJsonLd(input: {
   dateModified?: string;
   image?: string | null;
 }): JsonLd {
+  const image = normalizePublicUrl(input.image);
+
   return {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -163,7 +214,7 @@ export function createWebPageJsonLd(input: {
     url: toAbsoluteUrl(input.href),
     datePublished: input.datePublished,
     dateModified: input.dateModified ?? input.datePublished,
-    image: input.image ? [toAbsoluteUrl(input.image)] : undefined,
+    image: image ? [toAbsoluteUrl(image)] : undefined,
     publisher: {
       "@type": "Organization",
       name: site.name,

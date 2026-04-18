@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProductEditor from "./ProductEditor";
 import { clientApi } from "@/lib/clientApi";
+import { serializeRelatedLinksBlockToHtml } from "@/lib/relatedLinks";
 
 const routerPush = vi.fn();
 const routerRefresh = vi.fn();
@@ -24,6 +25,8 @@ vi.mock("@/lib/clientApi", () => ({
     createProduct: vi.fn(),
     updateProduct: vi.fn(),
     deleteProduct: vi.fn(),
+    getMenuItemPages: vi.fn(),
+    getProductCategories: vi.fn(),
   },
 }));
 
@@ -40,6 +43,14 @@ const categories = [
 ];
 
 describe("ProductEditor", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(clientApi.getMenuItemPages).mockResolvedValue([] as any);
+    vi.mocked(clientApi.getProductCategories).mockResolvedValue(
+      categories as any,
+    );
+  });
+
   it("creates product in create mode", async () => {
     vi.mocked(clientApi.createProduct).mockResolvedValueOnce({
       id: "new-id",
@@ -223,5 +234,78 @@ describe("ProductEditor", () => {
       expect(clientApi.deleteProduct).toHaveBeenCalledWith("p-1");
       expect(routerPush).toHaveBeenCalledWith("/admin/templates");
     });
+  });
+
+  it("keeps related links in their own section and reserializes them on save", async () => {
+    const relatedLinksHtml = serializeRelatedLinksBlockToHtml({
+      title: "Related to this",
+      items: [
+        {
+          uid: "link-1",
+          kind: "page",
+          refId: "page-1",
+          href: "/bookkeeping",
+          destinationTitle: "Bookkeeping",
+          label: null,
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+      ],
+    });
+
+    vi.mocked(clientApi.updateProduct).mockResolvedValueOnce({
+      id: "p-1",
+      title: "Old Product",
+      slug: "old-product",
+      problem: "",
+      description: `<p>Main description</p>\n${relatedLinksHtml}`,
+      bullets: [],
+      image: "",
+      etsyUrl: "",
+      productPageUrl: "",
+      price: "",
+      categoryId: "cat-1",
+      status: "draft",
+    } as any);
+
+    const { container } = render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "Old Product",
+          slug: "old-product",
+          problem: "",
+          description: `<p>Main description</p>\n${relatedLinksHtml}`,
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Related Links")).toBeInTheDocument();
+    const descriptionField = container.querySelectorAll("textarea")[1];
+    expect(descriptionField).toBeTruthy();
+    expect((descriptionField as HTMLTextAreaElement).value).toBe(
+      "<p>Main description</p>",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => {
+      expect(clientApi.updateProduct).toHaveBeenCalled();
+    });
+
+    const payload = vi.mocked(clientApi.updateProduct).mock.calls[0]?.[1] as {
+      description?: string;
+    };
+    expect(payload.description).toContain("<p>Main description</p>");
+    expect(payload.description).toContain('data-sbt-block="related-links"');
   });
 });

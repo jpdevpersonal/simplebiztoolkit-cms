@@ -42,6 +42,7 @@ export const FULL_POLICY: EditorPolicy = {
     "callout",
     "ctaSbtBlock",
     "imageBlock",
+    "relatedLinksSbtBlock",
   ],
   allowedMarks: [
     "bold",
@@ -88,6 +89,7 @@ export const CMS_BLOCKS_POLICY: EditorPolicy = {
     "callout",
     "ctaSbtBlock",
     "imageBlock",
+    "relatedLinksSbtBlock",
   ],
   allowedMarks: ["bold", "italic", "underline", "strike", "link"],
 };

@@ -247,6 +247,20 @@ export function EditorToolbar({
       .run();
   };
 
+  const insertRelatedLinks = () => {
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "relatedLinksSbtBlock",
+        attrs: {
+          title: "Related to this",
+          items: [],
+        },
+      })
+      .run();
+  };
+
   const handleInsertBlock = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setInsertValue(""); // reset immediately to show placeholder again
@@ -264,6 +278,9 @@ export function EditorToolbar({
         break;
       case "image":
         insertImageBlock();
+        break;
+      case "related-links":
+        insertRelatedLinks();
         break;
     }
   };
@@ -566,6 +583,9 @@ export function EditorToolbar({
         )}
         {isNodeAllowed("ctaSbtBlock") && <option value="cta">📣 CTA</option>}
         {isNodeAllowed("imageBlock") && <option value="image">🖼️ Image</option>}
+        {isNodeAllowed("relatedLinksSbtBlock") && (
+          <option value="related-links">🔗 Related Links</option>
+        )}
       </select>
 
       <TDivider />

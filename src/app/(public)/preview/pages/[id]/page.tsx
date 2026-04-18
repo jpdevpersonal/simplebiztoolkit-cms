@@ -5,6 +5,7 @@ import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import { ContentRenderer } from "@/components/ContentRenderer";
+import { normalizePublicUrl } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 import "@/styles/contentPage.css";
 
@@ -31,6 +32,7 @@ export default async function PagePreview({ params }: Props) {
   }
 
   const page = pageResponse.data;
+  const headerImage = normalizePublicUrl(page.headerImage);
 
   let parentMenuItem = page.menuItem ?? page.menuCategory?.menuItem;
   if (!parentMenuItem && page.menuItemId) {
@@ -76,10 +78,10 @@ export default async function PagePreview({ params }: Props) {
           {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
         </header>
 
-        {page.headerImage && (
+        {headerImage && (
           <div className="content-header-image">
             <Image
-              src={page.headerImage}
+              src={headerImage}
               alt={page.title}
               width={1200}
               height={630}

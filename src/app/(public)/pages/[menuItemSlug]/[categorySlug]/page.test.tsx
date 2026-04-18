@@ -68,4 +68,50 @@ describe("Category page listing", () => {
     expect(container.querySelectorAll(".sb-content-link")).toHaveLength(2);
     expect(container.querySelectorAll(".page-card")).toHaveLength(0);
   });
+
+  it("falls back to a valid header image when a featured image is a local file path", async () => {
+    apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
+      statusCode: 200,
+      data: [
+        {
+          id: "guides",
+          title: "Guides",
+          status: "published",
+          categories: [
+            {
+              id: "topic-1",
+              title: "Topic A",
+              status: "published",
+              pages: [
+                {
+                  id: "page-1",
+                  slug: "guide-a",
+                  title: "Guide A",
+                  description: "First page",
+                  dateISO: "2026-03-01",
+                  status: "published",
+                  featuredImage:
+                    "c:\\Users\\Admin\\Documents\\Read Now\\SEO and Generative-SEO Playbook for Simple Biz Toolkit.pdf",
+                  headerImage: "/images/category-safe.webp",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const { default: CategoryPageListing } = await import("./page");
+    const { container } = render(
+      await CategoryPageListing({
+        params: Promise.resolve({
+          menuItemSlug: "guides",
+          categorySlug: "topic-a",
+        }),
+      }),
+    );
+
+    const image = container.querySelector("img");
+    expect(image).toHaveAttribute("src", "/images/category-safe.webp");
+  });
 });

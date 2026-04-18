@@ -21,6 +21,7 @@ import { LegacyCtaBlock } from "@/editor/extensions/LegacyCtaBlock";
 import { Callout } from "@/editor/extensions/Callout";
 import { CTA } from "@/editor/extensions/CTA";
 import { ImageBlock } from "@/editor/extensions/ImageBlock";
+import { RelatedLinks } from "@/editor/extensions/RelatedLinks";
 import { Locking } from "@/editor/extensions/Locking";
 import { EditorToolbar } from "@/editor/EditorToolbar";
 import type { EditorPolicy } from "@/editor/EditorToolbar";
@@ -75,6 +76,7 @@ export default function TiptapEditor({
       Callout,
       CTA,
       ImageBlock,
+      RelatedLinks,
       Locking,
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),

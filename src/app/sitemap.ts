@@ -7,7 +7,7 @@ import {
   getPublishedMenuItems,
 } from "@/lib/menuContent";
 import { getApiService } from "@/lib/api";
-import { toAbsoluteUrl } from "@/lib/seo";
+import { normalizePublicUrl, toAbsoluteUrl } from "@/lib/seo";
 import { toSitemapLastModified } from "@/lib/sitemap";
 import { slugify } from "@/lib/slugify";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
@@ -94,9 +94,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         page.dateModified,
         page.dateISO,
       );
+      const pageHref = normalizePublicUrl(page.canonicalUrl) ?? `/${page.slug}`;
 
       return {
-        url: toAbsoluteUrl(page.canonicalUrl || `/${page.slug}`),
+        url: toAbsoluteUrl(pageHref),
         ...(lastModified ? { lastModified } : {}),
       };
     });
