@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PageEditor from "./PageEditor";
 import { clientApi } from "@/lib/clientApi";
+import { serializeRelatedLinksBlockToHtml } from "@/lib/relatedLinks";
 
 const routerPush = vi.fn();
 const routerRefresh = vi.fn();
@@ -20,7 +21,28 @@ vi.mock("next/navigation", async () => {
 
 vi.mock("@/components/RichContentField", () => ({
   __esModule: true,
-  default: ({ label }: { label: string }) => <div>{label}</div>,
+  default: ({
+    label,
+    value,
+    storageKey,
+  }: {
+    label: string;
+    value?: string;
+    storageKey?: string;
+  }) => (
+    <div data-testid={`rich-content-${storageKey}`}>
+      {label || value || "rich-content"}
+    </div>
+  ),
+}));
+
+vi.mock("@/components/RelatedLinksEditor", () => ({
+  __esModule: true,
+  default: ({ value }: { value?: { items?: unknown[] } }) => (
+    <div data-testid="related-links-editor">
+      {(value?.items ?? []).length} related link(s)
+    </div>
+  ),
 }));
 
 vi.mock("@/components/CmsImagePicker", () => ({
@@ -401,6 +423,73 @@ describe("PageEditor", () => {
     });
 
     expect(contentRow).toContainElement(contentToggle);
+  });
+
+  it("renders a dedicated related links section and keeps it out of the content editor", async () => {
+    const relatedLinksHtml = serializeRelatedLinksBlockToHtml({
+      title: "Related to this",
+      items: [
+        {
+          uid: "link-1",
+          kind: "page",
+          refId: "page-1",
+          href: "/bookkeeping-guide",
+          destinationTitle: "Bookkeeping guide",
+          label: null,
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+      ],
+    });
+
+    vi.mocked(clientApi.updateMenuItemPage).mockResolvedValueOnce({
+      slug: "page-slug",
+    } as never);
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "page-slug",
+            title: "Existing Page",
+            description: "Description",
+            content: `<p>Main body</p>\n${relatedLinksHtml}`,
+            dateISO: "2026-03-24",
+            dateModified: "2026-03-24",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    expect(screen.getByText("Related Links")).toBeInTheDocument();
+    expect(screen.getByTestId("related-links-editor")).toHaveTextContent(
+      "1 related link(s)",
+    );
+    expect(
+      screen.getByTestId("rich-content-page-content-mode"),
+    ).toHaveTextContent("<p>Main body</p>");
+    expect(
+      screen.getByTestId("rich-content-page-content-mode"),
+    ).not.toHaveTextContent('data-sbt-block="related-links"');
+
+    fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => {
+      expect(clientApi.updateMenuItemPage).toHaveBeenCalled();
+    });
+
+    const [, payload] = vi.mocked(clientApi.updateMenuItemPage).mock.calls[0];
+    expect(payload).toMatchObject({
+      content: expect.stringContaining("<p>Main body</p>"),
+    });
+    expect((payload as { content?: string }).content).toContain(
+      'data-sbt-block="related-links"',
+    );
   });
 
   it("shows a delete error when removing an existing page fails", async () => {

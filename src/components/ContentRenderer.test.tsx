@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { encodeRelatedLinksItems } from "@/lib/relatedLinks";
 import {
   ContentRenderer,
   DynamicContentRenderer,
@@ -212,6 +213,118 @@ describe("ContentRenderer", () => {
       "/images/example.webp",
     );
     expect(screen.getByText("Example caption")).toBeInTheDocument();
+  });
+
+  it("renders related links blocks inline with optional thumbnails", () => {
+    const html = `<section data-sbt-block="related-links" data-items="${encodeRelatedLinksItems(
+      [
+        {
+          uid: "link-1",
+          kind: "page",
+          refId: "page-1",
+          href: "/payroll-guide",
+          destinationTitle: "Payroll guide",
+          label: null,
+          imageId: "img-1",
+          imageUrl: "/images/payroll-guide.webp",
+          imageAlt: "Payroll guide thumbnail",
+        },
+        {
+          uid: "link-2",
+          kind: "template",
+          refId: "template-1",
+          href: "/templates/payroll/checklist",
+          destinationTitle: "Payroll checklist",
+          label: "Payroll checklist template",
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+      ],
+    )}"></section>`;
+
+    const { container } = render(<ContentRenderer html={html} />);
+
+    expect(
+      screen.getByRole("heading", {
+        level: 3,
+        name: "Related to this",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Payroll guide" })).toHaveAttribute(
+      "href",
+      "/payroll-guide",
+    );
+    expect(
+      screen.getByRole("link", { name: "Payroll checklist template" }),
+    ).toHaveAttribute("href", "/templates/payroll/checklist");
+    expect(
+      screen.getByRole("link", { name: "Payroll guide" }),
+    ).not.toHaveAttribute("target");
+    expect(
+      container.querySelector(
+        '.related-links-block__image[src="/images/payroll-guide.webp"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelectorAll(".related-links-block__media-placeholder"),
+    ).toHaveLength(1);
+    expect(
+      screen.getByRole("link", { name: "Payroll checklist template" }),
+    ).not.toHaveClass("related-links-block__link--text-only");
+  });
+
+  it("removes the image column entirely when a block has no thumbnails", () => {
+    const html = `<section data-sbt-block="related-links" data-items="${encodeRelatedLinksItems(
+      [
+        {
+          uid: "link-1",
+          kind: "page",
+          refId: "page-1",
+          href: "/startup-checklist",
+          destinationTitle: "Startup checklist",
+          label: null,
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+        {
+          uid: "link-2",
+          kind: "page",
+          refId: "page-2",
+          href: "/cash-flow",
+          destinationTitle: "Cash flow guide",
+          label: null,
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+      ],
+    )}"></section>`;
+
+    const { container } = render(<ContentRenderer html={html} />);
+
+    expect(container.querySelector(".related-links-block__media")).toBeNull();
+    expect(
+      container.querySelector(".related-links-block__media-placeholder"),
+    ).toBeNull();
+    expect(
+      container.querySelectorAll(".related-links-block__link--text-only"),
+    ).toHaveLength(2);
+  });
+
+  it("hides related links blocks that do not contain any valid items", () => {
+    const html = `<section data-sbt-block="related-links" data-title="" data-items="${encodeRelatedLinksItems([])}"></section>`;
+
+    render(<ContentRenderer html={html} />);
+
+    expect(
+      screen.queryByRole("heading", {
+        level: 3,
+        name: "Related to this",
+      }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/About SimpleBizToolkit/i)).toBeInTheDocument();
   });
 
   it("falls back to the first and second anchors when CTA button roles are missing", () => {

@@ -1,0 +1,596 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import CmsImagePicker from "@/components/CmsImagePicker";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import { clientApi } from "@/lib/clientApi";
+import { type ImageAsset } from "@/lib/imageApi";
+import {
+  createRelatedLinkUid,
+  normalizeRelatedLinksBorderWidth,
+  normalizeRelatedLinksDraftItems,
+  normalizeRelatedLinksTitle,
+  RELATED_LINKS_DEFAULT_BACKGROUND,
+  RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  RELATED_LINKS_MAX_ITEMS,
+  sanitizeRelatedLinksItems,
+  type RelatedLinkItem,
+  type RelatedLinkKind,
+  type RelatedLinksBlockData,
+} from "@/lib/relatedLinks";
+import { toTemplatesRoute } from "@/lib/templatesRoute";
+
+type DestinationOption = {
+  value: string;
+  kind: RelatedLinkKind;
+  refId: string;
+  href: string;
+  label: string;
+};
+
+type RelatedLinksEditorProps = {
+  value: Partial<RelatedLinksBlockData>;
+  onChange: (nextValue: RelatedLinksBlockData) => void;
+  disabled?: boolean;
+  previewVariant?: "content" | "template";
+  previewHint?: string;
+  className?: string;
+};
+
+function makeOptionValue(kind: RelatedLinkKind, refId: string): string {
+  return `${kind}:${refId}`;
+}
+
+function getDestinationLabel(item: RelatedLinkItem): string {
+  return item.label?.trim() || item.destinationTitle;
+}
+
+function normalizeEditorBlock(
+  value: Partial<RelatedLinksBlockData>,
+): RelatedLinksBlockData {
+  return {
+    title: normalizeRelatedLinksTitle(value.title),
+    items: normalizeRelatedLinksDraftItems(value.items),
+    backgroundColor:
+      typeof value.backgroundColor === "string" && value.backgroundColor.trim()
+        ? value.backgroundColor.trim()
+        : RELATED_LINKS_DEFAULT_BACKGROUND,
+    borderWidth:
+      normalizeRelatedLinksBorderWidth(value.borderWidth) ??
+      RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  };
+}
+
+export default function RelatedLinksEditor({
+  value,
+  onChange,
+  disabled = false,
+  previewVariant = "content",
+  previewHint = "Preview updates as you build the block.",
+  className,
+}: RelatedLinksEditorProps) {
+  const block = normalizeEditorBlock(value);
+  const previewItems = sanitizeRelatedLinksItems(block.items);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [pageOptions, setPageOptions] = useState<DestinationOption[]>([]);
+  const [templateOptions, setTemplateOptions] = useState<DestinationOption[]>(
+    [],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadOptions() {
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const [pages, categories] = await Promise.all([
+          clientApi.getMenuItemPages(undefined, "published"),
+          clientApi.getProductCategories(),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        const nextPageOptions = pages
+          .filter((page) => page.status === "published")
+          .map((page) => ({
+            value: makeOptionValue("page", page.id),
+            kind: "page" as const,
+            refId: page.id,
+            href: `/${page.slug}`,
+            label: page.title,
+          }))
+          .sort((left, right) => left.label.localeCompare(right.label));
+
+        const nextTemplateOptions = categories
+          .flatMap((category) =>
+            (category.items || [])
+              .filter((item) => item.status === "published")
+              .map((item) => ({
+                value: makeOptionValue("template", item.id),
+                kind: "template" as const,
+                refId: item.id,
+                href:
+                  toTemplatesRoute(item.productPageUrl) ||
+                  `/templates/${category.slug}/${item.slug}`,
+                label: item.title,
+              })),
+          )
+          .sort((left, right) => left.label.localeCompare(right.label));
+
+        setPageOptions(nextPageOptions);
+        setTemplateOptions(nextTemplateOptions);
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Unable to load destinations.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const optionsByValue = useMemo(() => {
+    return new Map(
+      [...pageOptions, ...templateOptions].map((option) => [
+        option.value,
+        option,
+      ]),
+    );
+  }, [pageOptions, templateOptions]);
+
+  const updateBlock = (nextValue: Partial<RelatedLinksBlockData>) => {
+    onChange(
+      normalizeEditorBlock({
+        ...block,
+        ...nextValue,
+      }),
+    );
+  };
+
+  const updateItems = (nextItems: RelatedLinkItem[]) => {
+    updateBlock({ items: nextItems });
+  };
+
+  const handleKindChange = (uid: string, kind: RelatedLinkKind) => {
+    updateItems(
+      block.items.map((item) => {
+        if (item.uid !== uid || item.kind === kind) {
+          return item;
+        }
+
+        return {
+          ...item,
+          kind,
+          refId: "",
+          href: "",
+          destinationTitle: "",
+        };
+      }),
+    );
+  };
+
+  const handleDestinationChange = (uid: string, optionValue: string) => {
+    const option = optionsByValue.get(optionValue);
+    updateItems(
+      block.items.map((item) => {
+        if (item.uid !== uid) {
+          return item;
+        }
+
+        if (!option) {
+          return {
+            ...item,
+            refId: "",
+            href: "",
+            destinationTitle: "",
+          };
+        }
+
+        return {
+          ...item,
+          kind: option.kind,
+          refId: option.refId,
+          href: option.href,
+          destinationTitle: option.label,
+        };
+      }),
+    );
+  };
+
+  const handleLabelChange = (uid: string, label: string) => {
+    updateItems(
+      block.items.map((item) =>
+        item.uid === uid ? { ...item, label: label.trim() || null } : item,
+      ),
+    );
+  };
+
+  const handleImageChange = (uid: string, image: ImageAsset | null) => {
+    updateItems(
+      block.items.map((item) =>
+        item.uid === uid
+          ? {
+              ...item,
+              imageId: image?.id ?? null,
+              imageUrl: image?.url ?? null,
+              imageAlt: image?.altText ?? null,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const moveItem = (uid: string, direction: -1 | 1) => {
+    const index = block.items.findIndex((item) => item.uid === uid);
+    const targetIndex = index + direction;
+
+    if (index < 0 || targetIndex < 0 || targetIndex >= block.items.length) {
+      return;
+    }
+
+    const nextItems = block.items.slice();
+    const [item] = nextItems.splice(index, 1);
+    nextItems.splice(targetIndex, 0, item);
+    updateItems(nextItems);
+  };
+
+  const addItem = () => {
+    if (block.items.length >= RELATED_LINKS_MAX_ITEMS) {
+      return;
+    }
+
+    updateItems([
+      ...block.items,
+      {
+        uid: createRelatedLinkUid(),
+        kind: "page",
+        refId: "",
+        href: "",
+        destinationTitle: "",
+        label: null,
+        imageId: null,
+        imageUrl: null,
+        imageAlt: null,
+      },
+    ]);
+  };
+
+  const removeItem = (uid: string) => {
+    updateItems(block.items.filter((item) => item.uid !== uid));
+  };
+
+  return (
+    <div className={`related-links-editor${className ? ` ${className}` : ""}`}>
+      <div className="related-links-editor-hero">
+        <section className="related-links-editor-panel related-links-editor-panel--preview">
+          <div className="related-links-editor-panel-header">
+            <div>
+              <div className="related-links-editor-eyebrow">Live Preview</div>
+              <h3 className="related-links-editor-panel-title">
+                How it will look
+              </h3>
+              <p className="related-links-editor-panel-copy">{previewHint}</p>
+            </div>
+            <span className="related-links-editor-count-pill">
+              {previewItems.length}/{RELATED_LINKS_MAX_ITEMS} ready
+            </span>
+          </div>
+
+          {previewItems.length > 0 ? (
+            <div className="related-links-editor-preview-frame">
+              <RelatedLinksBlock
+                title={block.title}
+                items={previewItems}
+                backgroundColor={block.backgroundColor}
+                borderWidth={block.borderWidth}
+                variant={previewVariant}
+              />
+            </div>
+          ) : (
+            <div className="related-links-editor-empty-preview">
+              Choose a page or template to build the preview.
+            </div>
+          )}
+        </section>
+
+        <section className="related-links-editor-panel related-links-editor-panel--controls">
+          <div className="related-links-editor-panel-header">
+            <div>
+              <div className="related-links-editor-eyebrow">Block Settings</div>
+              <h3 className="related-links-editor-panel-title">
+                Section styling
+              </h3>
+              <p className="related-links-editor-panel-copy">
+                Links always open in the same window.
+              </p>
+            </div>
+          </div>
+
+          <div className="related-links-editor-control-grid">
+            <label className="related-links-editor-control related-links-editor-control--wide">
+              <span className="related-links-editor-label">Heading</span>
+              <input
+                type="text"
+                value={block.title}
+                onChange={(event) =>
+                  updateBlock({
+                    title: normalizeRelatedLinksTitle(event.target.value),
+                  })
+                }
+                disabled={disabled}
+                className="related-links-editor-field"
+              />
+            </label>
+
+            <label className="related-links-editor-control">
+              <span className="related-links-editor-label">Background</span>
+              <input
+                type="color"
+                value={
+                  block.backgroundColor || RELATED_LINKS_DEFAULT_BACKGROUND
+                }
+                onChange={(event) =>
+                  updateBlock({ backgroundColor: event.target.value })
+                }
+                disabled={disabled}
+                className="related-links-editor-color"
+              />
+            </label>
+
+            <label className="related-links-editor-control">
+              <span className="related-links-editor-label">Border width</span>
+              <input
+                type="number"
+                min={0}
+                max={12}
+                value={String(
+                  block.borderWidth ?? RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+                )}
+                onChange={(event) =>
+                  updateBlock({ borderWidth: Number(event.target.value) })
+                }
+                disabled={disabled}
+                className="related-links-editor-field"
+              />
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <section className="related-links-editor-panel related-links-editor-panel--items">
+        <div className="related-links-editor-toolbar">
+          <div className="related-links-editor-toolbar-copy">
+            <div className="related-links-editor-eyebrow">Links</div>
+            <h3 className="related-links-editor-panel-title">
+              Manage destinations
+            </h3>
+            <p className="related-links-editor-panel-copy">
+              Add up to {RELATED_LINKS_MAX_ITEMS} internal pages or templates,
+              then optionally attach a thumbnail.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={addItem}
+            disabled={
+              disabled ||
+              block.items.length >= RELATED_LINKS_MAX_ITEMS ||
+              isLoading
+            }
+            className="related-links-editor-add"
+          >
+            Add link
+          </button>
+        </div>
+
+        {isLoading ? (
+          <p className="related-links-editor-note">Loading destinations…</p>
+        ) : null}
+
+        {loadError ? (
+          <p className="related-links-editor-note related-links-editor-note--error">
+            {loadError}
+          </p>
+        ) : null}
+
+        {block.items.length === 0 ? (
+          <div className="related-links-editor-empty-state">
+            Start with one link. You can reorder them any time, and each item
+            can use its own optional thumbnail.
+          </div>
+        ) : (
+          <div className="related-links-editor-list">
+            {block.items.map((item, index) => {
+              const isReady = Boolean(
+                item.refId && item.href && item.destinationTitle,
+              );
+              const currentOptions =
+                item.kind === "template" ? templateOptions : pageOptions;
+              const selectedValue = item.refId
+                ? makeOptionValue(item.kind, item.refId)
+                : "";
+
+              return (
+                <article key={item.uid} className="related-links-editor-item">
+                  <div className="related-links-editor-item-header">
+                    <div className="related-links-editor-item-heading">
+                      <span className="related-links-editor-item-index">
+                        Link {index + 1}
+                      </span>
+                      <span
+                        className={`related-links-editor-status${isReady ? " related-links-editor-status--ready" : " related-links-editor-status--incomplete"}`}
+                      >
+                        {isReady ? "Ready" : "Choose a destination"}
+                      </span>
+                    </div>
+
+                    <div className="related-links-editor-item-actions">
+                      <button
+                        type="button"
+                        onClick={() => moveItem(item.uid, -1)}
+                        disabled={disabled || index === 0}
+                        className="related-links-editor-icon-btn"
+                      >
+                        Up
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveItem(item.uid, 1)}
+                        disabled={disabled || index === block.items.length - 1}
+                        className="related-links-editor-icon-btn"
+                      >
+                        Down
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.uid)}
+                        disabled={disabled}
+                        className="related-links-editor-icon-btn related-links-editor-icon-btn--danger"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="related-links-editor-item-body">
+                    <div className="related-links-editor-fields">
+                      <div>
+                        <span className="related-links-editor-label">
+                          Link type
+                        </span>
+                        <div className="related-links-editor-kind-toggle">
+                          <button
+                            type="button"
+                            onClick={() => handleKindChange(item.uid, "page")}
+                            disabled={disabled}
+                            className={`related-links-editor-kind-button${item.kind === "page" ? " is-active" : ""}`}
+                          >
+                            Page
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleKindChange(item.uid, "template")
+                            }
+                            disabled={disabled}
+                            className={`related-links-editor-kind-button${item.kind === "template" ? " is-active" : ""}`}
+                          >
+                            Template
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          className="related-links-editor-label"
+                          htmlFor={`${item.uid}-destination`}
+                        >
+                          {item.kind === "template"
+                            ? "Choose template"
+                            : "Choose page"}
+                        </label>
+                        <select
+                          id={`${item.uid}-destination`}
+                          value={selectedValue}
+                          onChange={(event) =>
+                            handleDestinationChange(
+                              item.uid,
+                              event.target.value,
+                            )
+                          }
+                          disabled={disabled || isLoading}
+                          className="related-links-editor-field"
+                        >
+                          <option value="">
+                            {item.kind === "template"
+                              ? "Select a template"
+                              : "Select a page"}
+                          </option>
+                          {currentOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="related-links-editor-helper">
+                          {selectedValue && optionsByValue.get(selectedValue)
+                            ? `${item.kind === "template" ? "Template" : "Page"}: ${optionsByValue.get(selectedValue)?.href}`
+                            : `Only published ${item.kind === "template" ? "templates" : "pages"} are shown here.`}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          className="related-links-editor-label"
+                          htmlFor={`${item.uid}-label`}
+                        >
+                          Visible label
+                        </label>
+                        <input
+                          id={`${item.uid}-label`}
+                          type="text"
+                          value={item.label || ""}
+                          onChange={(event) =>
+                            handleLabelChange(item.uid, event.target.value)
+                          }
+                          disabled={disabled}
+                          placeholder={
+                            item.destinationTitle ||
+                            "Use the selected destination title"
+                          }
+                          className="related-links-editor-field"
+                        />
+                        <div className="related-links-editor-helper">
+                          Shown as:{" "}
+                          {getDestinationLabel(item) ||
+                            "Select a destination first"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="related-links-editor-thumbnail">
+                      <div className="related-links-editor-thumbnail-copy">
+                        <div className="related-links-editor-label">
+                          Thumbnail
+                        </div>
+                        <div className="related-links-editor-helper">
+                          Optional square image displayed beside the link.
+                        </div>
+                      </div>
+                      <CmsImagePicker
+                        label={`link ${index + 1} image`}
+                        value={item.imageUrl}
+                        selectedImageId={item.imageId}
+                        onChangeAction={(image) =>
+                          handleImageChange(item.uid, image)
+                        }
+                        disabled={disabled}
+                      />
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

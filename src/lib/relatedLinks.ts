@@ -1,0 +1,321 @@
+export const RELATED_LINKS_BLOCK_TYPE = "related-links";
+export const RELATED_LINKS_DEFAULT_TITLE = "Related to this";
+export const RELATED_LINKS_DEFAULT_BACKGROUND = "#f8f9fb";
+export const RELATED_LINKS_DEFAULT_BORDER_WIDTH = 1;
+export const RELATED_LINKS_MAX_ITEMS = 5;
+
+export type RelatedLinkKind = "page" | "template";
+
+export interface RelatedLinkItem {
+  uid: string;
+  kind: RelatedLinkKind;
+  refId: string;
+  href: string;
+  destinationTitle: string;
+  label?: string | null;
+  imageId?: string | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+}
+
+export interface RelatedLinksBlockData {
+  title: string;
+  items: RelatedLinkItem[];
+  backgroundColor?: string;
+  borderWidth?: number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+export function createRelatedLinkUid(): string {
+  return `related-link-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function isInternalRelatedLinkHref(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.startsWith("/") &&
+    !value.startsWith("//")
+  );
+}
+
+export function normalizeRelatedLinksTitle(value?: string | null): string {
+  const trimmed = value?.trim();
+  return trimmed || RELATED_LINKS_DEFAULT_TITLE;
+}
+
+export function normalizeRelatedLinksBorderWidth(
+  value?: number | null,
+): number | undefined {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return undefined;
+  }
+
+  return Math.max(0, Math.min(12, value));
+}
+
+export function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+export function parseAttributeFromHtmlString(
+  attributes: string,
+  name: string,
+): string {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`${escaped}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, "i");
+  const match = attributes.match(regex);
+  return decodeHtmlEntities(match?.[1] ?? match?.[2] ?? "");
+}
+
+function sanitizeRelatedLinkKind(value: unknown): RelatedLinkKind | null {
+  return value === "page" || value === "template" ? value : null;
+}
+
+function normalizeNullableString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const kind = sanitizeRelatedLinkKind(value.kind) ?? "page";
+  const uid =
+    typeof value.uid === "string" && value.uid.trim()
+      ? value.uid.trim()
+      : createRelatedLinkUid();
+
+  return {
+    uid,
+    kind,
+    refId:
+      typeof value.refId === "string" && value.refId.trim()
+        ? value.refId.trim()
+        : "",
+    href:
+      typeof value.href === "string" && value.href.trim()
+        ? value.href.trim()
+        : "",
+    destinationTitle:
+      typeof value.destinationTitle === "string"
+        ? value.destinationTitle.trim()
+        : "",
+    label: normalizeNullableString(value.label),
+    imageId: normalizeNullableString(value.imageId),
+    imageUrl: normalizeNullableString(value.imageUrl),
+    imageAlt: normalizeNullableString(value.imageAlt),
+  };
+}
+
+function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const kind = sanitizeRelatedLinkKind(value.kind);
+  const href = typeof value.href === "string" ? value.href.trim() : "";
+  const destinationTitle =
+    typeof value.destinationTitle === "string"
+      ? value.destinationTitle.trim()
+      : "";
+  const refId = typeof value.refId === "string" ? value.refId.trim() : "";
+
+  if (
+    !kind ||
+    !isInternalRelatedLinkHref(href) ||
+    !destinationTitle ||
+    !refId
+  ) {
+    return null;
+  }
+
+  const uid =
+    typeof value.uid === "string" && value.uid.trim()
+      ? value.uid.trim()
+      : createRelatedLinkUid();
+  const label = typeof value.label === "string" ? value.label.trim() : "";
+  const imageUrl =
+    typeof value.imageUrl === "string" && value.imageUrl.trim()
+      ? value.imageUrl.trim()
+      : null;
+  const imageId =
+    typeof value.imageId === "string" && value.imageId.trim()
+      ? value.imageId.trim()
+      : null;
+  const imageAlt =
+    typeof value.imageAlt === "string" && value.imageAlt.trim()
+      ? value.imageAlt.trim()
+      : null;
+
+  return {
+    uid,
+    kind,
+    refId,
+    href,
+    destinationTitle,
+    label: label || null,
+    imageId,
+    imageUrl,
+    imageAlt,
+  };
+}
+
+export function sanitizeRelatedLinksItems(value: unknown): RelatedLinkItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => sanitizeRelatedLinkItem(item))
+    .filter((item): item is RelatedLinkItem => Boolean(item))
+    .slice(0, RELATED_LINKS_MAX_ITEMS);
+}
+
+export function normalizeRelatedLinksDraftItems(
+  value: unknown,
+): RelatedLinkItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => sanitizeDraftRelatedLinkItem(item))
+    .filter((item): item is RelatedLinkItem => Boolean(item))
+    .slice(0, RELATED_LINKS_MAX_ITEMS);
+}
+
+export function encodeRelatedLinksItems(items: RelatedLinkItem[]): string {
+  return encodeURIComponent(JSON.stringify(sanitizeRelatedLinksItems(items)));
+}
+
+export function decodeRelatedLinksItems(
+  value?: string | null,
+): RelatedLinkItem[] {
+  if (!value) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(decodeURIComponent(value));
+    return sanitizeRelatedLinksItems(parsed);
+  } catch {
+    return [];
+  }
+}
+
+export function normalizeRelatedLinksBlock(
+  value: Partial<RelatedLinksBlockData>,
+): RelatedLinksBlockData {
+  return {
+    title: normalizeRelatedLinksTitle(value.title),
+    items: sanitizeRelatedLinksItems(value.items),
+    backgroundColor:
+      typeof value.backgroundColor === "string" && value.backgroundColor.trim()
+        ? value.backgroundColor.trim()
+        : undefined,
+    borderWidth: normalizeRelatedLinksBorderWidth(value.borderWidth),
+  };
+}
+
+function encodeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+export function serializeRelatedLinksBlockToHtml(
+  value: Partial<RelatedLinksBlockData>,
+): string {
+  const block = normalizeRelatedLinksBlock(value);
+
+  if (block.items.length === 0) {
+    return "";
+  }
+
+  const attributes = [
+    `class="related-links-block"`,
+    `data-sbt-block="${RELATED_LINKS_BLOCK_TYPE}"`,
+    `data-title="${encodeHtmlAttribute(block.title)}"`,
+    `data-items="${encodeHtmlAttribute(encodeRelatedLinksItems(block.items))}"`,
+  ];
+
+  if (block.backgroundColor) {
+    attributes.push(
+      `data-background-color="${encodeHtmlAttribute(block.backgroundColor)}"`,
+    );
+  }
+
+  if (typeof block.borderWidth === "number") {
+    attributes.push(`data-border-width="${block.borderWidth}"`);
+  }
+
+  return `<section ${attributes.join(" ")}></section>`;
+}
+
+export function parseRelatedLinksBlockFromAttributes(
+  attributes: string,
+): RelatedLinksBlockData {
+  const items = decodeRelatedLinksItems(
+    parseAttributeFromHtmlString(attributes, "data-items"),
+  );
+  const borderWidthRaw = parseAttributeFromHtmlString(
+    attributes,
+    "data-border-width",
+  );
+  const borderWidth = borderWidthRaw ? Number(borderWidthRaw) : undefined;
+
+  return normalizeRelatedLinksBlock({
+    title: parseAttributeFromHtmlString(attributes, "data-title"),
+    items,
+    backgroundColor: parseAttributeFromHtmlString(
+      attributes,
+      "data-background-color",
+    ),
+    borderWidth: Number.isFinite(borderWidth) ? borderWidth : undefined,
+  });
+}
+
+export function extractRelatedLinksBlocksFromHtml(html: string): {
+  htmlWithoutRelatedLinks: string;
+  blocks: RelatedLinksBlockData[];
+} {
+  const regex = new RegExp(
+    `<section\\b([^>]*)data-sbt-block=["']${RELATED_LINKS_BLOCK_TYPE}["']([^>]*)>[\\s\\S]*?<\\/section>`,
+    "gi",
+  );
+  const blocks: RelatedLinksBlockData[] = [];
+
+  const htmlWithoutRelatedLinks = html.replace(
+    regex,
+    (match, before, after) => {
+      const block = parseRelatedLinksBlockFromAttributes(`${before} ${after}`);
+      if (block.items.length > 0) {
+        blocks.push(block);
+      }
+
+      return "";
+    },
+  );
+
+  return {
+    htmlWithoutRelatedLinks,
+    blocks,
+  };
+}

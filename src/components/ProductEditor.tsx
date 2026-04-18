@@ -5,12 +5,25 @@ import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { redirectAndRefresh } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import {
+  extractRelatedLinksBlocksFromHtml,
+  normalizeRelatedLinksBorderWidth,
+  normalizeRelatedLinksDraftItems,
+  normalizeRelatedLinksTitle,
+  RELATED_LINKS_DEFAULT_BACKGROUND,
+  RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  RELATED_LINKS_MAX_ITEMS,
+  serializeRelatedLinksBlockToHtml,
+  type RelatedLinksBlockData,
+} from "@/lib/relatedLinks";
 import { slugify } from "@/lib/slugify";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
+import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
+import { FULL_POLICY, type EditorPolicy } from "@/editor/policy";
 
 type ProductEditorProps = {
   product?: ProductItem;
@@ -32,11 +45,78 @@ const EMPTY_PRODUCT: ProductItem = {
   status: "draft",
 };
 
+const PRODUCT_INLINE_CONTENT_POLICY: EditorPolicy = {
+  ...FULL_POLICY,
+  allowedNodes: FULL_POLICY.allowedNodes.filter(
+    (nodeName) => nodeName !== "relatedLinksSbtBlock",
+  ),
+};
+
+function normalizeTemplateRelatedLinksBlock(
+  value?: Partial<RelatedLinksBlockData>,
+): RelatedLinksBlockData {
+  return {
+    title: normalizeRelatedLinksTitle(value?.title),
+    items: normalizeRelatedLinksDraftItems(value?.items),
+    backgroundColor:
+      typeof value?.backgroundColor === "string" && value.backgroundColor.trim()
+        ? value.backgroundColor.trim()
+        : RELATED_LINKS_DEFAULT_BACKGROUND,
+    borderWidth:
+      normalizeRelatedLinksBorderWidth(value?.borderWidth) ??
+      RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  };
+}
+
+function splitTemplateDescription(description: string): {
+  descriptionHtml: string;
+  relatedLinks: RelatedLinksBlockData;
+} {
+  const { htmlWithoutRelatedLinks, blocks } =
+    extractRelatedLinksBlocksFromHtml(description);
+
+  if (blocks.length === 0) {
+    return {
+      descriptionHtml: description,
+      relatedLinks: normalizeTemplateRelatedLinksBlock(),
+    };
+  }
+
+  return {
+    descriptionHtml: htmlWithoutRelatedLinks.trim(),
+    relatedLinks: normalizeTemplateRelatedLinksBlock({
+      title: blocks[0]?.title,
+      backgroundColor: blocks[0]?.backgroundColor,
+      borderWidth: blocks[0]?.borderWidth,
+      items: blocks
+        .flatMap((block) => block.items)
+        .slice(0, RELATED_LINKS_MAX_ITEMS),
+    }),
+  };
+}
+
+function buildTemplateDescription(
+  descriptionHtml: string,
+  relatedLinks: RelatedLinksBlockData,
+): string {
+  const baseDescription =
+    extractRelatedLinksBlocksFromHtml(
+      descriptionHtml,
+    ).htmlWithoutRelatedLinks.trim();
+
+  return [baseDescription, serializeRelatedLinksBlockToHtml(relatedLinks)]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export default function ProductEditor({
   product,
   categories = [],
 }: ProductEditorProps) {
   const productData = product || EMPTY_PRODUCT;
+  const initialContent = splitTemplateDescription(
+    productData.description || "",
+  );
   const isCreateMode = !productData.id;
   const previewHref = !isCreateMode
     ? `/preview/templates/${productData.id}`
@@ -45,7 +125,10 @@ export default function ProductEditor({
   const [title, setTitle] = useState(productData.title || "");
   const [slug, setSlug] = useState(productData.slug || "");
   const [problem, setProblem] = useState(productData.problem || "");
-  const [description, setDescription] = useState(productData.description || "");
+  const [description, setDescription] = useState(
+    initialContent.descriptionHtml,
+  );
+  const [relatedLinks, setRelatedLinks] = useState(initialContent.relatedLinks);
   const [bullets, setBullets] = useState(
     (productData.bullets || []).join("\n") || "",
   );
@@ -95,7 +178,8 @@ export default function ProductEditor({
         title,
         slug,
         problem: problem || undefined,
-        description: description || undefined,
+        description:
+          buildTemplateDescription(description, relatedLinks) || undefined,
         bullets: bulletsArray,
         image: image || undefined,
         etsyUrl: etsyUrl || undefined,
@@ -114,10 +198,15 @@ export default function ProductEditor({
       } else {
         // Keep local form state in sync in case a user navigates back quickly.
         if (saved && typeof saved === "object") {
+          const savedContent = splitTemplateDescription(
+            (saved.description as string) || "",
+          );
+
           setTitle((saved.title as string) || title);
           setSlug((saved.slug as string) || slug);
           setProblem((saved.problem as string) || problem);
-          setDescription((saved.description as string) || description);
+          setDescription(savedContent.descriptionHtml);
+          setRelatedLinks(savedContent.relatedLinks);
           setBullets(((saved.bullets as string[]) || []).join("\n") || bullets);
           setImage((saved.image as string) || image);
           setEtsyUrl((saved.etsyUrl as string) || etsyUrl);
@@ -303,6 +392,7 @@ export default function ProductEditor({
               placeholder="Describe the problem this template solves…"
               onSave={saveProduct}
               onPreview={previewHref ? handlePreview : undefined}
+              policy={PRODUCT_INLINE_CONTENT_POLICY}
             />
           </div>
 
@@ -317,6 +407,8 @@ export default function ProductEditor({
               placeholder="Describe the template in detail…"
               onSave={saveProduct}
               onPreview={previewHref ? handlePreview : undefined}
+              policy={PRODUCT_INLINE_CONTENT_POLICY}
+              hint="Use the Related Links section below to manage the block that renders beneath the main template image."
             />
           </div>
 
@@ -365,6 +457,40 @@ export default function ProductEditor({
             />
           </div>
         </div>
+      </AdminFormBlock>
+
+      <AdminFormBlock
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11 4"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L13 20"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        }
+        title="Related Links"
+      >
+        <div className="related-links-section-intro">
+          Build the links that appear beneath the template image. They stay out
+          of the description editor, use optional thumbnails, and always open in
+          the same window.
+        </div>
+        <RelatedLinksEditor
+          value={relatedLinks}
+          onChange={setRelatedLinks}
+          previewVariant="template"
+          previewHint="This block is shown beneath the main template image on the public template page."
+        />
       </AdminFormBlock>
 
       {/* Status messages */}
