@@ -16,6 +16,7 @@ import { LegacyCtaBlock } from "./extensions/LegacyCtaBlock";
 import { Callout } from "./extensions/Callout";
 import { CTA } from "./extensions/CTA";
 import { ImageBlock } from "./extensions/ImageBlock";
+import { RelatedLinks } from "./extensions/RelatedLinks";
 import { Locking } from "./extensions/Locking";
 import { EditorToolbar } from "./EditorToolbar";
 import type { EditorPolicy } from "./policy";
@@ -66,6 +67,7 @@ export default function BlockEditor({
       Callout,
       CTA,
       ImageBlock,
+      RelatedLinks,
       Locking,
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),

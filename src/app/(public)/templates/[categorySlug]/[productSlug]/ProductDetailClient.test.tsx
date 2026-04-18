@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { encodeRelatedLinksItems } from "@/lib/relatedLinks";
 
 import ProductDetailClient from "./ProductDetailClient";
 
@@ -53,5 +54,49 @@ describe("ProductDetailClient", () => {
     expect(
       container.querySelectorAll(".product-description-content h1"),
     ).toHaveLength(0);
+  });
+
+  it("extracts related links from description HTML and renders them beneath the image column", () => {
+    const relatedLinksHtml = `<section data-sbt-block="related-links" data-title="Related to this" data-items="${encodeRelatedLinksItems(
+      [
+        {
+          uid: "link-1",
+          kind: "page",
+          refId: "page-1",
+          href: "/tax-guide",
+          destinationTitle: "Tax guide",
+          label: "Tax planning guide",
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+      ],
+    )}"></section>`;
+
+    const { container } = render(
+      <ProductDetailClient
+        product={{
+          ...product,
+          description: `<p>Track your monthly spend.</p>${relatedLinksHtml}`,
+        }}
+      />,
+    );
+
+    const relatedLink = screen.getByRole("link", {
+      name: "Tax planning guide",
+    });
+
+    expect(relatedLink).toHaveAttribute("href", "/tax-guide");
+    expect(relatedLink).not.toHaveAttribute("target");
+    expect(
+      container.querySelector(
+        ".product-detail-media-column .related-links-block--template",
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        ".product-description-content a[href='/tax-guide']",
+      ),
+    ).toBeNull();
   });
 });

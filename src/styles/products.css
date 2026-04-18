@@ -427,9 +427,15 @@
   grid-area: title;
 }
 
+.product-detail-media-column {
+  grid-area: image;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 /* Image Container */
 .product-detail-image-container {
-  grid-area: image;
   width: 100%;
 }
 
@@ -452,6 +458,13 @@
   width: 100%;
   height: auto;
   display: block;
+}
+
+.product-detail-related-links-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-top: 1.85rem;
 }
 
 /* Content Section */
@@ -479,6 +492,10 @@
 @media (max-width: 991px) {
   .product-detail-title {
     font-size: clamp(1.25rem, 4vw, 1.5rem);
+  }
+
+  .product-detail-related-links-stack {
+    margin-top: 1.35rem;
   }
 }
 
@@ -871,6 +888,110 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.related-links-block {
+  border-style: solid;
+  border-color: var(--sb-border);
+  border-radius: var(--sb-radius-sm);
+  padding: 1rem 1.125rem;
+}
+
+.related-links-block__title {
+  margin: 0 0 0.875rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--sb-ink);
+}
+
+.related-links-block__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.related-links-block__item {
+  margin: 0;
+}
+
+.related-links-block__link {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 0.875rem;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: var(--sb-radius-sm);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--sb-ink);
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.related-links-block__link:hover {
+  background: #ffffff;
+  color: var(--sb-brand-blue);
+  transform: translateY(-1px);
+}
+
+.related-links-block__link--text-only {
+  grid-template-columns: 1fr;
+}
+
+.related-links-block__media {
+  width: 72px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--sb-border);
+  background: #ffffff;
+}
+
+.related-links-block__media-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+
+.related-links-block__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.related-links-block__text {
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.related-links-block--template {
+  margin: 0;
+  padding: 0.875rem 1rem;
+}
+
+.related-links-block--template .related-links-block__title {
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.related-links-block--template .related-links-block__link {
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.625rem;
+}
+
+.related-links-block--template .related-links-block__media {
+  width: 64px;
 }
 
 /* First paragraph gets special emphasis */

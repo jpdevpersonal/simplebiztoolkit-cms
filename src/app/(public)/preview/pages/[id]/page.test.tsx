@@ -80,4 +80,27 @@ describe("PagePreview", () => {
       screen.getByRole("heading", { name: "Draft Page" }),
     ).toBeInTheDocument();
   });
+
+  it("omits invalid local file paths from preview header images", async () => {
+    serviceMock.getMenuItemPageById.mockResolvedValueOnce({
+      data: {
+        id: "page-2",
+        title: "SEO Guide",
+        slug: "seo-guide",
+        status: "published",
+        content: "<p>Guide body</p>",
+        headerImage:
+          "c:\\Users\\Admin\\Documents\\Read Now\\SEO and Generative-SEO Playbook for Simple Biz Toolkit.pdf",
+      },
+    });
+
+    const { default: PagePreview } = await import("./page");
+    const { container } = render(
+      await PagePreview({
+        params: Promise.resolve({ id: "page-2" }),
+      }),
+    );
+
+    expect(container.querySelector("img")).toBeNull();
+  });
 });

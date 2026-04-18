@@ -19,6 +19,7 @@ import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
   createPageMetadata,
+  normalizePublicUrl,
 } from "@/lib/seo";
 import "@/styles/contentCards.css";
 import "@/styles/pages.css";
@@ -191,7 +192,9 @@ export default async function MenuItemLandingPage({ params }: Props) {
               {showDirectPageCards ? (
                 <div className="row g-3 mt-2">
                   {directPages.map((page) => {
-                    const imageSrc = page.featuredImage || page.headerImage;
+                    const imageSrc =
+                      normalizePublicUrl(page.featuredImage) ??
+                      normalizePublicUrl(page.headerImage);
                     const pageDate = formatPageDate(page.dateISO);
 
                     return (

@@ -1,5 +1,7 @@
 "use client";
 import Image from "next/image";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import type { Product } from "@/types/product";
 import { sanitizePublicContentHtml } from "@/lib/sanitize";
 import "@/styles/products.css";
@@ -7,6 +9,34 @@ import "@/styles/products.css";
 type Props = {
   product: Product;
 };
+
+type ProductDescriptionContent = {
+  html: string;
+  relatedLinksBlocks: ReturnType<
+    typeof extractRelatedLinksBlocksFromHtml
+  >["blocks"];
+};
+
+function splitDescriptionContent(
+  description: string,
+): ProductDescriptionContent {
+  if (!description) {
+    return { html: "", relatedLinksBlocks: [] };
+  }
+
+  const containsHtml = /<[a-z][\s\S]*>/i.test(description);
+  if (!containsHtml) {
+    return { html: description, relatedLinksBlocks: [] };
+  }
+
+  const { htmlWithoutRelatedLinks, blocks: relatedLinksBlocks } =
+    extractRelatedLinksBlocksFromHtml(description);
+
+  return {
+    html: htmlWithoutRelatedLinks.trim(),
+    relatedLinksBlocks,
+  };
+}
 
 // Component to render formatted product descriptions
 function ProductDescription({ description }: { description: string }) {
@@ -87,6 +117,10 @@ function ProductDescription({ description }: { description: string }) {
 }
 
 export default function ProductDetailClient({ product }: Props) {
+  const contentSource = product.description || product.problem;
+  const { html: descriptionContent, relatedLinksBlocks } =
+    splitDescriptionContent(contentSource);
+
   // Compute medium (resized) image path
   const mediumSrc = (src: string) => {
     if (!src) return src;
@@ -117,28 +151,45 @@ export default function ProductDetailClient({ product }: Props) {
           <h1 className="product-detail-title">{product.title}</h1>
         </div>
 
-        <div
-          className="product-detail-image-container"
-          style={{
-            filter: "drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.5))",
-          }}
-        >
+        <div className="product-detail-media-column">
           <div
-            className="product-detail-image-wrapper"
-            onMouseEnter={() =>
-              preloadImage(product.image || "/images/placeholder-preview.png")
-            }
+            className="product-detail-image-container"
+            style={{
+              filter: "drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.5))",
+            }}
           >
-            <Image
-              src={product.image || "/images/placeholder-preview.png"}
-              alt={product.title}
-              width={1200}
-              height={840}
-              className="product-detail-image"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              priority
-            />
+            <div
+              className="product-detail-image-wrapper"
+              onMouseEnter={() =>
+                preloadImage(product.image || "/images/placeholder-preview.png")
+              }
+            >
+              <Image
+                src={product.image || "/images/placeholder-preview.png"}
+                alt={product.title}
+                width={1200}
+                height={840}
+                className="product-detail-image"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
+            </div>
           </div>
+
+          {relatedLinksBlocks.length > 0 ? (
+            <div className="product-detail-related-links-stack">
+              {relatedLinksBlocks.map((block, index) => (
+                <RelatedLinksBlock
+                  key={`${block.title}-${index}`}
+                  title={block.title}
+                  items={block.items}
+                  backgroundColor={block.backgroundColor}
+                  borderWidth={block.borderWidth}
+                  variant="template"
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div className="product-detail-content">
@@ -233,14 +284,14 @@ export default function ProductDetailClient({ product }: Props) {
             </div>
           </div>
 
-          <div className="product-detail-problem">
-            <h2 style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>
-              Description
-            </h2>
-            <ProductDescription
-              description={product.description || product.problem}
-            />
-          </div>
+          {descriptionContent ? (
+            <div className="product-detail-problem">
+              <h2 style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>
+                Description
+              </h2>
+              <ProductDescription description={descriptionContent} />
+            </div>
+          ) : null}
 
           <div className="product-detail-features">
             <h2>What&apos;s Included</h2>

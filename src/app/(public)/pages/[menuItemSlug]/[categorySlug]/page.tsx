@@ -15,6 +15,7 @@ import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
   createPageMetadata,
+  normalizePublicUrl,
 } from "@/lib/seo";
 import "@/styles/contentCards.css";
 import "@/styles/pages.css";
@@ -154,65 +155,74 @@ export default async function CategoryPageListing({ params }: Props) {
             </div>
           ) : (
             <div className="row g-3 mt-2">
-              {publishedPages.map((page) => (
-                <div className="col-lg-6" key={page.id}>
-                  <article className="sb-card p-3 h-100">
-                    {(page.featuredImage || page.headerImage) && (
-                      <div className="content-card-image">
-                        <Link href={`/${page.slug}`}>
-                          <Image
-                            src={page.featuredImage || page.headerImage || ""}
-                            alt={page.title}
-                            width={800}
-                            height={450}
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            loading="lazy"
-                            style={{
-                              width: "100%",
-                              height: "auto",
-                              borderRadius: "8px",
-                              marginBottom: "12px",
-                              objectFit: "cover",
-                              backgroundColor: "#f8f9fa",
-                            }}
-                          />
-                        </Link>
-                      </div>
-                    )}
+              {publishedPages.map((page) => {
+                const imageSrc =
+                  normalizePublicUrl(page.featuredImage) ??
+                  normalizePublicUrl(page.headerImage);
 
-                    <div className="d-flex justify-content-between gap-2 flex-wrap">
-                      <div className="sb-muted" style={{ fontSize: 13 }}>
-                        {cat.title}
-                      </div>
-                      {formatPageDate(page.dateISO) && (
-                        <div className="sb-muted" style={{ fontSize: 13 }}>
-                          {formatPageDate(page.dateISO)}
+                return (
+                  <div className="col-lg-6" key={page.id}>
+                    <article className="sb-card p-3 h-100">
+                      {imageSrc && (
+                        <div className="content-card-image">
+                          <Link href={`/${page.slug}`}>
+                            <Image
+                              src={imageSrc}
+                              alt={page.title}
+                              width={800}
+                              height={450}
+                              sizes="(max-width: 768px) 100vw, 50vw"
+                              loading="lazy"
+                              style={{
+                                width: "100%",
+                                height: "auto",
+                                borderRadius: "8px",
+                                marginBottom: "12px",
+                                objectFit: "cover",
+                                backgroundColor: "#f8f9fa",
+                              }}
+                            />
+                          </Link>
                         </div>
                       )}
-                    </div>
 
-                    <div
-                      className="mt-1"
-                      style={{ fontWeight: 900, fontSize: 18 }}
-                    >
-                      {page.title}
-                    </div>
-
-                    {(page.description || page.subtitle) && (
-                      <div className="sb-muted mt-1">
-                        {page.description || page.subtitle}
+                      <div className="d-flex justify-content-between gap-2 flex-wrap">
+                        <div className="sb-muted" style={{ fontSize: 13 }}>
+                          {cat.title}
+                        </div>
+                        {formatPageDate(page.dateISO) && (
+                          <div className="sb-muted" style={{ fontSize: 13 }}>
+                            {formatPageDate(page.dateISO)}
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    <div className="mt-3">
-                      <Link className="sb-content-link" href={`/${page.slug}`}>
-                        <span>Read page</span>
-                        {pageLinkIcon}
-                      </Link>
-                    </div>
-                  </article>
-                </div>
-              ))}
+                      <div
+                        className="mt-1"
+                        style={{ fontWeight: 900, fontSize: 18 }}
+                      >
+                        {page.title}
+                      </div>
+
+                      {(page.description || page.subtitle) && (
+                        <div className="sb-muted mt-1">
+                          {page.description || page.subtitle}
+                        </div>
+                      )}
+
+                      <div className="mt-3">
+                        <Link
+                          className="sb-content-link"
+                          href={`/${page.slug}`}
+                        >
+                          <span>Read page</span>
+                          {pageLinkIcon}
+                        </Link>
+                      </div>
+                    </article>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

@@ -8,6 +8,14 @@ import React from "react";
 import Image from "next/image";
 import { Section, Callout, ContentFooter } from "@/components/ContentBlocks";
 import { ContentCta } from "@/components/ContentCta";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import {
+  decodeRelatedLinksItems,
+  normalizeRelatedLinksTitle,
+  parseRelatedLinksBlockFromAttributes,
+  RELATED_LINKS_BLOCK_TYPE,
+  type RelatedLinkItem,
+} from "@/lib/relatedLinks";
 import { sanitizeHtml, sanitizePublicContentHtml } from "@/lib/sanitize";
 
 /**
@@ -33,7 +41,8 @@ interface ContentBlock {
     | "sbt-cta"
     | "html"
     | "sbt-callout"
-    | "sbt-image";
+    | "sbt-image"
+    | "sbt-related-links";
   content: string;
   // legacy callout / article-cta
   title?: string;
@@ -72,6 +81,11 @@ interface ContentBlock {
   src?: string;
   alt?: string;
   caption?: string;
+  // sbt-related-links
+  relatedLinksTitle?: string;
+  relatedLinksItems?: RelatedLinkItem[];
+  relatedLinksBackgroundColor?: string;
+  relatedLinksBorderWidth?: number;
 }
 
 type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5";
@@ -345,6 +359,22 @@ function parseContent(html: string): ContentBlock[] {
         src: img?.getAttribute("src") || "",
         alt: img?.getAttribute("alt") || "",
         caption: element.querySelector("figcaption")?.textContent?.trim() || "",
+      });
+    } else if (sbtBlock === RELATED_LINKS_BLOCK_TYPE) {
+      blocks.push({
+        type: "sbt-related-links",
+        content: "",
+        relatedLinksTitle: normalizeRelatedLinksTitle(
+          element.getAttribute("data-title"),
+        ),
+        relatedLinksItems: decodeRelatedLinksItems(
+          element.getAttribute("data-items"),
+        ),
+        relatedLinksBackgroundColor:
+          element.getAttribute("data-background-color") || undefined,
+        relatedLinksBorderWidth: parseOptionalNumericAttribute(
+          element.getAttribute("data-border-width"),
+        ),
       });
     } else if (componentType === "section") {
       blocks.push({
@@ -651,6 +681,18 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
         </figure>
       );
 
+    case "sbt-related-links":
+      return (
+        <RelatedLinksBlock
+          key={index}
+          title={block.relatedLinksTitle || normalizeRelatedLinksTitle()}
+          items={block.relatedLinksItems || []}
+          backgroundColor={block.relatedLinksBackgroundColor}
+          borderWidth={block.relatedLinksBorderWidth}
+          variant="content"
+        />
+      );
+
     default:
       return null;
   }
@@ -725,6 +767,12 @@ function parseContentServer(html: string): ContentBlock[] {
   // Block-editor: sbt-image  <figure data-sbt-block="image">...</figure>
   const sbtImageRegex =
     /<figure\b([^>]*)data-sbt-block="image"([^>]*)>([\s\S]*?)<\/figure>/gi;
+
+  // Block-editor: sbt-related-links <section data-sbt-block="related-links">...</section>
+  const sbtRelatedLinksRegex = new RegExp(
+    `<section\\b([^>]*)data-sbt-block=["']${RELATED_LINKS_BLOCK_TYPE}["']([^>]*)>([\\s\\S]*?)<\\/section>`,
+    "gi",
+  );
 
   let lastIndex = 0;
   const matches: Array<{ index: number; end: number; block: ContentBlock }> =
@@ -952,6 +1000,25 @@ function parseContentServer(html: string): ContentBlock[] {
         src: srcMatch?.[1] || "",
         alt: altMatch?.[1] || "",
         caption: capMatch?.[1]?.trim() || "",
+      },
+    });
+  }
+
+  // Find all sbt-related-links blocks
+  while ((match = sbtRelatedLinksRegex.exec(html)) !== null) {
+    const parsed = parseRelatedLinksBlockFromAttributes(
+      `${match[1]} ${match[2]}`,
+    );
+    matches.push({
+      index: match.index,
+      end: match.index + match[0].length,
+      block: {
+        type: "sbt-related-links",
+        content: "",
+        relatedLinksTitle: parsed.title,
+        relatedLinksItems: parsed.items,
+        relatedLinksBackgroundColor: parsed.backgroundColor,
+        relatedLinksBorderWidth: parsed.borderWidth,
       },
     });
   }

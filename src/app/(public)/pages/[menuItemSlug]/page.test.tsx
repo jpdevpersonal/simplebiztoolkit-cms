@@ -151,4 +151,53 @@ describe("Menu item landing page", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Expert guidance").tagName).toBe("STRONG");
   });
+
+  it("falls back to a valid header image when a featured image is a local file path", async () => {
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
+      {
+        id: "guides",
+        title: "Guides",
+        status: "published",
+      },
+    ]);
+    menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
+      id: "guides",
+      title: "Guides",
+      status: "published",
+      publishedCategories: [],
+      directPages: [
+        {
+          id: "page-1",
+          slug: "guide-a",
+          title: "Guide A",
+          description: "First page",
+          status: "published",
+          dateISO: "2026-03-01",
+          featuredImage:
+            "c:\\Users\\Admin\\Documents\\Read Now\\SEO and Generative-SEO Playbook for Simple Biz Toolkit.pdf",
+          headerImage: "/images/safe-guide.webp",
+        },
+        {
+          id: "page-2",
+          slug: "guide-b",
+          title: "Guide B",
+          description: "Second page",
+          status: "published",
+          dateISO: "2026-03-02",
+        },
+      ],
+      totalPages: 2,
+    });
+
+    const { default: MenuItemLandingPage } = await import("./page");
+    const { container } = render(
+      await MenuItemLandingPage({
+        params: Promise.resolve({ menuItemSlug: "guides" }),
+      }),
+    );
+
+    const images = container.querySelectorAll("img");
+    expect(images).toHaveLength(1);
+    expect(images[0]).toHaveAttribute("src", "/images/safe-guide.webp");
+  });
 });
