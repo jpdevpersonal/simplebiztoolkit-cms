@@ -131,22 +131,21 @@ export default async function PublicLayout({
 
   return (
     <>
-      {gaId ? (
-        <>
-          <Script
-            async
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            strategy="afterInteractive"
-          />
-          <Script id="ga-init" strategy="afterInteractive">
-            {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
+      {/* Google tag (gtag.js) */}
+      <Script
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId ?? "G-3ZQY64S5JJ"}`}
+        strategy="afterInteractive"
+      />
+      <Script id="gtag-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);} 
+          gtag('js', new Date());
 
-gtag('config', '${gaId}');`}
-          </Script>
-        </>
-      ) : null}
+          gtag('config', '${gaId ?? "G-3ZQY64S5JJ"}');
+        `}
+      </Script>
 
       <BootstrapClient />
       <ScrollToTop />
