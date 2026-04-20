@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import heroImage from "../../../public/images/hero-image-desk.webp";
 
 import JsonLd from "@/components/JsonLd";
 import TrustBar from "@/components/TrustBar";
@@ -58,11 +59,12 @@ export default function HomePage() {
         {/* Full-bleed background image via Next.js Image for optimisation */}
         <div className="sb-hero-bg" aria-hidden="true">
           <Image
-            src="/images/hero-image-desk.webp"
+            src={heroImage}
             alt=""
             fill
             priority
             loading="eager"
+            placeholder="blur"
             sizes="100vw"
             className="sb-hero-img"
           />
