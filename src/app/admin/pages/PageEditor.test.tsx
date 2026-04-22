@@ -1,3 +1,4 @@
+import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -43,6 +44,29 @@ vi.mock("@/components/RelatedLinksEditor", () => ({
       {(value?.items ?? []).length} related link(s)
     </div>
   ),
+}));
+
+vi.mock("@/components/AdminModal", () => ({
+  __esModule: true,
+  default: ({
+    isOpen,
+    onCloseAction,
+    title,
+    children,
+  }: {
+    isOpen: boolean;
+    onCloseAction: () => void;
+    title: string;
+    children: React.ReactNode;
+  }) =>
+    isOpen ? (
+      <div data-testid="admin-modal" data-title={title}>
+        <button type="button" onClick={onCloseAction} aria-label="Close modal">
+          Close
+        </button>
+        {children}
+      </div>
+    ) : null,
 }));
 
 vi.mock("@/components/CmsImagePicker", () => ({
@@ -103,6 +127,19 @@ function getInputForLabel(labelText: string) {
   return control;
 }
 
+async function waitForMenuCategoriesLoad(menuItemId = "menu-1") {
+  await waitFor(() => {
+    expect(clientApi.getMenuCategories).toHaveBeenCalledWith(menuItemId);
+  });
+
+  const getMenuCategoriesMock = vi.mocked(clientApi.getMenuCategories);
+  const latestCallResult =
+    getMenuCategoriesMock.mock.results[
+      getMenuCategoriesMock.mock.results.length - 1
+    ]?.value;
+  await latestCallResult;
+}
+
 describe("PageEditor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -138,6 +175,8 @@ describe("PageEditor", () => {
         menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
       />,
     );
+
+    await waitForMenuCategoriesLoad();
 
     await user.click(
       screen.getByRole("button", { name: "Pick featured image" }),
@@ -190,9 +229,7 @@ describe("PageEditor", () => {
 
     const [menuItemSelect, topicSelect] = screen.getAllByRole("combobox");
     await user.selectOptions(menuItemSelect, "menu-1");
-    await waitFor(() => {
-      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
-    });
+    await waitForMenuCategoriesLoad();
     await user.selectOptions(topicSelect, "cat-1");
     await user.click(screen.getByRole("button", { name: "Create Page" }));
 
@@ -246,9 +283,7 @@ describe("PageEditor", () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
-    });
+    await waitForMenuCategoriesLoad();
 
     expect(screen.getByRole("link", { name: /preview/i })).toHaveAttribute(
       "href",
@@ -286,6 +321,8 @@ describe("PageEditor", () => {
       />,
     );
 
+    await waitForMenuCategoriesLoad();
+
     expect(screen.getByText("Title *")).toBeInTheDocument();
 
     await user.click(
@@ -318,6 +355,8 @@ describe("PageEditor", () => {
         menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
       />,
     );
+
+    await waitForMenuCategoriesLoad();
 
     const layout = screen.getByTestId("page-editor-layout");
 
@@ -353,6 +392,8 @@ describe("PageEditor", () => {
       />,
     );
 
+    await waitForMenuCategoriesLoad();
+
     await user.click(
       screen.getByRole("button", { name: "Collapse Assignment" }),
     );
@@ -382,9 +423,7 @@ describe("PageEditor", () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
-    });
+    await waitForMenuCategoriesLoad();
 
     const seoToggle = screen.getByRole("button", { name: "Collapse SEO" });
     const contentToggle = screen.getByRole("button", {
@@ -413,9 +452,7 @@ describe("PageEditor", () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(clientApi.getMenuCategories).toHaveBeenCalledWith("menu-1");
-    });
+    await waitForMenuCategoriesLoad();
 
     const contentRow = screen.getByTestId("page-editor-content-row");
     const contentToggle = screen.getByRole("button", {
@@ -465,6 +502,8 @@ describe("PageEditor", () => {
         menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
       />,
     );
+
+    await waitForMenuCategoriesLoad();
 
     expect(screen.getByText("Related Links")).toBeInTheDocument();
     expect(screen.getByTestId("related-links-editor")).toHaveTextContent(
@@ -518,6 +557,8 @@ describe("PageEditor", () => {
       />,
     );
 
+    await waitForMenuCategoriesLoad();
+
     await user.click(screen.getByRole("button", { name: "Delete Page" }));
 
     await waitFor(() => {
@@ -525,5 +566,96 @@ describe("PageEditor", () => {
     });
     expect(screen.getByRole("alert")).toHaveTextContent("Delete failed");
     expect(routerPush).not.toHaveBeenCalled();
+  });
+
+  it("renders a pop-out button in the Content section header", async () => {
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "page-slug",
+            title: "Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitForMenuCategoriesLoad();
+
+    expect(
+      screen.getByRole("button", {
+        name: "Open content editor in full screen",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the content editor modal when the pop-out button is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "page-slug",
+            title: "Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitForMenuCategoriesLoad();
+
+    expect(screen.queryByTestId("admin-modal")).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Open content editor in full screen",
+      }),
+    );
+
+    expect(screen.getByTestId("admin-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-modal")).toHaveAttribute(
+      "data-title",
+      "Content Editor",
+    );
+  });
+
+  it("closes the content editor modal when close is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "page-slug",
+            title: "Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitForMenuCategoriesLoad();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Open content editor in full screen",
+      }),
+    );
+    expect(screen.getByTestId("admin-modal")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close modal" }));
+    expect(screen.queryByTestId("admin-modal")).not.toBeInTheDocument();
   });
 });

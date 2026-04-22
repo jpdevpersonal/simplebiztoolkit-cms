@@ -21,6 +21,7 @@ import { toTemplatesRoute } from "@/lib/templatesRoute";
 import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
+import AdminModal from "@/components/AdminModal";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
 import { FULL_POLICY, type EditorPolicy } from "@/editor/policy";
@@ -146,6 +147,9 @@ export default function ProductEditor({
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeModal, setActiveModal] = useState<
+    "problem" | "description" | null
+  >(null);
 
   useEffect(() => {
     if (isCreateMode && !categoryId && categories.length > 0) {
@@ -393,6 +397,7 @@ export default function ProductEditor({
               onSave={saveProduct}
               onPreview={previewHref ? handlePreview : undefined}
               policy={PRODUCT_INLINE_CONTENT_POLICY}
+              onPopOut={() => setActiveModal("problem")}
             />
           </div>
 
@@ -409,6 +414,7 @@ export default function ProductEditor({
               onPreview={previewHref ? handlePreview : undefined}
               policy={PRODUCT_INLINE_CONTENT_POLICY}
               hint="Use the Related Links section below to manage the block that renders beneath the main template image."
+              onPopOut={() => setActiveModal("description")}
             />
           </div>
 
@@ -506,6 +512,45 @@ export default function ProductEditor({
         deleting={deleting}
         previewHref={previewHref}
       />
+
+      {/* Content field pop-out modals */}
+      <AdminModal
+        isOpen={activeModal !== null}
+        onCloseAction={() => setActiveModal(null)}
+        title={activeModal === "problem" ? "Problem Statement" : "Description"}
+        size="xl"
+      >
+        {activeModal === "problem" && (
+          <RichContentField
+            label=""
+            value={problem}
+            onChange={setProblem}
+            storageKey="product-problem-editor-mode"
+            htmlRows={3}
+            minHeight={500}
+            placeholder="Describe the problem this template solves\u2026"
+            onSave={saveProduct}
+            onPreview={previewHref ? handlePreview : undefined}
+            policy={PRODUCT_INLINE_CONTENT_POLICY}
+            stickyToolbar
+          />
+        )}
+        {activeModal === "description" && (
+          <RichContentField
+            label=""
+            value={description}
+            onChange={setDescription}
+            storageKey="product-description-editor-mode"
+            htmlRows={4}
+            minHeight={500}
+            placeholder="Describe the template in detail\u2026"
+            onSave={saveProduct}
+            onPreview={previewHref ? handlePreview : undefined}
+            policy={PRODUCT_INLINE_CONTENT_POLICY}
+            stickyToolbar
+          />
+        )}
+      </AdminModal>
     </form>
   );
 }

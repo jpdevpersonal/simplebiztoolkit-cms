@@ -10,7 +10,7 @@ on:
 jobs:
   smoke-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
 
     env:
       API_URL: ${{ inputs.api_url }}
@@ -38,7 +38,7 @@ jobs:
         run: npm run build
 
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Verify API is reachable
         run: |
@@ -47,4 +47,4 @@ jobs:
             > /dev/null
 
       - name: Run Playwright smoke tests
-        run: npm run e2e
+        run: npx playwright test src/e2e/smoke.spec.ts

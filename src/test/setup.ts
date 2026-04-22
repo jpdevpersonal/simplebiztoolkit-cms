@@ -69,8 +69,14 @@ vi.mock("next/link", () => ({
 
 // Cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
-  cleanup();
   vi.useRealTimers();
+  cleanup();
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch {
+    // ignore when storage APIs are unavailable
+  }
   vi.unstubAllGlobals();
   vi.clearAllMocks();
 });

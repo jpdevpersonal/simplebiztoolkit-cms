@@ -46,6 +46,11 @@ export interface TiptapEditorProps {
   onPreview?: () => void;
   /** Optional policy to restrict which block types / marks can be inserted */
   policy?: EditorPolicy;
+  /**
+   * When true the toolbar uses `position: sticky` so it stays visible at the
+   * top of a scrolling ancestor (e.g. inside a pop-out modal).
+   */
+  stickyToolbar?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -59,6 +64,7 @@ export default function TiptapEditor({
   onSave,
   onPreview,
   policy,
+  stickyToolbar = false,
 }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -115,29 +121,59 @@ export default function TiptapEditor({
         borderRadius: 6,
         overflow: "hidden",
         background: "#fff",
+        // When stickyToolbar: become a flex column so the toolbar stays at
+        // the top and only the editor content area scrolls internally.
+        // This avoids position:sticky z-index issues entirely.
+        ...(stickyToolbar
+          ? {
+              display: "flex",
+              flexDirection: "column",
+              maxHeight: "calc(100dvh - 180px)",
+            }
+          : {}),
       }}
     >
-      {/* Toolbar */}
+      {/* Toolbar – static at top; content below scrolls internally when stickyToolbar */}
       {!readOnly && (
-        <EditorToolbar
-          editor={editor}
-          onSave={onSave}
-          onPreview={onPreview}
-          policy={policy}
-        />
+        <div
+          style={
+            stickyToolbar
+              ? {
+                  flexShrink: 0,
+                  borderBottom: "1px solid #dee2e6",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                }
+              : undefined
+          }
+        >
+          <EditorToolbar
+            editor={editor}
+            onSave={onSave}
+            onPreview={onPreview}
+            policy={policy}
+          />
+        </div>
       )}
 
-      {/* Editor area */}
-      <EditorContent
-        editor={editor}
-        style={{
-          minHeight,
-          padding: "12px 16px",
-          fontSize: "0.9375rem",
-          lineHeight: 1.7,
-          outline: "none",
-        }}
-      />
+      {/* Editor area – scrolls internally when stickyToolbar */}
+      <div
+        style={
+          stickyToolbar
+            ? { flex: "1 1 auto", minHeight: 0, overflowY: "auto" }
+            : undefined
+        }
+      >
+        <EditorContent
+          editor={editor}
+          style={{
+            minHeight,
+            padding: "12px 16px",
+            fontSize: "0.9375rem",
+            lineHeight: 1.7,
+            outline: "none",
+          }}
+        />
+      </div>
 
       {/* Scoped styles */}
       <style>

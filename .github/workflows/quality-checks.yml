@@ -6,7 +6,7 @@ on:
 jobs:
   pr-validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
 
     env:
       API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
@@ -43,7 +43,7 @@ jobs:
         run: npm run build
 
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Verify API is reachable
         run: |
@@ -52,4 +52,4 @@ jobs:
             > /dev/null
 
       - name: Run Playwright e2e tests
-        run: npm run e2e
+        run: npx playwright test

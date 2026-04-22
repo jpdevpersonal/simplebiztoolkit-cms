@@ -25,7 +25,11 @@ describe("AdminModal", () => {
 
   it("has correct ARIA attributes", () => {
     render(
-      <AdminModal isOpen={true} onCloseAction={vi.fn()} title="Accessible dialog">
+      <AdminModal
+        isOpen={true}
+        onCloseAction={vi.fn()}
+        title="Accessible dialog"
+      >
         <p>Content</p>
       </AdminModal>,
     );
@@ -57,7 +61,11 @@ describe("AdminModal", () => {
     const onCloseAction = vi.fn();
 
     render(
-      <AdminModal isOpen={true} onCloseAction={onCloseAction} title="Close button test">
+      <AdminModal
+        isOpen={true}
+        onCloseAction={onCloseAction}
+        title="Close button test"
+      >
         <p>Content</p>
       </AdminModal>,
     );
@@ -71,7 +79,11 @@ describe("AdminModal", () => {
     const onCloseAction = vi.fn();
 
     render(
-      <AdminModal isOpen={true} onCloseAction={onCloseAction} title="Backdrop test">
+      <AdminModal
+        isOpen={true}
+        onCloseAction={onCloseAction}
+        title="Backdrop test"
+      >
         <p>Content</p>
       </AdminModal>,
     );
@@ -88,7 +100,11 @@ describe("AdminModal", () => {
     const onCloseAction = vi.fn();
 
     render(
-      <AdminModal isOpen={true} onCloseAction={onCloseAction} title="Content click test">
+      <AdminModal
+        isOpen={true}
+        onCloseAction={onCloseAction}
+        title="Content click test"
+      >
         <p>Inner content</p>
       </AdminModal>,
     );
@@ -99,11 +115,31 @@ describe("AdminModal", () => {
 
   it("applies the size class", () => {
     render(
-      <AdminModal isOpen={true} onCloseAction={vi.fn()} title="Large modal" size="lg">
+      <AdminModal
+        isOpen={true}
+        onCloseAction={vi.fn()}
+        title="Large modal"
+        size="lg"
+      >
         <p>Content</p>
       </AdminModal>,
     );
     const dialog = screen.getByRole("dialog");
     expect(dialog.className).toContain("admin-modal-lg");
+  });
+
+  it("applies the xl size class", () => {
+    render(
+      <AdminModal
+        isOpen={true}
+        onCloseAction={vi.fn()}
+        title="XL modal"
+        size="xl"
+      >
+        <p>Content</p>
+      </AdminModal>,
+    );
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.className).toContain("admin-modal-xl");
   });
 });
