@@ -47,4 +47,4 @@ jobs:
             > /dev/null
 
       - name: Run Playwright smoke tests
-        run: npm run e2e
+        run: npx playwright test src/e2e/smoke.spec.ts
