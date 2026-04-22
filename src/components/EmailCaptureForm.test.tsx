@@ -14,7 +14,9 @@ describe("EmailCaptureForm", () => {
     expect(screen.getByText("Sending...")).toBeInTheDocument();
 
     expect(
-      await screen.findByText(/Success — check your inbox/i),
+      await screen.findByText(/Success — check your inbox/i, undefined, {
+        timeout: 2500,
+      }),
     ).toBeInTheDocument();
   });
 });

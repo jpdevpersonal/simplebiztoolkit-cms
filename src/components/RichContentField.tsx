@@ -59,6 +59,17 @@ export interface RichContentFieldProps {
   formatHtmlOnModeSwitch?: boolean;
   /** Visual treatment for the HTML editor */
   htmlEditorVariant?: "plain" | "code";
+  /**
+   * When provided, a pop-out icon button is rendered in the label controls
+   * row and calls this handler when clicked. Use this to open the editor in
+   * a full-screen modal.
+   */
+  onPopOut?: () => void;
+  /**
+   * When true, the Tiptap toolbar becomes sticky so it stays visible at the
+   * top of a scrolling ancestor (e.g. a pop-out modal body).
+   */
+  stickyToolbar?: boolean;
 }
 
 // ─── Toggle pill ──────────────────────────────────────────────────────────────
@@ -138,6 +149,8 @@ export default function RichContentField({
   enableHtmlFormatting = false,
   formatHtmlOnModeSwitch = false,
   htmlEditorVariant = "plain",
+  onPopOut,
+  stickyToolbar = false,
 }: RichContentFieldProps) {
   // Always start with "html" so server and client render identically (avoids
   // hydration mismatches). After the component mounts, we restore the stored
@@ -220,6 +233,31 @@ export default function RichContentField({
             </button>
           )}
           <ModeToggle mode={mode} onChange={handleModeChange} />
+          {onPopOut && (
+            <button
+              type="button"
+              className="rich-content-popout-btn"
+              onClick={onPopOut}
+              title="Open in full-screen editor"
+              aria-label="Open editor in full screen"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -268,6 +306,7 @@ export default function RichContentField({
             onSave={onSave}
             onPreview={onPreview}
             policy={policy}
+            stickyToolbar={stickyToolbar}
           />
           {/* Hidden input keeps native form "required" validation working */}
           {required && <input type="hidden" required value={value} />}

@@ -31,6 +31,7 @@ import {
 import RichContentField from "@/components/RichContentField";
 import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import AdminFormBlock from "@/components/AdminFormBlock";
+import AdminModal from "@/components/AdminModal";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
 import CmsImagePicker from "@/components/CmsImagePicker";
@@ -137,6 +138,7 @@ export default function PageEditor({
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [contentModalOpen, setContentModalOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<
     Record<SectionKey, boolean>
   >({
@@ -760,7 +762,34 @@ export default function PageEditor({
                 ? "admin-form-block--collapsed"
                 : undefined
             }
-            headerActions={renderSectionToggle("content", "Content")}
+            headerActions={
+              <>
+                <button
+                  type="button"
+                  className="admin-form-block-popout-btn"
+                  onClick={() => setContentModalOpen(true)}
+                  title="Open in full-screen editor"
+                  aria-label="Open content editor in full screen"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                {renderSectionToggle("content", "Content")}
+              </>
+            }
           >
             {!collapsedSections.content && (
               <div>
@@ -825,6 +854,30 @@ export default function PageEditor({
         previewHref={previewHref}
         previewLabel="Preview"
       />
+
+      {/* Content editor pop-out modal */}
+      <AdminModal
+        isOpen={contentModalOpen}
+        onCloseAction={() => setContentModalOpen(false)}
+        title="Content Editor"
+        size="xl"
+      >
+        <RichContentField
+          label=""
+          value={formData.content}
+          onChange={(html) => update("content", html)}
+          storageKey="page-content-mode"
+          placeholder="Start writing your page content here…"
+          minHeight={500}
+          onSave={savePage}
+          onPreview={previewHref ? handlePreview : undefined}
+          policy={PAGE_INLINE_CONTENT_POLICY}
+          enableHtmlFormatting
+          formatHtmlOnModeSwitch
+          htmlEditorVariant="code"
+          stickyToolbar
+        />
+      </AdminModal>
     </form>
   );
 }

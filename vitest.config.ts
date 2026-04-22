@@ -5,6 +5,8 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   test: {
+    // Run tests in the main thread to avoid flakiness from worker concurrency
+    threads: false,
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",

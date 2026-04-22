@@ -1643,6 +1643,10 @@
   max-width: 54rem;
 }
 
+.admin-modal-xl {
+  max-width: min(72rem, 96vw);
+}
+
 .admin-modal-header {
   display: flex;
   align-items: center;
@@ -1685,7 +1689,67 @@
   flex: 1 1 auto;
 }
 
-/* ---- CMS Image Picker (modal-based) ---- */
+/* ---- Content editor pop-out button (blue section header) ---- */
+.admin-form-block-popout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.admin-form-block-popout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.admin-form-block-popout-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
+/* ---- Rich content field pop-out button (field label row) ---- */
+.rich-content-popout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  padding: 0;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--sb-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.rich-content-popout-btn:hover {
+  background: #f1f5f9;
+  color: var(--sb-brand-blue);
+  border-color: var(--sb-brand-blue);
+}
+
+.rich-content-popout-btn:focus-visible {
+  outline: 2px solid var(--sb-brand-blue);
+  outline-offset: 2px;
+}
+
 .cms-image-picker-trigger-row {
   display: flex;
   align-items: center;
@@ -2287,7 +2351,8 @@
 
   .admin-modal-sm,
   .admin-modal-md,
-  .admin-modal-lg {
+  .admin-modal-lg,
+  .admin-modal-xl {
     max-width: 100%;
   }
 

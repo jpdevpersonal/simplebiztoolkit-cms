@@ -1,13 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import SiteFooter from "./SiteFooter";
 
 describe("SiteFooter", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-03-03T12:00:00.000Z"));
-  });
-
   it("renders key links and current year", () => {
     render(<SiteFooter />);
 
@@ -33,7 +28,10 @@ describe("SiteFooter", () => {
     expect(
       screen.getByRole("heading", { name: "Explore" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/© 2026/)).toBeInTheDocument();
+    const currentYear = new Date().getFullYear();
+    expect(
+      screen.getByText(new RegExp(`© ${currentYear}`)),
+    ).toBeInTheDocument();
   });
 
   it("renders custom CMS links in Explore while keeping static links in their original sections", () => {
