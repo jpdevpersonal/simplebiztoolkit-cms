@@ -79,7 +79,25 @@ export default function CmsImagePicker({
     );
   }, [selectedImage, editAltText, editCaption, replacementFile]);
 
-  const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleClose = useCallback(() => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+
+    setHoveredImage(null);
+    setZoomPosition(null);
+    setIsOpen(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+        hoverTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!value && !selectedImageId) {

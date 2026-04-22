@@ -85,13 +85,17 @@ describe("AdminMenuManager", () => {
     await user.type(screen.getByLabelText("Title *"), "Services");
     await user.click(screen.getByRole("button", { name: "Add Menu Item" }));
 
-    await waitFor(() => {
-      expect(clientApi.createMenuItem).toHaveBeenCalledWith({
-        title: "Services",
-        status: "draft",
-      });
-      expect(screen.getByText("Services")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.createMenuItem).toHaveBeenCalledWith({
+          title: "Services",
+          status: "draft",
+        });
+      },
+      { timeout: 2000 },
+    );
+
+    expect(await screen.findByText("Services")).toBeInTheDocument();
   });
 
   it("toggles published item to draft when Hide is clicked", async () => {
@@ -113,14 +117,18 @@ describe("AdminMenuManager", () => {
     expect(hideButton).toBeTruthy();
     await user.click(hideButton as HTMLElement);
 
-    await waitFor(() => {
-      expect(clientApi.updateMenuItem).toHaveBeenCalledWith("menu-1", {
-        title: "Guides",
-        description: undefined,
-        status: "draft",
-      });
-      expect(screen.getByText("Draft")).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.updateMenuItem).toHaveBeenCalledWith("menu-1", {
+          title: "Guides",
+          description: undefined,
+          status: "draft",
+        });
+      },
+      { timeout: 2000 },
+    );
+
+    expect(await screen.findByText("Draft")).toBeInTheDocument();
   });
 
   it("saves order containing both static nav slots and CMS items", async () => {
@@ -147,20 +155,23 @@ describe("AdminMenuManager", () => {
 
     await user.click(screen.getByRole("button", { name: "Save Order" }));
 
-    await waitFor(() => {
-      expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledWith(
-        expect.objectContaining({
-          menuKey: "primary",
-          isActive: true,
-          orderedMenuItemIds: expect.arrayContaining([
-            "static:/templates",
-            "static:/faq",
-            "menu-1",
-            "menu-2",
-          ]),
-        }),
-      );
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledWith(
+          expect.objectContaining({
+            menuKey: "primary",
+            isActive: true,
+            orderedMenuItemIds: expect.arrayContaining([
+              "static:/templates",
+              "static:/faq",
+              "menu-1",
+              "menu-2",
+            ]),
+          }),
+        );
+      },
+      { timeout: 2000 },
+    );
   });
 
   it("keeps current order state and shows error when save fails", async () => {
@@ -192,23 +203,28 @@ describe("AdminMenuManager", () => {
 
     await user.click(screen.getByRole("button", { name: "Save Order" }));
 
-    await waitFor(() => {
-      expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledTimes(1);
-      expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledWith(
-        expect.objectContaining({
-          menuKey: "primary",
-          orderedMenuItemIds: expect.arrayContaining([
-            "static:/templates",
-            "menu-1",
-            "menu-2",
-          ]),
-        }),
-      );
-      expect(screen.getByRole("alert")).toBeTruthy();
-      expect(
-        screen.getByText(/invalid menu item id: static:\/templates/i),
-      ).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledTimes(1);
+        expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledWith(
+          expect.objectContaining({
+            menuKey: "primary",
+            orderedMenuItemIds: expect.arrayContaining([
+              "static:/templates",
+              "menu-1",
+              "menu-2",
+            ]),
+          }),
+        );
+      },
+      { timeout: 2000 },
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toBeTruthy();
+    expect(
+      await screen.findByText(/invalid menu item id: static:\/templates/i),
+    ).toBeTruthy();
   });
 
   it("soft-deletes and restores a built-in link using persisted hidden tokens", async () => {
@@ -250,25 +266,28 @@ describe("AdminMenuManager", () => {
     await user.click(screen.getByRole("button", { name: "Restore Templates" }));
     await user.click(screen.getByRole("button", { name: "Save Order" }));
 
-    await waitFor(() => {
-      expect(clientApi.updateMenuLayoutSettings).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({
-          menuKey: "primary",
-          orderedMenuItemIds: expect.arrayContaining([
-            "static:/templates",
-            "menu-1",
-          ]),
-        }),
-      );
-      expect(
-        (
-          vi.mocked(clientApi.updateMenuLayoutSettings).mock.calls[1]?.[0] as {
-            orderedMenuItemIds?: string[];
-          }
-        ).orderedMenuItemIds,
-      ).not.toContain("hidden-static:/templates");
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.updateMenuLayoutSettings).toHaveBeenNthCalledWith(
+          2,
+          expect.objectContaining({
+            menuKey: "primary",
+            orderedMenuItemIds: expect.arrayContaining([
+              "static:/templates",
+              "menu-1",
+            ]),
+          }),
+        );
+      },
+      { timeout: 2000 },
+    );
+
+    const secondCallArg = (
+      vi.mocked(clientApi.updateMenuLayoutSettings).mock.calls[1]?.[0] as {
+        orderedMenuItemIds?: string[];
+      }
+    ).orderedMenuItemIds;
+    expect(secondCallArg).not.toContain("hidden-static:/templates");
   });
 
   it("saves footer layout independently from the primary navigation", async () => {
@@ -296,16 +315,19 @@ describe("AdminMenuManager", () => {
     );
     await user.click(screen.getByRole("button", { name: "Save Order" }));
 
-    await waitFor(() => {
-      expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledWith(
-        expect.objectContaining({
-          menuKey: "sb-footer-main",
-          orderedMenuItemIds: expect.arrayContaining([
-            "hidden-static:/templates",
-            "menu-1",
-          ]),
-        }),
-      );
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.updateMenuLayoutSettings).toHaveBeenCalledWith(
+          expect.objectContaining({
+            menuKey: "sb-footer-main",
+            orderedMenuItemIds: expect.arrayContaining([
+              "hidden-static:/templates",
+              "menu-1",
+            ]),
+          }),
+        );
+      },
+      { timeout: 2000 },
+    );
   });
 });

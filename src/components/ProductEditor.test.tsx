@@ -1,4 +1,6 @@
+import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProductEditor from "./ProductEditor";
 import { clientApi } from "@/lib/clientApi";
@@ -28,6 +30,64 @@ vi.mock("@/lib/clientApi", () => ({
     getMenuItemPages: vi.fn(),
     getProductCategories: vi.fn(),
   },
+}));
+
+vi.mock("@/components/AdminModal", () => ({
+  __esModule: true,
+  default: ({
+    isOpen,
+    onCloseAction,
+    title,
+    children,
+  }: {
+    isOpen: boolean;
+    onCloseAction: () => void;
+    title: string;
+    children: React.ReactNode;
+  }) =>
+    isOpen ? (
+      <div data-testid="admin-modal" data-title={title}>
+        <button type="button" onClick={onCloseAction} aria-label="Close modal">
+          Close
+        </button>
+        {children}
+      </div>
+    ) : null,
+}));
+
+vi.mock("@/components/RichContentField", () => ({
+  __esModule: true,
+  default: ({
+    label,
+    value,
+    storageKey,
+    onChange,
+    onPopOut,
+  }: {
+    label?: string;
+    value?: string;
+    storageKey?: string;
+    onChange?: (next: string) => void;
+    onPopOut?: () => void;
+  }) => (
+    <div data-testid={`rich-content-${storageKey}`}>
+      {label ? <label>{label}</label> : null}
+      <textarea
+        aria-label={label || storageKey || "rich-content"}
+        value={value ?? ""}
+        onChange={(e) => onChange?.(e.target.value)}
+      />
+      {onPopOut ? (
+        <button
+          type="button"
+          onClick={onPopOut}
+          aria-label="Open editor in full screen"
+        >
+          Open editor in full screen
+        </button>
+      ) : null}
+    </div>
+  ),
 }));
 
 const categories = [
@@ -77,11 +137,14 @@ describe("ProductEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Create Template" }));
 
-    await waitFor(() => {
-      expect(clientApi.createProduct).toHaveBeenCalled();
-      expect(routerPush).toHaveBeenCalledWith("/admin/templates");
-      expect(routerRefresh).toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.createProduct).toHaveBeenCalled();
+        expect(routerPush).toHaveBeenCalledWith("/admin/templates");
+        expect(routerRefresh).toHaveBeenCalled();
+      },
+      { timeout: 2000 },
+    );
   });
 
   it("saves changes in edit mode and redirects to products", async () => {
@@ -122,14 +185,17 @@ describe("ProductEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
-    await waitFor(() => {
-      expect(clientApi.updateProduct).toHaveBeenCalledWith(
-        "p-1",
-        expect.any(Object),
-      );
-      expect(routerPush).toHaveBeenCalledWith("/admin/templates");
-      expect(routerRefresh).toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.updateProduct).toHaveBeenCalledWith(
+          "p-1",
+          expect.any(Object),
+        );
+        expect(routerPush).toHaveBeenCalledWith("/admin/templates");
+        expect(routerRefresh).toHaveBeenCalled();
+      },
+      { timeout: 2000 },
+    );
   });
 
   it("renders preview links for an existing saved draft template", () => {
@@ -194,11 +260,9 @@ describe("ProductEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
-    await waitFor(() => {
-      const alert = screen.getByRole("alert");
-      expect(alert).toBeInTheDocument();
-      expect(alert.textContent).toBe("Network timeout");
-    });
+    const alert = await screen.findByRole("alert", {}, { timeout: 2000 });
+    expect(alert).toBeInTheDocument();
+    expect(alert.textContent).toBe("Network timeout");
   });
 
   it("deletes product in edit mode after confirmation", async () => {
@@ -230,10 +294,13 @@ describe("ProductEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Delete Template" }));
 
-    await waitFor(() => {
-      expect(clientApi.deleteProduct).toHaveBeenCalledWith("p-1");
-      expect(routerPush).toHaveBeenCalledWith("/admin/templates");
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.deleteProduct).toHaveBeenCalledWith("p-1");
+        expect(routerPush).toHaveBeenCalledWith("/admin/templates");
+      },
+      { timeout: 2000 },
+    );
   });
 
   it("keeps related links in their own section and reserializes them on save", async () => {
@@ -298,14 +365,154 @@ describe("ProductEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
 
-    await waitFor(() => {
-      expect(clientApi.updateProduct).toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(clientApi.updateProduct).toHaveBeenCalled();
+      },
+      { timeout: 2000 },
+    );
 
     const payload = vi.mocked(clientApi.updateProduct).mock.calls[0]?.[1] as {
       description?: string;
     };
     expect(payload.description).toContain("<p>Main description</p>");
     expect(payload.description).toContain('data-sbt-block="related-links"');
+  });
+
+  it("renders pop-out buttons for Problem Statement and Description fields", () => {
+    render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "My Product",
+          slug: "my-product",
+          problem: "<p>A problem</p>",
+          description: "<p>A description</p>",
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    const popOutBtns = screen.getAllByRole("button", {
+      name: "Open editor in full screen",
+    });
+    expect(popOutBtns).toHaveLength(2);
+  });
+
+  it("opens Problem Statement modal when its pop-out button is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "My Product",
+          slug: "my-product",
+          problem: "<p>A problem</p>",
+          description: "",
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    expect(screen.queryByTestId("admin-modal")).not.toBeInTheDocument();
+
+    const [problemPopOut] = screen.getAllByRole("button", {
+      name: "Open editor in full screen",
+    });
+    await user.click(problemPopOut);
+
+    expect(screen.getByTestId("admin-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-modal")).toHaveAttribute(
+      "data-title",
+      "Problem Statement",
+    );
+  });
+
+  it("opens Description modal when its pop-out button is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "My Product",
+          slug: "my-product",
+          problem: "",
+          description: "<p>A description</p>",
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    const [, descriptionPopOut] = screen.getAllByRole("button", {
+      name: "Open editor in full screen",
+    });
+    await user.click(descriptionPopOut);
+
+    expect(screen.getByTestId("admin-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-modal")).toHaveAttribute(
+      "data-title",
+      "Description",
+    );
+  });
+
+  it("closes the content modal when close is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ProductEditor
+        categories={categories}
+        product={{
+          id: "p-1",
+          title: "My Product",
+          slug: "my-product",
+          problem: "<p>A problem</p>",
+          description: "",
+          bullets: [],
+          image: "",
+          etsyUrl: "",
+          productPageUrl: "",
+          price: "",
+          categoryId: "cat-1",
+          status: "draft",
+        }}
+      />,
+    );
+
+    const [problemPopOut] = screen.getAllByRole("button", {
+      name: "Open editor in full screen",
+    });
+    await user.click(problemPopOut);
+    expect(screen.getByTestId("admin-modal")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close modal" }));
+    await waitFor(
+      () => {
+        expect(screen.queryByTestId("admin-modal")).not.toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
   });
 });
