@@ -19,11 +19,11 @@ function normalizeConfiguredApiUrl(base?: string): string {
 // X-Frame-Options below).
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com;
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https://www.simplebiztoolkit.com https://*.blob.core.windows.net blob:;
+  img-src 'self' data: https://www.simplebiztoolkit.com https://*.blob.core.windows.net blob: https://www.google-analytics.com https://*.google-analytics.com;
   font-src 'self';
-  connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"};
+  connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"} https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com;
   frame-ancestors 'none';
   object-src 'none';
   base-uri 'self';
