@@ -10,6 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "../BootstrapClient";
+import GoogleAnalyticsPageTracker from "../GoogleAnalyticsPageTracker";
 import ScrollToTop from "../ScrollToTop";
 import {
   FOOTER_MENU_LOCATION_KEY,
@@ -94,6 +95,7 @@ export default async function PublicLayout({
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const gaMeasurementId = gaId ?? "G-3ZQY64S5JJ";
 
   // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
@@ -134,7 +136,7 @@ export default async function PublicLayout({
       {/* Google tag (gtag.js) */}
       <Script
         async
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId ?? "G-3ZQY64S5JJ"}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
         strategy="afterInteractive"
       />
       <Script id="gtag-init" strategy="afterInteractive">
@@ -143,11 +145,12 @@ export default async function PublicLayout({
           function gtag(){dataLayer.push(arguments);} 
           gtag('js', new Date());
 
-          gtag('config', '${gaId ?? "G-3ZQY64S5JJ"}');
+          gtag('config', '${gaMeasurementId}');
         `}
       </Script>
 
       <BootstrapClient />
+      <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
       <ScrollToTop />
 
       <JsonLd json={createWebsiteJsonLd()} />
