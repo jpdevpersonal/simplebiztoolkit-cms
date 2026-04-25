@@ -227,6 +227,8 @@ export function EditorToolbar({
       .insertContent({
         type: "ctaSbtBlock",
         attrs: {
+          mediaType: "button",
+          imageAlignment: "right",
           title: "Start Growing Your Business",
           text: "Use the tools in SimpleBizToolkit.",
           buttonText: "Try Now",
@@ -581,7 +583,9 @@ export function EditorToolbar({
         {isNodeAllowed("callout") && (
           <option value="callout">💬 Callout</option>
         )}
-        {isNodeAllowed("ctaSbtBlock") && <option value="cta">📣 CTA</option>}
+        {isNodeAllowed("ctaSbtBlock") && (
+          <option value="cta">📣 CTA / Image CTA</option>
+        )}
         {isNodeAllowed("imageBlock") && <option value="image">🖼️ Image</option>}
         {isNodeAllowed("relatedLinksSbtBlock") && (
           <option value="related-links">🔗 Related Links</option>
