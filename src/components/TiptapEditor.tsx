@@ -100,9 +100,22 @@ export default function TiptapEditor({
   // Sync external content changes (e.g. when switching editor modes)
   useEffect(() => {
     if (!editor) return;
-    if (editor.getHTML() !== value) {
-      editor.commands.setContent(value || "");
-    }
+    const nextValue = value || "";
+
+    if (editor.getHTML() === nextValue) return;
+
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled || editor.isDestroyed) return;
+      if (editor.getHTML() === nextValue) return;
+
+      editor.commands.setContent(nextValue, { emitUpdate: false });
+    });
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
