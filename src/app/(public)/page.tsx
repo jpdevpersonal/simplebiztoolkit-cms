@@ -97,7 +97,7 @@ export default function HomePage() {
                 ★★★★★
               </span>
               <span className="sb-hero-stars-label">
-                <strong>5.0</strong> &middot; 3,500+ five-star reviews on Etsy
+                <strong>5.0</strong> &middot; 3,700+ five-star reviews on Etsy
               </span>
             </div>
 

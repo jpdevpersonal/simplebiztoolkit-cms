@@ -70,17 +70,17 @@ body {
   color: var(--sb-ink);
   background: #fff;
   font-family:
-    "Inter",
+    var(--font-roboto),
+    Roboto,
     ui-sans-serif,
     system-ui,
     -apple-system,
     "Segoe UI",
-    Roboto,
     "Helvetica Neue",
     Arial,
     sans-serif;
-  font-size: 1.0625rem;
-  line-height: 1.75;
+  font-size: 1rem; /* 16px base for readable body text */
+  line-height: 1.65;
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
@@ -88,6 +88,34 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.011em;
+}
+
+/* Utility font classes */
+.font-body {
+  font-family:
+    var(--font-roboto),
+    Roboto,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+.font-heading {
+  font-family:
+    var(--font-poppins),
+    Poppins,
+    var(--font-roboto),
+    Roboto,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
 }
 
 a {
@@ -105,7 +133,7 @@ button {
   border: 1px solid transparent;
   padding: 0.7em 1.4em;
   font-size: 1em;
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -152,25 +180,36 @@ h6 {
   line-height: 1.2;
   letter-spacing: -0.025em;
   margin-bottom: 0.75em;
+  font-family:
+    var(--font-poppins),
+    Poppins,
+    var(--font-roboto),
+    Roboto,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
 }
 
 h1 {
-  font-size: clamp(2.25rem, 5vw, 3rem);
+  font-size: clamp(2.25rem, 5vw, 3rem); /* 36px mobile → 48px desktop */
   letter-spacing: -0.035em;
-}
-
-/* Make H1 headings bolder for stronger emphasis */
-h1 {
-  font-weight: 800;
+  margin: 0;
+  font-weight: 700; /* Poppins 700 for H1 */
 }
 
 h2 {
-  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  font-size: clamp(1.875rem, 3.5vw, 2.25rem); /* ~30px mobile → 36px desktop */
   letter-spacing: -0.03em;
+  font-weight: 600;
 }
 
 h3 {
-  font-size: clamp(1.35rem, 3vw, 1.875rem);
+  font-size: clamp(1.375rem, 2.8vw, 1.5rem); /* ~22px → 24px */
+  font-weight: 600;
 }
 
 /* Header layout: prevent mobile horizontal overflow */
