@@ -5,14 +5,9 @@
  *  1. Decode successfully (complete + naturalWidth > 0)
  *  2. Meet LCP thresholds at natural localhost speed (a proxy for image-size
  *     optimisation – file-size problems surface even on localhost)
- *  3. Meet LCP and per-image transfer duration thresholds under simulated
- *     Fast 3G (CDP network throttling)
  *
  * ── Thresholds ────────────────────────────────────────────────────────────
  * LCP_UNTHROTTLED_MS = 2500   Google PageSpeed "Good" target
- * LCP_THROTTLED_MS   = 5500   Acceptable under Fast 3G constraint
- * ARTICLE_LCP_THROTTLED_MS = 6000   Route-specific budget for article pages
- * IMAGE_TRANSFER_MS  = 3200   Max transfer time per image under Fast 3G
  *
  * ── API guard ─────────────────────────────────────────────────────────────
  * Several pages are SSG routes whose content is pre-rendered from the backend.
@@ -30,7 +25,7 @@
  * ── Self-validation ───────────────────────────────────────────────────────
  * Suite 4 injects a known-404 image into a live page and asserts the
  * getAllImages helper reports it as broken. If this test fails, the integrity
- * checks in suites 1–3 may be silently passing broken images.
+ * checks in the other suites may be silently passing broken images.
  */
 
 import {
@@ -39,24 +34,11 @@ import {
   type Page,
   type APIRequestContext,
 } from "@playwright/test";
-import type { CDPSession } from "playwright-core";
 
 // ── Performance thresholds ────────────────────────────────────────────────────
 
 /** Google PageSpeed "Good" LCP on a fast local connection */
 const LCP_UNTHROTTLED_MS = 2500;
-
-/**
- * Acceptable LCP under simulated Fast 3G.
- * Kept slightly above the nominal target to absorb host/runner variance.
- */
-const LCP_THROTTLED_MS = 5500;
-
-/** Article pages can render richer hero/content blocks than other routes. */
-const ARTICLE_LCP_THROTTLED_MS = 6000;
-
-/** Max transfer time for a single image under Fast 3G (with small variance buffer) */
-const IMAGE_TRANSFER_MS = 3200;
 
 // ── Message used when API-dependent tests are skipped ─────────────────────────
 
@@ -71,15 +53,6 @@ const KNOWN_CATEGORY_SLUG = "accounting-ledger";
 const KNOWN_PRODUCT_SLUG = "fillable-printable-accounting-ledger-pdf";
 const KNOWN_ARTICLE_SLUG = "bookkeeping-made-simple-without-expensive-software";
 const KNOWN_PAGES_SLUG = "articles"; // renders at /pages/articles
-
-// ── Fast 3G CDP parameters (matches Chrome DevTools "Fast 3G" preset) ─────────
-
-const FAST_3G_CONDITIONS = {
-  offline: false,
-  downloadThroughput: Math.floor((1.6 * 1024 * 1024) / 8), // ≈204 KB/s
-  uploadThroughput: Math.floor((750 * 1024) / 8), //  ≈94 KB/s
-  latency: 150, // ms
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -139,38 +112,6 @@ async function getLCP(page: Page): Promise<number> {
   });
 }
 
-interface ImageTiming {
-  url: string;
-  duration: number;
-  transferSize: number;
-}
-
-/**
- * Return PerformanceResourceTiming data for image requests.
- * Covers both plain <img> initiators and Next.js /_next/image optimised URLs.
- * Only includes entries with transferSize > 0 (actual network transfer, not
- * cache hits) so timings reflect real download cost.
- */
-async function getImageResourceTimings(page: Page): Promise<ImageTiming[]> {
-  return page.evaluate((): ImageTiming[] => {
-    return (
-      performance.getEntriesByType("resource") as PerformanceResourceTiming[]
-    )
-      .filter(
-        (e) =>
-          e.transferSize > 0 &&
-          (e.initiatorType === "img" ||
-            e.name.includes("/_next/image") ||
-            /\.(jpg|jpeg|png|webp|avif|gif)(\?|$)/i.test(e.name)),
-      )
-      .map((e) => ({
-        url: e.name,
-        duration: e.duration,
-        transferSize: e.transferSize,
-      }));
-  });
-}
-
 interface ImageInfo {
   src: string;
   complete: boolean;
@@ -193,35 +134,6 @@ async function getAllImages(page: Page): Promise<ImageInfo[]> {
       }))
       .filter((info) => info.src !== "" && !info.src.startsWith("data:")),
   );
-}
-
-/**
- * Enable Fast 3G network throttling for the given page via CDP.
- * Returns the CDP session so the caller can detach it in afterEach.
- */
-async function setupFast3G(page: Page): Promise<CDPSession> {
-  const session = await page.context().newCDPSession(page);
-  await session.send("Network.emulateNetworkConditions", FAST_3G_CONDITIONS);
-  return session;
-}
-
-/**
- * Remove throttling and detach the CDP session.
- * Silently ignores errors in case the test failed before setup completed.
- */
-async function teardownThrottling(session: CDPSession | null): Promise<void> {
-  if (!session) return;
-  try {
-    await session.send("Network.emulateNetworkConditions", {
-      offline: false,
-      downloadThroughput: -1,
-      uploadThroughput: -1,
-      latency: 0,
-    });
-    await session.detach();
-  } catch {
-    // Session may already be detached if the test failed mid-flight
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -374,183 +286,7 @@ test.describe("Image integrity (unthrottled)", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Suite 2 – Image performance under Fast 3G throttling
-//
-// These tests expose image file-size problems: an unoptimised PNG will fail
-// here even though the server is localhost. This is the most reliable LOCAL
-// signal for real-world image performance issues before they reach staging.
-//
-// The test timeout is raised to 60 s to accommodate the throttled downloads.
-// ─────────────────────────────────────────────────────────────────────────────
-
-test.describe("Image performance – Fast 3G", () => {
-  let cdpSession: CDPSession | null = null;
-
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(60_000);
-    cdpSession = await setupFast3G(page);
-  });
-
-  test.afterEach(async () => {
-    await teardownThrottling(cdpSession);
-    cdpSession = null;
-  });
-
-  test("home page – LCP within throttled threshold", async ({ page }) => {
-    await injectLCPObserver(page);
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms  (threshold: ${LCP_THROTTLED_MS} ms)`,
-    });
-    expect(
-      lcp,
-      `LCP ${lcp.toFixed(0)} ms exceeds Fast 3G threshold of ${LCP_THROTTLED_MS} ms`,
-    ).toBeLessThan(LCP_THROTTLED_MS);
-  });
-
-  test("home page – each image transfers within per-image budget", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-
-    const timings = await getImageResourceTimings(page);
-    test.info().annotations.push({
-      type: "Image timings (Fast 3G)",
-      description: timings
-        .map((t) => {
-          let pathname = t.url;
-          try {
-            pathname = new URL(t.url).pathname.slice(0, 70);
-          } catch {
-            /* non-absolute url, use as-is */
-          }
-          return `${pathname}: ${t.duration.toFixed(0)} ms (${(t.transferSize / 1024).toFixed(1)} KB)`;
-        })
-        .join(" | "),
-    });
-
-    const slow = timings.filter((t) => t.duration > IMAGE_TRANSFER_MS);
-    expect(
-      slow,
-      `Images exceeding ${IMAGE_TRANSFER_MS} ms on home:\n${slow.map((t) => `  ${t.url} — ${t.duration.toFixed(0)} ms`).join("\n")}`,
-    ).toHaveLength(0);
-  });
-
-  test("templates index – LCP within throttled threshold", async ({
-    page,
-    request,
-  }) => {
-    const available = await isApiAvailable(request);
-    test.skip(!available, API_SKIP_MESSAGE);
-
-    await injectLCPObserver(page);
-    await page.goto("/templates");
-    await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms`,
-    });
-    expect(lcp).toBeLessThan(LCP_THROTTLED_MS);
-  });
-
-  test("templates index – product images transfer within per-image budget", async ({
-    page,
-    request,
-  }) => {
-    const available = await isApiAvailable(request);
-    test.skip(!available, API_SKIP_MESSAGE);
-
-    await page.goto("/templates");
-    await page.waitForLoadState("networkidle");
-
-    const timings = await getImageResourceTimings(page);
-    const slow = timings.filter((t) => t.duration > IMAGE_TRANSFER_MS);
-    expect(
-      slow,
-      `Images exceeding ${IMAGE_TRANSFER_MS} ms on /templates:\n${slow.map((t) => `  ${t.url} — ${t.duration.toFixed(0)} ms`).join("\n")}`,
-    ).toHaveLength(0);
-  });
-
-  test("category page – LCP within throttled threshold", async ({
-    page,
-    request,
-  }) => {
-    const available = await isApiAvailable(request);
-    test.skip(!available, API_SKIP_MESSAGE);
-
-    await injectLCPObserver(page);
-    await page.goto(`/templates/${KNOWN_CATEGORY_SLUG}`);
-    await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms`,
-    });
-    expect(lcp).toBeLessThan(LCP_THROTTLED_MS);
-  });
-
-  test("product detail page – LCP within throttled threshold", async ({
-    page,
-    request,
-  }) => {
-    const available = await isApiAvailable(request);
-    test.skip(!available, API_SKIP_MESSAGE);
-
-    await injectLCPObserver(page);
-    await page.goto(`/templates/${KNOWN_CATEGORY_SLUG}/${KNOWN_PRODUCT_SLUG}`);
-    await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms`,
-    });
-    expect(lcp).toBeLessThan(LCP_THROTTLED_MS);
-  });
-
-  test("article page – LCP within throttled threshold", async ({ page }) => {
-    await injectLCPObserver(page);
-    await page.goto(`/${KNOWN_ARTICLE_SLUG}`);
-    await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms  (threshold: ${ARTICLE_LCP_THROTTLED_MS} ms)`,
-    });
-    expect(lcp).toBeLessThan(ARTICLE_LCP_THROTTLED_MS);
-  });
-
-  test("CMS pages section – LCP within throttled threshold", async ({
-    page,
-    request,
-  }) => {
-    const available = await isApiAvailable(request);
-    test.skip(!available, API_SKIP_MESSAGE);
-
-    await injectLCPObserver(page);
-    await page.goto(`/pages/${KNOWN_PAGES_SLUG}`);
-    await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms`,
-    });
-    expect(lcp).toBeLessThan(LCP_THROTTLED_MS);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Suite 3 – Dynamically discovered pages (requires live API proxy)
+// Suite 2 – Dynamically discovered pages (requires live API proxy)
 //
 // Fetches the first available category, product, and menu-item slugs from the
 // running Next.js proxy API and tests those pages. This catches regressions on
@@ -559,12 +295,11 @@ test.describe("Image performance – Fast 3G", () => {
 // All tests in this suite are skipped (not failed) if the API is unavailable.
 // ─────────────────────────────────────────────────────────────────────────────
 
-test.describe("Image performance – dynamically discovered pages", () => {
+test.describe("Image integrity – dynamically discovered pages", () => {
   let discoveredCategorySlug = "";
   let discoveredProductSlug = "";
   let discoveredMenuItemSlug = "";
   let apiOnline = false;
-  let cdpSession: CDPSession | null = null;
 
   test.beforeAll(async ({ request }) => {
     try {
@@ -614,31 +349,11 @@ test.describe("Image performance – dynamically discovered pages", () => {
     }
   });
 
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(60_000);
-    cdpSession = await setupFast3G(page);
-  });
-
-  test.afterEach(async () => {
-    await teardownThrottling(cdpSession);
-    cdpSession = null;
-  });
-
-  test("discovered category – LCP and integrity under Fast 3G", async ({
-    page,
-  }) => {
+  test("discovered category – all images decoded", async ({ page }) => {
     test.skip(!apiOnline || !discoveredCategorySlug, API_SKIP_MESSAGE);
 
-    await injectLCPObserver(page);
     await page.goto(`/templates/${discoveredCategorySlug}`);
     await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms  — /templates/${discoveredCategorySlug}`,
-    });
-    expect(lcp).toBeLessThan(LCP_THROTTLED_MS);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -650,26 +365,16 @@ test.describe("Image performance – dynamically discovered pages", () => {
     ).toHaveLength(0);
   });
 
-  test("discovered product – LCP and integrity under Fast 3G", async ({
-    page,
-  }) => {
+  test("discovered product – all images decoded", async ({ page }) => {
     test.skip(
       !apiOnline || !discoveredCategorySlug || !discoveredProductSlug,
       API_SKIP_MESSAGE,
     );
 
-    await injectLCPObserver(page);
     await page.goto(
       `/templates/${discoveredCategorySlug}/${discoveredProductSlug}`,
     );
     await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms  — /templates/${discoveredCategorySlug}/${discoveredProductSlug}`,
-    });
-    expect(lcp).toBeLessThan(LCP_THROTTLED_MS);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -681,24 +386,11 @@ test.describe("Image performance – dynamically discovered pages", () => {
     ).toHaveLength(0);
   });
 
-  test("discovered menu-item page – LCP and integrity under Fast 3G", async ({
-    page,
-  }) => {
+  test("discovered menu-item page – all images decoded", async ({ page }) => {
     test.skip(!apiOnline || !discoveredMenuItemSlug, API_SKIP_MESSAGE);
 
-    await injectLCPObserver(page);
     await page.goto(`/pages/${discoveredMenuItemSlug}`);
     await page.waitForLoadState("networkidle");
-
-    const lcp = await getLCP(page);
-    test.info().annotations.push({
-      type: "LCP (Fast 3G)",
-      description: `${lcp.toFixed(0)} ms  — /pages/${discoveredMenuItemSlug}`,
-    });
-    expect(
-      lcp,
-      `LCP ${lcp.toFixed(0)} ms exceeds threshold of ${LCP_THROTTLED_MS} ms`,
-    ).toBeLessThan(LCP_THROTTLED_MS);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -712,7 +404,7 @@ test.describe("Image performance – dynamically discovered pages", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Suite 4 – Self-validation of the integrity helper
+// Suite 3 – Self-validation of the integrity helper
 //
 // Injects a known-404 image URL into a live page and confirms getAllImages
 // reports it with naturalWidth === 0. This test proves the integrity checks

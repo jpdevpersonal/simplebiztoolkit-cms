@@ -125,6 +125,27 @@ describe("ContentRenderer", () => {
     expect(layout?.children[2]).toHaveStyle({ gap: "24px" });
   });
 
+  it("renders image CTA blocks with linked media and left alignment", () => {
+    const html =
+      '<section data-sbt-block="cta" data-media-type="image" data-image-alignment="left"><div class="sbt-cta-media-layout"><div><h2>Workbook bundle</h2><p>Preview the template bundle before you buy.</p></div><figure data-cta-media="image"><a href="/templates/workbook-bundle" data-cta-media-link="true"><img src="/images/workbook-bundle.webp" alt="Workbook bundle preview" data-image-id="img-workbook" /></a></figure></div></section>';
+
+    render(<ContentRenderer html={html} />);
+
+    expect(screen.getByText("Workbook bundle")).toBeInTheDocument();
+    expect(
+      screen.getByText("Preview the template bundle before you buy."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "Workbook bundle preview" }),
+    ).toHaveAttribute("src", "/images/workbook-bundle.webp");
+    expect(
+      screen.getByRole("link", { name: "Workbook bundle preview" }),
+    ).toHaveAttribute("href", "/templates/workbook-bundle");
+    expect(screen.getByText("Workbook bundle").closest("section")).toHaveStyle({
+      textAlign: "left",
+    });
+  });
+
   it("renders saved CTA title and subtitle levels from block HTML", () => {
     const html =
       '<section data-sbt-block="cta"><h1 data-title-level="h1">Large CTA</h1><p data-text-level="h4">Larger subtitle</p><a href="/shop">Shop now</a></section>';
