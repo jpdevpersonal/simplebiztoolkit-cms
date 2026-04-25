@@ -77,6 +77,12 @@ interface ContentBlock {
   ctaSecondButtonColor?: string;
   ctaSecondButtonPadding?: number;
   ctaSecondButtonRadius?: number;
+  ctaMediaType?: CTAMediaType;
+  ctaImageId?: string;
+  ctaImageUrl?: string;
+  ctaImageAlt?: string;
+  ctaImageAlignment?: CTAImageAlignment;
+  ctaImageLinkUrl?: string;
   // sbt-image
   src?: string;
   alt?: string;
@@ -91,6 +97,8 @@ interface ContentBlock {
 type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5";
 type CTAButtonAlignment = "none" | "left" | "center" | "right";
 type CTAButtonRole = "primary" | "secondary";
+type CTAMediaType = "button" | "image";
+type CTAImageAlignment = "left" | "right";
 
 const CTA_HEADING_LEVELS: HeadingLevel[] = ["h1", "h2", "h3", "h4", "h5"];
 
@@ -107,6 +115,8 @@ const CTA_SECTION_BORDER_COLOR = "#dee2e6";
 const CTA_BUTTON_DEFAULT_GAP = 16;
 const CTA_BUTTON_DEFAULT_ALIGNMENT: CTAButtonAlignment = "none";
 const CTA_BUTTON_WHITE_BORDER = "1px solid rgba(0, 0, 0, .2)";
+const CTA_MEDIA_TYPE_DEFAULT: CTAMediaType = "button";
+const CTA_IMAGE_ALIGNMENT_DEFAULT: CTAImageAlignment = "right";
 
 type CTAButtonStyleVars = React.CSSProperties & Record<`--${string}`, string>;
 
@@ -126,33 +136,72 @@ function isCTAButtonAlignment(value: unknown): value is CTAButtonAlignment {
   );
 }
 
+function isCTAMediaType(value: unknown): value is CTAMediaType {
+  return ["button", "image"].includes(value as CTAMediaType);
+}
+
+function isCTAImageAlignment(value: unknown): value is CTAImageAlignment {
+  return ["left", "right"].includes(value as CTAImageAlignment);
+}
+
+function isCTAMediaLinkElement(element: Element): boolean {
+  return (
+    element.getAttribute("data-cta-media-link") === "true" ||
+    element.querySelector("img") !== null
+  );
+}
+
 function getCTAButtonElement(
   element: Element,
   role: CTAButtonRole,
 ): HTMLAnchorElement | null {
   const roleMatch = element.querySelector(
-    `a[data-button-role="${role}"]`,
+    `a[data-button-role="${role}"]:not([data-cta-media-link="true"])`,
   ) as HTMLAnchorElement | null;
   if (roleMatch) return roleMatch;
 
-  const anchors = element.querySelectorAll("a");
-  return (
-    role === "primary" ? anchors[0] : anchors[1]
-  ) as HTMLAnchorElement | null;
+  const anchors = Array.from(element.querySelectorAll("a")).filter(
+    (anchor) => !isCTAMediaLinkElement(anchor),
+  );
+
+  return (role === "primary" ? anchors[0] : anchors[1]) ?? null;
 }
 
 function getCTAButtonMatch(
   anchorMatches: RegExpMatchArray[],
   role: CTAButtonRole,
 ): RegExpMatchArray | undefined {
+  const contentAnchors = anchorMatches.filter(
+    (anchorMatch) =>
+      !/data-cta-media-link\s*=\s*(?:"true"|'true')/i.test(anchorMatch[1]),
+  );
   const rolePattern = new RegExp(
     `data-button-role\\s*=\\s*["']${role}["']`,
     "i",
   );
   return (
-    anchorMatches.find((anchorMatch) => rolePattern.test(anchorMatch[1])) ||
-    (role === "primary" ? anchorMatches[0] : anchorMatches[1])
+    contentAnchors.find((anchorMatch) => rolePattern.test(anchorMatch[1])) ||
+    (role === "primary" ? contentAnchors[0] : contentAnchors[1])
   );
+}
+
+function getCTAMediaFigure(element: Element): HTMLElement | null {
+  return element.querySelector(
+    'figure[data-cta-media="image"]',
+  ) as HTMLElement | null;
+}
+
+function getCTAMediaImageElement(element: Element): HTMLImageElement | null {
+  return getCTAMediaFigure(element)?.querySelector("img") ?? null;
+}
+
+function getCTAMediaLinkElement(element: Element): HTMLAnchorElement | null {
+  const explicitLink = element.querySelector(
+    'a[data-cta-media-link="true"]',
+  ) as HTMLAnchorElement | null;
+  if (explicitLink) return explicitLink;
+
+  return getCTAMediaFigure(element)?.querySelector("a") ?? null;
 }
 
 function getCTAButtonLayout<T extends { align: CTAButtonAlignment }>(
@@ -280,9 +329,14 @@ function parseContent(html: string): ContentBlock[] {
     } else if (sbtBlock === "cta") {
       const anchor = getCTAButtonElement(element, "primary");
       const secondAnchor = getCTAButtonElement(element, "secondary");
+      const mediaFigure = getCTAMediaFigure(element);
+      const mediaImage = getCTAMediaImageElement(element);
+      const mediaLink = getCTAMediaLinkElement(element);
       const title = element.querySelector("h1, h2, h3, h4, h5");
       const text = element.querySelector("p");
       const titleTagLevel = title?.tagName.toLowerCase();
+      const mediaType = element.getAttribute("data-media-type");
+      const imageAlignment = element.getAttribute("data-image-alignment");
       blocks.push({
         type: "sbt-cta",
         content: "",
@@ -350,6 +404,21 @@ function parseContent(html: string): ContentBlock[] {
             secondAnchor?.getAttribute("data-button-radius"),
           3,
         ),
+        ctaMediaType: isCTAMediaType(mediaType)
+          ? mediaType
+          : mediaImage
+            ? "image"
+            : CTA_MEDIA_TYPE_DEFAULT,
+        ctaImageId:
+          mediaImage?.getAttribute("data-image-id") ||
+          mediaFigure?.getAttribute("data-image-id") ||
+          undefined,
+        ctaImageUrl: mediaImage?.getAttribute("src") || undefined,
+        ctaImageAlt: mediaImage?.getAttribute("alt") || undefined,
+        ctaImageAlignment: isCTAImageAlignment(imageAlignment)
+          ? imageAlignment
+          : CTA_IMAGE_ALIGNMENT_DEFAULT,
+        ctaImageLinkUrl: mediaLink?.getAttribute("href") || undefined,
       });
     } else if (sbtBlock === "image") {
       const img = element.querySelector("img");
@@ -503,6 +572,14 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
           ? block.ctaTextLevel
           : "h5";
       const TitleTag = titleLevel;
+      const mediaType = isCTAMediaType(block.ctaMediaType)
+        ? block.ctaMediaType
+        : CTA_MEDIA_TYPE_DEFAULT;
+      const imageAlignment = isCTAImageAlignment(block.ctaImageAlignment)
+        ? block.ctaImageAlignment
+        : CTA_IMAGE_ALIGNMENT_DEFAULT;
+      const hasImageMedia =
+        mediaType === "image" && typeof block.ctaImageUrl === "string";
       const buttonGap =
         typeof block.ctaButtonGap === "number"
           ? block.ctaButtonGap
@@ -543,6 +620,27 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
             : []),
         ].filter((button) => button.label),
       );
+      const titleMarkup = block.ctaTitle ? (
+        <TitleTag
+          style={{
+            marginBottom: 8,
+            fontSize: CTA_LEVEL_FONT_SIZES[requestedTitleLevel],
+          }}
+        >
+          {block.ctaTitle}
+        </TitleTag>
+      ) : null;
+      const textMarkup = block.ctaText ? (
+        <p
+          style={{
+            marginBottom: hasImageMedia ? 0 : 16,
+            color: "#495057",
+            fontSize: CTA_LEVEL_FONT_SIZES[textLevel],
+          }}
+        >
+          {block.ctaText}
+        </p>
+      ) : null;
       return (
         <section
           key={index}
@@ -553,102 +651,155 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
             borderRadius: 20,
             padding: "24px 28px",
             margin: "24px 0",
-            textAlign: "center",
+            textAlign: hasImageMedia ? "left" : "center",
           }}
         >
-          {block.ctaTitle && (
-            <TitleTag
-              style={{
-                marginBottom: 8,
-                fontSize: CTA_LEVEL_FONT_SIZES[requestedTitleLevel],
-              }}
-            >
-              {block.ctaTitle}
-            </TitleTag>
-          )}
-          {block.ctaText && (
-            <p
-              style={{
-                marginBottom: 16,
-                color: "#495057",
-                fontSize: CTA_LEVEL_FONT_SIZES[textLevel],
-              }}
-            >
-              {block.ctaText}
-            </p>
-          )}
-          {block.ctaButtonText && (
+          {hasImageMedia ? (
             <div
-              className="sbt-cta-buttons"
+              className="sbt-cta-media-layout"
               style={{
-                display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 24,
                 alignItems: "center",
-                width: "100%",
-                marginTop: 12,
               }}
             >
               <div
+                className="sbt-cta-copy"
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "flex-start",
-                  gap: `${buttonGap}px`,
+                  flex: "1 1 320px",
                   minWidth: 0,
+                  order: imageAlignment === "left" ? 2 : 1,
                 }}
               >
-                {buttonLayout.leftButtons.map((button) => (
-                  <a
-                    key={button.key}
-                    href={button.href}
-                    className="cta-button btn sb-btn-primary"
-                    style={button.style}
-                  >
-                    {button.label}
-                  </a>
-                ))}
+                {titleMarkup}
+                {textMarkup}
               </div>
               <div
+                className="sbt-cta-media"
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "center",
-                  gap: `${buttonGap}px`,
+                  flex: "0 1 280px",
+                  width: "min(100%, 320px)",
                   minWidth: 0,
+                  order: imageAlignment === "left" ? 1 : 2,
                 }}
               >
-                {buttonLayout.centerButtons.map((button) => (
+                {block.ctaImageLinkUrl ? (
                   <a
-                    key={button.key}
-                    href={button.href}
-                    className="cta-button btn sb-btn-primary"
-                    style={button.style}
+                    href={block.ctaImageLinkUrl}
+                    style={{ display: "block", lineHeight: 0 }}
                   >
-                    {button.label}
+                    <Image
+                      src={block.ctaImageUrl!}
+                      alt={block.ctaImageAlt || ""}
+                      width={960}
+                      height={720}
+                      sizes="(max-width: 768px) 100vw, 320px"
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        display: "block",
+                        borderRadius: 18,
+                        boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
+                      }}
+                    />
                   </a>
-                ))}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "flex-end",
-                  gap: `${buttonGap}px`,
-                  minWidth: 0,
-                }}
-              >
-                {buttonLayout.rightButtons.map((button) => (
-                  <a
-                    key={button.key}
-                    href={button.href}
-                    className="cta-button btn sb-btn-primary"
-                    style={button.style}
-                  >
-                    {button.label}
-                  </a>
-                ))}
+                ) : (
+                  <Image
+                    src={block.ctaImageUrl!}
+                    alt={block.ctaImageAlt || ""}
+                    width={960}
+                    height={720}
+                    sizes="(max-width: 768px) 100vw, 320px"
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      display: "block",
+                      borderRadius: 18,
+                      boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
+                    }}
+                  />
+                )}
               </div>
             </div>
+          ) : (
+            <>
+              {titleMarkup}
+              {textMarkup}
+              {block.ctaButtonText && (
+                <div
+                  className="sbt-cta-buttons"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                    alignItems: "center",
+                    width: "100%",
+                    marginTop: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "flex-start",
+                      gap: `${buttonGap}px`,
+                      minWidth: 0,
+                    }}
+                  >
+                    {buttonLayout.leftButtons.map((button) => (
+                      <a
+                        key={button.key}
+                        href={button.href}
+                        className="cta-button btn sb-btn-primary"
+                        style={button.style}
+                      >
+                        {button.label}
+                      </a>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                      gap: `${buttonGap}px`,
+                      minWidth: 0,
+                    }}
+                  >
+                    {buttonLayout.centerButtons.map((button) => (
+                      <a
+                        key={button.key}
+                        href={button.href}
+                        className="cta-button btn sb-btn-primary"
+                        style={button.style}
+                      >
+                        {button.label}
+                      </a>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "flex-end",
+                      gap: `${buttonGap}px`,
+                      minWidth: 0,
+                    }}
+                  >
+                    {buttonLayout.rightButtons.map((button) => (
+                      <a
+                        key={button.key}
+                        href={button.href}
+                        className="cta-button btn sb-btn-primary"
+                        style={button.style}
+                      >
+                        {button.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </section>
       );
@@ -843,8 +994,26 @@ function parseContentServer(html: string): ContentBlock[] {
   // Find all sbt-cta blocks
   while ((match = sbtCtaRegex.exec(html)) !== null) {
     const inner = match[3];
+    const sectionAttributes = `${match[1]} ${match[2]}`;
     const headingMatch = /<(h[1-5])\b([^>]*)>([\s\S]*?)<\/\1>/i.exec(inner);
     const pMatch = /<p\b([^>]*)>([\s\S]*?)<\/p>/i.exec(inner);
+    const imageFigureMatch =
+      /<figure\b([^>]*)data-cta-media="image"([^>]*)>([\s\S]*?)<\/figure>/i.exec(
+        inner,
+      );
+    const imageFigureAttributes = imageFigureMatch
+      ? `${imageFigureMatch[1]} ${imageFigureMatch[2]}`
+      : "";
+    const imageFigureContent = imageFigureMatch?.[3] || "";
+    const mediaLinkMatch =
+      /<a\b([^>]*)data-cta-media-link\s*=\s*(?:"true"|'true')([^>]*)>([\s\S]*?)<\/a>/i.exec(
+        imageFigureContent,
+      );
+    const mediaLinkAttributes = mediaLinkMatch
+      ? `${mediaLinkMatch[1]} ${mediaLinkMatch[2]}`
+      : "";
+    const imageMatch = /<img\b([^>]*)\/?>/i.exec(imageFigureContent);
+    const imageAttributes = imageMatch?.[1] || "";
     const headingTag = headingMatch?.[1]?.toLowerCase();
     const titleAttributes = headingMatch?.[2] || "";
     const textAttributes = pMatch?.[1] || "";
@@ -878,20 +1047,14 @@ function parseContentServer(html: string): ContentBlock[] {
         ),
         ctaBackgroundColor:
           parseAttributeFromString(
-            `${match[1]} ${match[2]}`,
+            sectionAttributes,
             "data-background-color",
           ) || undefined,
         ctaBorderWidth: parseOptionalNumericAttribute(
-          parseAttributeFromString(
-            `${match[1]} ${match[2]}`,
-            "data-border-width",
-          ),
+          parseAttributeFromString(sectionAttributes, "data-border-width"),
         ),
         ctaButtonGap: parseOptionalNumericAttribute(
-          parseAttributeFromString(
-            `${match[1]} ${match[2]}`,
-            "data-button-gap",
-          ),
+          parseAttributeFromString(sectionAttributes, "data-button-gap"),
         ),
         ctaButtonText: primaryAnchorMatch?.[2]?.trim() || "",
         ctaButtonUrl:
@@ -980,6 +1143,34 @@ function parseContentServer(html: string): ContentBlock[] {
             ),
           3,
         ),
+        ctaMediaType: isCTAMediaType(
+          parseAttributeFromString(sectionAttributes, "data-media-type"),
+        )
+          ? (parseAttributeFromString(
+              sectionAttributes,
+              "data-media-type",
+            ) as CTAMediaType)
+          : imageMatch
+            ? "image"
+            : CTA_MEDIA_TYPE_DEFAULT,
+        ctaImageId:
+          parseAttributeFromString(imageAttributes, "data-image-id") ||
+          parseAttributeFromString(imageFigureAttributes, "data-image-id") ||
+          undefined,
+        ctaImageUrl:
+          parseAttributeFromString(imageAttributes, "src") || undefined,
+        ctaImageAlt:
+          parseAttributeFromString(imageAttributes, "alt") || undefined,
+        ctaImageAlignment: isCTAImageAlignment(
+          parseAttributeFromString(sectionAttributes, "data-image-alignment"),
+        )
+          ? (parseAttributeFromString(
+              sectionAttributes,
+              "data-image-alignment",
+            ) as CTAImageAlignment)
+          : CTA_IMAGE_ALIGNMENT_DEFAULT,
+        ctaImageLinkUrl:
+          parseAttributeFromString(mediaLinkAttributes, "href") || undefined,
       },
     });
   }
