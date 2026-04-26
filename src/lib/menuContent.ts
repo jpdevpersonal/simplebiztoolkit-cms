@@ -65,7 +65,7 @@ export async function getPublishedMenuItemContent(
   item: MenuItem,
 ): Promise<PublishedMenuItemContent> {
   let directPages = (item.pages ?? []).filter(
-    (page) => page.status === "published",
+    (page) => page.status === "published" && !page.menuCategoryId,
   );
 
   if (directPages.length === 0) {
@@ -77,7 +77,7 @@ export async function getPublishedMenuItemContent(
       );
       if (pagesRes.statusCode === 200) {
         directPages = (pagesRes.data ?? []).filter(
-          (page) => page.status === "published",
+          (page) => page.status === "published" && !page.menuCategoryId,
         );
       }
     } catch (error) {
