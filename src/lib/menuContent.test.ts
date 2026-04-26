@@ -83,6 +83,42 @@ describe("menuContent", () => {
     expect(result.totalPages).toBe(1);
   });
 
+  it("excludes categorized pages when hydrating direct pages from the pages endpoint", async () => {
+    const { getPublishedMenuItemContent } = await import("./menuContent");
+
+    apiServiceMock.getMenuItemPages.mockResolvedValueOnce({
+      statusCode: 200,
+      data: [
+        {
+          id: "page-1",
+          slug: "direct-guide",
+          title: "Direct Guide",
+          status: "published",
+        },
+        {
+          id: "page-2",
+          slug: "topic-guide",
+          title: "Topic Guide",
+          status: "published",
+          menuCategoryId: "cat-1",
+        },
+      ],
+    });
+
+    const result = await getPublishedMenuItemContent({
+      id: "item-1",
+      title: "Guides",
+      status: "published",
+      categories: [],
+      pages: [],
+    });
+
+    expect(result.directPages).toEqual([
+      expect.objectContaining({ slug: "direct-guide" }),
+    ]);
+    expect(result.totalPages).toBe(1);
+  });
+
   it("filters to published menu items when loading the menu tree", async () => {
     const { getPublishedMenuItems } = await import("./menuContent");
 
