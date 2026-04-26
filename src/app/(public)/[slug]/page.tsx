@@ -77,11 +77,18 @@ export default async function MenuItemPageView({ params }: Props) {
   const headerImage = normalizePublicUrl(page.headerImage);
 
   let parentCategory = page.menuCategory;
-  if (!parentCategory && page.menuCategoryId) {
+  if (
+    page.menuCategoryId &&
+    (!parentCategory || !parentCategory.menuItemId || !parentCategory.title)
+  ) {
     const categoryResponse = await apiService.getMenuCategoryById(
       page.menuCategoryId,
     );
-    parentCategory = categoryResponse.data;
+    if (categoryResponse.data) {
+      parentCategory = parentCategory
+        ? { ...categoryResponse.data, ...parentCategory }
+        : categoryResponse.data;
+    }
   }
 
   // Resolve parent menu item for breadcrumb (may be provided inline or referenced by id)
@@ -97,11 +104,35 @@ export default async function MenuItemPageView({ params }: Props) {
     parentMenuItem = menuItemResponse.data;
   }
   // Fallback: scan the published menu items list (same reliable source used for navigation)
-  if (!parentMenuItem) {
-    const targetId = page.menuItemId ?? parentCategory?.menuItemId;
-    if (targetId) {
-      const allItems = await getPublishedMenuItems();
-      parentMenuItem = allItems.find((i) => i.id === targetId);
+  if (!parentMenuItem || (page.menuCategoryId && !parentCategory?.menuItemId)) {
+    const allItems = await getPublishedMenuItems();
+
+    if (page.menuCategoryId) {
+      const itemWithCategory = allItems.find((item) =>
+        (item.categories ?? []).some(
+          (category) => category.id === page.menuCategoryId,
+        ),
+      );
+
+      if (itemWithCategory) {
+        parentMenuItem ??= itemWithCategory;
+        const matchedCategory = (itemWithCategory.categories ?? []).find(
+          (category) => category.id === page.menuCategoryId,
+        );
+
+        if (matchedCategory) {
+          parentCategory = parentCategory
+            ? { ...matchedCategory, ...parentCategory }
+            : matchedCategory;
+        }
+      }
+    }
+
+    if (!parentMenuItem) {
+      const targetId = page.menuItemId ?? parentCategory?.menuItemId;
+      if (targetId) {
+        parentMenuItem = allItems.find((item) => item.id === targetId);
+      }
     }
   }
 

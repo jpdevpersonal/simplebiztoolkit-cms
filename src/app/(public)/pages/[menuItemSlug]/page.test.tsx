@@ -61,7 +61,7 @@ describe("Menu item landing page", () => {
     expect(container.querySelectorAll(".sb-content-link")).toHaveLength(2);
   });
 
-  it("keeps the existing page grid when topics exist", async () => {
+  it("renders direct pages as article cards when topics exist", async () => {
     menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
       {
         id: "guides",
@@ -106,8 +106,10 @@ describe("Menu item landing page", () => {
       }),
     );
 
-    expect(container.querySelectorAll(".page-card").length).toBeGreaterThan(0);
-    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(0);
+    expect(screen.getByText("Other Pages")).toBeInTheDocument();
+    expect(container.querySelectorAll(".page-card")).toHaveLength(1);
+    expect(container.querySelectorAll(".sb-card")).toHaveLength(1);
+    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(1);
   });
 
   it("renders the menu item description when populated", async () => {

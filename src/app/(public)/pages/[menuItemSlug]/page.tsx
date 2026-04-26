@@ -61,8 +61,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
   const content = await getPublishedMenuItemContent(item);
   const publishedCats = content.publishedCategories;
   const directPages = content.directPages;
-  const showDirectPageCards =
-    publishedCats.length === 0 && directPages.length > 1;
+  const showDirectPageCards = directPages.length > 0;
 
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
