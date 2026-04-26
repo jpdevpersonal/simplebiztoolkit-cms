@@ -90,6 +90,16 @@ vi.mock("@/components/RichContentField", () => ({
   ),
 }));
 
+vi.mock("@/components/RelatedLinksEditor", () => ({
+  __esModule: true,
+  default: ({ value }: { value?: { title?: string; items?: unknown[] } }) => (
+    <div data-testid="related-links-editor-mock">
+      {value?.title || "Related to this"} - {(value?.items ?? []).length}{" "}
+      item(s)
+    </div>
+  ),
+}));
+
 const categories = [
   {
     id: "cat-1",
