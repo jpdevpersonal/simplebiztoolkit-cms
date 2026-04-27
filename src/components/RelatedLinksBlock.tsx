@@ -3,6 +3,7 @@ import {
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
   RELATED_LINKS_DEFAULT_IMAGE_SIZE,
+  normalizeRelatedLinkImagePositionY,
   type RelatedLinkItem,
   type RelatedLinksImageSize,
 } from "@/lib/relatedLinks";
@@ -46,6 +47,10 @@ function getImageSizes(imageSize: RelatedLinksImageSize): string {
 
 function getItemLabel(item: RelatedLinkItem): string {
   return item.label?.trim() || item.destinationTitle;
+}
+
+function getImageObjectPosition(item: RelatedLinkItem): string {
+  return `center ${normalizeRelatedLinkImagePositionY(item.imagePositionY)}%`;
 }
 
 export default function RelatedLinksBlock({
@@ -98,6 +103,7 @@ export default function RelatedLinksBlock({
                         sizes={imageSizes}
                         loading="lazy"
                         quality={90}
+                        style={{ objectPosition: getImageObjectPosition(item) }}
                         className="related-links-block__image"
                       />
                     </span>

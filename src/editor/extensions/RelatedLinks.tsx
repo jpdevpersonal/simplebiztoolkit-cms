@@ -9,6 +9,7 @@ import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import {
   decodeRelatedLinksItems,
   encodeRelatedLinksItems,
+  normalizeRelatedLinkImagePositionY,
   normalizeRelatedLinksImageSize,
   normalizeRelatedLinksTitle,
   RELATED_LINKS_BLOCK_TYPE,
@@ -184,6 +185,7 @@ export const RelatedLinks = Node.create({
                     {
                       src: item.imageUrl,
                       alt: item.imageAlt || "",
+                      style: `object-position: center ${normalizeRelatedLinkImagePositionY(item.imagePositionY)}%;`,
                       class: "related-links-block__image",
                     },
                   ],

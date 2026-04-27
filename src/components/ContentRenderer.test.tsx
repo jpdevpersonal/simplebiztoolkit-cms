@@ -249,6 +249,7 @@ describe("ContentRenderer", () => {
           imageId: "img-1",
           imageUrl: "/images/payroll-guide.webp",
           imageAlt: "Payroll guide thumbnail",
+          imagePositionY: 0,
         },
         {
           uid: "link-2",
@@ -290,6 +291,7 @@ describe("ContentRenderer", () => {
       "sizes",
       "(max-width: 768px) 128px, 144px",
     );
+    expect(renderedImage).toHaveStyle({ objectPosition: "center 0%" });
     expect(
       container.querySelectorAll(".related-links-block__media-placeholder"),
     ).toHaveLength(1);

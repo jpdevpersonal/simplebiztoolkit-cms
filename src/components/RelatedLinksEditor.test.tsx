@@ -44,6 +44,7 @@ vi.mock("@/components/CmsImagePicker", () => ({
     label,
     onChangeAction,
     disabled,
+    modalAdditionalContent,
   }: {
     label: string;
     onChangeAction?: (image: {
@@ -52,20 +53,24 @@ vi.mock("@/components/CmsImagePicker", () => ({
       altText: string;
     }) => void;
     disabled?: boolean;
+    modalAdditionalContent?: React.ReactNode;
   }) => (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() =>
-        onChangeAction?.({
-          id: `${label.replace(/\s+/g, "-")}-id`,
-          url: `/images/${label.replace(/\s+/g, "-")}.webp`,
-          altText: `${label} alt`,
-        })
-      }
-    >
-      {`Pick ${label}`}
-    </button>
+    <div>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() =>
+          onChangeAction?.({
+            id: `${label.replace(/\s+/g, "-")}-id`,
+            url: `/images/${label.replace(/\s+/g, "-")}.webp`,
+            altText: `${label} alt`,
+          })
+        }
+      >
+        {`Pick ${label}`}
+      </button>
+      {modalAdditionalContent}
+    </div>
   ),
 }));
 
@@ -80,6 +85,7 @@ function makeItem(overrides: Partial<RelatedLinkItem> = {}): RelatedLinkItem {
     imageId: overrides.imageId ?? null,
     imageUrl: overrides.imageUrl ?? null,
     imageAlt: overrides.imageAlt ?? null,
+    imagePositionY: overrides.imagePositionY ?? 50,
   };
 }
 
@@ -370,5 +376,30 @@ describe("RelatedLinksEditor", () => {
     expect(screen.getByTestId("related-links-preview")).toHaveTextContent(
       "content:Related to this:large:Guide A",
     );
+  });
+
+  it("updates thumbnail framing so the crop can be pushed to the top", async () => {
+    const { onChange } = renderControlledEditor({
+      items: [
+        makeItem({
+          refId: "page-1",
+          href: "/guide-a",
+          destinationTitle: "Guide A",
+          imageUrl: "/images/guide-a.webp",
+        }),
+      ],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    fireEvent.change(screen.getByLabelText("Vertical position"), {
+      target: { value: "0" },
+    });
+
+    expect(getLastChange(onChange).items[0]).toMatchObject({
+      imagePositionY: 0,
+    });
   });
 });

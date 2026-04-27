@@ -3,6 +3,7 @@ export const RELATED_LINKS_DEFAULT_TITLE = "Related to this";
 export const RELATED_LINKS_DEFAULT_BACKGROUND = "#f8f9fb";
 export const RELATED_LINKS_DEFAULT_BORDER_WIDTH = 1;
 export const RELATED_LINKS_DEFAULT_IMAGE_SIZE = "small";
+export const RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y = 50;
 export const RELATED_LINKS_MAX_ITEMS = 5;
 
 export type RelatedLinkKind = "page" | "template";
@@ -18,6 +19,7 @@ export interface RelatedLinkItem {
   imageId?: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
+  imagePositionY?: number | null;
 }
 
 export interface RelatedLinksBlockData {
@@ -67,6 +69,23 @@ export function normalizeRelatedLinksImageSize(
     : RELATED_LINKS_DEFAULT_IMAGE_SIZE;
 }
 
+export function normalizeRelatedLinkImagePositionY(
+  value?: number | string | null,
+): number {
+  const numericValue =
+    typeof value === "string"
+      ? Number(value)
+      : typeof value === "number"
+        ? value
+        : RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y;
+
+  if (!Number.isFinite(numericValue)) {
+    return RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(numericValue)));
+}
+
 export function decodeHtmlEntities(value: string): string {
   return value
     .replace(/&quot;/g, '"')
@@ -110,25 +129,41 @@ function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
       ? value.uid.trim()
       : createRelatedLinkUid();
 
+  const refId =
+    typeof value.refId === "string" && value.refId.trim()
+      ? value.refId.trim()
+      : "";
+  const href =
+    typeof value.href === "string" && value.href.trim()
+      ? value.href.trim()
+      : "";
+  const destinationTitle =
+    typeof value.destinationTitle === "string"
+      ? value.destinationTitle.trim()
+      : "";
+  const label = normalizeNullableString(value.label);
+  const imageId = normalizeNullableString(value.imageId);
+  const imageUrl = normalizeNullableString(value.imageUrl);
+  const imageAlt = normalizeNullableString(value.imageAlt);
+
+  const rawImagePositionY = value.imagePositionY;
+  const imagePositionY =
+    typeof rawImagePositionY === "string" ||
+    typeof rawImagePositionY === "number"
+      ? rawImagePositionY
+      : undefined;
+
   return {
     uid,
     kind,
-    refId:
-      typeof value.refId === "string" && value.refId.trim()
-        ? value.refId.trim()
-        : "",
-    href:
-      typeof value.href === "string" && value.href.trim()
-        ? value.href.trim()
-        : "",
-    destinationTitle:
-      typeof value.destinationTitle === "string"
-        ? value.destinationTitle.trim()
-        : "",
-    label: normalizeNullableString(value.label),
-    imageId: normalizeNullableString(value.imageId),
-    imageUrl: normalizeNullableString(value.imageUrl),
-    imageAlt: normalizeNullableString(value.imageAlt),
+    refId,
+    href,
+    destinationTitle,
+    label,
+    imageId,
+    imageUrl,
+    imageAlt,
+    imagePositionY: normalizeRelatedLinkImagePositionY(imagePositionY),
   };
 }
 
@@ -171,6 +206,13 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
     typeof value.imageAlt === "string" && value.imageAlt.trim()
       ? value.imageAlt.trim()
       : null;
+  const rawImagePositionY = value.imagePositionY;
+  const imagePositionY = normalizeRelatedLinkImagePositionY(
+    typeof rawImagePositionY === "string" ||
+      typeof rawImagePositionY === "number"
+      ? rawImagePositionY
+      : undefined,
+  );
 
   return {
     uid,
@@ -182,6 +224,7 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
     imageId,
     imageUrl,
     imageAlt,
+    imagePositionY,
   };
 }
 
@@ -307,7 +350,9 @@ export function parseRelatedLinksBlockFromAttributes(
       "data-background-color",
     ),
     borderWidth: Number.isFinite(borderWidth) ? borderWidth : undefined,
-    imageSize: parseAttributeFromHtmlString(attributes, "data-image-size"),
+    imageSize: normalizeRelatedLinksImageSize(
+      parseAttributeFromHtmlString(attributes, "data-image-size"),
+    ),
   });
 }
 

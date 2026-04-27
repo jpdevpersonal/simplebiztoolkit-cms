@@ -22,6 +22,7 @@ describe("relatedLinks serialization", () => {
           imageId: "img-1",
           imageUrl: "/images/payroll-kit.webp",
           imageAlt: "Payroll starter kit cover",
+          imagePositionY: 0,
         },
       ],
     });
@@ -44,6 +45,7 @@ describe("relatedLinks serialization", () => {
           destinationTitle: "Payroll checklist",
           label: "Payroll starter kit",
           imageUrl: "/images/payroll-kit.webp",
+          imagePositionY: 0,
         }),
       ],
     });
