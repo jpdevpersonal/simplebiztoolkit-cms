@@ -9,6 +9,7 @@ import {
   extractRelatedLinksBlocksFromHtml,
   normalizeRelatedLinksBorderWidth,
   normalizeRelatedLinksDraftItems,
+  normalizeRelatedLinksImageSize,
   normalizeRelatedLinksTitle,
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
@@ -66,6 +67,7 @@ function normalizeTemplateRelatedLinksBlock(
     borderWidth:
       normalizeRelatedLinksBorderWidth(value?.borderWidth) ??
       RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+    imageSize: normalizeRelatedLinksImageSize(value?.imageSize),
   };
 }
 
@@ -89,6 +91,7 @@ function splitTemplateDescription(description: string): {
       title: blocks[0]?.title,
       backgroundColor: blocks[0]?.backgroundColor,
       borderWidth: blocks[0]?.borderWidth,
+      imageSize: blocks[0]?.imageSize,
       items: blocks
         .flatMap((block) => block.items)
         .slice(0, RELATED_LINKS_MAX_ITEMS),
