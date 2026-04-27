@@ -10,6 +10,7 @@ describe("relatedLinks serialization", () => {
       title: "Related to this",
       backgroundColor: "#f8f9fb",
       borderWidth: 2,
+      imageSize: "large",
       items: [
         {
           uid: "link-1",
@@ -34,6 +35,7 @@ describe("relatedLinks serialization", () => {
       title: "Related to this",
       backgroundColor: "#f8f9fb",
       borderWidth: 2,
+      imageSize: "large",
       items: [
         expect.objectContaining({
           kind: "template",

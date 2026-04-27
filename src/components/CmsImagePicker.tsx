@@ -18,6 +18,11 @@ type CmsImagePickerProps = {
   label?: string;
   className?: string;
   disabled?: boolean;
+  minimumImageDimensions?: {
+    width: number;
+    height: number;
+    label?: string;
+  };
 };
 
 function formatTimestamp(value?: string): string {
@@ -44,6 +49,7 @@ export default function CmsImagePicker({
   label = "Image",
   className,
   disabled = false,
+  minimumImageDimensions,
 }: CmsImagePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [images, setImages] = useState<ImageAsset[]>([]);
@@ -206,7 +212,11 @@ export default function CmsImagePicker({
       return;
     }
 
-    const validationMessage = validateImageFile(uploadFile);
+    const validationMessage = await validateImageFile(uploadFile, {
+      minWidth: minimumImageDimensions?.width,
+      minHeight: minimumImageDimensions?.height,
+      minimumLabel: minimumImageDimensions?.label,
+    });
     if (validationMessage) {
       setError(validationMessage);
       return;
@@ -250,7 +260,11 @@ export default function CmsImagePicker({
     }
 
     if (replacementFile) {
-      const validationMessage = validateImageFile(replacementFile);
+      const validationMessage = await validateImageFile(replacementFile, {
+        minWidth: minimumImageDimensions?.width,
+        minHeight: minimumImageDimensions?.height,
+        minimumLabel: minimumImageDimensions?.label,
+      });
       if (validationMessage) {
         setError(validationMessage);
         return;

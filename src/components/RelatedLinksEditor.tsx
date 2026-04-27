@@ -9,15 +9,25 @@ import {
   createRelatedLinkUid,
   normalizeRelatedLinksBorderWidth,
   normalizeRelatedLinksDraftItems,
+  normalizeRelatedLinksImageSize,
   normalizeRelatedLinksTitle,
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  RELATED_LINKS_DEFAULT_IMAGE_SIZE,
   RELATED_LINKS_MAX_ITEMS,
   sanitizeRelatedLinksItems,
   type RelatedLinkItem,
   type RelatedLinkKind,
   type RelatedLinksBlockData,
 } from "@/lib/relatedLinks";
+
+const IMAGE_SIZE_OPTIONS = [
+  { value: "small", label: "Small" },
+  { value: "medium", label: "Medium (1.5x)" },
+  { value: "large", label: "Large (2x)" },
+] as const;
+
+const RELATED_LINKS_MIN_IMAGE_DIMENSION = 288;
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 
 type DestinationOption = {
@@ -58,6 +68,7 @@ function normalizeEditorBlock(
     borderWidth:
       normalizeRelatedLinksBorderWidth(value.borderWidth) ??
       RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+    imageSize: normalizeRelatedLinksImageSize(value.imageSize),
   };
 }
 
@@ -300,6 +311,7 @@ export default function RelatedLinksEditor({
                 items={previewItems}
                 backgroundColor={block.backgroundColor}
                 borderWidth={block.borderWidth}
+                imageSize={block.imageSize}
                 variant={previewVariant}
               />
             </div>
@@ -369,6 +381,24 @@ export default function RelatedLinksEditor({
                 disabled={disabled}
                 className="related-links-editor-field"
               />
+            </label>
+
+            <label className="related-links-editor-control">
+              <span className="related-links-editor-label">Image size</span>
+              <select
+                value={block.imageSize || RELATED_LINKS_DEFAULT_IMAGE_SIZE}
+                onChange={(event) =>
+                  updateBlock({ imageSize: event.target.value })
+                }
+                disabled={disabled}
+                className="related-links-editor-field"
+              >
+                {IMAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
         </section>
@@ -571,13 +601,21 @@ export default function RelatedLinksEditor({
                           Thumbnail
                         </div>
                         <div className="related-links-editor-helper">
-                          Optional square image displayed beside the link.
+                          Optional square image displayed beside the link. Use
+                          at least {RELATED_LINKS_MIN_IMAGE_DIMENSION}x
+                          {RELATED_LINKS_MIN_IMAGE_DIMENSION} for sharper
+                          thumbnails.
                         </div>
                       </div>
                       <CmsImagePicker
                         label={`link ${index + 1} image`}
                         value={item.imageUrl}
                         selectedImageId={item.imageId}
+                        minimumImageDimensions={{
+                          width: RELATED_LINKS_MIN_IMAGE_DIMENSION,
+                          height: RELATED_LINKS_MIN_IMAGE_DIMENSION,
+                          label: "Related link thumbnails",
+                        }}
                         onChangeAction={(image) =>
                           handleImageChange(item.uid, image)
                         }

@@ -9,7 +9,50 @@ export const IMAGE_ASSET_ALLOWED_TYPES = [
 
 export const IMAGE_ASSET_MAX_BYTES = 3 * 1024 * 1024;
 
-export function validateImageFile(file: File): string | null {
+type ImageValidationOptions = {
+  minWidth?: number;
+  minHeight?: number;
+  minimumLabel?: string;
+};
+
+function getImageDimensions(file: File): Promise<{
+  width: number;
+  height: number;
+}> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    const cleanup = () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    image.onload = () => {
+      const width = image.naturalWidth || image.width;
+      const height = image.naturalHeight || image.height;
+      cleanup();
+
+      if (!width || !height) {
+        reject(new Error("Unable to read image dimensions."));
+        return;
+      }
+
+      resolve({ width, height });
+    };
+
+    image.onerror = () => {
+      cleanup();
+      reject(new Error("Unable to read image dimensions."));
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+export async function validateImageFile(
+  file: File,
+  options?: ImageValidationOptions,
+): Promise<string | null> {
   if (
     !IMAGE_ASSET_ALLOWED_TYPES.includes(
       file.type as (typeof IMAGE_ASSET_ALLOWED_TYPES)[number],
@@ -20,6 +63,21 @@ export function validateImageFile(file: File): string | null {
 
   if (file.size > IMAGE_ASSET_MAX_BYTES) {
     return "Image files must be 3 MB or smaller.";
+  }
+
+  if (options?.minWidth || options?.minHeight) {
+    try {
+      const { width, height } = await getImageDimensions(file);
+      const minWidth = options.minWidth ?? 0;
+      const minHeight = options.minHeight ?? 0;
+
+      if (width < minWidth || height < minHeight) {
+        const minimumLabel = options.minimumLabel || "Images";
+        return `${minimumLabel} must be at least ${minWidth}x${minHeight} pixels.`;
+      }
+    } catch {
+      return "Unable to validate image dimensions.";
+    }
   }
 
   return null;

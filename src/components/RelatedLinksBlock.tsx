@@ -1,7 +1,10 @@
+import Image from "next/image";
 import {
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  RELATED_LINKS_DEFAULT_IMAGE_SIZE,
   type RelatedLinkItem,
+  type RelatedLinksImageSize,
 } from "@/lib/relatedLinks";
 
 type RelatedLinksBlockProps = {
@@ -10,7 +13,36 @@ type RelatedLinksBlockProps = {
   variant?: "content" | "template";
   backgroundColor?: string;
   borderWidth?: number;
+  imageSize?: RelatedLinksImageSize;
 };
+
+type RelatedLinksImageRenderSpec = {
+  desktopWidth: number;
+  mobileWidth: number;
+};
+
+const IMAGE_RENDER_SPECS: Record<
+  RelatedLinksImageSize,
+  RelatedLinksImageRenderSpec
+> = {
+  small: {
+    desktopWidth: 72,
+    mobileWidth: 64,
+  },
+  medium: {
+    desktopWidth: 108,
+    mobileWidth: 96,
+  },
+  large: {
+    desktopWidth: 144,
+    mobileWidth: 128,
+  },
+};
+
+function getImageSizes(imageSize: RelatedLinksImageSize): string {
+  const spec = IMAGE_RENDER_SPECS[imageSize];
+  return `(max-width: 768px) ${spec.mobileWidth}px, ${spec.desktopWidth}px`;
+}
 
 function getItemLabel(item: RelatedLinkItem): string {
   return item.label?.trim() || item.destinationTitle;
@@ -22,16 +54,18 @@ export default function RelatedLinksBlock({
   variant = "content",
   backgroundColor,
   borderWidth,
+  imageSize = RELATED_LINKS_DEFAULT_IMAGE_SIZE,
 }: RelatedLinksBlockProps) {
   if (items.length === 0) {
     return null;
   }
 
   const hasAnyImages = items.some((item) => Boolean(item.imageUrl));
+  const imageSizes = getImageSizes(imageSize);
 
   return (
     <section
-      className={`related-links-block related-links-block--${variant}`}
+      className={`related-links-block related-links-block--${variant} related-links-block--image-size-${imageSize}`}
       style={{
         background: backgroundColor || RELATED_LINKS_DEFAULT_BACKGROUND,
         borderWidth:
@@ -57,10 +91,13 @@ export default function RelatedLinksBlock({
                       className="related-links-block__media"
                       aria-hidden="true"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={item.imageUrl || ""}
                         alt={item.imageAlt || ""}
+                        fill
+                        sizes={imageSizes}
+                        loading="lazy"
+                        quality={90}
                         className="related-links-block__image"
                       />
                     </span>

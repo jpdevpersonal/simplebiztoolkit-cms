@@ -2,9 +2,11 @@ export const RELATED_LINKS_BLOCK_TYPE = "related-links";
 export const RELATED_LINKS_DEFAULT_TITLE = "Related to this";
 export const RELATED_LINKS_DEFAULT_BACKGROUND = "#f8f9fb";
 export const RELATED_LINKS_DEFAULT_BORDER_WIDTH = 1;
+export const RELATED_LINKS_DEFAULT_IMAGE_SIZE = "small";
 export const RELATED_LINKS_MAX_ITEMS = 5;
 
 export type RelatedLinkKind = "page" | "template";
+export type RelatedLinksImageSize = "small" | "medium" | "large";
 
 export interface RelatedLinkItem {
   uid: string;
@@ -23,6 +25,7 @@ export interface RelatedLinksBlockData {
   items: RelatedLinkItem[];
   backgroundColor?: string;
   borderWidth?: number;
+  imageSize?: RelatedLinksImageSize;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -54,6 +57,14 @@ export function normalizeRelatedLinksBorderWidth(
   }
 
   return Math.max(0, Math.min(12, value));
+}
+
+export function normalizeRelatedLinksImageSize(
+  value?: string | null,
+): RelatedLinksImageSize {
+  return value === "medium" || value === "large"
+    ? value
+    : RELATED_LINKS_DEFAULT_IMAGE_SIZE;
 }
 
 export function decodeHtmlEntities(value: string): string {
@@ -228,6 +239,7 @@ export function normalizeRelatedLinksBlock(
         ? value.backgroundColor.trim()
         : undefined,
     borderWidth: normalizeRelatedLinksBorderWidth(value.borderWidth),
+    imageSize: normalizeRelatedLinksImageSize(value.imageSize),
   };
 }
 
@@ -266,6 +278,12 @@ export function serializeRelatedLinksBlockToHtml(
     attributes.push(`data-border-width="${block.borderWidth}"`);
   }
 
+  if (block.imageSize) {
+    attributes.push(
+      `data-image-size="${encodeHtmlAttribute(block.imageSize)}"`,
+    );
+  }
+
   return `<section ${attributes.join(" ")}></section>`;
 }
 
@@ -289,6 +307,7 @@ export function parseRelatedLinksBlockFromAttributes(
       "data-background-color",
     ),
     borderWidth: Number.isFinite(borderWidth) ? borderWidth : undefined,
+    imageSize: parseAttributeFromHtmlString(attributes, "data-image-size"),
   });
 }
 

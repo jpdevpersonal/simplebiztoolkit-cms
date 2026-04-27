@@ -25,13 +25,15 @@ vi.mock("@/components/RelatedLinksBlock", () => ({
     title,
     items,
     variant,
+    imageSize,
   }: {
     title: string;
     items: Array<{ destinationTitle: string }>;
     variant: string;
+    imageSize?: string;
   }) => (
     <div data-testid="related-links-preview">
-      {`${variant}:${title}:${items.map((item) => item.destinationTitle).join("|")}`}
+      {`${variant}:${title}:${imageSize || "small"}:${items.map((item) => item.destinationTitle).join("|")}`}
     </div>
   ),
 }));
@@ -342,5 +344,31 @@ describe("RelatedLinksEditor", () => {
     expect(getLastChange(onChange).items.map((item) => item.uid)).toEqual([
       "item-1",
     ]);
+  });
+
+  it("updates the image size setting and reflects it in preview", async () => {
+    const { user, onChange } = renderControlledEditor({
+      items: [
+        makeItem({
+          refId: "page-1",
+          href: "/guide-a",
+          destinationTitle: "Guide A",
+          imageUrl: "/images/guide-a.webp",
+        }),
+      ],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    await user.selectOptions(screen.getByLabelText("Image size"), "large");
+
+    expect(getLastChange(onChange)).toMatchObject({
+      imageSize: "large",
+    });
+    expect(screen.getByTestId("related-links-preview")).toHaveTextContent(
+      "content:Related to this:large:Guide A",
+    );
   });
 });
