@@ -9,13 +9,17 @@ import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import {
   decodeRelatedLinksItems,
   encodeRelatedLinksItems,
+  normalizeRelatedLinkImagePositionY,
+  normalizeRelatedLinksImageSize,
   normalizeRelatedLinksTitle,
   RELATED_LINKS_BLOCK_TYPE,
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  RELATED_LINKS_DEFAULT_IMAGE_SIZE,
   RELATED_LINKS_DEFAULT_TITLE,
   sanitizeRelatedLinksItems,
   type RelatedLinkItem,
+  type RelatedLinksImageSize,
 } from "@/lib/relatedLinks";
 import { LockedBadge } from "./LockedBadge";
 
@@ -61,6 +65,9 @@ function RelatedLinksView({ node, updateAttributes }: NodeViewProps) {
               items: node.attrs.items as RelatedLinkItem[] | undefined,
               backgroundColor: node.attrs.backgroundColor as string | undefined,
               borderWidth: node.attrs.borderWidth as number | undefined,
+              imageSize: node.attrs.imageSize as
+                | RelatedLinksImageSize
+                | undefined,
             }}
             onChange={(nextValue) => updateAttributes(nextValue)}
             disabled={isLocked}
@@ -121,6 +128,18 @@ export const RelatedLinks = Node.create({
           ),
         }),
       },
+      imageSize: {
+        default: RELATED_LINKS_DEFAULT_IMAGE_SIZE,
+        parseHTML: (element: HTMLElement) =>
+          normalizeRelatedLinksImageSize(
+            element.getAttribute("data-image-size"),
+          ),
+        renderHTML: (attributes: { imageSize?: string }) => ({
+          "data-image-size": normalizeRelatedLinksImageSize(
+            attributes.imageSize,
+          ),
+        }),
+      },
       locked: {
         default: false,
         parseHTML: (element: HTMLElement) =>
@@ -145,6 +164,7 @@ export const RelatedLinks = Node.create({
   renderHTML({ node, HTMLAttributes }) {
     const title = normalizeRelatedLinksTitle(node.attrs.title);
     const items = sanitizeRelatedLinksItems(node.attrs.items);
+    const imageSize = normalizeRelatedLinksImageSize(node.attrs.imageSize);
     const hasAnyImages = items.some((item) => Boolean(item.imageUrl));
     const children: unknown[] = [
       ["h3", {}, title],
@@ -165,6 +185,7 @@ export const RelatedLinks = Node.create({
                     {
                       src: item.imageUrl,
                       alt: item.imageAlt || "",
+                      style: `object-position: center ${normalizeRelatedLinkImagePositionY(item.imagePositionY)}%;`,
                       class: "related-links-block__image",
                     },
                   ],
@@ -205,7 +226,7 @@ export const RelatedLinks = Node.create({
       "section",
       mergeAttributes(
         {
-          class: "related-links-block",
+          class: `related-links-block related-links-block--image-size-${imageSize}`,
           "data-sbt-block": RELATED_LINKS_BLOCK_TYPE,
         },
         HTMLAttributes,

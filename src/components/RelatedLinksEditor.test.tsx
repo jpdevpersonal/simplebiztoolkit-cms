@@ -25,13 +25,15 @@ vi.mock("@/components/RelatedLinksBlock", () => ({
     title,
     items,
     variant,
+    imageSize,
   }: {
     title: string;
     items: Array<{ destinationTitle: string }>;
     variant: string;
+    imageSize?: string;
   }) => (
     <div data-testid="related-links-preview">
-      {`${variant}:${title}:${items.map((item) => item.destinationTitle).join("|")}`}
+      {`${variant}:${title}:${imageSize || "small"}:${items.map((item) => item.destinationTitle).join("|")}`}
     </div>
   ),
 }));
@@ -42,6 +44,7 @@ vi.mock("@/components/CmsImagePicker", () => ({
     label,
     onChangeAction,
     disabled,
+    modalAdditionalContent,
   }: {
     label: string;
     onChangeAction?: (image: {
@@ -50,20 +53,24 @@ vi.mock("@/components/CmsImagePicker", () => ({
       altText: string;
     }) => void;
     disabled?: boolean;
+    modalAdditionalContent?: React.ReactNode;
   }) => (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() =>
-        onChangeAction?.({
-          id: `${label.replace(/\s+/g, "-")}-id`,
-          url: `/images/${label.replace(/\s+/g, "-")}.webp`,
-          altText: `${label} alt`,
-        })
-      }
-    >
-      {`Pick ${label}`}
-    </button>
+    <div>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() =>
+          onChangeAction?.({
+            id: `${label.replace(/\s+/g, "-")}-id`,
+            url: `/images/${label.replace(/\s+/g, "-")}.webp`,
+            altText: `${label} alt`,
+          })
+        }
+      >
+        {`Pick ${label}`}
+      </button>
+      {modalAdditionalContent}
+    </div>
   ),
 }));
 
@@ -78,6 +85,7 @@ function makeItem(overrides: Partial<RelatedLinkItem> = {}): RelatedLinkItem {
     imageId: overrides.imageId ?? null,
     imageUrl: overrides.imageUrl ?? null,
     imageAlt: overrides.imageAlt ?? null,
+    imagePositionY: overrides.imagePositionY ?? 50,
   };
 }
 
@@ -342,5 +350,56 @@ describe("RelatedLinksEditor", () => {
     expect(getLastChange(onChange).items.map((item) => item.uid)).toEqual([
       "item-1",
     ]);
+  });
+
+  it("updates the image size setting and reflects it in preview", async () => {
+    const { user, onChange } = renderControlledEditor({
+      items: [
+        makeItem({
+          refId: "page-1",
+          href: "/guide-a",
+          destinationTitle: "Guide A",
+          imageUrl: "/images/guide-a.webp",
+        }),
+      ],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    await user.selectOptions(screen.getByLabelText("Image size"), "large");
+
+    expect(getLastChange(onChange)).toMatchObject({
+      imageSize: "large",
+    });
+    expect(screen.getByTestId("related-links-preview")).toHaveTextContent(
+      "content:Related to this:large:Guide A",
+    );
+  });
+
+  it("updates thumbnail framing so the crop can be pushed to the top", async () => {
+    const { onChange } = renderControlledEditor({
+      items: [
+        makeItem({
+          refId: "page-1",
+          href: "/guide-a",
+          destinationTitle: "Guide A",
+          imageUrl: "/images/guide-a.webp",
+        }),
+      ],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    fireEvent.change(screen.getByLabelText("Vertical position"), {
+      target: { value: "0" },
+    });
+
+    expect(getLastChange(onChange).items[0]).toMatchObject({
+      imagePositionY: 0,
+    });
   });
 });

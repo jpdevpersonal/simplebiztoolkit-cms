@@ -10,6 +10,7 @@ describe("relatedLinks serialization", () => {
       title: "Related to this",
       backgroundColor: "#f8f9fb",
       borderWidth: 2,
+      imageSize: "large",
       items: [
         {
           uid: "link-1",
@@ -21,6 +22,7 @@ describe("relatedLinks serialization", () => {
           imageId: "img-1",
           imageUrl: "/images/payroll-kit.webp",
           imageAlt: "Payroll starter kit cover",
+          imagePositionY: 0,
         },
       ],
     });
@@ -34,6 +36,7 @@ describe("relatedLinks serialization", () => {
       title: "Related to this",
       backgroundColor: "#f8f9fb",
       borderWidth: 2,
+      imageSize: "large",
       items: [
         expect.objectContaining({
           kind: "template",
@@ -42,6 +45,7 @@ describe("relatedLinks serialization", () => {
           destinationTitle: "Payroll checklist",
           label: "Payroll starter kit",
           imageUrl: "/images/payroll-kit.webp",
+          imagePositionY: 0,
         }),
       ],
     });

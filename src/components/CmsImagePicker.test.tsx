@@ -69,6 +69,7 @@ describe("CmsImagePicker", () => {
     await user.click(
       screen.getByRole("button", { name: "Edit featured image" }),
     );
+    await user.click(screen.getByRole("button", { name: "Show upload form" }));
 
     const fileInput = screen.getByLabelText("File") as HTMLInputElement;
     await user.upload(
@@ -111,6 +112,9 @@ describe("CmsImagePicker", () => {
     });
 
     await user.click(screen.getByRole("button", { name: /header.png/i }));
+    await user.click(
+      screen.getByRole("button", { name: "Show image details" }),
+    );
     await user.click(screen.getByRole("button", { name: "Delete image" }));
 
     await waitFor(() => {
@@ -139,6 +143,7 @@ describe("CmsImagePicker", () => {
     await user.click(
       screen.getByRole("button", { name: "Edit featured image" }),
     );
+    await user.click(screen.getByRole("button", { name: "Show upload form" }));
 
     await user.upload(
       screen.getByLabelText("File"),
@@ -200,10 +205,13 @@ describe("CmsImagePicker", () => {
     });
 
     await user.click(screen.getByRole("button", { name: /original.webp/i }));
-    await user.clear(screen.getAllByLabelText("Alt text")[1]);
-    await user.type(screen.getAllByLabelText("Alt text")[1], "Updated alt");
-    await user.clear(screen.getAllByLabelText("Caption")[1]);
-    await user.type(screen.getAllByLabelText("Caption")[1], "Updated caption");
+    await user.click(
+      screen.getByRole("button", { name: "Show image details" }),
+    );
+    await user.clear(screen.getByLabelText("Alt text"));
+    await user.type(screen.getByLabelText("Alt text"), "Updated alt");
+    await user.clear(screen.getByLabelText("Caption"));
+    await user.type(screen.getByLabelText("Caption"), "Updated caption");
     await user.upload(
       screen.getByLabelText("Replace file"),
       new File(["replacement"], "replacement.webp", { type: "image/webp" }),
@@ -274,6 +282,10 @@ describe("CmsImagePicker", () => {
 
     await user.click(screen.getByRole("button", { name: /photo.webp/i }));
 
+    await user.click(
+      screen.getByRole("button", { name: "Show image details" }),
+    );
+
     expect(
       screen.getByRole("button", { name: "Save image details" }),
     ).toBeDisabled();
@@ -303,12 +315,16 @@ describe("CmsImagePicker", () => {
 
     await user.click(screen.getByRole("button", { name: /banner.webp/i }));
 
+    await user.click(
+      screen.getByRole("button", { name: "Show image details" }),
+    );
+
     expect(
       screen.getByRole("button", { name: "Save image details" }),
     ).toBeDisabled();
 
-    await user.clear(screen.getAllByLabelText("Alt text")[1]);
-    await user.type(screen.getAllByLabelText("Alt text")[1], "New alt text");
+    await user.clear(screen.getByLabelText("Alt text"));
+    await user.type(screen.getByLabelText("Alt text"), "New alt text");
 
     expect(
       screen.getByRole("button", { name: "Save image details" }),
@@ -329,6 +345,27 @@ describe("CmsImagePicker", () => {
     expect(dialog).toBeInTheDocument();
   });
 
+  it("starts upload and edit sections collapsed when the modal opens", async () => {
+    const user = userEvent.setup();
+    vi.mocked(imageApi.getImages).mockResolvedValueOnce([]);
+
+    render(<CmsImagePicker label="featured image" />);
+    await user.click(
+      screen.getByRole("button", { name: "Edit featured image" }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Show upload form" }),
+    ).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen.getByRole("button", { name: "Show image details" }),
+    ).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByLabelText("File")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Save image details" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("closes the modal when the close button is clicked", async () => {
     const user = userEvent.setup();
     vi.mocked(imageApi.getImages).mockResolvedValueOnce([]);
@@ -343,5 +380,27 @@ describe("CmsImagePicker", () => {
     await user.click(screen.getByRole("button", { name: "Close" }));
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("renders caller-provided modal content", async () => {
+    const user = userEvent.setup();
+    vi.mocked(imageApi.getImages).mockResolvedValueOnce([]);
+
+    render(
+      <CmsImagePicker
+        label="featured image"
+        modalAdditionalContent={
+          <section className="cms-image-picker-section">
+            <div>Thumbnail framing controls</div>
+          </section>
+        }
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Edit featured image" }),
+    );
+
+    expect(screen.getByText("Thumbnail framing controls")).toBeInTheDocument();
   });
 });
