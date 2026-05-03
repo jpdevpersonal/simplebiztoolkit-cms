@@ -237,7 +237,7 @@ describe("ContentRenderer", () => {
   });
 
   it("renders related links blocks inline with optional thumbnails", () => {
-    const html = `<section data-sbt-block="related-links" data-items="${encodeRelatedLinksItems(
+    const html = `<section data-sbt-block="related-links" data-image-size="large" data-items="${encodeRelatedLinksItems(
       [
         {
           uid: "link-1",
@@ -249,6 +249,7 @@ describe("ContentRenderer", () => {
           imageId: "img-1",
           imageUrl: "/images/payroll-guide.webp",
           imageAlt: "Payroll guide thumbnail",
+          imagePositionY: 0,
         },
         {
           uid: "link-2",
@@ -282,14 +283,21 @@ describe("ContentRenderer", () => {
     expect(
       screen.getByRole("link", { name: "Payroll guide" }),
     ).not.toHaveAttribute("target");
-    expect(
-      container.querySelector(
-        '.related-links-block__image[src="/images/payroll-guide.webp"]',
-      ),
-    ).not.toBeNull();
+    const renderedImage = container.querySelector(
+      '.related-links-block__image[src="/images/payroll-guide.webp"]',
+    );
+    expect(renderedImage).not.toBeNull();
+    expect(renderedImage).toHaveAttribute(
+      "sizes",
+      "(max-width: 768px) 128px, 144px",
+    );
+    expect(renderedImage).toHaveStyle({ objectPosition: "center 0%" });
     expect(
       container.querySelectorAll(".related-links-block__media-placeholder"),
     ).toHaveLength(1);
+    expect(container.querySelector(".related-links-block")).toHaveClass(
+      "related-links-block--image-size-large",
+    );
     expect(
       screen.getByRole("link", { name: "Payroll checklist template" }),
     ).not.toHaveClass("related-links-block__link--text-only");

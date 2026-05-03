@@ -11,10 +11,12 @@ import { ContentCta } from "@/components/ContentCta";
 import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import {
   decodeRelatedLinksItems,
+  normalizeRelatedLinksImageSize,
   normalizeRelatedLinksTitle,
   parseRelatedLinksBlockFromAttributes,
   RELATED_LINKS_BLOCK_TYPE,
   type RelatedLinkItem,
+  type RelatedLinksImageSize,
 } from "@/lib/relatedLinks";
 import { sanitizeHtml, sanitizePublicContentHtml } from "@/lib/sanitize";
 
@@ -92,6 +94,7 @@ interface ContentBlock {
   relatedLinksItems?: RelatedLinkItem[];
   relatedLinksBackgroundColor?: string;
   relatedLinksBorderWidth?: number;
+  relatedLinksImageSize?: RelatedLinksImageSize;
 }
 
 type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5";
@@ -443,6 +446,9 @@ function parseContent(html: string): ContentBlock[] {
           element.getAttribute("data-background-color") || undefined,
         relatedLinksBorderWidth: parseOptionalNumericAttribute(
           element.getAttribute("data-border-width"),
+        ),
+        relatedLinksImageSize: normalizeRelatedLinksImageSize(
+          element.getAttribute("data-image-size"),
         ),
       });
     } else if (componentType === "section") {
@@ -840,6 +846,7 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
           items={block.relatedLinksItems || []}
           backgroundColor={block.relatedLinksBackgroundColor}
           borderWidth={block.relatedLinksBorderWidth}
+          imageSize={block.relatedLinksImageSize}
           variant="content"
         />
       );
@@ -1210,6 +1217,7 @@ function parseContentServer(html: string): ContentBlock[] {
         relatedLinksItems: parsed.items,
         relatedLinksBackgroundColor: parsed.backgroundColor,
         relatedLinksBorderWidth: parsed.borderWidth,
+        relatedLinksImageSize: parsed.imageSize,
       },
     });
   }

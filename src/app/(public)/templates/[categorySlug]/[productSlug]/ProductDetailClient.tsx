@@ -185,6 +185,7 @@ export default function ProductDetailClient({ product }: Props) {
                   items={block.items}
                   backgroundColor={block.backgroundColor}
                   borderWidth={block.borderWidth}
+                  imageSize={block.imageSize}
                   variant="template"
                 />
               ))}

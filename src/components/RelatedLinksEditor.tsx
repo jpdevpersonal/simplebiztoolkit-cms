@@ -5,20 +5,37 @@ import CmsImagePicker from "@/components/CmsImagePicker";
 import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import { clientApi } from "@/lib/clientApi";
 import { type ImageAsset } from "@/lib/imageApi";
+import { toTemplatesRoute } from "@/lib/templatesRoute";
 import {
   createRelatedLinkUid,
   normalizeRelatedLinksBorderWidth,
+  normalizeRelatedLinkImagePositionY,
   normalizeRelatedLinksDraftItems,
+  normalizeRelatedLinksImageSize,
   normalizeRelatedLinksTitle,
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  RELATED_LINKS_DEFAULT_IMAGE_SIZE,
+  RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y,
   RELATED_LINKS_MAX_ITEMS,
   sanitizeRelatedLinksItems,
   type RelatedLinkItem,
   type RelatedLinkKind,
   type RelatedLinksBlockData,
 } from "@/lib/relatedLinks";
-import { toTemplatesRoute } from "@/lib/templatesRoute";
+
+const IMAGE_SIZE_OPTIONS = [
+  { value: "small", label: "Small" },
+  { value: "medium", label: "Medium (1.5x)" },
+  { value: "large", label: "Large (2x)" },
+] as const;
+
+const RELATED_LINKS_MIN_IMAGE_DIMENSION = 288;
+const THUMBNAIL_POSITION_PRESETS = [
+  { label: "Top", value: 0 },
+  { label: "Center", value: RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y },
+  { label: "Bottom", value: 100 },
+] as const;
 
 type DestinationOption = {
   value: string;
@@ -45,6 +62,20 @@ function getDestinationLabel(item: RelatedLinkItem): string {
   return item.label?.trim() || item.destinationTitle;
 }
 
+function getThumbnailPositionLabel(positionY?: number | null): string {
+  const normalized = normalizeRelatedLinkImagePositionY(positionY);
+
+  if (normalized <= 15) {
+    return "Top";
+  }
+
+  if (normalized >= 85) {
+    return "Bottom";
+  }
+
+  return "Custom";
+}
+
 function normalizeEditorBlock(
   value: Partial<RelatedLinksBlockData>,
 ): RelatedLinksBlockData {
@@ -58,6 +89,7 @@ function normalizeEditorBlock(
     borderWidth:
       normalizeRelatedLinksBorderWidth(value.borderWidth) ??
       RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+    imageSize: normalizeRelatedLinksImageSize(value.imageSize),
   };
 }
 
@@ -231,6 +263,24 @@ export default function RelatedLinksEditor({
               imageId: image?.id ?? null,
               imageUrl: image?.url ?? null,
               imageAlt: image?.altText ?? null,
+              imagePositionY:
+                image !== null
+                  ? normalizeRelatedLinkImagePositionY(item.imagePositionY)
+                  : RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const handleImagePositionChange = (uid: string, imagePositionY: number) => {
+    updateItems(
+      block.items.map((item) =>
+        item.uid === uid
+          ? {
+              ...item,
+              imagePositionY:
+                normalizeRelatedLinkImagePositionY(imagePositionY),
             }
           : item,
       ),
@@ -268,6 +318,7 @@ export default function RelatedLinksEditor({
         imageId: null,
         imageUrl: null,
         imageAlt: null,
+        imagePositionY: RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y,
       },
     ]);
   };
@@ -300,6 +351,7 @@ export default function RelatedLinksEditor({
                 items={previewItems}
                 backgroundColor={block.backgroundColor}
                 borderWidth={block.borderWidth}
+                imageSize={block.imageSize}
                 variant={previewVariant}
               />
             </div>
@@ -370,6 +422,28 @@ export default function RelatedLinksEditor({
                 className="related-links-editor-field"
               />
             </label>
+
+            <label className="related-links-editor-control">
+              <span className="related-links-editor-label">Image size</span>
+              <select
+                value={block.imageSize || RELATED_LINKS_DEFAULT_IMAGE_SIZE}
+                onChange={(event) =>
+                  updateBlock({
+                    imageSize: normalizeRelatedLinksImageSize(
+                      event.target.value,
+                    ),
+                  })
+                }
+                disabled={disabled}
+                className="related-links-editor-field"
+              >
+                {IMAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </section>
       </div>
@@ -426,6 +500,9 @@ export default function RelatedLinksEditor({
               const selectedValue = item.refId
                 ? makeOptionValue(item.kind, item.refId)
                 : "";
+              const thumbnailPositionY = normalizeRelatedLinkImagePositionY(
+                item.imagePositionY,
+              );
 
               return (
                 <article key={item.uid} className="related-links-editor-item">
@@ -571,13 +648,105 @@ export default function RelatedLinksEditor({
                           Thumbnail
                         </div>
                         <div className="related-links-editor-helper">
-                          Optional square image displayed beside the link.
+                          Optional square image displayed beside the link. Use
+                          at least {RELATED_LINKS_MIN_IMAGE_DIMENSION}x
+                          {RELATED_LINKS_MIN_IMAGE_DIMENSION} for sharper
+                          thumbnails.
                         </div>
                       </div>
                       <CmsImagePicker
                         label={`link ${index + 1} image`}
                         value={item.imageUrl}
                         selectedImageId={item.imageId}
+                        minimumImageDimensions={{
+                          width: RELATED_LINKS_MIN_IMAGE_DIMENSION,
+                          height: RELATED_LINKS_MIN_IMAGE_DIMENSION,
+                          label: "Related link thumbnails",
+                        }}
+                        modalAdditionalContent={
+                          <section className="cms-image-picker-section">
+                            <div className="cms-image-picker-section-header">
+                              <h3>Thumbnail framing</h3>
+                              <span className="cms-image-picker-meta-pill">
+                                {getThumbnailPositionLabel(thumbnailPositionY)}
+                              </span>
+                            </div>
+
+                            {item.imageUrl ? (
+                              <div className="related-links-editor-frame-section">
+                                <div className="related-links-editor-frame-preview">
+                                  <img
+                                    src={item.imageUrl}
+                                    alt=""
+                                    className="related-links-editor-frame-preview-image"
+                                    style={{
+                                      objectPosition: `center ${thumbnailPositionY}%`,
+                                    }}
+                                  />
+                                </div>
+
+                                <div className="related-links-editor-frame-controls">
+                                  <label
+                                    className="related-links-editor-label"
+                                    htmlFor={`${item.uid}-thumbnail-position`}
+                                  >
+                                    Vertical position
+                                  </label>
+                                  <input
+                                    id={`${item.uid}-thumbnail-position`}
+                                    type="range"
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    value={thumbnailPositionY}
+                                    onChange={(event) =>
+                                      handleImagePositionChange(
+                                        item.uid,
+                                        Number(event.target.value),
+                                      )
+                                    }
+                                    disabled={disabled}
+                                    className="related-links-editor-frame-slider"
+                                  />
+                                  <div className="related-links-editor-frame-scale">
+                                    <span>Top</span>
+                                    <span>{thumbnailPositionY}%</span>
+                                    <span>Bottom</span>
+                                  </div>
+                                  <div className="related-links-editor-frame-presets">
+                                    {THUMBNAIL_POSITION_PRESETS.map(
+                                      (preset) => (
+                                        <button
+                                          key={preset.label}
+                                          type="button"
+                                          onClick={() =>
+                                            handleImagePositionChange(
+                                              item.uid,
+                                              preset.value,
+                                            )
+                                          }
+                                          disabled={disabled}
+                                          className={`admin-btn-action${thumbnailPositionY === preset.value ? " is-active" : ""}`}
+                                        >
+                                          {preset.label}
+                                        </button>
+                                      ),
+                                    )}
+                                  </div>
+                                  <div className="related-links-editor-helper">
+                                    Move the crop upward to keep the top of the
+                                    image visible inside the square thumbnail.
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="cms-image-picker-empty">
+                                Choose an image first, then adjust how the
+                                thumbnail is framed.
+                              </p>
+                            )}
+                          </section>
+                        }
                         onChangeAction={(image) =>
                           handleImageChange(item.uid, image)
                         }
