@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer" />
+    <!-- SEO: Optimised title targeting primary search intent -->
+    <title>Etsy CSV to Monthly Profit Report — Free Tool</title>
+    <!-- SEO: Meta description 140–160 chars -->
+    <meta
+      name="description"
+      content="Upload your Etsy CSV and instantly get a clean monthly profit report. See real revenue, fees &amp; profit — month by month. Free, no signup, runs entirely in your browser."
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="canonical"
+      href="https://www.simplebiztoolkit.com/tools/csv-profit-calculator"
+    />
+
+    <!-- SEO: Structured data schema markup -->
+    <script type="application/ld+json">
+      {Data processed locally in your browser. Nothing is uploaded or stored by this tool.
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.simplebiztoolkit.com/tools/csv-profit-calculator#app",
+            "name": "Etsy CSV to Monthly Profit Report Tool",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "description": "A free, browser-based tool for Etsy sellers. Upload your CSV export and instantly generate a clean monthly accounts summary showing revenue, fees, refunds, and real profit, ready for your accountant. No signup required. Your data stays on your device.",
+            "url": "https://www.simplebiztoolkit.com/tools/csv-profit-calculator",
+            "featureList": [
+              "Convert Etsy CSV to monthly accounts",
+              "Generate profit reports",
+              "Track fees and refunds",
+              "Download clean CSV and Excel reports",
+              "Runs entirely in browser (no uploads)"
+            ],
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "GBP"
+            },
+            "provider": {
+              "@type": "Organization",
+              "name": "Simple Biz Toolkit",
+              "url": "https://www.simplebiztoolkit.com"
+            }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://www.simplebiztoolkit.com/tools/csv-profit-calculator#webpage",
+            "url": "https://www.simplebiztoolkit.com/tools/csv-profit-calculator",
+            "name": "Etsy CSV to Monthly Profit Report — Free Tool",
+            "description": "Upload your Etsy CSV and instantly get a clean monthly profit report. See real revenue, fees and profit, month by month. Free, no signup, runs entirely in your browser.",
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "Simple Biz Toolkit",
+              "url": "https://www.simplebiztoolkit.com"
+            },
+            "primaryImageOfPage": {
+              "@type": "ImageObject",
+              "url": "https://www.simplebiztoolkit.com/images/simple-biz-toolkit-logo.png"
+            },
+            "primaryEntity": {
+              "@id": "https://www.simplebiztoolkit.com/tools/csv-profit-calculator#app"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How do I turn my Etsy CSV into monthly accounts?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Go to Etsy Shop Manager → Finances → Payment Account → Download CSV. Then upload that file to this tool. It automatically groups every transaction by month and produces a clean summary of your revenue, Etsy fees, refunds, and estimated profit — ready to download as CSV or Excel."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does this tool calculate my real profit?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. The tool calculates your net received each month after deducting fees and refunds. You can also add your own extra costs, such as packaging, ads, or subscriptions, and the tool will calculate an estimated profit figure for each month."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is my Etsy CSV data uploaded to a server?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Your CSV file is processed locally on your own device and is not uploaded for conversion. If the published page includes Google Ads or similar third-party services, those providers may still receive standard page request and browser data, but not your CSV contents."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What CSV file does Etsy provide for download?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Etsy provides a Payment Account CSV from your Shop Manager under Finances → Payment Account. It contains a detailed record of every transaction including sales, fees, refunds, and adjustments. This tool accepts that file and converts it into a readable monthly accounts summary."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Do I need to sign up or create an account to use this tool?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. There is no signup, no account, and no subscription required. The tool is completely free to use as many times as you like. Just upload your Etsy CSV and download your monthly profit report."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a
+        href="https://www.simplebiztoolkit.com"
+        class="site-brand"
+        aria-label="SimpleBizToolkit home"
+        rel="noreferrer"
+        referrerpolicy="no-referrer"
+      >
+        <img
+          src="images/simple-biz-toolkit-logo.png"
+          alt=""
+          class="sb-header-logo"
+          aria-hidden="true"
+        />
+        <span class="sb-brand-title">Simple Biz Toolkit</span>
+      </a>
+      <span class="site-privacy-badge">
+        <svg
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        Your data stays on your device
+      </span>
+    </header>
+
+    <main>
+      <div
+        id="statusMessage"
+        class="status"
+        role="alert"
+        aria-live="polite"
+      ></div>
+
+      <!-- ============================================================
+           Page title (SEO H1)
+           ============================================================ -->
+      <div class="page-title">
+        <h1>Etsy CSV to Profit Calculator</h1>
+        <p class="page-subtitle">
+          Free CSV profit calculator for Etsy sellers. See revenue, fees,
+          refunds and real profit instantly.
+        </p>
+      </div>
+
+      <!-- ============================================================
+           Hero
+           ============================================================ -->
+      <section class="hero" aria-label="Tool introduction">
+        <div class="hero-copy">
+          <!-- SEO: H2 — supporting heading under the page H1 -->
+          <h2>Make sense of your Etsy CSV in minutes</h2>
+          <!-- SEO: Intro addresses core pain point — messy CSV, real profit -->
+          <p class="intro">
+            Choose your Etsy payment CSV and get a clear month-by-month view of
+            revenue, fees, and profit, ready for your accountant or your books.
+          </p>
+          <div class="hero-benefits">
+            <span class="hero-benefit">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              No sign-up needed
+            </span>
+            <span class="hero-benefit">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Processed locally in your browser
+            </span>
+            <span class="hero-benefit">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Download as Excel or CSV
+            </span>
+            <span class="hero-benefit">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Up to 15 files at once
+            </span>
+          </div>
+        </div>
+        <aside class="hero-note" aria-label="How it works">
+          <strong class="hero-note-title">How it works</strong>
+          <p>
+            1. Go to Etsy &rarr; Shop Manager &rarr; Finances &rarr; Payment
+            Account &rarr; Download CSV.
+          </p>
+          <p>2. Drop that CSV into the tool below.</p>
+          <p>3. Review your profit breakdown and save your report.</p>
+          <div class="privacy">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Processed locally in your browser. Nothing is uploaded or stored by
+            this tool.
+          </div>
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           SEO: How This Etsy CSV Tool Works
+           ============================================================ -->
+      <section class="seo-explainer" aria-labelledby="seo-explainer-heading">
+        <h2 id="seo-explainer-heading">How This Etsy CSV Tool Works</h2>
+        <div class="seo-explainer-grid">
+          <div>
+            <h3>Why Etsy CSV Files Are Hard to Use</h3>
+            <p>
+              Etsy exports give you raw rows of sales, fees, refunds, and
+              adjustments mixed together. That makes it hard to see your monthly
+              totals or your real profit.
+            </p>
+          </div>
+          <div>
+            <h3>Create Monthly Etsy Profit Reports in Seconds</h3>
+            <p>
+              This tool groups your Etsy CSV by month, separates revenue, fees,
+              refunds, and adjustments, and lets you add extra costs. Then you
+              can download a clean CSV or Excel report.
+            </p>
+          </div>
+        </div>
+        <div class="seo-explainer-full">
+          <h3>Track Your Real Etsy Profit, Not Just Your Sales</h3>
+          <p>
+            Sales alone do not show what you actually keep. This report shows
+            your net received each month and estimates profit after your own
+            added costs.
+          </p>
+        </div>
+      </section>
+
+      <div class="tool-grid">
+        <!-- ============================================================
+             Step 1: Upload
+             ============================================================ -->
+        <section class="card" id="uploadCard" aria-labelledby="upload-heading">
+          <div class="card-header">
+            <div class="step-tag">
+              <span class="step-badge" aria-hidden="true">1</span>
+              Step 1 of 3
+            </div>
+            <h2 id="upload-heading">Choose your Etsy CSV files</h2>
+            <p class="helper">
+              Export your CSV from Etsy &rarr; Shop Manager &rarr; Finances
+              &rarr; Payment Account &rarr; Download CSV. Then drop it here, or
+              choose it below to see your report.
+            </p>
+          </div>
+
+          <div
+            id="uploadSectionStatus"
+            class="status status-inline"
+            role="alert"
+            aria-live="polite"
+          ></div>
+
+          <!-- Optional company name -->
+          <div class="company-panel">
+            <div class="company-panel-header">
+              <span class="company-panel-title">Company or shop name</span>
+              <span class="optional-badge">Optional</span>
+            </div>
+            <p class="helper">
+              If added, this appears at the top of your downloaded spreadsheet.
+            </p>
+            <input
+              id="companyNameInput"
+              type="text"
+              maxlength="100"
+              placeholder="e.g. My Etsy Shop Ltd"
+              aria-label="Company or shop name (optional)"
+            />
+          </div>
+
+          <!-- Drop zone -->
+          <div
+            id="uploadShell"
+            class="upload-zone"
+            role="button"
+            tabindex="0"
+            aria-label="Drop zone — click or drag to upload CSV files"
+          >
+            <div class="upload-zone-icon" aria-hidden="true">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </div>
+            <p class="upload-zone-title">Drop your Etsy CSV here</p>
+            <p class="upload-zone-or">or</p>
+            <div class="upload-zone-actions">
+              <button
+                type="button"
+                id="uploadButton"
+                class="button button-primary"
+              >
+                Choose CSV to get started
+              </button>
+              <span id="fileCount" class="file-count-pill" aria-live="polite"
+                >0 of 15 CSVs</span
+              >
+            </div>
+            <p class="upload-zone-hint">Accepts .csv files only</p>
+            <input
+              id="csvInput"
+              type="file"
+              accept=".csv,text/csv"
+              multiple
+              class="hidden"
+              aria-hidden="true"
+              tabindex="-1"
+            />
+            <div
+              id="uploadedFilesWrap"
+              class="uploaded-files-area hidden"
+              aria-live="polite"
+            >
+              <div class="uploaded-files-area-header">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                CSV files ready to analyse
+              </div>
+              <ul id="uploadedFilesList" class="upload-list"></ul>
+            </div>
+          </div>
+          <div class="upload-trust" role="note">
+            <p class="upload-trust-primary">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Processed locally in your browser — nothing is uploaded or stored
+            </p>
+            <p class="upload-trust-secondary">
+              For best practice, avoid including personal or sensitive
+              information
+            </p>
+          </div>
+        </section>
+
+        <section
+          class="card hidden"
+          id="processCard"
+          aria-labelledby="process-heading"
+        >
+          <div class="card-header">
+            <div class="step-tag">
+              <span class="step-badge" aria-hidden="true">2</span>
+              Step 2 of 3
+            </div>
+            <h2 id="process-heading">
+              Ready to generate your profit breakdown?
+            </h2>
+            <p class="helper">
+              We'll automatically use the standard Etsy columns we find in your
+              CSV. If anything looks wrong in the results, start over with a
+              fresh export.
+            </p>
+          </div>
+          <div
+            id="processSectionStatus"
+            class="status status-inline"
+            role="alert"
+            aria-live="polite"
+          ></div>
+          <div class="process-row">
+            <button
+              type="button"
+              id="processButton"
+              class="button button-primary"
+              disabled
+            >
+              Generate Profit Breakdown &rarr;
+            </button>
+            <span id="processHelper" class="helper"
+              >Choose at least one CSV to continue.</span
+            >
+            <button
+              type="button"
+              id="cancelButton"
+              class="button button-secondary hidden"
+            >
+              Start Over
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             Step 3: Summary and download
+             ============================================================ -->
+        <section
+          class="card hidden"
+          id="summarySection"
+          aria-labelledby="summary-heading"
+        >
+          <div class="card-header">
+            <div class="step-tag">
+              <span class="step-badge" aria-hidden="true">3</span>
+              Step 3 of 3
+            </div>
+            <h2 id="summary-heading">Your profit breakdown is ready</h2>
+            <p class="helper">
+              Review your figures below. Add extra costs if you want, then save
+              your report.
+            </p>
+          </div>
+
+          <div
+            id="summarySectionStatus"
+            class="status status-inline"
+            role="alert"
+            aria-live="polite"
+          ></div>
+
+          <div class="summary-layout">
+            <!-- Optional extra costs (collapsible) -->
+            <div class="extra-costs-panel" id="extraCostsPanel">
+              <div
+                class="extra-costs-header"
+                id="extraCostsToggle"
+                role="button"
+                aria-expanded="false"
+                aria-controls="extraCostsBody"
+                tabindex="0"
+              >
+                <div class="extra-costs-title-group">
+                  <div class="extra-costs-title">Add extra monthly costs</div>
+                  <div class="extra-costs-subtitle">
+                    Optional &mdash; packaging, ads, subscriptions &amp; more
+                  </div>
+                </div>
+                <svg
+                  class="extra-costs-toggle-icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+              <div class="extra-costs-body" id="extraCostsBody">
+                <p class="helper">
+                  Enter any extra business costs for each month. These are
+                  deducted from your Net Received to calculate Estimated Profit.
+                </p>
+                <div class="table-wrap cost-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Month</th>
+                        <th>Packaging</th>
+                        <th>Shipping Supplies</th>
+                        <th>Ads</th>
+                        <th>Subscriptions</th>
+                        <th>Other Costs</th>
+                      </tr>
+                    </thead>
+                    <tbody id="costTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary table -->
+            <div>
+              <div class="summary-table-header">
+                <h3>Your monthly profit breakdown</h3>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Revenue</th>
+                      <th>Etsy Fees</th>
+                      <th>Refunds</th>
+                      <th>Adjustments</th>
+                      <th>Net Received</th>
+                      <th>Extra Costs</th>
+                      <th>Estimated Profit</th>
+                    </tr>
+                  </thead>
+                  <tbody id="summaryTableBody"></tbody>
+                  <tfoot id="summaryTableFoot"></tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Download panel -->
+          <div class="download-panel">
+            <div class="download-panel-title">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Save your report
+            </div>
+            <p class="download-hint">
+              Choose your preferred format. The Excel download includes your
+              company name and styling.
+            </p>
+            <div class="download-formats">
+              <button
+                type="button"
+                id="downloadXlsxButton"
+                class="button button-primary"
+              >
+                Save for Excel
+              </button>
+              <button
+                type="button"
+                id="downloadCsvButton"
+                class="button button-primary"
+              >
+                Save as CSV
+              </button>
+            </div>
+            <div
+              id="downloadReadyMessage"
+              class="status status-inline"
+              role="alert"
+              aria-live="polite"
+            ></div>
+            <div class="secondary-actions">
+              <button
+                type="button"
+                id="submitAnotherButton"
+                class="button button-secondary hidden"
+              >
+                Analyse another CSV &rarr;
+              </button>
+            </div>
+          </div>
+
+          <p class="disclaimer">
+            <strong>Please note:</strong> This tool provides a simplified
+            summary for reference only. It is not a substitute for professional
+            accounting advice. Always verify your figures with a qualified
+            accountant, and check your report before use as Etsy's CSV format
+            can vary.
+          </p>
+        </section>
+      </div>
+
+      <!-- ============================================================
+           SEO: Supporting keyword content
+           ============================================================ -->
+      <section class="seo-keywords" aria-label="Etsy profit tracking guide">
+        <div class="seo-keywords-grid">
+          <div>
+            <h2>Why Monthly Profit Reports Matter for Etsy Sellers</h2>
+            <p>
+              Etsy&rsquo;s dashboard shows sales, not profit. After fees,
+              refunds, and your own costs, the number you actually keep is often
+              very different. A clean monthly Etsy profit report makes that
+              clear &mdash; and makes tax time significantly less stressful.
+            </p>
+          </div>
+          <div>
+            <h2>Your data Stays on Your Device</h2>
+            <p>
+              Your CSV is handled entirely in your browser. It is not uploaded
+              or stored by this tool.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           Promo
+           ============================================================ -->
+      <section class="promo" aria-label="More tools">
+        <div>
+          <!-- SEO: Benefit-driven heading connecting to post-tool next step -->
+          <h2>Keep Your Accounts Organised Year-Round</h2>
+          <div class="promoPadding">
+            Once you have your clean monthly profit report, the next step is
+            keeping your books organised. Our printable accounting ledger is
+            designed for small business owners, a clear, simple layout you can
+            print and fill in or use digitally. No complicated software, no
+            subscription required.
+          </div>
+          <a
+            class="button button-primary"
+            href="https://www.simplebiztoolkit.com/templates/accounting-ledger/printable-accounting-ledger-accounts-receivable"
+            rel="noreferrer"
+            referrerpolicy="no-referrer"
+            style="
+              display: inline-flex;
+              margin-top: 0.75rem;
+              border-radius: 999px;
+            "
+          >
+            View Monthly Accounting Ledger &rarr;
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        &copy;
+        <a
+          href="https://www.simplebiztoolkit.com"
+          rel="noreferrer"
+          referrerpolicy="no-referrer"
+          >SimpleBizToolkit.com</a
+        >
+        Free tools and templates for small business owners. Your CSV data stays
+        in your browser.
+      </p>
+      <p class="footer-disclaimer">
+        This tool is not affiliated with, endorsed by, or associated with Etsy,
+        Inc.
+      </p>
+    </footer>
+
+    <script src="app.js?v=20260502a" defer></script>
+  </body>
+</html>
