@@ -1994,7 +1994,9 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     documentRef.body.appendChild(link);
     link.click();
     documentRef.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 0);
   }
 
   function buildDownloadName(extension: string) {
