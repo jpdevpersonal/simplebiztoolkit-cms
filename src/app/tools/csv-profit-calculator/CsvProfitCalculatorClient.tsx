@@ -1,7 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 type MappingKey = "date" | "type" | "amount" | "fee" | "net" | "description";
@@ -2840,11 +2839,9 @@ export default function CsvProfitCalculatorClient() {
               print and fill in or use digitally. No complicated software, no
               subscription required.
             </div>
-            <a
+            <Link
               className="button button-primary"
               href="/templates/accounting-ledger/printable-accounting-ledger-accounts-receivable"
-              rel="noreferrer"
-              referrerPolicy="no-referrer"
               style={{
                 display: "inline-flex",
                 marginTop: "0.75rem",
@@ -2852,7 +2849,7 @@ export default function CsvProfitCalculatorClient() {
               }}
             >
               View Monthly Accounting Ledger &rarr;
-            </a>
+            </Link>
           </div>
         </section>
       </main>
