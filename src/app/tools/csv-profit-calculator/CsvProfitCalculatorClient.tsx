@@ -2219,7 +2219,17 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 
   function handleVisibilityChange() {
     if (documentRef.visibilityState === "hidden") {
-      clearInMemoryCsvData();
+      const hadSensitiveData =
+        state.uploadedFiles.length > 0 || state.summaryRows.length > 0;
+
+      if (!hadSensitiveData) return;
+
+      resetToolState();
+      announce(
+        "upload",
+        "Your uploaded CSV data was cleared when the tab was hidden to protect your privacy. Please upload your files again to continue.",
+        "info",
+      );
     }
   }
 
