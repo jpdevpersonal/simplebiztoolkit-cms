@@ -2842,7 +2842,7 @@ export default function CsvProfitCalculatorClient() {
             </div>
             <a
               className="button button-primary"
-              href="../templates/accounting-ledger/printable-accounting-ledger-accounts-receivable"
+              href="/templates/accounting-ledger/printable-accounting-ledger-accounts-receivable"
               rel="noreferrer"
               referrerPolicy="no-referrer"
               style={{
