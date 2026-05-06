@@ -2002,7 +2002,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
       state.uploadedFiles.length === 1
         ? state.uploadedFiles[0].name.replace(/\.csv$/i, "")
         : "etsy-multi-month-accounts";
-    return `${base}-clean-monthly-accounts.${extension}`;
+    return `${base}-profit-report.${extension}`;
   }
 
   function columnNumberToName(value: number) {
