@@ -38,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${site.url}/help`, lastModified: now },
     { url: `${site.url}/contact`, lastModified: now },
     { url: `${site.url}/free`, lastModified: now },
+    { url: `${site.url}/tools/csv-profit-calculator`, lastModified: now },
   ];
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({
