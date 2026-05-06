@@ -46,10 +46,10 @@
     system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* --- Reset & base ------------------------------------------------- */
-*,
-*::before,
-*::after {
+/* --- Reset & base (scoped to avoid CSS bleed during Next.js client nav) --- */
+.csv-profit-calculator-page *,
+.csv-profit-calculator-page *::before,
+.csv-profit-calculator-page *::after {
   box-sizing: border-box;
 }
 
@@ -57,33 +57,29 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  margin: 0;
+/* --- Page layout (was: body + main) -------------------------------- */
+.csv-profit-calculator-page {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
   min-height: 100vh;
   font-family: var(--font-body);
   color: var(--text);
   background: #ffffff;
   line-height: 1.55;
+  padding: 2.25rem 0 5rem;
 }
 
-h1,
-h2,
-h3 {
+.csv-profit-calculator-page h1,
+.csv-profit-calculator-page h2,
+.csv-profit-calculator-page h3 {
   margin: 0;
   color: var(--heading);
   font-family: var(--font-heading);
   line-height: 1.15;
 }
 
-p {
+.csv-profit-calculator-page p {
   margin: 0;
-}
-
-/* --- Page layout -------------------------------------------------- */
-main {
-  width: min(1120px, calc(100% - 2rem));
-  margin: 0 auto;
-  padding: 2.25rem 0 5rem;
 }
 
 /* --- Status messages (global and inline) -------------------------- */
@@ -757,9 +753,9 @@ main {
 }
 
 /* --- Form inputs -------------------------------------------------- */
-select,
-input[type="number"],
-input[type="text"] {
+.csv-profit-calculator-page select,
+.csv-profit-calculator-page input[type="number"],
+.csv-profit-calculator-page input[type="text"] {
   width: 100%;
   min-height: 46px;
   padding: 0.75rem 0.9rem;
@@ -774,9 +770,9 @@ input[type="text"] {
     box-shadow 0.15s ease;
 }
 
-select:focus,
-input[type="number"]:focus,
-input[type="text"]:focus {
+.csv-profit-calculator-page select:focus,
+.csv-profit-calculator-page input[type="number"]:focus,
+.csv-profit-calculator-page input[type="text"]:focus {
   outline: none;
   border-color: rgba(19, 105, 74, 0.5);
   box-shadow: 0 0 0 3px rgba(19, 105, 74, 0.1);
