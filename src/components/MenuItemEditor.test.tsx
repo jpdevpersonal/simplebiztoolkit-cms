@@ -2,7 +2,6 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MenuItemEditor from "./MenuItemEditor";
 import { clientApi } from "@/lib/clientApi";
-import { revalidateMenuContent } from "@/lib/adminRevalidation";
 
 const routerPush = vi.fn();
 const routerRefresh = vi.fn();
@@ -31,18 +30,13 @@ vi.mock("@/lib/clientApi", () => ({
   },
 }));
 
-vi.mock("@/lib/adminRevalidation", () => ({
-  revalidateMenuContent: vi.fn(),
-}));
-
 describe("MenuItemEditor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("revalidates menu content after updating a menu item", async () => {
+  it("updates a menu item without client-side revalidation", async () => {
     vi.mocked(clientApi.updateMenuItem).mockResolvedValueOnce({} as never);
-    vi.mocked(revalidateMenuContent).mockResolvedValueOnce(undefined as never);
 
     render(
       <MenuItemEditor
@@ -57,7 +51,6 @@ describe("MenuItemEditor", () => {
         "menu-1",
         expect.any(Object),
       );
-      expect(revalidateMenuContent).toHaveBeenCalledTimes(1);
       expect(routerRefresh).toHaveBeenCalled();
     });
   });

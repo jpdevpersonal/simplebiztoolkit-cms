@@ -12,12 +12,15 @@ import {
   createBreadcrumbJsonLd,
   createPageMetadata,
   createWebPageJsonLd,
+  normalizePublicUrl,
 } from "@/lib/seo";
 import "@/styles/contentPage.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+export const revalidate = 300;
 
 /**
  * Generate static params for ISR – pre-renders published menu item pages at
@@ -41,7 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!response.data) return {};
 
   const page = response.data;
-  const ogImage = page.ogImage || page.featuredImage || page.headerImage;
+  const headerImage = normalizePublicUrl(page.headerImage);
+  const ogImage =
+    normalizePublicUrl(page.ogImage) ??
+    normalizePublicUrl(page.featuredImage) ??
+    headerImage;
 
   return createPageMetadata({
     title: page.seoTitle || page.title,
@@ -67,13 +74,21 @@ export default async function MenuItemPageView({ params }: Props) {
   if (!response.data) notFound();
 
   const page = response.data;
+  const headerImage = normalizePublicUrl(page.headerImage);
 
   let parentCategory = page.menuCategory;
-  if (!parentCategory && page.menuCategoryId) {
+  if (
+    page.menuCategoryId &&
+    (!parentCategory || !parentCategory.menuItemId || !parentCategory.title)
+  ) {
     const categoryResponse = await apiService.getMenuCategoryById(
       page.menuCategoryId,
     );
-    parentCategory = categoryResponse.data;
+    if (categoryResponse.data) {
+      parentCategory = parentCategory
+        ? { ...categoryResponse.data, ...parentCategory }
+        : categoryResponse.data;
+    }
   }
 
   // Resolve parent menu item for breadcrumb (may be provided inline or referenced by id)
@@ -89,11 +104,35 @@ export default async function MenuItemPageView({ params }: Props) {
     parentMenuItem = menuItemResponse.data;
   }
   // Fallback: scan the published menu items list (same reliable source used for navigation)
-  if (!parentMenuItem) {
-    const targetId = page.menuItemId ?? parentCategory?.menuItemId;
-    if (targetId) {
-      const allItems = await getPublishedMenuItems();
-      parentMenuItem = allItems.find((i) => i.id === targetId);
+  if (!parentMenuItem || (page.menuCategoryId && !parentCategory?.menuItemId)) {
+    const allItems = await getPublishedMenuItems();
+
+    if (page.menuCategoryId) {
+      const itemWithCategory = allItems.find((item) =>
+        (item.categories ?? []).some(
+          (category) => category.id === page.menuCategoryId,
+        ),
+      );
+
+      if (itemWithCategory) {
+        parentMenuItem ??= itemWithCategory;
+        const matchedCategory = (itemWithCategory.categories ?? []).find(
+          (category) => category.id === page.menuCategoryId,
+        );
+
+        if (matchedCategory) {
+          parentCategory = parentCategory
+            ? { ...matchedCategory, ...parentCategory }
+            : matchedCategory;
+        }
+      }
+    }
+
+    if (!parentMenuItem) {
+      const targetId = page.menuItemId ?? parentCategory?.menuItemId;
+      if (targetId) {
+        parentMenuItem = allItems.find((item) => item.id === targetId);
+      }
     }
   }
 
@@ -124,7 +163,7 @@ export default async function MenuItemPageView({ params }: Props) {
     href: `/${page.slug}`,
     datePublished: page.dateISO,
     dateModified: page.dateModified,
-    image: page.headerImage,
+    image: headerImage,
   });
   const breadcrumbJsonLd = createBreadcrumbJsonLd(breadcrumbItems);
 
@@ -142,10 +181,10 @@ export default async function MenuItemPageView({ params }: Props) {
         </header>
 
         {/* Header image */}
-        {page.headerImage && (
+        {headerImage && (
           <div className="content-header-image">
             <Image
-              src={page.headerImage}
+              src={headerImage}
               alt={page.title}
               width={1200}
               height={630}

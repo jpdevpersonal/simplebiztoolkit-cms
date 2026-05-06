@@ -1,11 +1,6 @@
 import "@testing-library/jest-dom/vitest";
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import SiteNavigation from "./SiteNavigation";
 
@@ -83,16 +78,11 @@ describe("SiteNavigation", () => {
   });
 
   it("opens and closes mobile menu", async () => {
+    const user = userEvent.setup();
     mockUsePathname.mockReturnValue("/");
     render(<SiteNavigation />);
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Open menu" }),
-      ).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
     expect(
       screen.getByRole("button", { name: "Close menu" }),
     ).toBeInTheDocument();
@@ -100,9 +90,13 @@ describe("SiteNavigation", () => {
       screen.getByRole("dialog", { name: "Site navigation" }),
     ).toHaveAttribute("aria-modal", "true");
 
-    fireEvent.click(screen.getByRole("button", { name: "Close menu" }));
+    await user.click(screen.getByRole("button", { name: "Close menu" }));
 
     await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Open menu" })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
       expect(document.body.style.overflow).toBe("");
     });
   });

@@ -64,7 +64,7 @@ The following unit tests now cover the App Router API handlers and shared HTTP h
 - `src/app/api/auth/[...nextauth]/route.test.ts`
   - Verifies the route re-exports `GET`/`POST` handlers from `@/lib/auth`.
 - `src/app/api/revalidate/route.test.ts`
-  - Covers unauthorized secret, invalid `type`, successful revalidation paths, and failure handling (`500`).
+  - Covers unauthorized secret, `paths`/`tags` validation, successful targeted revalidation, safe empty payloads, and failure handling (`500`).
 - `src/app/api/products/route.test.ts`
   - Covers auth guard and authenticated proxy behavior for product creation.
 - `src/app/api/products/[id]/route.test.ts`
@@ -78,7 +78,7 @@ The following unit tests now cover the App Router API handlers and shared HTTP h
 - `src/lib/apiProxy.test.ts`
   - Covers `requireAuth` session handling and `proxyToBackend` header/body forwarding behavior.
 - `src/lib/clientApi.test.ts`
-  - Covers request construction, revalidation secret forwarding, article URL construction, and non-OK error propagation.
+  - Covers admin/public request construction, menu/page query builders, article URL construction, and non-OK error propagation.
 
 ### Focused test commands
 

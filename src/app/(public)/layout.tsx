@@ -10,6 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
 import BootstrapClient from "../BootstrapClient";
+import GoogleAnalyticsPageTracker from "../GoogleAnalyticsPageTracker";
 import ScrollToTop from "../ScrollToTop";
 import {
   FOOTER_MENU_LOCATION_KEY,
@@ -24,6 +25,8 @@ import {
   getPublishedMenuItemContent,
   orderMenuItemsByLayout,
 } from "@/lib/menuContent";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -92,6 +95,7 @@ export default async function PublicLayout({
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const gaMeasurementId = gaId ?? "G-3ZQY64S5JJ";
 
   // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
@@ -129,24 +133,24 @@ export default async function PublicLayout({
 
   return (
     <>
-      {gaId ? (
-        <>
-          <Script
-            async
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            strategy="afterInteractive"
-          />
-          <Script id="ga-init" strategy="afterInteractive">
-            {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
+      {/* Google tag (gtag.js) */}
+      <Script
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+        strategy="afterInteractive"
+      />
+      <Script id="gtag-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);} 
+          gtag('js', new Date());
 
-gtag('config', '${gaId}');`}
-          </Script>
-        </>
-      ) : null}
+          gtag('config', '${gaMeasurementId}');
+        `}
+      </Script>
 
       <BootstrapClient />
+      <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
       <ScrollToTop />
 
       <JsonLd json={createWebsiteJsonLd()} />

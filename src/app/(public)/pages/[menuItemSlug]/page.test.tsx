@@ -61,7 +61,7 @@ describe("Menu item landing page", () => {
     expect(container.querySelectorAll(".sb-content-link")).toHaveLength(2);
   });
 
-  it("keeps the existing page grid when topics exist", async () => {
+  it("renders direct pages as article cards when topics exist", async () => {
     menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
       {
         id: "guides",
@@ -106,8 +106,10 @@ describe("Menu item landing page", () => {
       }),
     );
 
-    expect(container.querySelectorAll(".page-card").length).toBeGreaterThan(0);
-    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(0);
+    expect(screen.getByText("Other Pages")).toBeInTheDocument();
+    expect(container.querySelectorAll(".page-card")).toHaveLength(1);
+    expect(container.querySelectorAll(".sb-card")).toHaveLength(1);
+    expect(container.querySelectorAll(".sb-content-link")).toHaveLength(1);
   });
 
   it("renders the menu item description when populated", async () => {
@@ -150,5 +152,54 @@ describe("Menu item landing page", () => {
       screen.getByText("Expert guidance", { exact: false }),
     ).toBeInTheDocument();
     expect(screen.getByText("Expert guidance").tagName).toBe("STRONG");
+  });
+
+  it("falls back to a valid header image when a featured image is a local file path", async () => {
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
+      {
+        id: "guides",
+        title: "Guides",
+        status: "published",
+      },
+    ]);
+    menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
+      id: "guides",
+      title: "Guides",
+      status: "published",
+      publishedCategories: [],
+      directPages: [
+        {
+          id: "page-1",
+          slug: "guide-a",
+          title: "Guide A",
+          description: "First page",
+          status: "published",
+          dateISO: "2026-03-01",
+          featuredImage:
+            "c:\\Users\\Admin\\Documents\\Read Now\\SEO and Generative-SEO Playbook for Simple Biz Toolkit.pdf",
+          headerImage: "/images/safe-guide.webp",
+        },
+        {
+          id: "page-2",
+          slug: "guide-b",
+          title: "Guide B",
+          description: "Second page",
+          status: "published",
+          dateISO: "2026-03-02",
+        },
+      ],
+      totalPages: 2,
+    });
+
+    const { default: MenuItemLandingPage } = await import("./page");
+    const { container } = render(
+      await MenuItemLandingPage({
+        params: Promise.resolve({ menuItemSlug: "guides" }),
+      }),
+    );
+
+    const images = container.querySelectorAll("img");
+    expect(images).toHaveLength(1);
+    expect(images[0]).toHaveAttribute("src", "/images/safe-guide.webp");
   });
 });

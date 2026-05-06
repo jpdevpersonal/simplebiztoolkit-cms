@@ -19,6 +19,8 @@ import {
   NodeViewWrapper,
   type NodeViewProps,
 } from "@tiptap/react";
+import CmsImagePicker from "@/components/CmsImagePicker";
+import type { ImageAsset } from "@/lib/imageApi";
 import { LockedBadge } from "./LockedBadge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -42,19 +44,30 @@ interface CTAAttrs {
   secondButtonColor?: string | null;
   secondButtonPadding?: number | null;
   secondButtonRadius?: number | null;
+  mediaType?: CTAMediaType;
+  imageId?: string | null;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  imageAlignment?: CTAImageAlignment;
+  imageLinkUrl?: string | null;
 }
 
 type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5";
 type CTAButtonAlignment = "none" | "left" | "center" | "right";
 type CTAButtonRole = "primary" | "secondary";
+type CTAMediaType = "button" | "image";
+type CTAImageAlignment = "left" | "right";
 
-const CTA_HEADING_OPTIONS: HeadingLevel[] = ["h1", "h2", "h3", "h4", "h5"];
+const CTA_HEADING_LEVELS: HeadingLevel[] = ["h1", "h2", "h3", "h4", "h5"];
+const CTA_HEADING_OPTIONS: HeadingLevel[] = ["h2", "h3", "h4", "h5"];
 const CTA_BUTTON_ALIGNMENT_OPTIONS: CTAButtonAlignment[] = [
   "none",
   "left",
   "center",
   "right",
 ];
+const CTA_MEDIA_TYPE_OPTIONS: CTAMediaType[] = ["button", "image"];
+const CTA_IMAGE_ALIGNMENT_OPTIONS: CTAImageAlignment[] = ["left", "right"];
 
 const CTA_LEVEL_FONT_SIZES: Record<HeadingLevel, string> = {
   h1: "2.25rem",
@@ -71,6 +84,8 @@ const CTA_BUTTON_DEFAULT_RADIUS = 10;
 const CTA_BUTTON_DEFAULT_GAP = 16;
 const CTA_BUTTON_DEFAULT_ALIGNMENT: CTAButtonAlignment = "none";
 const CTA_SECOND_BUTTON_DEFAULT_ALIGNMENT: CTAButtonAlignment = "none";
+const CTA_MEDIA_TYPE_DEFAULT: CTAMediaType = "button";
+const CTA_IMAGE_ALIGNMENT_DEFAULT: CTAImageAlignment = "right";
 const CTA_BUTTON_DEFAULT_PREVIEW_BG =
   "linear-gradient(135deg, #1a7f5a 0%, #0d5c3f 100%)";
 const CTA_SECTION_DEFAULT_BG = "#f8f9fa";
@@ -81,22 +96,65 @@ const CTA_BUTTON_WHITE_BORDER = "1px solid rgba(0, 0, 0, .2)";
 type CTAButtonStyleVars = React.CSSProperties & Record<`--${string}`, string>;
 
 function isHeadingLevel(value: unknown): value is HeadingLevel {
-  return CTA_HEADING_OPTIONS.includes(value as HeadingLevel);
+  return CTA_HEADING_LEVELS.includes(value as HeadingLevel);
+}
+
+function normalizeEditableHeadingLevel(
+  level: HeadingLevel,
+): Exclude<HeadingLevel, "h1"> {
+  return level === "h1" ? "h2" : level;
 }
 
 function isCTAButtonAlignment(value: unknown): value is CTAButtonAlignment {
   return CTA_BUTTON_ALIGNMENT_OPTIONS.includes(value as CTAButtonAlignment);
 }
 
+function isCTAMediaType(value: unknown): value is CTAMediaType {
+  return CTA_MEDIA_TYPE_OPTIONS.includes(value as CTAMediaType);
+}
+
+function isCTAImageAlignment(value: unknown): value is CTAImageAlignment {
+  return CTA_IMAGE_ALIGNMENT_OPTIONS.includes(value as CTAImageAlignment);
+}
+
+function isCTAMediaLinkElement(element: Element): boolean {
+  return (
+    element.getAttribute("data-cta-media-link") === "true" ||
+    element.querySelector("img") !== null
+  );
+}
+
 function getCTAButtonElement(
   el: HTMLElement,
   role: CTAButtonRole,
 ): Element | null {
-  const button = el.querySelector(`a[data-button-role="${role}"]`);
+  const button = el.querySelector(
+    `a[data-button-role="${role}"]:not([data-cta-media-link="true"])`,
+  );
   if (button) return button;
 
-  const anchors = el.querySelectorAll("a");
+  const anchors = Array.from(el.querySelectorAll("a")).filter(
+    (anchor) => !isCTAMediaLinkElement(anchor),
+  );
   return role === "primary" ? anchors[0] || null : anchors[1] || null;
+}
+
+function getCTAMediaFigure(el: HTMLElement): HTMLElement | null {
+  return el.querySelector('figure[data-cta-media="image"]');
+}
+
+function getCTAMediaImageElement(el: HTMLElement): HTMLImageElement | null {
+  return getCTAMediaFigure(el)?.querySelector("img") || null;
+}
+
+function getCTAMediaLinkElement(el: HTMLElement): HTMLAnchorElement | null {
+  return (
+    (el.querySelector(
+      'a[data-cta-media-link="true"]',
+    ) as HTMLAnchorElement | null) ||
+    getCTAMediaFigure(el)?.querySelector("a") ||
+    null
+  );
 }
 
 function getCTAButtonLayout<T extends { align: CTAButtonAlignment }>(
@@ -229,10 +287,21 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
   const secondButtonAlign = node.attrs.secondButtonAlign as
     | CTAButtonAlignment
     | undefined;
+  const mediaType = node.attrs.mediaType as CTAMediaType | undefined;
+  const imageId = node.attrs.imageId as string | undefined;
+  const imageUrl = node.attrs.imageUrl as string | undefined;
+  const imageAlt = node.attrs.imageAlt as string | undefined;
+  const imageAlignment = node.attrs.imageAlignment as
+    | CTAImageAlignment
+    | undefined;
+  const imageLinkUrl = node.attrs.imageLinkUrl as string | undefined;
   const resolvedTitleLevel =
     titleLevel && isHeadingLevel(titleLevel) ? titleLevel : "h2";
   const resolvedTextLevel =
     textLevel && isHeadingLevel(textLevel) ? textLevel : "h5";
+  const resolvedMediaType = isCTAMediaType(mediaType)
+    ? mediaType
+    : CTA_MEDIA_TYPE_DEFAULT;
   const resolvedButtonGap =
     typeof buttonGap === "number" ? buttonGap : CTA_BUTTON_DEFAULT_GAP;
   const resolvedButtonAlign = isCTAButtonAlignment(buttonAlign)
@@ -282,6 +351,12 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
     typeof borderWidth === "number"
       ? borderWidth
       : CTA_SECTION_DEFAULT_BORDER_WIDTH;
+  const resolvedImageAlignment = isCTAImageAlignment(imageAlignment)
+    ? imageAlignment
+    : CTA_IMAGE_ALIGNMENT_DEFAULT;
+  const resolvedImageLinkUrl = imageLinkUrl || "";
+  const isImageMode = resolvedMediaType === "image";
+  const previewImageAlt = imageAlt || title || "CTA image";
   const buttonLayout = getCTAButtonLayout(
     [
       {
@@ -452,6 +527,36 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
             <div style={controlsPanelStyle}>
               <div style={controlSectionStyle}>
                 <div style={sectionTitleStyle}>CTA section</div>
+                <div style={controlRowStyle}>
+                  <label
+                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
+                  >
+                    CTA content
+                  </label>
+                  <select
+                    value={resolvedMediaType}
+                    onChange={(e) => {
+                      const nextMediaType = e.target.value as CTAMediaType;
+                      updateAttributes({
+                        mediaType: nextMediaType,
+                        ...(nextMediaType === "image" &&
+                        !imageLinkUrl &&
+                        buttonUrl
+                          ? { imageLinkUrl: buttonUrl }
+                          : {}),
+                      });
+                    }}
+                    disabled={isLocked}
+                    style={{ width: 132, padding: "4px 8px" }}
+                  >
+                    {CTA_MEDIA_TYPE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option === "button" ? "Buttons" : "Linked image"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div style={colorRowStyle}>
                   <label
                     style={{
@@ -512,191 +617,267 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                 </div>
               </div>
 
-              <div style={controlSectionStyle}>
-                <div style={sectionTitleStyle}>Primary button</div>
-                <div style={colorRowStyle}>
-                  <label
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      width: 110,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Button background
-                  </label>
-                  <input
-                    type="color"
-                    value={buttonBg || CTA_BUTTON_DEFAULT_BG}
-                    onChange={(e) =>
-                      updateAttributes({ buttonBg: e.target.value })
-                    }
-                    disabled={isLocked}
-                    style={{
-                      width: 48,
-                      height: 28,
-                      border: "none",
-                      padding: 0,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <input
-                    type="text"
-                    value={buttonBg || CTA_BUTTON_DEFAULT_BG}
-                    onChange={(e) =>
-                      updateAttributes({ buttonBg: e.target.value })
-                    }
-                    disabled={isLocked}
-                    style={{
-                      width: 96,
-                      fontSize: "0.8125rem",
-                      padding: "4px 8px",
-                    }}
-                  />
-                </div>
+              {!isImageMode && (
+                <div style={controlSectionStyle}>
+                  <div style={sectionTitleStyle}>Primary button</div>
+                  <div style={colorRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Button background
+                    </label>
+                    <input
+                      type="color"
+                      value={buttonBg || CTA_BUTTON_DEFAULT_BG}
+                      onChange={(e) =>
+                        updateAttributes({ buttonBg: e.target.value })
+                      }
+                      disabled={isLocked}
+                      style={{
+                        width: 48,
+                        height: 28,
+                        border: "none",
+                        padding: 0,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={buttonBg || CTA_BUTTON_DEFAULT_BG}
+                      onChange={(e) =>
+                        updateAttributes({ buttonBg: e.target.value })
+                      }
+                      disabled={isLocked}
+                      style={{
+                        width: 96,
+                        fontSize: "0.8125rem",
+                        padding: "4px 8px",
+                      }}
+                    />
+                  </div>
 
-                <div style={colorRowStyle}>
-                  <label
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      width: 110,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Button color
-                  </label>
-                  <input
-                    type="color"
-                    value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
-                    onChange={(e) =>
-                      updateAttributes({ buttonColor: e.target.value })
-                    }
-                    disabled={isLocked}
-                    style={{
-                      width: 48,
-                      height: 28,
-                      border: "none",
-                      padding: 0,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <input
-                    type="text"
-                    value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
-                    onChange={(e) =>
-                      updateAttributes({ buttonColor: e.target.value })
-                    }
-                    disabled={isLocked}
-                    style={{
-                      width: 96,
-                      fontSize: "0.8125rem",
-                      padding: "4px 8px",
-                    }}
-                  />
-                </div>
+                  <div style={colorRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Button color
+                    </label>
+                    <input
+                      type="color"
+                      value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
+                      onChange={(e) =>
+                        updateAttributes({ buttonColor: e.target.value })
+                      }
+                      disabled={isLocked}
+                      style={{
+                        width: 48,
+                        height: 28,
+                        border: "none",
+                        padding: 0,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={buttonColor || CTA_BUTTON_DEFAULT_COLOR}
+                      onChange={(e) =>
+                        updateAttributes({ buttonColor: e.target.value })
+                      }
+                      disabled={isLocked}
+                      style={{
+                        width: 96,
+                        fontSize: "0.8125rem",
+                        padding: "4px 8px",
+                      }}
+                    />
+                  </div>
 
-                <div style={controlRowStyle}>
-                  <label
-                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-                  >
-                    Button spacing (px)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={String(resolvedButtonGap)}
-                    onChange={(e) =>
-                      updateAttributes({ buttonGap: Number(e.target.value) })
-                    }
-                    disabled={isLocked}
-                    style={{ width: 96, padding: "4px 8px" }}
-                  />
-                </div>
+                  <div style={controlRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                      }}
+                    >
+                      Button spacing (px)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={String(resolvedButtonGap)}
+                      onChange={(e) =>
+                        updateAttributes({ buttonGap: Number(e.target.value) })
+                      }
+                      disabled={isLocked}
+                      style={{ width: 96, padding: "4px 8px" }}
+                    />
+                  </div>
 
-                <div style={controlRowStyle}>
-                  <label
-                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-                  >
-                    Button align
-                  </label>
-                  <select
-                    value={resolvedButtonAlign}
-                    onChange={(e) =>
-                      updateAttributes({
-                        buttonAlign: e.target.value as CTAButtonAlignment,
-                      })
-                    }
-                    disabled={isLocked}
-                    style={{ width: 96, padding: "4px 8px" }}
-                  >
-                    {CTA_BUTTON_ALIGNMENT_OPTIONS.map((alignment) => (
-                      <option key={alignment} value={alignment}>
-                        {alignment === "none"
-                          ? "None"
-                          : alignment[0].toUpperCase() + alignment.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div style={controlRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                      }}
+                    >
+                      Button align
+                    </label>
+                    <select
+                      value={resolvedButtonAlign}
+                      onChange={(e) =>
+                        updateAttributes({
+                          buttonAlign: e.target.value as CTAButtonAlignment,
+                        })
+                      }
+                      disabled={isLocked}
+                      style={{ width: 96, padding: "4px 8px" }}
+                    >
+                      {CTA_BUTTON_ALIGNMENT_OPTIONS.map((alignment) => (
+                        <option key={alignment} value={alignment}>
+                          {alignment === "none"
+                            ? "None"
+                            : alignment[0].toUpperCase() + alignment.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div style={controlRowStyle}>
-                  <label
-                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-                  >
-                    Padding (px)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={String(buttonPadding ?? CTA_BUTTON_DEFAULT_PADDING)}
-                    onChange={(e) =>
-                      updateAttributes({
-                        buttonPadding: Number(e.target.value),
-                      })
-                    }
-                    disabled={isLocked}
-                    style={{ width: 96, padding: "4px 8px" }}
-                  />
-                </div>
+                  <div style={controlRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                      }}
+                    >
+                      Padding (px)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={String(
+                        buttonPadding ?? CTA_BUTTON_DEFAULT_PADDING,
+                      )}
+                      onChange={(e) =>
+                        updateAttributes({
+                          buttonPadding: Number(e.target.value),
+                        })
+                      }
+                      disabled={isLocked}
+                      style={{ width: 96, padding: "4px 8px" }}
+                    />
+                  </div>
 
-                <div style={controlRowStyle}>
-                  <label
-                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-                  >
-                    Radius (px)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={String(buttonRadius ?? CTA_BUTTON_DEFAULT_RADIUS)}
-                    onChange={(e) =>
-                      updateAttributes({ buttonRadius: Number(e.target.value) })
-                    }
-                    disabled={isLocked}
-                    style={{ width: 96, padding: "4px 8px" }}
-                  />
-                </div>
+                  <div style={controlRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                      }}
+                    >
+                      Radius (px)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={String(buttonRadius ?? CTA_BUTTON_DEFAULT_RADIUS)}
+                      onChange={(e) =>
+                        updateAttributes({
+                          buttonRadius: Number(e.target.value),
+                        })
+                      }
+                      disabled={isLocked}
+                      style={{ width: 96, padding: "4px 8px" }}
+                    />
+                  </div>
 
-                <div style={controlRowStyle}>
-                  <label
-                    style={{ fontSize: "0.75rem", fontWeight: 600, width: 110 }}
-                  >
-                    Show second button
-                  </label>
-                  <input
-                    type="checkbox"
-                    checked={!!showSecondButton}
-                    onChange={(e) =>
-                      updateAttributes({ showSecondButton: e.target.checked })
-                    }
-                    disabled={isLocked}
-                    style={{ width: 20, height: 20 }}
-                  />
+                  <div style={controlRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                      }}
+                    >
+                      Show second button
+                    </label>
+                    <input
+                      type="checkbox"
+                      checked={!!showSecondButton}
+                      onChange={(e) =>
+                        updateAttributes({ showSecondButton: e.target.checked })
+                      }
+                      disabled={isLocked}
+                      style={{ width: 20, height: 20 }}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {showSecondButton && (
+              {isImageMode && (
+                <div style={controlSectionStyle}>
+                  <div style={sectionTitleStyle}>Linked image</div>
+                  <div style={controlRowStyle}>
+                    <label
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        width: 110,
+                      }}
+                    >
+                      Image position
+                    </label>
+                    <select
+                      value={resolvedImageAlignment}
+                      onChange={(e) =>
+                        updateAttributes({
+                          imageAlignment: e.target.value as CTAImageAlignment,
+                        })
+                      }
+                      disabled={isLocked}
+                      style={{ width: 132, padding: "4px 8px" }}
+                    >
+                      {CTA_IMAGE_ALIGNMENT_OPTIONS.map((alignment) => (
+                        <option key={alignment} value={alignment}>
+                          {alignment[0].toUpperCase() + alignment.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ display: "grid", gap: 8 }}>
+                    <span style={labelStyle}>CTA image</span>
+                    <CmsImagePicker
+                      label="CTA image"
+                      value={imageUrl}
+                      selectedImageId={imageId}
+                      onChangeAction={(image: ImageAsset | null) =>
+                        updateAttributes({
+                          imageId: image?.id ?? null,
+                          imageUrl: image?.url ?? null,
+                          imageAlt: image?.altText ?? null,
+                        })
+                      }
+                      disabled={isLocked}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {!isImageMode && showSecondButton && (
                 <>
                   <hr style={dividerStyle} />
                   <div style={controlSectionStyle}>
@@ -962,43 +1143,8 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                 />
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 8,
-                }}
-              >
-                <div>
-                  <span style={labelStyle}>Button label</span>
-                  <input
-                    type="text"
-                    value={buttonText || ""}
-                    onChange={(e) =>
-                      updateAttributes({ buttonText: e.target.value })
-                    }
-                    placeholder="Try Now"
-                    readOnly={isLocked}
-                    style={fieldStyle}
-                  />
-                </div>
-                <div>
-                  <span style={labelStyle}>Button URL</span>
-                  <input
-                    type="text"
-                    value={buttonUrl || ""}
-                    onChange={(e) =>
-                      updateAttributes({ buttonUrl: e.target.value })
-                    }
-                    placeholder="/tools"
-                    readOnly={isLocked}
-                    style={fieldStyle}
-                  />
-                </div>
-              </div>
-
-              {showSecondButton && (
-                <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
+              {!isImageMode ? (
+                <>
                   <div
                     style={{
                       display: "grid",
@@ -1007,36 +1153,89 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
                     }}
                   >
                     <div>
-                      <span style={labelStyle}>2nd button label</span>
+                      <span style={labelStyle}>Button label</span>
                       <input
                         type="text"
-                        value={secondButtonText || ""}
+                        value={buttonText || ""}
                         onChange={(e) =>
-                          updateAttributes({
-                            secondButtonText: e.target.value || null,
-                          })
+                          updateAttributes({ buttonText: e.target.value })
                         }
-                        placeholder="Secondary"
+                        placeholder="Try Now"
                         readOnly={isLocked}
                         style={fieldStyle}
                       />
                     </div>
                     <div>
-                      <span style={labelStyle}>2nd button URL</span>
+                      <span style={labelStyle}>Button URL</span>
                       <input
                         type="text"
-                        value={secondButtonUrl || ""}
+                        value={buttonUrl || ""}
                         onChange={(e) =>
-                          updateAttributes({
-                            secondButtonUrl: e.target.value || null,
-                          })
+                          updateAttributes({ buttonUrl: e.target.value })
                         }
-                        placeholder="/"
+                        placeholder="/tools"
                         readOnly={isLocked}
                         style={fieldStyle}
                       />
                     </div>
                   </div>
+
+                  {showSecondButton && (
+                    <div style={{ display: "grid", gap: 8, marginTop: 6 }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 8,
+                        }}
+                      >
+                        <div>
+                          <span style={labelStyle}>2nd button label</span>
+                          <input
+                            type="text"
+                            value={secondButtonText || ""}
+                            onChange={(e) =>
+                              updateAttributes({
+                                secondButtonText: e.target.value || null,
+                              })
+                            }
+                            placeholder="Secondary"
+                            readOnly={isLocked}
+                            style={fieldStyle}
+                          />
+                        </div>
+                        <div>
+                          <span style={labelStyle}>2nd button URL</span>
+                          <input
+                            type="text"
+                            value={secondButtonUrl || ""}
+                            onChange={(e) =>
+                              updateAttributes({
+                                secondButtonUrl: e.target.value || null,
+                              })
+                            }
+                            placeholder="/"
+                            readOnly={isLocked}
+                            style={fieldStyle}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div>
+                  <span style={labelStyle}>Image link URL</span>
+                  <input
+                    type="text"
+                    value={resolvedImageLinkUrl}
+                    onChange={(e) =>
+                      updateAttributes({ imageLinkUrl: e.target.value || null })
+                    }
+                    placeholder="/templates/workbook-bundle"
+                    readOnly={isLocked}
+                    style={fieldStyle}
+                  />
                 </div>
               )}
             </div>
@@ -1053,86 +1252,179 @@ function CTAView({ node, updateAttributes }: NodeViewProps) {
             border: `${resolvedBorderWidth}px solid ${CTA_SECTION_BORDER_COLOR}`,
             fontSize: "0.8125rem",
             color: "#374151",
-            textAlign: "center",
+            textAlign: isImageMode ? "left" : "center",
           }}
         >
-          <strong
-            style={{ fontSize: CTA_LEVEL_FONT_SIZES[resolvedTitleLevel] }}
-          >
-            {title || "CTA Title"}
-          </strong>
-          {text && (
-            <span style={{ fontSize: CTA_LEVEL_FONT_SIZES[resolvedTextLevel] }}>
-              {` — ${text}`}
-            </span>
+          {isImageMode ? (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 24,
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  flex: "1 1 320px",
+                  minWidth: 0,
+                  order: resolvedImageAlignment === "left" ? 2 : 1,
+                }}
+              >
+                <strong
+                  style={{
+                    display: "block",
+                    fontSize: CTA_LEVEL_FONT_SIZES[resolvedTitleLevel],
+                    marginBottom: text ? 8 : 0,
+                  }}
+                >
+                  {title || "CTA Title"}
+                </strong>
+                {text && (
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: CTA_LEVEL_FONT_SIZES[resolvedTextLevel],
+                      color: "#495057",
+                    }}
+                  >
+                    {text}
+                  </p>
+                )}
+              </div>
+              <div
+                style={{
+                  flex: "0 1 280px",
+                  width: "min(100%, 320px)",
+                  minWidth: 0,
+                  order: resolvedImageAlignment === "left" ? 1 : 2,
+                }}
+              >
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={previewImageAlt}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      height: "auto",
+                      borderRadius: 18,
+                      boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      placeItems: "center",
+                      minHeight: 180,
+                      borderRadius: 18,
+                      border: "1px dashed #cbd5e1",
+                      background: "rgba(255, 255, 255, 0.72)",
+                      color: "#64748b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Choose a CTA image
+                  </div>
+                )}
+                {resolvedImageLinkUrl && (
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontSize: "0.75rem",
+                      color: "#64748b",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    Link: {resolvedImageLinkUrl}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <strong
+                style={{ fontSize: CTA_LEVEL_FONT_SIZES[resolvedTitleLevel] }}
+              >
+                {title || "CTA Title"}
+              </strong>
+              {text && (
+                <span
+                  style={{ fontSize: CTA_LEVEL_FONT_SIZES[resolvedTextLevel] }}
+                >
+                  {` — ${text}`}
+                </span>
+              )}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                  alignItems: "center",
+                  width: "100%",
+                  marginTop: 12,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: `${resolvedButtonGap}px`,
+                    justifyContent: "flex-start",
+                    minWidth: 0,
+                  }}
+                >
+                  {buttonLayout.leftButtons.map((button) => (
+                    <span
+                      key={button.key}
+                      className="btn sb-btn-primary"
+                      style={button.style}
+                    >
+                      {button.label}
+                    </span>
+                  ))}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: `${resolvedButtonGap}px`,
+                    justifyContent: "center",
+                    minWidth: 0,
+                  }}
+                >
+                  {buttonLayout.centerButtons.map((button) => (
+                    <span
+                      key={button.key}
+                      className="btn sb-btn-primary"
+                      style={button.style}
+                    >
+                      {button.label}
+                    </span>
+                  ))}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: `${resolvedButtonGap}px`,
+                    justifyContent: "flex-end",
+                    minWidth: 0,
+                  }}
+                >
+                  {buttonLayout.rightButtons.map((button) => (
+                    <span
+                      key={button.key}
+                      className="btn sb-btn-primary"
+                      style={button.style}
+                    >
+                      {button.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
-              alignItems: "center",
-              width: "100%",
-              marginTop: 12,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: `${resolvedButtonGap}px`,
-                justifyContent: "flex-start",
-                minWidth: 0,
-              }}
-            >
-              {buttonLayout.leftButtons.map((button) => (
-                <span
-                  key={button.key}
-                  className="btn sb-btn-primary"
-                  style={button.style}
-                >
-                  {button.label}
-                </span>
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: `${resolvedButtonGap}px`,
-                justifyContent: "center",
-                minWidth: 0,
-              }}
-            >
-              {buttonLayout.centerButtons.map((button) => (
-                <span
-                  key={button.key}
-                  className="btn sb-btn-primary"
-                  style={button.style}
-                >
-                  {button.label}
-                </span>
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: `${resolvedButtonGap}px`,
-                justifyContent: "flex-end",
-                minWidth: 0,
-              }}
-            >
-              {buttonLayout.rightButtons.map((button) => (
-                <span
-                  key={button.key}
-                  className="btn sb-btn-primary"
-                  style={button.style}
-                >
-                  {button.label}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </NodeViewWrapper>
@@ -1151,7 +1443,7 @@ export const CTA = Node.create({
       title: {
         default: "Start Growing Your Business",
         parseHTML: (el: HTMLElement) =>
-          el.querySelector("h2")?.textContent?.trim() ||
+          el.querySelector("h1, h2, h3, h4, h5")?.textContent?.trim() ||
           el.getAttribute("data-title") ||
           "",
         renderHTML: () => ({}),
@@ -1169,17 +1461,29 @@ export const CTA = Node.create({
         parseHTML: (el: HTMLElement) => {
           const heading = el.querySelector("h1, h2, h3, h4, h5");
           const explicitLevel = heading?.getAttribute("data-title-level");
-          if (isHeadingLevel(explicitLevel)) return explicitLevel;
+          if (isHeadingLevel(explicitLevel)) {
+            return normalizeEditableHeadingLevel(explicitLevel);
+          }
           const legacySize = heading?.getAttribute("data-title-size");
-          if (legacySize) return levelFromLegacySize(Number(legacySize));
+          if (legacySize) {
+            return normalizeEditableHeadingLevel(
+              levelFromLegacySize(Number(legacySize)),
+            );
+          }
           if (heading && isHeadingLevel(heading.tagName.toLowerCase())) {
-            return heading.tagName.toLowerCase() as HeadingLevel;
+            return normalizeEditableHeadingLevel(
+              heading.tagName.toLowerCase() as HeadingLevel,
+            );
           }
           return "h2";
         },
         renderHTML: (attrs: { titleLevel?: HeadingLevel }) =>
           attrs.titleLevel && isHeadingLevel(attrs.titleLevel)
-            ? { "data-title-level": attrs.titleLevel }
+            ? {
+                "data-title-level": normalizeEditableHeadingLevel(
+                  attrs.titleLevel,
+                ),
+              }
             : {},
       },
       textLevel: {
@@ -1216,6 +1520,60 @@ export const CTA = Node.create({
           typeof attrs.borderWidth === "number"
             ? { "data-border-width": String(attrs.borderWidth) }
             : {},
+      },
+      mediaType: {
+        default: CTA_MEDIA_TYPE_DEFAULT,
+        parseHTML: (el: HTMLElement) => {
+          const value = el.getAttribute("data-media-type");
+          if (isCTAMediaType(value)) {
+            return value;
+          }
+
+          return getCTAMediaImageElement(el) ? "image" : CTA_MEDIA_TYPE_DEFAULT;
+        },
+        renderHTML: (attrs: { mediaType?: CTAMediaType }) =>
+          attrs.mediaType && isCTAMediaType(attrs.mediaType)
+            ? { "data-media-type": attrs.mediaType }
+            : {},
+      },
+      imageAlignment: {
+        default: CTA_IMAGE_ALIGNMENT_DEFAULT,
+        parseHTML: (el: HTMLElement) => {
+          const value = el.getAttribute("data-image-alignment");
+          return isCTAImageAlignment(value)
+            ? value
+            : CTA_IMAGE_ALIGNMENT_DEFAULT;
+        },
+        renderHTML: (attrs: { imageAlignment?: CTAImageAlignment }) =>
+          attrs.imageAlignment && isCTAImageAlignment(attrs.imageAlignment)
+            ? { "data-image-alignment": attrs.imageAlignment }
+            : {},
+      },
+      imageId: {
+        default: null,
+        parseHTML: (el: HTMLElement) =>
+          getCTAMediaImageElement(el)?.getAttribute("data-image-id") ||
+          getCTAMediaFigure(el)?.getAttribute("data-image-id") ||
+          null,
+        renderHTML: () => ({}),
+      },
+      imageUrl: {
+        default: null,
+        parseHTML: (el: HTMLElement) =>
+          getCTAMediaImageElement(el)?.getAttribute("src") || null,
+        renderHTML: () => ({}),
+      },
+      imageAlt: {
+        default: null,
+        parseHTML: (el: HTMLElement) =>
+          getCTAMediaImageElement(el)?.getAttribute("alt") || null,
+        renderHTML: () => ({}),
+      },
+      imageLinkUrl: {
+        default: null,
+        parseHTML: (el: HTMLElement) =>
+          getCTAMediaLinkElement(el)?.getAttribute("href") || null,
+        renderHTML: () => ({}),
       },
       buttonText: {
         default: "Learn More",
@@ -1306,7 +1664,9 @@ export const CTA = Node.create({
       showSecondButton: {
         default: false,
         parseHTML: (el: HTMLElement) => {
-          const anchors = el.querySelectorAll("a");
+          const anchors = Array.from(el.querySelectorAll("a")).filter(
+            (anchor) => !isCTAMediaLinkElement(anchor),
+          );
           return anchors.length > 1;
         },
         renderHTML: (attrs: { showSecondButton?: boolean }) =>
@@ -1450,6 +1810,16 @@ export const CTA = Node.create({
     const secondButtonAlign = isCTAButtonAlignment(node.attrs.secondButtonAlign)
       ? node.attrs.secondButtonAlign
       : CTA_SECOND_BUTTON_DEFAULT_ALIGNMENT;
+    const mediaType = isCTAMediaType(node.attrs.mediaType)
+      ? node.attrs.mediaType
+      : CTA_MEDIA_TYPE_DEFAULT;
+    const imageAlignment = isCTAImageAlignment(node.attrs.imageAlignment)
+      ? node.attrs.imageAlignment
+      : CTA_IMAGE_ALIGNMENT_DEFAULT;
+    const hasImageMedia =
+      mediaType === "image" &&
+      typeof node.attrs.imageUrl === "string" &&
+      node.attrs.imageUrl.length > 0;
     const sectionStyle = [
       node.attrs.backgroundColor
         ? `background:${node.attrs.backgroundColor}`
@@ -1460,7 +1830,7 @@ export const CTA = Node.create({
       "border-radius:20px",
       "padding:24px 28px",
       "margin:24px 0",
-      "text-align:center",
+      `text-align:${mediaType === "image" ? "left" : "center"}`,
     ]
       .filter(Boolean)
       .join("; ");
@@ -1611,6 +1981,125 @@ export const CTA = Node.create({
       `gap:${buttonGap}px`,
       "min-width:0",
     ].join("; ");
+    const mediaLayoutStyle = [
+      "display:flex",
+      "flex-wrap:wrap",
+      "align-items:center",
+      "gap:24px",
+    ].join("; ");
+    const mediaCopyStyle = [
+      "flex:1 1 320px",
+      "min-width:0",
+      `order:${imageAlignment === "left" ? 2 : 1}`,
+    ].join("; ");
+    const mediaFigureStyle = [
+      "flex:0 1 280px",
+      "width:min(100%, 320px)",
+      "min-width:0",
+      `order:${imageAlignment === "left" ? 1 : 2}`,
+      "margin:0",
+    ].join("; ");
+    const mediaLinkStyle = ["display:block", "line-height:0"].join("; ");
+    const mediaImageStyle = [
+      "display:block",
+      "width:100%",
+      "height:auto",
+      "border-radius:18px",
+      "box-shadow:0 18px 40px rgba(15, 23, 42, 0.12)",
+    ].join("; ");
+
+    const titleNode = [
+      titleLevel,
+      mergeAttributes({
+        style: `font-size:${CTA_LEVEL_FONT_SIZES[titleLevel]}`,
+        "data-title-level": titleLevel,
+      }),
+      node.attrs.title || "",
+    ];
+    const textNode = [
+      "p",
+      mergeAttributes({
+        style: `font-size:${CTA_LEVEL_FONT_SIZES[textLevel]}`,
+        "data-text-level": textLevel,
+      }),
+      node.attrs.text || "",
+    ];
+
+    if (mediaType === "image") {
+      const imageNode = hasImageMedia
+        ? [
+            "figure",
+            mergeAttributes({
+              "data-cta-media": "image",
+              class: "sbt-cta-media",
+              ...(node.attrs.imageId
+                ? { "data-image-id": node.attrs.imageId }
+                : {}),
+              style: mediaFigureStyle,
+            }),
+            node.attrs.imageLinkUrl
+              ? [
+                  "a",
+                  {
+                    href: node.attrs.imageLinkUrl,
+                    "data-cta-media-link": "true",
+                    style: mediaLinkStyle,
+                  },
+                  [
+                    "img",
+                    mergeAttributes({
+                      src: node.attrs.imageUrl,
+                      alt: node.attrs.imageAlt || "",
+                      ...(node.attrs.imageId
+                        ? { "data-image-id": node.attrs.imageId }
+                        : {}),
+                      style: mediaImageStyle,
+                    }),
+                  ],
+                ]
+              : [
+                  "img",
+                  mergeAttributes({
+                    src: node.attrs.imageUrl,
+                    alt: node.attrs.imageAlt || "",
+                    ...(node.attrs.imageId
+                      ? { "data-image-id": node.attrs.imageId }
+                      : {}),
+                    style: mediaImageStyle,
+                  }),
+                ],
+          ]
+        : null;
+
+      return [
+        "section",
+        mergeAttributes(
+          {
+            "data-sbt-block": "cta",
+            class: "sbt-cta",
+            style: sectionStyle,
+          },
+          HTMLAttributes,
+        ),
+        [
+          "div",
+          {
+            class: "sbt-cta-media-layout",
+            style: mediaLayoutStyle,
+          },
+          [
+            "div",
+            {
+              class: "sbt-cta-copy",
+              style: mediaCopyStyle,
+            },
+            titleNode,
+            textNode,
+          ],
+          ...(imageNode ? [imageNode] : []),
+        ],
+      ] as unknown as [string, Record<string, string>];
+    }
 
     return [
       "section",
@@ -1622,22 +2111,8 @@ export const CTA = Node.create({
         },
         HTMLAttributes,
       ),
-      [
-        titleLevel,
-        mergeAttributes({
-          style: `font-size:${CTA_LEVEL_FONT_SIZES[titleLevel]}`,
-          "data-title-level": titleLevel,
-        }),
-        node.attrs.title || "",
-      ],
-      [
-        "p",
-        mergeAttributes({
-          style: `font-size:${CTA_LEVEL_FONT_SIZES[textLevel]}`,
-          "data-text-level": textLevel,
-        }),
-        node.attrs.text || "",
-      ],
+      titleNode,
+      textNode,
       [
         "div",
         {

@@ -18,6 +18,12 @@ type CmsImagePickerProps = {
   label?: string;
   className?: string;
   disabled?: boolean;
+  minimumImageDimensions?: {
+    width: number;
+    height: number;
+    label?: string;
+  };
+  modalAdditionalContent?: React.ReactNode;
 };
 
 function formatTimestamp(value?: string): string {
@@ -44,6 +50,8 @@ export default function CmsImagePicker({
   label = "Image",
   className,
   disabled = false,
+  minimumImageDimensions,
+  modalAdditionalContent,
 }: CmsImagePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [images, setImages] = useState<ImageAsset[]>([]);
@@ -60,6 +68,8 @@ export default function CmsImagePicker({
   const [replacementFile, setReplacementFile] = useState<File | null>(null);
   const [editAltText, setEditAltText] = useState("");
   const [editCaption, setEditCaption] = useState("");
+  const [isUploadSectionExpanded, setIsUploadSectionExpanded] = useState(false);
+  const [isEditSectionExpanded, setIsEditSectionExpanded] = useState(false);
   const [hoveredImage, setHoveredImage] = useState<ImageAsset | null>(null);
   const [zoomPosition, setZoomPosition] = useState<{
     top: number;
@@ -79,7 +89,33 @@ export default function CmsImagePicker({
     );
   }, [selectedImage, editAltText, editCaption, replacementFile]);
 
-  const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleClose = useCallback(() => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+
+    setHoveredImage(null);
+    setZoomPosition(null);
+    setIsUploadSectionExpanded(false);
+    setIsEditSectionExpanded(false);
+    setIsOpen(false);
+  }, []);
+
+  const handleOpen = useCallback(() => {
+    setIsUploadSectionExpanded(false);
+    setIsEditSectionExpanded(false);
+    setIsOpen(true);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+        hoverTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!value && !selectedImageId) {
@@ -188,7 +224,11 @@ export default function CmsImagePicker({
       return;
     }
 
-    const validationMessage = validateImageFile(uploadFile);
+    const validationMessage = await validateImageFile(uploadFile, {
+      minWidth: minimumImageDimensions?.width,
+      minHeight: minimumImageDimensions?.height,
+      minimumLabel: minimumImageDimensions?.label,
+    });
     if (validationMessage) {
       setError(validationMessage);
       return;
@@ -232,7 +272,11 @@ export default function CmsImagePicker({
     }
 
     if (replacementFile) {
-      const validationMessage = validateImageFile(replacementFile);
+      const validationMessage = await validateImageFile(replacementFile, {
+        minWidth: minimumImageDimensions?.width,
+        minHeight: minimumImageDimensions?.height,
+        minimumLabel: minimumImageDimensions?.label,
+      });
       if (validationMessage) {
         setError(validationMessage);
         return;
@@ -396,7 +440,7 @@ export default function CmsImagePicker({
           <button
             type="button"
             className="admin-btn-action"
-            onClick={() => setIsOpen(true)}
+            onClick={handleOpen}
             disabled={disabled}
           >
             {`Edit ${label}`}
@@ -453,6 +497,8 @@ export default function CmsImagePicker({
               <p className="cms-image-picker-empty">No image selected yet.</p>
             )}
           </section>
+
+          {modalAdditionalContent}
 
           <section className="cms-image-picker-section">
             <div className="cms-image-picker-section-header">
@@ -512,74 +558,100 @@ export default function CmsImagePicker({
           <section className="cms-image-picker-section">
             <div className="cms-image-picker-section-header">
               <h3>Upload new image</h3>
-            </div>
-
-            <div className="cms-image-picker-form">
-              <div>
-                <label
-                  className="form-label fw-semibold cms-image-picker-label"
-                  htmlFor={`${label}-upload-file`}
-                >
-                  File
-                </label>
-                <input
-                  id={`${label}-upload-file`}
-                  type="file"
-                  className="form-control"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={disabled || savingUpload}
-                  onChange={(event) =>
-                    setUploadFile(event.target.files?.[0] ?? null)
-                  }
-                />
-              </div>
-              <div>
-                <label
-                  className="form-label fw-semibold cms-image-picker-label"
-                  htmlFor={`${label}-upload-alt`}
-                >
-                  Alt text
-                </label>
-                <input
-                  id={`${label}-upload-alt`}
-                  className="form-control"
-                  value={uploadAltText}
-                  onChange={(event) => setUploadAltText(event.target.value)}
-                  disabled={disabled || savingUpload}
-                />
-              </div>
-              <div>
-                <label
-                  className="form-label fw-semibold cms-image-picker-label"
-                  htmlFor={`${label}-upload-caption`}
-                >
-                  Caption
-                </label>
-                <input
-                  id={`${label}-upload-caption`}
-                  className="form-control"
-                  value={uploadCaption}
-                  onChange={(event) => setUploadCaption(event.target.value)}
-                  disabled={disabled || savingUpload}
-                />
-              </div>
               <button
                 type="button"
-                className="admin-btn-save cms-image-picker-submit"
+                className="admin-btn-action"
+                aria-expanded={isUploadSectionExpanded}
+                onClick={() =>
+                  setIsUploadSectionExpanded((current) => !current)
+                }
                 disabled={disabled || savingUpload}
-                onClick={() => void handleUpload()}
               >
-                {savingUpload ? "Uploading…" : "Upload image"}
+                {isUploadSectionExpanded
+                  ? "Hide upload form"
+                  : "Show upload form"}
               </button>
             </div>
+
+            {isUploadSectionExpanded ? (
+              <div className="cms-image-picker-form">
+                <div>
+                  <label
+                    className="form-label fw-semibold cms-image-picker-label"
+                    htmlFor={`${label}-upload-file`}
+                  >
+                    File
+                  </label>
+                  <input
+                    id={`${label}-upload-file`}
+                    type="file"
+                    className="form-control"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={disabled || savingUpload}
+                    onChange={(event) =>
+                      setUploadFile(event.target.files?.[0] ?? null)
+                    }
+                  />
+                </div>
+                <div>
+                  <label
+                    className="form-label fw-semibold cms-image-picker-label"
+                    htmlFor={`${label}-upload-alt`}
+                  >
+                    Alt text
+                  </label>
+                  <input
+                    id={`${label}-upload-alt`}
+                    className="form-control"
+                    value={uploadAltText}
+                    onChange={(event) => setUploadAltText(event.target.value)}
+                    disabled={disabled || savingUpload}
+                  />
+                </div>
+                <div>
+                  <label
+                    className="form-label fw-semibold cms-image-picker-label"
+                    htmlFor={`${label}-upload-caption`}
+                  >
+                    Caption
+                  </label>
+                  <input
+                    id={`${label}-upload-caption`}
+                    className="form-control"
+                    value={uploadCaption}
+                    onChange={(event) => setUploadCaption(event.target.value)}
+                    disabled={disabled || savingUpload}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn-save cms-image-picker-submit"
+                  disabled={disabled || savingUpload}
+                  onClick={() => void handleUpload()}
+                >
+                  {savingUpload ? "Uploading…" : "Upload image"}
+                </button>
+              </div>
+            ) : null}
           </section>
 
           <section className="cms-image-picker-section">
             <div className="cms-image-picker-section-header">
               <h3>Edit selected image</h3>
+              <button
+                type="button"
+                className="admin-btn-action"
+                aria-expanded={isEditSectionExpanded}
+                onClick={() => setIsEditSectionExpanded((current) => !current)}
+                disabled={disabled || savingMetadata || deletingImage}
+              >
+                {isEditSectionExpanded
+                  ? "Hide image details"
+                  : "Show image details"}
+              </button>
             </div>
 
-            {selectedImage ? (
+            {isEditSectionExpanded && selectedImage ? (
               <div className="cms-image-picker-form">
                 <div>
                   <label
@@ -648,11 +720,11 @@ export default function CmsImagePicker({
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : isEditSectionExpanded ? (
               <p className="cms-image-picker-empty">
                 Select an image from the library to edit it.
               </p>
-            )}
+            ) : null}
           </section>
         </div>
       </AdminModal>

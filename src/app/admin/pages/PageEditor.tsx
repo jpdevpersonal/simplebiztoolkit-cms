@@ -16,18 +16,33 @@ import type {
 } from "@/lib/api";
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
-import { revalidatePageContent } from "@/lib/adminRevalidation";
 import { compactHtmlForStorage } from "@/lib/htmlFormatter";
+import {
+  extractRelatedLinksBlocksFromHtml,
+  normalizeRelatedLinksBorderWidth,
+  normalizeRelatedLinksDraftItems,
+  normalizeRelatedLinksImageSize,
+  normalizeRelatedLinksTitle,
+  RELATED_LINKS_DEFAULT_BACKGROUND,
+  RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+  RELATED_LINKS_MAX_ITEMS,
+  serializeRelatedLinksBlockToHtml,
+  type RelatedLinksBlockData,
+} from "@/lib/relatedLinks";
 import RichContentField from "@/components/RichContentField";
+import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import AdminFormBlock from "@/components/AdminFormBlock";
+import AdminModal from "@/components/AdminModal";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
 import CmsImagePicker from "@/components/CmsImagePicker";
+import { FULL_POLICY, type EditorPolicy } from "@/editor/policy";
 
 type SectionKey =
   | "pageContent"
   | "media"
   | "content"
+  | "relatedLinks"
   | "assignment"
   | "publish"
   | "seo";
@@ -44,6 +59,73 @@ type Props = {
   isNew?: boolean;
 };
 
+const PAGE_INLINE_CONTENT_POLICY: EditorPolicy = {
+  ...FULL_POLICY,
+  allowedNodes: FULL_POLICY.allowedNodes.filter(
+    (nodeName) => nodeName !== "relatedLinksSbtBlock",
+  ),
+};
+
+function normalizePageRelatedLinksBlock(
+  value?: Partial<RelatedLinksBlockData>,
+): RelatedLinksBlockData {
+  return {
+    title: normalizeRelatedLinksTitle(value?.title),
+    items: normalizeRelatedLinksDraftItems(value?.items),
+    backgroundColor:
+      typeof value?.backgroundColor === "string" && value.backgroundColor.trim()
+        ? value.backgroundColor.trim()
+        : RELATED_LINKS_DEFAULT_BACKGROUND,
+    borderWidth:
+      normalizeRelatedLinksBorderWidth(value?.borderWidth) ??
+      RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+    imageSize: normalizeRelatedLinksImageSize(value?.imageSize),
+  };
+}
+
+function splitPageContent(content: string): {
+  contentHtml: string;
+  relatedLinks: RelatedLinksBlockData;
+} {
+  const { htmlWithoutRelatedLinks, blocks } =
+    extractRelatedLinksBlocksFromHtml(content);
+
+  if (blocks.length === 0) {
+    return {
+      contentHtml: content,
+      relatedLinks: normalizePageRelatedLinksBlock(),
+    };
+  }
+
+  return {
+    contentHtml: htmlWithoutRelatedLinks.trim(),
+    relatedLinks: normalizePageRelatedLinksBlock({
+      title: blocks[0]?.title,
+      backgroundColor: blocks[0]?.backgroundColor,
+      borderWidth: blocks[0]?.borderWidth,
+      imageSize: blocks[0]?.imageSize,
+      items: blocks
+        .flatMap((block) => block.items)
+        .slice(0, RELATED_LINKS_MAX_ITEMS),
+    }),
+  };
+}
+
+function buildPageContent(
+  contentHtml: string,
+  relatedLinks: RelatedLinksBlockData,
+): string {
+  const compactedContent = compactHtmlForStorage(contentHtml);
+  const baseContent =
+    extractRelatedLinksBlocksFromHtml(
+      compactedContent,
+    ).htmlWithoutRelatedLinks.trim();
+
+  return [baseContent, serializeRelatedLinksBlockToHtml(relatedLinks)]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export default function PageEditor({
   page,
   menuItems,
@@ -51,6 +133,7 @@ export default function PageEditor({
   initialCategoryId,
   isNew = false,
 }: Props) {
+  const initialContent = splitPageContent(page?.content ?? "");
   const router = useRouter();
   const previewHref =
     !isNew && page?.id ? `/preview/pages/${page.id}` : undefined;
@@ -58,12 +141,14 @@ export default function PageEditor({
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [contentModalOpen, setContentModalOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<
     Record<SectionKey, boolean>
   >({
     pageContent: false,
     media: false,
     content: false,
+    relatedLinks: false,
     assignment: false,
     publish: false,
     seo: false,
@@ -146,7 +231,7 @@ export default function PageEditor({
     subtitle: page?.subtitle ?? "",
     slug: page?.slug ?? "",
     description: page?.description ?? "",
-    content: page?.content ?? "",
+    content: initialContent.contentHtml,
     editorJson: page?.editorJson ?? (null as string | null),
     featuredImageId: page?.featuredImageId ?? "",
     featuredImage: page?.featuredImage ?? "",
@@ -159,6 +244,7 @@ export default function PageEditor({
     ogImage: page?.ogImage ?? "",
     canonicalUrl: page?.canonicalUrl ?? "",
   });
+  const [relatedLinks, setRelatedLinks] = useState(initialContent.relatedLinks);
 
   const update = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -206,7 +292,7 @@ export default function PageEditor({
     try {
       const normalizedFormData = {
         ...formData,
-        content: compactHtmlForStorage(formData.content),
+        content: buildPageContent(formData.content, relatedLinks),
       };
       const featuredImageId = formData.featuredImageId;
       const headerImageId = formData.headerImageId;
@@ -241,12 +327,16 @@ export default function PageEditor({
       }
 
       if (isNew) {
-        const saved = await clientApi.createMenuItemPage(payload);
-        await revalidatePageContent(saved?.slug ?? formData.slug);
+        await clientApi.createMenuItemPage(payload);
         redirectAndRefresh(router, "/admin/pages");
       } else if (page?.id) {
-        const saved = await clientApi.updateMenuItemPage(page.id, payload);
-        await revalidatePageContent(saved?.slug ?? formData.slug, page.slug);
+        await clientApi.updateMenuItemPage(page.id, payload);
+        const savedContent = splitPageContent(normalizedFormData.content);
+        setFormData((current) => ({
+          ...current,
+          content: savedContent.contentHtml,
+        }));
+        setRelatedLinks(savedContent.relatedLinks);
         setMessage("Page saved successfully!");
         refreshEditor(router);
       } else {
@@ -272,7 +362,6 @@ export default function PageEditor({
 
     try {
       await clientApi.deleteMenuItemPage(page!.id);
-      await revalidatePageContent(undefined, page?.slug);
       redirectAndRefresh(router, "/admin/pages");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -676,7 +765,34 @@ export default function PageEditor({
                 ? "admin-form-block--collapsed"
                 : undefined
             }
-            headerActions={renderSectionToggle("content", "Content")}
+            headerActions={
+              <>
+                <button
+                  type="button"
+                  className="admin-form-block-popout-btn"
+                  onClick={() => setContentModalOpen(true)}
+                  title="Open in full-screen editor"
+                  aria-label="Open content editor in full screen"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                {renderSectionToggle("content", "Content")}
+              </>
+            }
           >
             {!collapsedSections.content && (
               <div>
@@ -689,15 +805,43 @@ export default function PageEditor({
                   minHeight={420}
                   onSave={savePage}
                   onPreview={previewHref ? handlePreview : undefined}
+                  policy={PAGE_INLINE_CONTENT_POLICY}
                   enableHtmlFormatting
                   formatHtmlOnModeSwitch
                   htmlEditorVariant="code"
                 />
                 <div className="form-text mt-1">
                   Use the toggle above to switch between HTML and the rich-text
-                  editor.
+                  editor. Manage Related Links in the dedicated section below.
                 </div>
               </div>
+            )}
+          </AdminFormBlock>
+
+          <AdminFormBlock
+            icon={contentIcon}
+            title="Related Links"
+            className={
+              collapsedSections.relatedLinks
+                ? "admin-form-block--collapsed"
+                : undefined
+            }
+            headerActions={renderSectionToggle("relatedLinks", "Related Links")}
+          >
+            {!collapsedSections.relatedLinks && (
+              <>
+                <div className="related-links-section-intro">
+                  Build the links that appear inline within the page content.
+                  They are managed separately from the content editor, with the
+                  saved block appended after the main page content.
+                </div>
+                <RelatedLinksEditor
+                  value={relatedLinks}
+                  onChange={setRelatedLinks}
+                  previewVariant="content"
+                  previewHint="This block is rendered inline in the public page content flow."
+                />
+              </>
             )}
           </AdminFormBlock>
         </div>
@@ -713,6 +857,30 @@ export default function PageEditor({
         previewHref={previewHref}
         previewLabel="Preview"
       />
+
+      {/* Content editor pop-out modal */}
+      <AdminModal
+        isOpen={contentModalOpen}
+        onCloseAction={() => setContentModalOpen(false)}
+        title="Content Editor"
+        size="xl"
+      >
+        <RichContentField
+          label=""
+          value={formData.content}
+          onChange={(html) => update("content", html)}
+          storageKey="page-content-mode"
+          placeholder="Start writing your page content here…"
+          minHeight={500}
+          onSave={savePage}
+          onPreview={previewHref ? handlePreview : undefined}
+          policy={PAGE_INLINE_CONTENT_POLICY}
+          enableHtmlFormatting
+          formatHtmlOnModeSwitch
+          htmlEditorVariant="code"
+          stickyToolbar
+        />
+      </AdminModal>
     </form>
   );
 }

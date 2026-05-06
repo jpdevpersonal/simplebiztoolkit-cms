@@ -19,6 +19,7 @@ import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
   createPageMetadata,
+  normalizePublicUrl,
 } from "@/lib/seo";
 import "@/styles/contentCards.css";
 import "@/styles/pages.css";
@@ -26,6 +27,8 @@ import "@/styles/pages.css";
 type Props = {
   params: Promise<{ menuItemSlug: string }>;
 };
+
+export const revalidate = 300;
 
 /** Resolve a menu item by matching slugified title against the URL slug. */
 async function resolveMenuItem(slug: string) {
@@ -58,8 +61,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
   const content = await getPublishedMenuItemContent(item);
   const publishedCats = content.publishedCategories;
   const directPages = content.directPages;
-  const showDirectPageCards =
-    publishedCats.length === 0 && directPages.length > 1;
+  const showDirectPageCards = directPages.length > 0;
 
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
@@ -189,7 +191,9 @@ export default async function MenuItemLandingPage({ params }: Props) {
               {showDirectPageCards ? (
                 <div className="row g-3 mt-2">
                   {directPages.map((page) => {
-                    const imageSrc = page.featuredImage || page.headerImage;
+                    const imageSrc =
+                      normalizePublicUrl(page.featuredImage) ??
+                      normalizePublicUrl(page.headerImage);
                     const pageDate = formatPageDate(page.dateISO);
 
                     return (

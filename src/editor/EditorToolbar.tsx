@@ -227,6 +227,8 @@ export function EditorToolbar({
       .insertContent({
         type: "ctaSbtBlock",
         attrs: {
+          mediaType: "button",
+          imageAlignment: "right",
           title: "Start Growing Your Business",
           text: "Use the tools in SimpleBizToolkit.",
           buttonText: "Try Now",
@@ -243,6 +245,20 @@ export function EditorToolbar({
       .insertContent({
         type: "imageBlock",
         attrs: { src: "", alt: "", caption: "" },
+      })
+      .run();
+  };
+
+  const insertRelatedLinks = () => {
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "relatedLinksSbtBlock",
+        attrs: {
+          title: "Related to this",
+          items: [],
+        },
       })
       .run();
   };
@@ -264,6 +280,9 @@ export function EditorToolbar({
         break;
       case "image":
         insertImageBlock();
+        break;
+      case "related-links":
+        insertRelatedLinks();
         break;
     }
   };
@@ -343,17 +362,15 @@ export function EditorToolbar({
 
   // ── Toolbar heading value (derived, no state) ─────────────────────────────
 
-  const headingValue = editor.isActive("heading", { level: 1 })
-    ? "h1"
-    : editor.isActive("heading", { level: 2 })
-      ? "h2"
-      : editor.isActive("heading", { level: 3 })
-        ? "h3"
-        : editor.isActive("heading", { level: 4 })
-          ? "h4"
-          : editor.isActive("heading", { level: 5 })
-            ? "h5"
-            : "p";
+  const headingValue = editor.isActive("heading", { level: 2 })
+    ? "h2"
+    : editor.isActive("heading", { level: 3 })
+      ? "h3"
+      : editor.isActive("heading", { level: 4 })
+        ? "h4"
+        : editor.isActive("heading", { level: 5 })
+          ? "h5"
+          : "p";
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -405,7 +422,6 @@ export function EditorToolbar({
         <option value="p">Paragraph</option>
         {isNodeAllowed("heading") && (
           <>
-            <option value="h1">Heading 1</option>
             <option value="h2">Heading 2</option>
             <option value="h3">Heading 3</option>
             <option value="h4">Heading 4</option>
@@ -567,8 +583,13 @@ export function EditorToolbar({
         {isNodeAllowed("callout") && (
           <option value="callout">💬 Callout</option>
         )}
-        {isNodeAllowed("ctaSbtBlock") && <option value="cta">📣 CTA</option>}
+        {isNodeAllowed("ctaSbtBlock") && (
+          <option value="cta">📣 CTA / Image CTA</option>
+        )}
         {isNodeAllowed("imageBlock") && <option value="image">🖼️ Image</option>}
+        {isNodeAllowed("relatedLinksSbtBlock") && (
+          <option value="related-links">🔗 Related Links</option>
+        )}
       </select>
 
       <TDivider />

@@ -1,0 +1,50 @@
+name: Reusable Deploy Smoke Checks
+
+on:
+  workflow_call:
+    inputs:
+      api_url:
+        required: true
+        type: string
+
+jobs:
+  smoke-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    env:
+      API_URL: ${{ inputs.api_url }}
+      NEXT_PUBLIC_API_URL: ${{ inputs.api_url }}
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'ci-placeholder-secret-not-used-in-tests' }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL || 'ci@example.com' }}
+      ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH || '$2b$10$placeholder' }}
+      REVALIDATION_SECRET: ${{ secrets.REVALIDATION_SECRET || 'ci-revalidation-placeholder' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Verify API is reachable
+        run: |
+          curl --fail --silent --show-error --max-time 15 \
+            "${API_URL}/api/menuitems" \
+            > /dev/null
+
+      - name: Run Playwright smoke tests
+        run: npx playwright test src/e2e/smoke.spec.ts

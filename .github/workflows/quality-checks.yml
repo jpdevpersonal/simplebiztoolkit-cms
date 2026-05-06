@@ -1,16 +1,21 @@
 name: PR Validation Quality Checks
-# quality checks
+# quality checks and playwright.
 on:
   pull_request:
 
 jobs:
-  quality:
+  pr-validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
 
     env:
       API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
       NEXT_PUBLIC_API_URL: https://simplebiztoolkit-api-test.azurewebsites.net
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'ci-placeholder-secret-not-used-in-tests' }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL || 'ci@example.com' }}
+      ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH || '$2b$10$placeholder' }}
+      REVALIDATION_SECRET: ${{ secrets.REVALIDATION_SECRET || 'ci-revalidation-placeholder' }}
 
     steps:
       - name: Checkout
@@ -32,4 +37,19 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Unit tests
-        run: npm run test
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Verify API is reachable
+        run: |
+          curl --fail --silent --show-error --max-time 15 \
+            https://simplebiztoolkit-api-test.azurewebsites.net/api/menuitems \
+            > /dev/null
+
+      - name: Run Playwright e2e tests
+        run: npx playwright test

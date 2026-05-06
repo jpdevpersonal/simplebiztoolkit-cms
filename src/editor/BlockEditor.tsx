@@ -16,6 +16,7 @@ import { LegacyCtaBlock } from "./extensions/LegacyCtaBlock";
 import { Callout } from "./extensions/Callout";
 import { CTA } from "./extensions/CTA";
 import { ImageBlock } from "./extensions/ImageBlock";
+import { RelatedLinks } from "./extensions/RelatedLinks";
 import { Locking } from "./extensions/Locking";
 import { EditorToolbar } from "./EditorToolbar";
 import type { EditorPolicy } from "./policy";
@@ -55,7 +56,7 @@ export default function BlockEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3, 4, 5] },
+        heading: { levels: [2, 3, 4, 5] },
         codeBlock: { languageClassPrefix: "language-" },
         link: {
           openOnClick: false,
@@ -66,6 +67,7 @@ export default function BlockEditor({
       Callout,
       CTA,
       ImageBlock,
+      RelatedLinks,
       Locking,
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),

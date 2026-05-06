@@ -1,12 +1,42 @@
 "use client";
 import Image from "next/image";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import type { Product } from "@/types/product";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizePublicContentHtml } from "@/lib/sanitize";
 import "@/styles/products.css";
 
 type Props = {
   product: Product;
 };
+
+type ProductDescriptionContent = {
+  html: string;
+  relatedLinksBlocks: ReturnType<
+    typeof extractRelatedLinksBlocksFromHtml
+  >["blocks"];
+};
+
+function splitDescriptionContent(
+  description: string,
+): ProductDescriptionContent {
+  if (!description) {
+    return { html: "", relatedLinksBlocks: [] };
+  }
+
+  const containsHtml = /<[a-z][\s\S]*>/i.test(description);
+  if (!containsHtml) {
+    return { html: description, relatedLinksBlocks: [] };
+  }
+
+  const { htmlWithoutRelatedLinks, blocks: relatedLinksBlocks } =
+    extractRelatedLinksBlocksFromHtml(description);
+
+  return {
+    html: htmlWithoutRelatedLinks.trim(),
+    relatedLinksBlocks,
+  };
+}
 
 // Component to render formatted product descriptions
 function ProductDescription({ description }: { description: string }) {
@@ -19,7 +49,9 @@ function ProductDescription({ description }: { description: string }) {
     return (
       <div
         className="product-description-content"
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
+        dangerouslySetInnerHTML={{
+          __html: sanitizePublicContentHtml(description),
+        }}
       />
     );
   }
@@ -85,6 +117,10 @@ function ProductDescription({ description }: { description: string }) {
 }
 
 export default function ProductDetailClient({ product }: Props) {
+  const contentSource = product.description || product.problem;
+  const { html: descriptionContent, relatedLinksBlocks } =
+    splitDescriptionContent(contentSource);
+
   // Compute medium (resized) image path
   const mediumSrc = (src: string) => {
     if (!src) return src;
@@ -110,48 +146,68 @@ export default function ProductDetailClient({ product }: Props) {
 
   return (
     <>
-      {/* Two Column Layout */}
       <div className="product-detail-layout">
-        {/* Mobile-only title shown above the image on small screens */}
-        <h1 className="product-detail-title product-detail-title--mobile">
-          {product.title}
-        </h1>
-
-        {/* Left Column - Image */}
-        <div
-          className="product-detail-image-container"
-          style={{
-            filter: "drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.5))",
-          }}
-        >
-          <div
-            className="product-detail-image-wrapper"
-            onMouseEnter={() =>
-              preloadImage(product.image || "/images/placeholder-preview.png")
-            }
-          >
-            <Image
-              src={product.image || "/images/placeholder-preview.png"}
-              alt={product.title}
-              width={1200}
-              height={840}
-              className="product-detail-image"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              priority
-            />
-          </div>
+        <div className="product-detail-title-wrap">
+          <h1 className="product-detail-title">{product.title}</h1>
         </div>
 
-        {/* Right Column - Description */}
+        <div className="product-detail-media-column">
+          <div
+            className="product-detail-image-container"
+            style={{
+              filter: "drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.5))",
+            }}
+          >
+            <div
+              className="product-detail-image-wrapper"
+              onMouseEnter={() =>
+                preloadImage(product.image || "/images/placeholder-preview.png")
+              }
+            >
+              <Image
+                src={product.image || "/images/placeholder-preview.png"}
+                alt={product.title}
+                width={1200}
+                height={840}
+                className="product-detail-image"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
+            </div>
+          </div>
+
+          {relatedLinksBlocks.length > 0 ? (
+            <div className="product-detail-related-links-stack">
+              {relatedLinksBlocks.map((block, index) => (
+                <RelatedLinksBlock
+                  key={`${block.title}-${index}`}
+                  title={block.title}
+                  items={block.items}
+                  backgroundColor={block.backgroundColor}
+                  borderWidth={block.borderWidth}
+                  imageSize={block.imageSize}
+                  variant="template"
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
+
         <div className="product-detail-content">
           <div className="product-detail-header">
-            <h1 className="product-detail-title">{product.title}</h1>
-
-            {/* Price and Primary CTA Row (mobile optimized) */}
             <div className="product-detail-price-cta-row">
               <div className="product-detail-price-wrapper">
                 <span className="product-detail-price">
-                  {product.price || "See our shop for pricing"}
+                  {product.price ? (
+                    <span style={{ fontSize: "1rem" }}>
+                      From{"   "}
+                      <span style={{ fontSize: "2rem" }}>{product.price}</span>
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: "1.2rem" }}>
+                      See our Etsy shop for pricing
+                    </span>
+                  )}
                 </span>
               </div>
               <a
@@ -179,7 +235,6 @@ export default function ProductDetailClient({ product }: Props) {
               </a>
             </div>
 
-            {/* Trust indicators */}
             <div className="product-detail-trust">
               <div className="product-detail-trust-item">
                 <svg
@@ -230,14 +285,14 @@ export default function ProductDetailClient({ product }: Props) {
             </div>
           </div>
 
-          <div className="product-detail-problem">
-            <h2 style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>
-              Description
-            </h2>
-            <ProductDescription
-              description={product.description || product.problem}
-            />
-          </div>
+          {descriptionContent ? (
+            <div className="product-detail-problem">
+              <h2 style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>
+                Description
+              </h2>
+              <ProductDescription description={descriptionContent} />
+            </div>
+          ) : null}
 
           <div className="product-detail-features">
             <h2>What&apos;s Included</h2>
@@ -264,14 +319,14 @@ export default function ProductDetailClient({ product }: Props) {
           </div>
 
           {/* Secondary CTA - Desktop only, less prominent */}
-          <div className="product-detail-cta product-detail-cta--secondary">
+          <div className="product-detail-cta product-detail-cta--primary">
             <a
               href={product.etsyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn sb-btn-primary product-detail-cta-btn"
+              className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
             >
-              <span>More about this item</span>
+              <span>Get It Now</span>
               <svg
                 width="18"
                 height="18"
@@ -290,6 +345,10 @@ export default function ProductDetailClient({ product }: Props) {
             </a>
             <p className="product-detail-cta-note">
               ✓ Secure payment via Etsy • Digital download available immediately
+            </p>
+
+            <p className="product-detail-cta-note">
+              Price shown on Etsy may vary by currency and location
             </p>
           </div>
         </div>

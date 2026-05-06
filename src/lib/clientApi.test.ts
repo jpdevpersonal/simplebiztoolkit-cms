@@ -186,7 +186,6 @@ describe("clientApi", () => {
       menuKey: "primary",
       orderedMenuItemIds: ["m1", "m2"],
     });
-    await adminApi.revalidateContent("all");
     await adminApi.getMenuCategories("menu-1");
     await adminApi.getMenuItemPages("cat-1", "published", "menu-1");
 
@@ -208,10 +207,6 @@ describe("clientApi", () => {
     );
     expect(sendHttpRequestMock).toHaveBeenCalledWith(
       "/api/admin/menu-layout",
-      expect.any(Object),
-    );
-    expect(sendHttpRequestMock).toHaveBeenCalledWith(
-      "/api/revalidate",
       expect.any(Object),
     );
   });

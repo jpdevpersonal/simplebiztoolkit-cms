@@ -325,4 +325,42 @@ describe("RichContentField", () => {
     });
     expect(screen.queryByTestId("tiptap-editor")).not.toBeInTheDocument();
   });
+
+  it("renders a pop-out button when onPopOut is provided and calls the handler", async () => {
+    const user = userEvent.setup();
+    const onPopOut = vi.fn();
+
+    render(
+      <RichContentField
+        label="Body"
+        value="<p>Hello</p>"
+        onChange={vi.fn()}
+        storageKey="body-mode"
+        onPopOut={onPopOut}
+      />,
+    );
+
+    const popOutBtn = screen.getByRole("button", {
+      name: "Open editor in full screen",
+    });
+    expect(popOutBtn).toBeInTheDocument();
+
+    await user.click(popOutBtn);
+    expect(onPopOut).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not render a pop-out button when onPopOut is not provided", () => {
+    render(
+      <RichContentField
+        label="Body"
+        value="<p>Hello</p>"
+        onChange={vi.fn()}
+        storageKey="body-mode"
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Open editor in full screen" }),
+    ).not.toBeInTheDocument();
+  });
 });

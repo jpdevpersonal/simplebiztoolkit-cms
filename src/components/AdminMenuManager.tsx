@@ -21,7 +21,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { MenuItem, MenuLayoutSettings } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
-import { revalidateMenuContent } from "@/lib/adminRevalidation";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import EditorFeedback from "@/components/EditorFeedback";
 import {
@@ -442,7 +441,6 @@ export default function AdminMenuManager({
       setMessage(
         `Added menu item \"${createdItem.title}\". Save each location after arranging it.`,
       );
-      await revalidateMenuContent();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -471,7 +469,6 @@ export default function AdminMenuManager({
             : candidate,
         ),
       }));
-      await revalidateMenuContent();
       setMessage(
         `${item.item.title} is now ${nextStatus === "published" ? "published" : "hidden"}.`,
       );
@@ -502,7 +499,6 @@ export default function AdminMenuManager({
         items: state.items.filter((candidate) => candidate.id !== item.id),
         savedOrderIds: state.savedOrderIds.filter((id) => id !== item.id),
       }));
-      await revalidateMenuContent();
       setMessage(`Deleted menu item \"${item.item.title}\".`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -598,7 +594,6 @@ export default function AdminMenuManager({
         savedOrderIds: orderedVisibleIds,
         savedHiddenStaticNavIds: normalizedHiddenStaticNavIds,
       }));
-      await revalidateMenuContent();
       setMessage(`${currentLocationOption.label} order saved.`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
