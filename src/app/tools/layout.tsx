@@ -41,7 +41,8 @@ export default async function ToolsLayout({
         directHref: getMenuItemLandingHref(content),
       });
     }
-  } catch {
+  } catch (error) {
+    console.error("Failed to load tools navigation", error);
     // Navigation not critical — render header without nav items
   }
 
