@@ -69,6 +69,28 @@ html {
   padding: 2.25rem 0 5rem;
 }
 
+@media (max-width: 900px) {
+  .csv-profit-calculator-page {
+    width: min(100%, calc(100% - 1.5rem));
+  }
+
+  .csv-profit-calculator-page main {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .csv-profit-calculator-page {
+    width: min(100%, calc(100% - 1rem));
+    font-size: 0.95rem;
+    padding: 1.5rem 0 4rem;
+  }
+
+  .csv-profit-calculator-page main {
+    width: 100%;
+  }
+}
+
 .csv-profit-calculator-page h1,
 .csv-profit-calculator-page h2,
 .csv-profit-calculator-page h3 {
