@@ -2294,10 +2294,10 @@ export default function CsvProfitCalculatorClient() {
         <nav className="page-breadcrumb" aria-label="Breadcrumb">
           <ol>
             <li>
-              <a href="https://www.simplebiztoolkit.com">Simple Biz Toolkit</a>
+              <Link href="/">Simple Biz Toolkit</Link>
             </li>
             <li>
-              <a href="https://www.simplebiztoolkit.com/tools">Tools</a>
+              <Link href="/tools">Tools</Link>
             </li>
             <li aria-current="page">Etsy CSV Profit Calculator</li>
           </ol>
