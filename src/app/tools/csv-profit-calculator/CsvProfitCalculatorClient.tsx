@@ -73,7 +73,7 @@ type ParsedCurrencyValue = {
 };
 
 type WorkbookCell = {
-  type: "text" | "currency";
+  type: "text" | "currency" | "profit";
   value: string | number;
 };
 
@@ -1553,7 +1553,11 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     appendSummaryCell(tableRow, formatCurrency(row.adjustments));
     appendSummaryCell(tableRow, formatCurrency(row.netReceived));
     appendSummaryCell(tableRow, formatCurrency(row.extraCosts));
-    appendSummaryCell(tableRow, formatCurrency(row.estimatedProfit));
+    appendSummaryCell(
+      tableRow,
+      formatCurrency(row.estimatedProfit),
+      "profit-cell",
+    );
     container.appendChild(tableRow);
   }
 
@@ -1663,7 +1667,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
       EXPORT_COLUMNS.map<WorkbookCell>((column) => {
         const rawValue = row[column.key];
         return {
-          type: column.type,
+          type: column.key === "estimatedProfit" ? "profit" : column.type,
           value:
             column.type === "currency"
               ? Number(rawValue || 0)
@@ -1716,15 +1720,17 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 
   function getXlsxStyleId(
     rowKind: WorkbookRowKind,
-    cellType: "text" | "currency",
+    cellType: "text" | "currency" | "profit",
   ) {
     if (rowKind === "title") return 3;
     if (rowKind === "meta") return 4;
     if (rowKind === "spacer") return 9;
     if (rowKind === "header") return 2;
-    if (rowKind === "total") return cellType === "currency" ? 8 : 7;
-    if (rowKind === "dataAlt") return cellType === "currency" ? 6 : 5;
-    return cellType === "currency" ? 1 : 0;
+    if (rowKind === "total")
+      return cellType === "currency" || cellType === "profit" ? 8 : 7;
+    if (rowKind === "dataAlt")
+      return cellType === "profit" ? 11 : cellType === "currency" ? 6 : 5;
+    return cellType === "profit" ? 10 : cellType === "currency" ? 1 : 0;
   }
 
   function createXlsxWorkbook(rows: SummaryRowWithCosts[]) {
@@ -1824,29 +1830,29 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font>
     <font><b/><sz val="15"/><color rgb="FF1A4B3E"/><name val="Calibri"/><family val="2"/></font>
     <font><i/><sz val="10"/><color rgb="FF6D665E"/><name val="Calibri"/><family val="2"/></font>
-    <font><b/><sz val="11"/><color rgb="FF1A4B3E"/><name val="Calibri"/><family val="2"/></font>
+    <font><b/><sz val="11"/><color rgb="FF0D5C3F"/><name val="Calibri"/><family val="2"/></font>
   </fonts>
   <fills count="6">
     <fill><patternFill patternType="none"/></fill>
     <fill><patternFill patternType="gray125"/></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FF1F6A52"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFFAF7F2"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFEAF3EE"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFF4EFE7"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF414556"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF8F9FB"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFE8F2EF"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF1F3F6"/><bgColor indexed="64"/></patternFill></fill>
   </fills>
   <borders count="3">
     <border><left/><right/><top/><bottom/><diagonal/></border>
     <border>
-      <left style="thin"><color rgb="FFE7DED0"/></left><right style="thin"><color rgb="FFE7DED0"/></right>
-      <top style="thin"><color rgb="FFE7DED0"/></top><bottom style="thin"><color rgb="FFE7DED0"/></bottom><diagonal/>
+      <left style="thin"><color rgb="FFE2E5EA"/></left><right style="thin"><color rgb="FFE2E5EA"/></right>
+      <top style="thin"><color rgb="FFE2E5EA"/></top><bottom style="thin"><color rgb="FFE2E5EA"/></bottom><diagonal/>
     </border>
     <border>
       <left style="thin"><color rgb="FFC8D8D0"/></left><right style="thin"><color rgb="FFC8D8D0"/></right>
-      <top style="medium"><color rgb="FF1F6A52"/></top><bottom style="thin"><color rgb="FFC8D8D0"/></bottom><diagonal/>
+      <top style="medium"><color rgb="FF1A7F5A"/></top><bottom style="thin"><color rgb="FFC8D8D0"/></bottom><diagonal/>
     </border>
   </borders>
   <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-  <cellXfs count="10">
+  <cellXfs count="12">
     <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
     <xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
     <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
@@ -1857,6 +1863,8 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     <xf numFmtId="0" fontId="4" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
     <xf numFmtId="164" fontId="4" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
     <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="164" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
+    <xf numFmtId="164" fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
   </cellXfs>
   <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
 </styleSheet>`;
@@ -1871,7 +1879,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
         .map((cell, columnIndex) => {
           const reference = `${columnNumberToName(columnIndex + 1)}${rowNumber}`;
           const styleId = getXlsxStyleId(row.kind, cell.type);
-          if (cell.type === "currency") {
+          if (cell.type === "currency" || cell.type === "profit") {
             return `<c r="${reference}" s="${styleId}"><v>${Number(cell.value || 0).toFixed(2)}</v></c>`;
           }
           return `<c r="${reference}" t="inlineStr" s="${styleId}"><is><t>${xmlEscape(cell.value || "")}</t></is></c>`;

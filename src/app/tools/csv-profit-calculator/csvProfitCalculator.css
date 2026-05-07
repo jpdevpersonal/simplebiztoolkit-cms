@@ -1377,12 +1377,12 @@ td {
 }
 
 th {
-  background: var(--bg);
-  color: var(--heading);
+  background: var(--brand-blue);
+  color: #fff;
   font-size: 0.83rem;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 tbody tr:nth-child(even) {
@@ -1404,6 +1404,11 @@ tfoot td {
 .month-cell {
   font-weight: 700;
   color: var(--heading);
+}
+
+.profit-cell {
+  color: var(--primary-deep);
+  font-weight: 700;
 }
 
 .cost-table {
