@@ -193,11 +193,14 @@ export default async function CategoryPageListing({ params }: Props) {
                           <div className="sb-muted" style={{ fontSize: 13 }}>
                             {cat.title}
                           </div>
-                          {formatPageDate(page.dateISO) && (
-                            <div className="sb-muted" style={{ fontSize: 13 }}>
-                              {formatPageDate(page.dateISO)}
-                            </div>
-                          )}
+                          {(() => {
+                            const pageDate = formatPageDate(page.dateISO);
+                            return pageDate ? (
+                              <div className="sb-muted" style={{ fontSize: 13 }}>
+                                {pageDate}
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
 
                         <div
