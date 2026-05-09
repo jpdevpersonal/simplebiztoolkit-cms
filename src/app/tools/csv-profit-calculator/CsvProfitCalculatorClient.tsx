@@ -1,8 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
+
+import { CSV_CALCULATOR_FAQS } from "./faqContent";
 
 type MappingKey = "date" | "type" | "amount" | "fee" | "net" | "description";
 type CostKey =
@@ -72,7 +73,7 @@ type ParsedCurrencyValue = {
 };
 
 type WorkbookCell = {
-  type: "text" | "currency";
+  type: "text" | "currency" | "profit";
   value: string | number;
 };
 
@@ -1552,7 +1553,11 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     appendSummaryCell(tableRow, formatCurrency(row.adjustments));
     appendSummaryCell(tableRow, formatCurrency(row.netReceived));
     appendSummaryCell(tableRow, formatCurrency(row.extraCosts));
-    appendSummaryCell(tableRow, formatCurrency(row.estimatedProfit));
+    appendSummaryCell(
+      tableRow,
+      formatCurrency(row.estimatedProfit),
+      "profit-cell",
+    );
     container.appendChild(tableRow);
   }
 
@@ -1662,7 +1667,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
       EXPORT_COLUMNS.map<WorkbookCell>((column) => {
         const rawValue = row[column.key];
         return {
-          type: column.type,
+          type: column.key === "estimatedProfit" ? "profit" : column.type,
           value:
             column.type === "currency"
               ? Number(rawValue || 0)
@@ -1715,15 +1720,17 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 
   function getXlsxStyleId(
     rowKind: WorkbookRowKind,
-    cellType: "text" | "currency",
+    cellType: "text" | "currency" | "profit",
   ) {
     if (rowKind === "title") return 3;
     if (rowKind === "meta") return 4;
     if (rowKind === "spacer") return 9;
     if (rowKind === "header") return 2;
-    if (rowKind === "total") return cellType === "currency" ? 8 : 7;
-    if (rowKind === "dataAlt") return cellType === "currency" ? 6 : 5;
-    return cellType === "currency" ? 1 : 0;
+    if (rowKind === "total")
+      return cellType === "currency" || cellType === "profit" ? 8 : 7;
+    if (rowKind === "dataAlt")
+      return cellType === "profit" ? 11 : cellType === "currency" ? 6 : 5;
+    return cellType === "profit" ? 10 : cellType === "currency" ? 1 : 0;
   }
 
   function createXlsxWorkbook(rows: SummaryRowWithCosts[]) {
@@ -1823,29 +1830,29 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font>
     <font><b/><sz val="15"/><color rgb="FF1A4B3E"/><name val="Calibri"/><family val="2"/></font>
     <font><i/><sz val="10"/><color rgb="FF6D665E"/><name val="Calibri"/><family val="2"/></font>
-    <font><b/><sz val="11"/><color rgb="FF1A4B3E"/><name val="Calibri"/><family val="2"/></font>
+    <font><b/><sz val="11"/><color rgb="FF0D5C3F"/><name val="Calibri"/><family val="2"/></font>
   </fonts>
   <fills count="6">
     <fill><patternFill patternType="none"/></fill>
     <fill><patternFill patternType="gray125"/></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FF1F6A52"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFFAF7F2"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFEAF3EE"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFF4EFE7"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF414556"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF8F9FB"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFE8F2EF"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF1F3F6"/><bgColor indexed="64"/></patternFill></fill>
   </fills>
   <borders count="3">
     <border><left/><right/><top/><bottom/><diagonal/></border>
     <border>
-      <left style="thin"><color rgb="FFE7DED0"/></left><right style="thin"><color rgb="FFE7DED0"/></right>
-      <top style="thin"><color rgb="FFE7DED0"/></top><bottom style="thin"><color rgb="FFE7DED0"/></bottom><diagonal/>
+      <left style="thin"><color rgb="FFE2E5EA"/></left><right style="thin"><color rgb="FFE2E5EA"/></right>
+      <top style="thin"><color rgb="FFE2E5EA"/></top><bottom style="thin"><color rgb="FFE2E5EA"/></bottom><diagonal/>
     </border>
     <border>
       <left style="thin"><color rgb="FFC8D8D0"/></left><right style="thin"><color rgb="FFC8D8D0"/></right>
-      <top style="medium"><color rgb="FF1F6A52"/></top><bottom style="thin"><color rgb="FFC8D8D0"/></bottom><diagonal/>
+      <top style="medium"><color rgb="FF1A7F5A"/></top><bottom style="thin"><color rgb="FFC8D8D0"/></bottom><diagonal/>
     </border>
   </borders>
   <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-  <cellXfs count="10">
+  <cellXfs count="12">
     <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
     <xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
     <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
@@ -1856,6 +1863,8 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     <xf numFmtId="0" fontId="4" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
     <xf numFmtId="164" fontId="4" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
     <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="164" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
+    <xf numFmtId="164" fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
   </cellXfs>
   <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
 </styleSheet>`;
@@ -1870,7 +1879,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
         .map((cell, columnIndex) => {
           const reference = `${columnNumberToName(columnIndex + 1)}${rowNumber}`;
           const styleId = getXlsxStyleId(row.kind, cell.type);
-          if (cell.type === "currency") {
+          if (cell.type === "currency" || cell.type === "profit") {
             return `<c r="${reference}" s="${styleId}"><v>${Number(cell.value || 0).toFixed(2)}</v></c>`;
           }
           return `<c r="${reference}" t="inlineStr" s="${styleId}"><is><t>${xmlEscape(cell.value || "")}</t></is></c>`;
@@ -1994,7 +2003,9 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     documentRef.body.appendChild(link);
     link.click();
     documentRef.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 0);
   }
 
   function buildDownloadName(extension: string) {
@@ -2002,7 +2013,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
       state.uploadedFiles.length === 1
         ? state.uploadedFiles[0].name.replace(/\.csv$/i, "")
         : "etsy-multi-month-accounts";
-    return `${base}-clean-monthly-accounts.${extension}`;
+    return `${base}-profit-report.${extension}`;
   }
 
   function columnNumberToName(value: number) {
@@ -2219,7 +2230,17 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 
   function handleVisibilityChange() {
     if (documentRef.visibilityState === "hidden") {
-      clearInMemoryCsvData();
+      const hadSensitiveData =
+        state.uploadedFiles.length > 0 || state.summaryRows.length > 0;
+
+      if (!hadSensitiveData) return;
+
+      resetToolState();
+      announce(
+        "upload",
+        "Your uploaded CSV data was cleared when the tab was hidden to protect your privacy. Please upload your files again to continue.",
+        "info",
+      );
     }
   }
 
@@ -2266,7 +2287,22 @@ export default function CsvProfitCalculatorClient() {
 
   return (
     <div ref={rootRef} className="csv-profit-calculator-page">
+      <a className="skip-link" href="#uploadCard">
+        Skip to the tool
+      </a>
       <main>
+        <nav className="page-breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li>
+              <Link href="/">Simple Biz Toolkit</Link>
+            </li>
+            <li>
+              <Link href="/tools">Tools</Link>
+            </li>
+            <li aria-current="page">Etsy CSV Profit Calculator</li>
+          </ol>
+        </nav>
+
         <div
           id="statusMessage"
           className="status"
@@ -2274,148 +2310,287 @@ export default function CsvProfitCalculatorClient() {
           aria-live="polite"
         />
 
-        <div className="page-title">
-          <h1>Etsy CSV to Profit Calculator</h1>
-          <p className="page-subtitle">
-            Free CSV profit calculator for Etsy sellers. See revenue, fees,
-            refunds and real profit instantly.
-          </p>
-        </div>
-
-        <section className="hero" aria-label="Tool introduction">
+        <section className="hero" aria-labelledby="hero-heading">
           <div className="hero-copy">
-            <h2>Make sense of your Etsy CSV in minutes</h2>
+            <span className="eyebrow">
+              <span className="eyebrow-dot" aria-hidden="true" />
+              Free tool · No sign-up · 100% private
+            </span>
+            <h1 id="hero-heading">
+              Turn Your Etsy CSV Into a Clear{" "}
+              <span className="hero-highlight">Monthly Profit Report</span>
+            </h1>
             <p className="intro">
-              Choose your Etsy payment CSV and get a clear month-by-month view
-              of revenue, fees, and profit, ready for your accountant or your
-              books.
+              Drop your Etsy payment CSV in below and instantly see revenue,
+              fees, refunds and the profit you actually keep — broken down by
+              month and ready for your accountant.
             </p>
             <div className="hero-benefits">
-              <span className="hero-benefit">
+              {[
+                "No sign-up needed",
+                "Processed locally in your browser",
+                "Download as Excel or CSV",
+                "Up to 15 files at once",
+              ].map((benefit) => (
+                <span key={benefit} className="hero-benefit">
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {benefit}
+                </span>
+              ))}
+            </div>
+            <div className="hero-cta-row">
+              <a className="button button-primary hero-cta" href="#uploadCard">
+                Upload Your Etsy CSV
                 <svg
-                  width="13"
-                  height="13"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <polyline points="20 6 9 17 4 12" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
                 </svg>
-                No sign-up needed
-              </span>
-              <span className="hero-benefit">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Processed locally in your browser
-              </span>
-              <span className="hero-benefit">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Download as Excel or CSV
-              </span>
-              <span className="hero-benefit">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Up to 15 files at once
-              </span>
+              </a>
+              <a className="hero-cta-link" href="#how-it-works">
+                See how it works
+              </a>
             </div>
           </div>
 
-          <aside className="hero-note" aria-label="How it works">
-            <strong className="hero-note-title">How it works</strong>
-            <p>
-              1. Go to Etsy &rarr; Shop Manager &rarr; Finances &rarr; Payment
-              Account &rarr; Download CSV.
-            </p>
-            <p>2. Drop that CSV into the tool below.</p>
-            <p>3. Review your profit breakdown and save your report.</p>
-            <div className="privacy">
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              Processed locally in your browser. Nothing is uploaded or stored
-              by this tool.
+          <aside className="hero-preview" aria-label="Example monthly report">
+            <div className="hero-preview-frame" aria-hidden="true">
+              <div className="hero-preview-header">
+                <span className="hero-preview-dot dot-red" />
+                <span className="hero-preview-dot dot-amber" />
+                <span className="hero-preview-dot dot-green" />
+                <span className="hero-preview-filename">
+                  monthly-profit-report.xlsx
+                </span>
+              </div>
+              <div className="hero-preview-body">
+                <div className="hero-preview-row hero-preview-head">
+                  <span>Month</span>
+                  <span>Revenue</span>
+                  <span>Fees</span>
+                  <span>Profit</span>
+                </div>
+                <div className="hero-preview-row">
+                  <span>Jan</span>
+                  <span>$3,420</span>
+                  <span>−$412</span>
+                  <span className="hero-preview-profit">$2,318</span>
+                </div>
+                <div className="hero-preview-row">
+                  <span>Feb</span>
+                  <span>$2,980</span>
+                  <span>−$361</span>
+                  <span className="hero-preview-profit">$1,994</span>
+                </div>
+                <div className="hero-preview-row">
+                  <span>Mar</span>
+                  <span>$4,210</span>
+                  <span>−$502</span>
+                  <span className="hero-preview-profit">$2,847</span>
+                </div>
+                <div className="hero-preview-row hero-preview-total">
+                  <span>Total</span>
+                  <span>$10,610</span>
+                  <span>−$1,275</span>
+                  <span className="hero-preview-profit">$7,159</span>
+                </div>
+              </div>
             </div>
+            <p className="hero-preview-caption">
+              Example output — your real numbers, cleanly grouped
+            </p>
           </aside>
+        </section>
+
+        <section
+          className="trust-strip"
+          aria-label="Why sellers trust this tool"
+        >
+          <div className="trust-item">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <div>
+              <strong>100% private</strong>
+              <span>No upload, no account</span>
+            </div>
+          </div>
+          <div className="trust-item">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+            <div>
+              <strong>Instant report</strong>
+              <span>Results in under 60 seconds</span>
+            </div>
+          </div>
+          <div className="trust-item">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <div>
+              <strong>Excel or CSV</strong>
+              <span>Hand straight to your accountant</span>
+            </div>
+          </div>
+          <div className="trust-item">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+              <line x1="9" y1="9" x2="9.01" y2="9" />
+              <line x1="15" y1="9" x2="15.01" y2="9" />
+            </svg>
+            <div>
+              <strong>Built for Etsy sellers</strong>
+              <span>Handles fees, refunds &amp; adjustments</span>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="how-it-works"
+          id="how-it-works"
+          aria-labelledby="how-it-works-heading"
+        >
+          <div className="section-eyebrow">How it works</div>
+          <h2 id="how-it-works-heading">
+            From raw Etsy export to a clean profit report in 3 steps
+          </h2>
+          <ol className="how-it-works-grid">
+            <li>
+              <div className="hiw-step-number" aria-hidden="true">
+                1
+              </div>
+              <h3>Export your Etsy CSV</h3>
+              <p>
+                Etsy → Shop Manager → Finances → Payment account → Monthly
+                statements → Download CSV. Repeat for every month you want
+                included (up to 15).
+              </p>
+            </li>
+            <li>
+              <div className="hiw-step-number" aria-hidden="true">
+                2
+              </div>
+              <h3>Drop the file in</h3>
+              <p>
+                Drag and drop your CSV (or several at once). Everything is
+                parsed locally in your browser — your sales data never leaves
+                your device.
+              </p>
+            </li>
+            <li>
+              <div className="hiw-step-number" aria-hidden="true">
+                3
+              </div>
+              <h3>Save your monthly report</h3>
+              <p>
+                Add packaging, ads or other costs to see real profit, then
+                download the report as Excel or CSV. Perfect for tax season and
+                bookkeepers.
+              </p>
+            </li>
+          </ol>
         </section>
 
         <section
           className="seo-explainer"
           aria-labelledby="seo-explainer-heading"
         >
-          <h2 id="seo-explainer-heading">How This Etsy CSV Tool Works</h2>
+          <h2 id="seo-explainer-heading">
+            Why Etsy sellers need a proper monthly profit report
+          </h2>
           <div className="seo-explainer-grid">
             <div>
-              <h3>Why Etsy CSV Files Are Hard to Use</h3>
+              <h3>Etsy CSV exports are messy by design</h3>
               <p>
-                Etsy exports give you raw rows of sales, fees, refunds, and
-                adjustments mixed together. That makes it hard to see your
-                monthly totals or your real profit.
+                Your Etsy payment account export mixes sales, fees, refunds,
+                adjustments and tax line-items into one long stream. There is no
+                monthly view and no profit calculation — just raw rows.
               </p>
             </div>
             <div>
-              <h3>Create Monthly Etsy Profit Reports in Seconds</h3>
+              <h3>Sales are not the same as profit</h3>
               <p>
-                This tool groups your Etsy CSV by month, separates revenue,
-                fees, refunds, and adjustments, and lets you add extra costs.
-                Then you can download a clean CSV or Excel report.
+                After Etsy transaction fees, listing fees, refunds and your own
+                packaging or ad spend, the number you actually keep can be very
+                different from your headline sales. A monthly profit report
+                makes that clear.
               </p>
             </div>
           </div>
           <div className="seo-explainer-full">
-            <h3>Track Your Real Etsy Profit, Not Just Your Sales</h3>
+            <h3>Built specifically for Etsy and online sellers</h3>
             <p>
-              Sales alone do not show what you actually keep. This report shows
-              your net received each month and estimates profit after your own
-              added costs.
+              This calculator understands Etsy&apos;s column names, currency
+              formats and placeholder values. It groups everything by month,
+              splits revenue from fees and refunds, and lets you layer in your
+              own costs — so you can see the real profit on every month of your
+              Etsy shop, all in one place.
             </p>
           </div>
         </section>
@@ -2793,26 +2968,62 @@ export default function CsvProfitCalculatorClient() {
           </section>
         </div>
 
+        <section className="faq" aria-labelledby="faq-heading">
+          <div className="section-eyebrow">Frequently asked questions</div>
+          <h2 id="faq-heading">
+            Etsy CSV profit calculator — questions answered
+          </h2>
+          <div className="faq-list">
+            {CSV_CALCULATOR_FAQS.map((faq, index) => (
+              <details
+                key={faq.question}
+                className="faq-item"
+                open={index === 0}
+              >
+                <summary>
+                  <span>{faq.question}</span>
+                  <svg
+                    className="faq-chevron"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </summary>
+                <p>{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         <section
           className="seo-keywords"
           aria-label="Etsy profit tracking guide"
         >
           <div className="seo-keywords-grid">
             <div>
-              <h2>Why Monthly Profit Reports Matter for Etsy Sellers</h2>
+              <h2>Why monthly profit reports matter for Etsy sellers</h2>
               <p>
                 Etsy&apos;s dashboard shows sales, not profit. After fees,
-                refunds, and your own costs, the number you actually keep is
+                refunds and your own costs, the number you actually keep is
                 often very different. A clean monthly Etsy profit report makes
                 that clear &mdash; and makes tax time significantly less
                 stressful.
               </p>
             </div>
             <div>
-              <h2>Your data Stays on Your Device</h2>
+              <h2>Your data stays on your device</h2>
               <p>
                 Your CSV is handled entirely in your browser. It is not uploaded
-                or stored by this tool.
+                or stored by this tool, and we do not need an account or email
+                address to use it.
               </p>
             </div>
           </div>
@@ -2820,27 +3031,20 @@ export default function CsvProfitCalculatorClient() {
 
         <section className="promo" aria-label="More tools">
           <div>
-            <h2>Keep Your Accounts Organised Year-Round</h2>
-            <div className="promoPadding">
+            <h2>Keep your accounts organised year-round</h2>
+            <p className="promo-lead">
               Once you have your clean monthly profit report, the next step is
               keeping your books organised. Our printable accounting ledger is
-              designed for small business owners, a clear, simple layout you can
-              print and fill in or use digitally. No complicated software, no
-              subscription required.
-            </div>
-            <a
-              className="button button-primary"
-              href="../templates/accounting-ledger/printable-accounting-ledger-accounts-receivable"
-              rel="noreferrer"
-              referrerPolicy="no-referrer"
-              style={{
-                display: "inline-flex",
-                marginTop: "0.75rem",
-                borderRadius: "999px",
-              }}
+              designed for small business owners — a clear, simple layout you
+              can print and fill in or use digitally. No complicated software,
+              no subscription required.
+            </p>
+            <Link
+              className="button button-primary promo-button"
+              href="/templates/accounting-ledger/printable-accounting-ledger-accounts-receivable"
             >
               View Monthly Accounting Ledger &rarr;
-            </a>
+            </Link>
           </div>
         </section>
       </main>

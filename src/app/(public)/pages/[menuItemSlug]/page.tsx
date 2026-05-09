@@ -72,6 +72,8 @@ export default async function MenuItemLandingPage({ params }: Props) {
     description: item.description || `Browse ${item.title} pages.`,
     href: `/pages/${menuItemSlug}`,
   });
+  const topicName = item.title?.trim();
+  const viewTopicLabel = topicName ? `View ${topicName}` : "View all";
 
   const arrowIcon = (
     <svg
@@ -91,18 +93,18 @@ export default async function MenuItemLandingPage({ params }: Props) {
     </svg>
   );
 
-  const pageLinkIcon = (
+  const openContentIcon = (
     <svg
-      width="16"
-      height="16"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
     >
       <path
-        d="M5 12h14M13 5l7 7-7 7"
+        d="M7 17L17 7M9 7h8v8"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -163,7 +165,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
                           </span>
                         </div>
                         <span className="page-card-cta">
-                          View pages {arrowIcon}
+                          {viewTopicLabel} {arrowIcon}
                         </span>
                       </article>
                     </Link>
@@ -198,10 +200,14 @@ export default async function MenuItemLandingPage({ params }: Props) {
 
                     return (
                       <div className="col-lg-6" key={page.id}>
-                        <article className="sb-card p-3 h-100">
-                          {imageSrc && (
-                            <div className="content-card-image">
-                              <Link href={`/${page.slug}`}>
+                        <Link
+                          href={`/${page.slug}`}
+                          className="sb-content-link d-block h-100 text-reset text-decoration-none"
+                          aria-label={`Open ${page.title}`}
+                        >
+                          <article className="sb-card p-3 h-100">
+                            {imageSrc && (
+                              <div className="content-card-image">
                                 <Image
                                   src={imageSrc}
                                   alt={page.title}
@@ -218,48 +224,45 @@ export default async function MenuItemLandingPage({ params }: Props) {
                                     backgroundColor: "#f8f9fa",
                                   }}
                                 />
-                              </Link>
+                              </div>
+                            )}
+
+                            <div className="d-flex justify-content-between gap-2 flex-wrap">
+                              <div
+                                className="sb-muted"
+                                style={{ fontSize: 13 }}
+                              >
+                                {/* {page.category || item.title} */}
+                              </div>
                             </div>
-                          )}
 
-                          <div className="d-flex justify-content-between gap-2 flex-wrap">
-                            <div className="sb-muted" style={{ fontSize: 13 }}>
-                              {/* {page.category || item.title} */}
-                            </div>
-                          </div>
-
-                          <div
-                            className="mt-1"
-                            style={{ fontWeight: 900, fontSize: 18 }}
-                          >
-                            {page.title}
-                          </div>
-
-                          {(page.description || page.subtitle) && (
-                            <div className="sb-muted mt-1">
-                              {page.description || page.subtitle}
-                            </div>
-                          )}
-
-                          {pageDate && (
                             <div
-                              className="sb-muted"
-                              style={{ fontSize: 13, marginTop: "8px" }}
+                              className="mt-1"
+                              style={{ fontWeight: 900, fontSize: 18 }}
                             >
-                              {pageDate}
+                              {page.title}
                             </div>
-                          )}
 
-                          <div className="mt-3">
-                            <Link
-                              className="sb-content-link"
-                              href={`/${page.slug}`}
-                            >
-                              <span>Read page</span>
-                              {pageLinkIcon}
-                            </Link>
-                          </div>
-                        </article>
+                            {(page.description || page.subtitle) && (
+                              <div className="sb-muted mt-1">
+                                {page.description || page.subtitle}
+                              </div>
+                            )}
+
+                            {pageDate && (
+                              <div
+                                className="sb-muted"
+                                style={{ fontSize: 13, marginTop: "8px" }}
+                              >
+                                {pageDate}
+                              </div>
+                            )}
+
+                            <div className="mt-3 d-flex justify-content-end text-success">
+                              {openContentIcon}
+                            </div>
+                          </article>
+                        </Link>
                       </div>
                     );
                   })}
@@ -271,6 +274,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
                       key={page.id}
                       href={`/${page.slug}`}
                       className="page-card-link"
+                      aria-label={`Open ${page.title}`}
                     >
                       <article className="page-card">
                         <h2 className="page-card-title">{page.title}</h2>
@@ -279,8 +283,12 @@ export default async function MenuItemLandingPage({ params }: Props) {
                             {page.description}
                           </p>
                         )}
-                        <span className="page-card-cta">
-                          Read page {arrowIcon}
+                        <span
+                          className="page-card-cta text-success"
+                          aria-hidden="true"
+                          style={{ fontSize: "1.2rem" }}
+                        >
+                          {openContentIcon}
                         </span>
                       </article>
                     </Link>
