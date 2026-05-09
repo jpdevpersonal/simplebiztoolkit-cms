@@ -85,18 +85,18 @@ export default async function CategoryPageListing({ params }: Props) {
   if (!data) notFound();
   const { item, cat, publishedPages } = data;
 
-  const pageLinkIcon = (
+  const openContentIcon = (
     <svg
-      width="16"
-      height="16"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
     >
       <path
-        d="M5 12h14M13 5l7 7-7 7"
+        d="M7 17L17 7M9 7h8v8"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -162,10 +162,14 @@ export default async function CategoryPageListing({ params }: Props) {
 
                 return (
                   <div className="col-lg-6" key={page.id}>
-                    <article className="sb-card p-3 h-100">
-                      {imageSrc && (
-                        <div className="content-card-image">
-                          <Link href={`/${page.slug}`}>
+                    <Link
+                      href={`/${page.slug}`}
+                      className="d-block h-100 text-reset text-decoration-none"
+                      aria-label={`Open ${page.title}`}
+                    >
+                      <article className="sb-card p-3 h-100">
+                        {imageSrc && (
+                          <div className="content-card-image">
                             <Image
                               src={imageSrc}
                               alt={page.title}
@@ -182,44 +186,38 @@ export default async function CategoryPageListing({ params }: Props) {
                                 backgroundColor: "#f8f9fa",
                               }}
                             />
-                          </Link>
-                        </div>
-                      )}
-
-                      <div className="d-flex justify-content-between gap-2 flex-wrap">
-                        <div className="sb-muted" style={{ fontSize: 13 }}>
-                          {cat.title}
-                        </div>
-                        {formatPageDate(page.dateISO) && (
-                          <div className="sb-muted" style={{ fontSize: 13 }}>
-                            {formatPageDate(page.dateISO)}
                           </div>
                         )}
-                      </div>
 
-                      <div
-                        className="mt-1"
-                        style={{ fontWeight: 900, fontSize: 18 }}
-                      >
-                        {page.title}
-                      </div>
-
-                      {(page.description || page.subtitle) && (
-                        <div className="sb-muted mt-1">
-                          {page.description || page.subtitle}
+                        <div className="d-flex justify-content-between gap-2 flex-wrap">
+                          <div className="sb-muted" style={{ fontSize: 13 }}>
+                            {cat.title}
+                          </div>
+                          {formatPageDate(page.dateISO) && (
+                            <div className="sb-muted" style={{ fontSize: 13 }}>
+                              {formatPageDate(page.dateISO)}
+                            </div>
+                          )}
                         </div>
-                      )}
 
-                      <div className="mt-3">
-                        <Link
-                          className="sb-content-link"
-                          href={`/${page.slug}`}
+                        <div
+                          className="mt-1"
+                          style={{ fontWeight: 900, fontSize: 18 }}
                         >
-                          <span>Read page</span>
-                          {pageLinkIcon}
-                        </Link>
-                      </div>
-                    </article>
+                          {page.title}
+                        </div>
+
+                        {(page.description || page.subtitle) && (
+                          <div className="sb-muted mt-1">
+                            {page.description || page.subtitle}
+                          </div>
+                        )}
+
+                        <div className="mt-3 d-flex justify-content-end text-success">
+                          {openContentIcon}
+                        </div>
+                      </article>
+                    </Link>
                   </div>
                 );
               })}
