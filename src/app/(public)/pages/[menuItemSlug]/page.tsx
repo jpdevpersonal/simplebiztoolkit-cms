@@ -202,7 +202,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
                       <div className="col-lg-6" key={page.id}>
                         <Link
                           href={`/${page.slug}`}
-                          className="d-block h-100 text-reset text-decoration-none"
+                          className="sb-content-link d-block h-100 text-reset text-decoration-none"
                           aria-label={`Open ${page.title}`}
                         >
                           <article className="sb-card p-3 h-100">
