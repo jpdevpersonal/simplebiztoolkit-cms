@@ -1207,6 +1207,12 @@ html {
     0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Ensure anchor-based primary buttons keep readable white text on hover
+   (overrides global `a:hover` color rules). */
+.button-primary:hover:not(:disabled) {
+  color: white;
+}
+
 .button-secondary {
   background: white;
   color: var(--heading);
