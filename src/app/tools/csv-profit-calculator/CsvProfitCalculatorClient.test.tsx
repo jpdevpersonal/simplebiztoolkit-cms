@@ -33,6 +33,15 @@ async function uploadFile(
 }
 
 describe("CsvProfitCalculatorClient", () => {
+  it("links the Tools breadcrumb back to the pages-level Tools listing", () => {
+    render(<CsvProfitCalculatorClient />);
+
+    expect(screen.getByRole("link", { name: "Tools" })).toHaveAttribute(
+      "href",
+      "/pages/tools",
+    );
+  });
+
   it("shows a validation error when a non-CSV file is uploaded", async () => {
     const { container } = render(<CsvProfitCalculatorClient />);
 
