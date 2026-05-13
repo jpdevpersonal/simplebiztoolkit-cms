@@ -36,4 +36,47 @@ describe("sanitize", () => {
     expect(truncateHtml("<p>Hello</p>", 20)).toBe("<p>Hello</p>");
     expect(truncateHtml("<p>Hello world</p>", 5)).toBe("Hello...");
   });
+
+  it("preserves inline style attributes on layout elements", () => {
+    const sanitized = sanitizeHtml(
+      `<section style="display:grid;padding:2rem;background:#fff;"><h2 style="color:#0d5c3f;">Hero</h2></section>`,
+    );
+
+    expect(sanitized).toContain(
+      `style="display:grid;padding:2rem;background:#fff;"`,
+    );
+    expect(sanitized).toContain(`<section`);
+    expect(sanitized).toContain(`style="color:#0d5c3f;"`);
+  });
+
+  it("preserves inline SVG with its presentation attributes", () => {
+    const sanitized = sanitizeHtml(
+      `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    );
+
+    expect(sanitized).toContain("<svg");
+    expect(sanitized).toContain(`viewBox="0 0 24 24"`);
+    expect(sanitized).toContain(`stroke-width="3"`);
+    expect(sanitized).toContain(`<polyline`);
+    expect(sanitized).toContain(`points="20 6 9 17 4 12"`);
+  });
+
+  it("strips javascript: URIs from style attributes", () => {
+    const sanitized = sanitizeHtml(
+      `<div style="background:url(javascript:alert(1));color:red;">hi</div>`,
+    );
+
+    expect(sanitized).not.toContain("javascript:");
+    // The benign portion may or may not survive depending on DOMPurify's
+    // CSS handling; the critical invariant is that the JS scheme is gone.
+  });
+
+  it("preserves aria-* and role attributes for accessibility", () => {
+    const sanitized = sanitizeHtml(
+      `<section aria-labelledby="hero" role="banner"><h2 id="hero">Hi</h2></section>`,
+    );
+
+    expect(sanitized).toContain(`aria-labelledby="hero"`);
+    expect(sanitized).toContain(`role="banner"`);
+  });
 });

@@ -363,4 +363,96 @@ describe("RichContentField", () => {
       screen.queryByRole("button", { name: "Open editor in full screen" }),
     ).not.toBeInTheDocument();
   });
+
+  it("shows a 'Raw HTML' info pill when the value contains layout markup", () => {
+    render(
+      <RichContentField
+        label="Body"
+        value={`<section style="padding:1rem;"><p>Hi</p></section>`}
+        onChange={vi.fn()}
+        storageKey="body-mode"
+      />,
+    );
+
+    expect(screen.getByText(/raw html/i)).toBeInTheDocument();
+  });
+
+  it("hides the 'Raw HTML' info pill for plain prose values", () => {
+    render(
+      <RichContentField
+        label="Body"
+        value="<p>Plain prose only.</p>"
+        onChange={vi.fn()}
+        storageKey="body-mode"
+      />,
+    );
+
+    expect(screen.queryByText(/raw html/i)).not.toBeInTheDocument();
+  });
+
+  it("preserves the pristine HTML when toggling html→tiptap→html without editing", async () => {
+    const user = userEvent.setup();
+    const pristine = `<section style="padding:1rem;"><p>Hero</p></section>`;
+    const onChange = vi.fn();
+
+    function Host() {
+      const [val, setVal] = useState(pristine);
+      return (
+        <RichContentField
+          label="Body"
+          value={val}
+          onChange={(html) => {
+            onChange(html);
+            setVal(html);
+          }}
+          storageKey="body-mode"
+        />
+      );
+    }
+
+    render(<Host />);
+
+    // Switch HTML -> Tiptap, then back to HTML without emitting any change.
+    await user.click(screen.getByRole("button", { name: "✦ Tiptap" }));
+    await user.click(screen.getByRole("button", { name: "HTML" }));
+
+    // The textarea must still hold the pristine value byte-for-byte.
+    expect(screen.getByRole("textbox")).toHaveValue(pristine);
+    // onChange must not have been called with any mutated value.
+    onChange.mock.calls.forEach(([html]: [string]) => {
+      expect(html).toBe(pristine);
+    });
+  });
+
+  it("treats Tiptap output as authoritative once the user has edited inside Tiptap", async () => {
+    const user = userEvent.setup();
+    const pristine = `<section style="padding:1rem;"><p>Hero</p></section>`;
+    const onChange = vi.fn();
+
+    function Host() {
+      const [val, setVal] = useState(pristine);
+      return (
+        <RichContentField
+          label="Body"
+          value={val}
+          onChange={(html) => {
+            onChange(html);
+            setVal(html);
+          }}
+          storageKey="body-mode"
+        />
+      );
+    }
+
+    render(<Host />);
+
+    await user.click(screen.getByRole("button", { name: "✦ Tiptap" }));
+    // Mock Tiptap emits a change via the "Emit change" button.
+    await user.click(screen.getByRole("button", { name: "Emit change" }));
+    expect(onChange).toHaveBeenLastCalledWith("<p>Updated</p>");
+
+    // Now switch back to HTML - the edited content must win.
+    await user.click(screen.getByRole("button", { name: "HTML" }));
+    expect(screen.getByRole("textbox")).toHaveValue("<p>Updated</p>");
+  });
 });
