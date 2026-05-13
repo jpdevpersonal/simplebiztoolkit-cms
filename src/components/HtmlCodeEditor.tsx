@@ -649,11 +649,7 @@ export default function HtmlCodeEditor({
             type="button"
             onClick={() => setWordWrap((w) => !w)}
             aria-pressed={wordWrap}
-            title={
-              wordWrap
-                ? "Disable word wrap (Alt+Z)"
-                : "Enable word wrap (Alt+Z)"
-            }
+            title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
             className="sb-html-editor__chrome-btn"
           >
             <svg
