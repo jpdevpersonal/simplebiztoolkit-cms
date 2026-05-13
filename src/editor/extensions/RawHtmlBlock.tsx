@@ -127,13 +127,17 @@ function RawHtmlBlockView({ node, editor, deleteNode }: NodeViewProps) {
   const isEditable = editor.isEditable;
   const label = getTagLabel(html);
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     try {
-      void navigator.clipboard?.writeText(html);
+      if (!navigator.clipboard) {
+        return;
+      }
+
+      await navigator.clipboard.writeText(html);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1200);
     } catch {
-      // ignore – clipboard unavailable
+      // ignore – clipboard unavailable or write failed
     }
   };
 
