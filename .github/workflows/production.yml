@@ -11,8 +11,8 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-smoke-checks.yml
     with:
       api_url: https://simplebiztoolkit-api-live.azurewebsites.net
-      skip_api_ping: ${{ vars['CI_SKIP_API_PING_PROD'] == 'true' }}
-      skip_playwright_tests: ${{ vars['CI_SKIP_PLAYWRIGHT_PROD'] == 'true' }}
+      skip_api_ping: ${{ fromJSON(vars.CI_SKIP_API_PING_PROD || 'false') }}
+      skip_playwright_tests: ${{ fromJSON(vars.CI_SKIP_PLAYWRIGHT_PROD || 'false') }}
     secrets: inherit
 
   deploy:
