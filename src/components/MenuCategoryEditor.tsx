@@ -31,7 +31,7 @@ export default function MenuCategoryEditor({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const backHref = `/admin/menu/${menuItemId}/edit`;
+  const backHref = `/cms/menu/${menuItemId}/edit`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,7 +51,7 @@ export default function MenuCategoryEditor({
         const created = await clientApi.createMenuCategory(payload);
         redirectAndRefresh(
           router,
-          `/admin/menu/categories/${(created as MenuCategory).id}/edit`,
+          `/cms/menu/categories/${(created as MenuCategory).id}/edit`,
         );
       } else if (category?.id) {
         await clientApi.updateMenuCategory(category.id, payload);

@@ -10,7 +10,7 @@ describe("adminNavigation", () => {
 
     redirectAndRefresh(router, "/admin/pages");
 
-    expect(router.push).toHaveBeenCalledWith("/admin/pages");
+    expect(router.push).toHaveBeenCalledWith("/cms/pages");
     expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 

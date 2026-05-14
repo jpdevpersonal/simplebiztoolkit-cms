@@ -19,7 +19,7 @@ export default async function EditCategoryPage({ params }: Props) {
   const categories = response.data || [];
 
   const category = categories.find((c) => c.id === id);
-  const breadcrumbItems = [{ href: "/admin/categories", label: "Categories" }];
+  const breadcrumbItems = [{ href: "/cms/categories", label: "Categories" }];
 
   if (!category) {
     notFound();

@@ -47,7 +47,7 @@ export default async function EditMenuItemPage({ params }: Props) {
   const menuItem = itemResponse.data;
   const categories = catResponse.data || [];
   const allPages = pagesResponse.data || [];
-  const breadcrumbItems = [{ href: "/admin/menu", label: "Menu Items" }];
+  const breadcrumbItems = [{ href: "/cms/menu", label: "Menu Items" }];
 
   const plusIcon = (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -107,7 +107,7 @@ export default async function EditMenuItemPage({ params }: Props) {
           </span>
         </h2>
         <Link
-          href={`/admin/menu/${id}/categories/new`}
+          href={`/cms/menu/${id}/categories/new`}
           className="admin-btn-save"
         >
           {plusIcon} New Topic
@@ -143,7 +143,7 @@ export default async function EditMenuItemPage({ params }: Props) {
                 </td>
                 <td>
                   <Link
-                    href={`/admin/menu/categories/${cat.id}/edit`}
+                    href={`/cms/menu/categories/${cat.id}/edit`}
                     className="admin-btn-action"
                   >
                     Edit
@@ -177,7 +177,7 @@ export default async function EditMenuItemPage({ params }: Props) {
           </span>
         </h2>
         <Link
-          href={`/admin/pages/new?menuItemId=${id}`}
+          href={`/cms/pages/new?menuItemId=${id}`}
           className="admin-btn-save"
         >
           {plusIcon} New Page
@@ -229,7 +229,7 @@ export default async function EditMenuItemPage({ params }: Props) {
                   <td>
                     <div style={{ display: "flex", gap: "0.4rem" }}>
                       <Link
-                        href={`/admin/pages/${page.id}/edit`}
+                        href={`/cms/pages/${page.id}/edit`}
                         className="admin-btn-action"
                       >
                         Edit

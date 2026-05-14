@@ -3,7 +3,7 @@ import "@testing-library/jest-dom";
 import { describe, expect, it, vi } from "vitest";
 import AdminNav from "./AdminNav";
 
-let mockPathname = "/admin";
+let mockPathname = "/cms";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
@@ -72,7 +72,7 @@ describe("AdminNav", () => {
   });
 
   it("marks the active nav link based on pathname", () => {
-    mockPathname = "/admin/templates";
+    mockPathname = "/cms/templates";
     render(<AdminNav userEmail="admin@example.com" />);
 
     const templatesLink = screen.getByText("Templates").closest("a")!;
@@ -82,7 +82,18 @@ describe("AdminNav", () => {
     expect(dashboardLink.className).not.toContain("active");
 
     // Reset
-    mockPathname = "/admin";
+    mockPathname = "/cms";
+  });
+
+  it("marks legacy admin paths active after canonicalization", () => {
+    mockPathname = "/admin/pages";
+    render(<AdminNav userEmail="admin@example.com" />);
+
+    expect(screen.getByText("Pages").closest("a")!.className).toContain(
+      "active",
+    );
+
+    mockPathname = "/cms";
   });
 
   it("renders the sign-out button", () => {

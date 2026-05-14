@@ -21,9 +21,9 @@ test.describe("Smoke", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
-  test("admin login page is reachable", async ({ page }) => {
-    await page.goto("/admin/login");
-    await expect(page).toHaveURL(/\/admin\/login/);
+  test("cms login page is reachable", async ({ page }) => {
+    await page.goto("/cms/login");
+    await expect(page).toHaveURL(/\/cms\/login/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
