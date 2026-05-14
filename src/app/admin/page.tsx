@@ -53,29 +53,29 @@ export default async function AdminDashboard() {
 
   const quickLinks = [
     {
-      href: "/admin/templates",
-      label: "Manage Templates",
-      description: `${products.length} templates`,
-    },
-    {
-      href: "/admin/categories",
-      label: "Template Categories",
-      description: `${categories.length} categories`,
-    },
-    {
-      href: "/admin/pages",
+      href: "/cms/pages",
       label: "Manage Pages",
       description: `${pages.length} pages`,
     },
     {
-      href: "/admin/menu",
+      href: "/cms/menu-manager",
+      label: "Menu Manager",
+      description: "Reorder and hide built-in navigation links",
+    },
+    {
+      href: "/cms/menu",
       label: "Manage Menu Items",
       description: `${menuItems.length} menu items`,
     },
     {
-      href: "/admin/menu-manager",
-      label: "Menu Manager",
-      description: "Reorder and hide built-in navigation links",
+      href: "/cms/templates",
+      label: "Manage Templates",
+      description: `${products.length} templates`,
+    },
+    {
+      href: "/cms/categories",
+      label: "Template Categories",
+      description: `${categories.length} categories`,
     },
   ];
 
@@ -83,15 +83,15 @@ export default async function AdminDashboard() {
     <div className="admin-page-shell">
       <div className="admin-page-header">
         <div className="admin-page-header-copy">
-          <div className="admin-page-eyebrow">Operations overview</div>
+          <div className="admin-page-eyebrow">Content Studio</div>
           <h1>Dashboard</h1>
           <p className="admin-page-description">
-            Keep templates, pages, and navigation aligned from one brand-focused
-            workspace.
+            Update pages, navigation, media, and templates from one focused
+            publishing workspace.
           </p>
         </div>
         <div className="admin-page-actions">
-          <Link href="/admin/pages/new" className="admin-btn-save">
+          <Link href="/cms/pages/new" className="admin-btn-save">
             <PlusIcon />
             New Page
           </Link>
@@ -109,8 +109,8 @@ export default async function AdminDashboard() {
           </span>
           <h2>Clear section boundaries, faster content decisions</h2>
           <p>
-            The admin area stays focused on the publishing flows still active on
-            the site: templates, navigation, and CMS-driven pages.
+            Start with the content that changes most often: custom pages,
+            navigation, reusable templates, and the images that support them.
           </p>
         </div>
         <div className="admin-hero-highlights">
@@ -218,18 +218,7 @@ export default async function AdminDashboard() {
               </div>
             </div>
             <div className="d-flex flex-column gap-2">
-              <Link href="/admin/templates/new" className="admin-quick-link">
-                <span className="admin-quick-link-icon">
-                  <PlusIcon />
-                </span>
-                <span className="admin-quick-link-copy">
-                  <span className="admin-quick-link-title">New Template</span>
-                  <span className="admin-quick-link-description">
-                    Add a new product template offer.
-                  </span>
-                </span>
-              </Link>
-              <Link href="/admin/pages/new" className="admin-quick-link">
+              <Link href="/cms/pages/new" className="admin-quick-link">
                 <span className="admin-quick-link-icon">
                   <PlusIcon />
                 </span>
@@ -240,7 +229,7 @@ export default async function AdminDashboard() {
                   </span>
                 </span>
               </Link>
-              <Link href="/admin/menu/new" className="admin-quick-link">
+              <Link href="/cms/menu/new" className="admin-quick-link">
                 <span className="admin-quick-link-icon">
                   <PlusIcon />
                 </span>
@@ -248,6 +237,17 @@ export default async function AdminDashboard() {
                   <span className="admin-quick-link-title">New Menu Item</span>
                   <span className="admin-quick-link-description">
                     Add another navigation entry point.
+                  </span>
+                </span>
+              </Link>
+              <Link href="/cms/templates/new" className="admin-quick-link">
+                <span className="admin-quick-link-icon">
+                  <PlusIcon />
+                </span>
+                <span className="admin-quick-link-copy">
+                  <span className="admin-quick-link-title">New Template</span>
+                  <span className="admin-quick-link-description">
+                    Add a new product template offer.
                   </span>
                 </span>
               </Link>

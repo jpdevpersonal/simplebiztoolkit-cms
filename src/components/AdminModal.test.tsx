@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import AdminModal from "./AdminModal";
@@ -141,5 +142,64 @@ describe("AdminModal", () => {
     );
     const dialog = screen.getByRole("dialog");
     expect(dialog.className).toContain("admin-modal-xl");
+  });
+
+  it("moves focus into the dialog and traps tab navigation", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminModal isOpen={true} onCloseAction={vi.fn()} title="Focus test">
+        <button type="button">First action</button>
+        <button type="button">Second action</button>
+      </AdminModal>,
+    );
+
+    const closeButton = screen.getByRole("button", { name: "Close" });
+    const firstAction = screen.getByRole("button", { name: "First action" });
+    const secondAction = screen.getByRole("button", {
+      name: "Second action",
+    });
+
+    expect(closeButton).toHaveFocus();
+
+    await user.tab();
+    expect(firstAction).toHaveFocus();
+
+    await user.tab();
+    expect(secondAction).toHaveFocus();
+
+    await user.tab();
+    expect(closeButton).toHaveFocus();
+  });
+
+  it("restores focus to the previously focused element when closed", async () => {
+    const user = userEvent.setup();
+
+    function ModalHarness() {
+      const [isOpen, setIsOpen] = React.useState(false);
+
+      return (
+        <>
+          <button type="button" onClick={() => setIsOpen(true)}>
+            Open modal
+          </button>
+          <AdminModal
+            isOpen={isOpen}
+            onCloseAction={() => setIsOpen(false)}
+            title="Restore focus test"
+          >
+            <p>Modal content</p>
+          </AdminModal>
+        </>
+      );
+    }
+
+    render(<ModalHarness />);
+
+    const openButton = screen.getByRole("button", { name: "Open modal" });
+    await user.click(openButton);
+    await user.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(openButton).toHaveFocus();
   });
 });

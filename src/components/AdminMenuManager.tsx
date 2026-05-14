@@ -207,7 +207,7 @@ function SortableMenuRow({
         {item.kind === "cms" ? (
           <>
             <Link
-              href={`/admin/menu/${item.item.id}/edit`}
+              href={`/cms/menu/${item.item.id}/edit`}
               className="admin-btn-action"
             >
               Edit
@@ -806,7 +806,7 @@ export default function AdminMenuManager({
                 >
                   {adding ? "Adding..." : "Add Menu Item"}
                 </button>
-                <Link href="/admin/menu" className="admin-btn-cancel">
+                <Link href="/cms/menu" className="admin-btn-cancel">
                   Open Full Menu Editor
                 </Link>
               </div>

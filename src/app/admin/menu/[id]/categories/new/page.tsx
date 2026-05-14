@@ -3,7 +3,6 @@
  * Creates a new MenuCategory under the given menu item
  */
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
@@ -22,8 +21,8 @@ export default async function NewMenuCategoryPage({ params }: Props) {
 
   const menuItem = itemResponse.data;
   const breadcrumbItems = [
-    { href: "/admin/menu", label: "Menu Items" },
-    { href: `/admin/menu/${menuItemId}/edit`, label: menuItem.title },
+    { href: "/cms/menu", label: "Menu Items" },
+    { href: `/cms/menu/${menuItemId}/edit`, label: menuItem.title },
   ];
 
   return (

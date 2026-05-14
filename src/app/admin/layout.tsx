@@ -6,7 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@/styles/admin.css";
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard | Simple Biz Toolkit",
+  title: "Content Studio | Simple Biz Toolkit",
   robots: "noindex, nofollow",
 };
 

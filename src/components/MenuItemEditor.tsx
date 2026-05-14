@@ -39,7 +39,7 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
         const created = await clientApi.createMenuItem(payload);
         redirectAndRefresh(
           router,
-          `/admin/menu/${(created as MenuItem).id}/edit`,
+          `/cms/menu/${(created as MenuItem).id}/edit`,
         );
       } else if (menuItem?.id) {
         await clientApi.updateMenuItem(menuItem.id, payload);
@@ -73,7 +73,7 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
 
     try {
       await clientApi.deleteMenuItem(menuItem!.id);
-      redirectAndRefresh(router, "/admin/menu");
+      redirectAndRefresh(router, "/cms/menu");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);
@@ -160,7 +160,7 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
         saving={saving}
         isCreateMode={isNew}
         entityName="Menu Item"
-        onCancel={() => router.push("/admin/menu")}
+        onCancel={() => router.push("/cms/menu")}
         onDelete={!isNew && menuItem ? handleDelete : undefined}
         deleting={deleting}
       />

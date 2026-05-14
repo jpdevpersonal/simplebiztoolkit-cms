@@ -3,7 +3,6 @@
  * Dedicated manager for top-level menu ordering and quick visibility controls.
  */
 
-import Link from "next/link";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import AdminMenuManager from "@/components/AdminMenuManager";
@@ -29,7 +28,7 @@ export default async function AdminMenuManagerPage() {
       ];
     }),
   );
-  const breadcrumbItems = [{ href: "/admin", label: "Dashboard" }];
+  const breadcrumbItems = [{ href: "/cms", label: "Dashboard" }];
 
   return (
     <div className="admin-page-shell">

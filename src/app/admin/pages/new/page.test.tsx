@@ -47,7 +47,7 @@ describe("NewPageAdminPage", () => {
     expect(screen.getAllByRole("link", { name: "Pages" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Pages" })[0]).toHaveAttribute(
       "href",
-      "/admin/pages",
+      "/cms/pages",
     );
     expect(pageEditorMock.mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({

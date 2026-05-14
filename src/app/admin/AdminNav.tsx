@@ -10,14 +10,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { CMS_LOGIN_PATH, CMS_HOME_PATH, toCmsPath } from "@/lib/adminRoutes";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", exact: true },
-  { href: "/admin/templates", label: "Templates", exact: false },
-  { href: "/admin/categories", label: "Template Categories", exact: false },
-  { href: "/admin/menu-manager", label: "Menu Manager", exact: false },
-  { href: "/admin/menu", label: "Menu Items", exact: false },
-  { href: "/admin/pages", label: "Pages", exact: false },
+  { href: CMS_HOME_PATH, label: "Dashboard", exact: true },
+  { href: "/cms/pages", label: "Pages", exact: false },
+  { href: "/cms/menu-manager", label: "Menu Manager", exact: false },
+  { href: "/cms/menu", label: "Menu Items", exact: false },
+  { href: "/cms/templates", label: "Templates", exact: false },
+  { href: "/cms/categories", label: "Template Categories", exact: false },
 ];
 
 function isActive(href: string, exact: boolean, pathname: string): boolean {
@@ -33,13 +34,14 @@ function AdminNavContent({
   userEmail: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const cmsPathname = toCmsPath(pathname);
 
   return (
     <nav className="admin-nav">
       <div className="container">
         <div className="admin-nav-inner">
           <div className="admin-nav-top-row">
-            <Link href="/admin" className="admin-nav-brand">
+            <Link href={CMS_HOME_PATH} className="admin-nav-brand">
               <span className="admin-nav-brand-badge">
                 <Image
                   src="/images/simple-biz-toolkit-logo.png"
@@ -53,9 +55,7 @@ function AdminNavContent({
                 <span className="admin-nav-brand-title">
                   Simple Biz Toolkit
                 </span>
-                <span className="admin-nav-brand-subtitle">
-                  Admin workspace
-                </span>
+                <span className="admin-nav-brand-subtitle">Content Studio</span>
               </span>
             </Link>
 
@@ -107,7 +107,7 @@ function AdminNavContent({
             id="admin-nav-collapse"
             className={"admin-nav-collapse" + (menuOpen ? " is-open" : "")}
           >
-            <div className="admin-nav-links-wrap" aria-label="Admin sections">
+            <div className="admin-nav-links-wrap" aria-label="CMS sections">
               <div className="admin-nav-links">
                 {navItems.map((item) => (
                   <Link
@@ -115,7 +115,7 @@ function AdminNavContent({
                     href={item.href}
                     className={
                       "admin-nav-link" +
-                      (isActive(item.href, item.exact, pathname)
+                      (isActive(item.href, item.exact, cmsPathname)
                         ? " active"
                         : "")
                     }
@@ -133,7 +133,7 @@ function AdminNavContent({
               </div>
               <button
                 className="admin-nav-logout"
-                onClick={() => signOut({ callbackUrl: "/admin/login" })}
+                onClick={() => signOut({ callbackUrl: CMS_LOGIN_PATH })}
               >
                 <svg
                   width="14"

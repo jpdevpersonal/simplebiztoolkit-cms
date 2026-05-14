@@ -1,10 +1,12 @@
+import { toCmsPath } from "@/lib/adminRoutes";
+
 type AdminRouterLike = {
   push: (href: string) => void;
   refresh: () => void;
 };
 
 export function redirectAndRefresh(router: AdminRouterLike, href: string) {
-  router.push(href);
+  router.push(toCmsPath(href));
   router.refresh();
 }
 

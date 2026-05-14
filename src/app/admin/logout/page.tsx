@@ -10,7 +10,7 @@ export default function LogoutPage() {
   useEffect(() => {
     (async () => {
       await signOut({ redirect: false });
-      router.replace("/admin/login");
+      router.replace("/cms/login");
     })();
   }, [router]);
 

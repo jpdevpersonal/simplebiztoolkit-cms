@@ -1,29 +1,53 @@
 /**
  * Middleware for protecting routes
- * Redirects unauthenticated users from /admin routes
+ * Redirects unauthenticated users from CMS routes
  */
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import {
+  CMS_LOGIN_PATH,
+  isCmsPath,
+  isLegacyAdminPath,
+  toCmsPath,
+  toLegacyAdminPath,
+} from "@/lib/adminRoutes";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect all /admin routes except /admin/login
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    const session = await auth();
+  if (isLegacyAdminPath(pathname)) {
+    const cmsUrl = request.nextUrl.clone();
+    cmsUrl.pathname = toCmsPath(pathname);
+    return NextResponse.redirect(cmsUrl);
+  }
 
-    if (!session) {
-      const loginUrl = new URL("/admin/login", request.url);
-      loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
+  if (isCmsPath(pathname)) {
+    const isLoginRoute =
+      pathname === CMS_LOGIN_PATH || pathname.startsWith(`${CMS_LOGIN_PATH}/`);
+
+    if (!isLoginRoute) {
+      const session = await auth();
+
+      if (!session) {
+        const loginUrl = new URL(CMS_LOGIN_PATH, request.url);
+        loginUrl.searchParams.set(
+          "callbackUrl",
+          `${pathname}${request.nextUrl.search}`,
+        );
+        return NextResponse.redirect(loginUrl);
+      }
     }
+
+    const legacyUrl = request.nextUrl.clone();
+    legacyUrl.pathname = toLegacyAdminPath(pathname);
+    return NextResponse.rewrite(legacyUrl);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/cms/:path*"],
 };
