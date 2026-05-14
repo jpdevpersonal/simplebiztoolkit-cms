@@ -43,13 +43,16 @@ jobs:
         run: npm run build
 
       - name: Install Playwright Chromium
+        if: ${{ !fromJSON(vars.CI_SKIP_PLAYWRIGHT_PR || 'false') }}
         run: npx playwright install chromium
 
       - name: Verify API is reachable
+        if: ${{ !fromJSON(vars.CI_SKIP_API_PING_PR || 'false') }}
         run: |
           curl --fail --silent --show-error --max-time 15 \
-            https://simplebiztoolkit-api-test.azurewebsites.net/api/menuitems \
+            "${API_URL}/api/menuitems" \
             > /dev/null
 
       - name: Run Playwright e2e tests
+        if: ${{ !fromJSON(vars.CI_SKIP_PLAYWRIGHT_PR || 'false') }}
         run: npx playwright test

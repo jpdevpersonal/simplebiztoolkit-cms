@@ -5,6 +5,7 @@ import { CSV_CALCULATOR_FAQS } from "./faqContent";
 import "./csvProfitCalculator.css";
 
 const PAGE_URL = "https://www.simplebiztoolkit.com/tools/csv-profit-calculator";
+const TOOLS_PAGES_URL = "https://www.simplebiztoolkit.com/pages/tools";
 
 export const metadata: Metadata = {
   title:
@@ -104,7 +105,7 @@ const breadcrumbLd = {
       "@type": "ListItem",
       position: 2,
       name: "Tools",
-      item: "https://www.simplebiztoolkit.com/tools",
+      item: TOOLS_PAGES_URL,
     },
     {
       "@type": "ListItem",

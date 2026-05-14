@@ -23,6 +23,12 @@ import { CTA } from "@/editor/extensions/CTA";
 import { ImageBlock } from "@/editor/extensions/ImageBlock";
 import { RelatedLinks } from "@/editor/extensions/RelatedLinks";
 import { Locking } from "@/editor/extensions/Locking";
+import { PreserveAttributes } from "@/editor/extensions/PreserveAttributes";
+import {
+  RawHtmlBlock,
+  unwrapRawHtmlPlaceholders,
+} from "@/editor/extensions/RawHtmlBlock";
+import { StyleBlock } from "@/editor/extensions/StyleBlock";
 import { EditorToolbar } from "@/editor/EditorToolbar";
 import type { EditorPolicy } from "@/editor/EditorToolbar";
 import { getTiptapScopedStyles } from "@/editor/tiptapScopedStyles";
@@ -84,6 +90,12 @@ export default function TiptapEditor({
       ImageBlock,
       RelatedLinks,
       Locking,
+      StyleBlock,
+      // RawHtmlBlock must come before PreserveAttributes so its high-priority
+      // parseHTML rules win for tags StarterKit cannot model (section, aside,
+      // svg, styled div, etc.).
+      RawHtmlBlock,
+      PreserveAttributes,
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TextStyle,
@@ -93,7 +105,7 @@ export default function TiptapEditor({
     editable: !readOnly,
     immediatelyRender: false,
     onUpdate({ editor }) {
-      onChange(editor.getHTML());
+      onChange(unwrapRawHtmlPlaceholders(editor.getHTML()));
     },
   });
 
@@ -102,13 +114,13 @@ export default function TiptapEditor({
     if (!editor) return;
     const nextValue = value || "";
 
-    if (editor.getHTML() === nextValue) return;
+    if (unwrapRawHtmlPlaceholders(editor.getHTML()) === nextValue) return;
 
     let cancelled = false;
 
     queueMicrotask(() => {
       if (cancelled || editor.isDestroyed) return;
-      if (editor.getHTML() === nextValue) return;
+      if (unwrapRawHtmlPlaceholders(editor.getHTML()) === nextValue) return;
 
       editor.commands.setContent(nextValue, { emitUpdate: false });
     });

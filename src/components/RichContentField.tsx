@@ -14,7 +14,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import HtmlCodeEditor from "@/components/HtmlCodeEditor";
 import TiptapEditor from "@/components/TiptapEditor";
 import type { EditorPolicy } from "@/editor/EditorToolbar";
@@ -23,6 +23,18 @@ import { formatHtmlForEditing } from "@/lib/htmlFormatter";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type EditorMode = "html" | "tiptap";
+
+// Markup the rich editor cannot edit natively. When present we surface a
+// gentle reminder next to the mode toggle so authors know that switching
+// to Tiptap renders these regions as opaque "raw HTML" blocks.
+const RAW_HTML_TAG_PATTERN =
+  /<\s*(section|aside|header|footer|nav|article|figure|svg|details|dialog|form|fieldset|table)\b/i;
+const STYLED_DIV_PATTERN = /<div\b[^>]*\bstyle\s*=/i;
+
+function containsRawHtmlMarkup(html: string | undefined | null): boolean {
+  if (!html) return false;
+  return RAW_HTML_TAG_PATTERN.test(html) || STYLED_DIV_PATTERN.test(html);
+}
 
 export interface RichContentFieldProps {
   /** Field label rendered above the editor */
@@ -157,6 +169,23 @@ export default function RichContentField({
   // preference from localStorage.
   const [mode, setMode] = useState<EditorMode>("html");
 
+  // Canonical-HTML guard: keep a pristine copy of what came in from the
+  // parent and only let Tiptap overwrite it once the user has actually
+  // edited inside Tiptap. This prevents Tiptap's lossy re-serialisation
+  // from corrupting the saved markup just by switching modes.
+  const pristineHtmlRef = useRef(value);
+  const tiptapDirtyRef = useRef(false);
+
+  // Keep `pristineHtmlRef` in sync with external value changes whenever
+  // Tiptap hasn't taken authorship of the content yet.
+  useEffect(() => {
+    if (mode === "html" || !tiptapDirtyRef.current) {
+      pristineHtmlRef.current = value;
+    }
+  }, [value, mode]);
+
+  const hasRawHtmlBlocks = containsRawHtmlMarkup(value);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey) as EditorMode | null;
@@ -168,6 +197,25 @@ export default function RichContentField({
       // localStorage unavailable (SSR / incognito) – keep default
     }
   }, [storageKey]);
+
+  // Auto-format HTML on first load so the editor opens with readable,
+  // multi-line markup (mirrors what the "Format HTML" button does).
+  const didAutoFormatRef = useRef(false);
+  useEffect(() => {
+    if (didAutoFormatRef.current) return;
+    if (!enableHtmlFormatting) return;
+    if (mode !== "html") return;
+    if (!value || !value.trim()) return;
+
+    const formatted = formatHtmlForEditing(value);
+    if (formatted && formatted !== value) {
+      onChange(formatted);
+    }
+    didAutoFormatRef.current = true;
+    // We intentionally only run this once for the initial value. Subsequent
+    // formatting is user-driven via the "Format HTML" button.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, enableHtmlFormatting]);
 
   const applyFormattedHtml = () => {
     if (!enableHtmlFormatting) return;
@@ -187,6 +235,24 @@ export default function RichContentField({
       // ignore
     }
 
+    // Entering Tiptap fresh – reset the dirty flag so we restore pristine
+    // HTML if the user switches back without editing.
+    if (m === "tiptap" && previousMode === "html") {
+      tiptapDirtyRef.current = false;
+      pristineHtmlRef.current = value;
+    }
+
+    // Leaving Tiptap without any edits – discard whatever Tiptap may have
+    // emitted (it shouldn't, but defensively restore the pristine HTML).
+    if (
+      m === "html" &&
+      previousMode === "tiptap" &&
+      !tiptapDirtyRef.current &&
+      value !== pristineHtmlRef.current
+    ) {
+      onChange(pristineHtmlRef.current);
+    }
+
     if (
       enableHtmlFormatting &&
       formatHtmlOnModeSwitch &&
@@ -198,6 +264,13 @@ export default function RichContentField({
         onChange(formatted);
       }
     }
+  };
+
+  // Tiptap forwards every onUpdate – the first one marks the editor as
+  // dirty and from that point onward Tiptap is the source of truth.
+  const handleTiptapChange = (html: string) => {
+    tiptapDirtyRef.current = true;
+    onChange(html);
   };
 
   return (
@@ -233,6 +306,26 @@ export default function RichContentField({
             </button>
           )}
           <ModeToggle mode={mode} onChange={handleModeChange} />
+          {hasRawHtmlBlocks && (
+            <span
+              title="This content contains raw HTML blocks (section, div with inline styles, svg, etc.). They round-trip safely through Tiptap but can only be edited in HTML view."
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "2px 8px",
+                borderRadius: 999,
+                background: "rgba(13, 92, 63, 0.08)",
+                color: "#0d5c3f",
+                fontSize: "0.72rem",
+                fontWeight: 600,
+                border: "1px solid rgba(13, 92, 63, 0.2)",
+                cursor: "help",
+              }}
+            >
+              ⚠ Raw HTML
+            </span>
+          )}
           {onPopOut && (
             <button
               type="button"
@@ -300,7 +393,7 @@ export default function RichContentField({
         <>
           <TiptapEditor
             value={value}
-            onChange={onChange}
+            onChange={handleTiptapChange}
             placeholder={placeholder}
             minHeight={minHeight}
             onSave={onSave}
