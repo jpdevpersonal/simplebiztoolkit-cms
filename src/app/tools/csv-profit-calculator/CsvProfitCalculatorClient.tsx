@@ -5,6 +5,8 @@ import { useEffect, useRef } from "react";
 
 import { CSV_CALCULATOR_FAQS } from "./faqContent";
 
+const TOOLS_PAGES_HREF = "/pages/tools";
+
 type MappingKey = "date" | "type" | "amount" | "fee" | "net" | "description";
 type CostKey =
   | "packaging"
@@ -2297,7 +2299,7 @@ export default function CsvProfitCalculatorClient() {
               <Link href="/">Simple Biz Toolkit</Link>
             </li>
             <li>
-              <Link href="/tools">Tools</Link>
+              <Link href={TOOLS_PAGES_HREF}>Tools</Link>
             </li>
             <li aria-current="page">Etsy CSV Profit Calculator</li>
           </ol>
