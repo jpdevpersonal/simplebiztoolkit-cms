@@ -61,6 +61,50 @@ describe("CmsImagePicker", () => {
     expect(screen.getByText("Image selected.")).toBeInTheDocument();
   });
 
+  it("filters the image library by file name, alt text, and caption", async () => {
+    const user = userEvent.setup();
+    vi.mocked(imageApi.getImages).mockResolvedValueOnce([
+      {
+        id: "img-1",
+        url: "https://cdn.example.com/hero.webp",
+        blobName: "hero.webp",
+        altText: "Hero",
+        caption: "Homepage banner",
+        createdUtc: "2026-03-20T00:00:00Z",
+        updatedUtc: "2026-03-21T00:00:00Z",
+      },
+      {
+        id: "img-2",
+        url: "https://cdn.example.com/team.webp",
+        blobName: "team.webp",
+        altText: "Team portrait",
+        caption: "About page",
+        createdUtc: "2026-03-20T00:00:00Z",
+        updatedUtc: "2026-03-22T00:00:00Z",
+      },
+    ]);
+
+    render(<CmsImagePicker label="featured image" />);
+    await user.click(
+      screen.getByRole("button", { name: "Edit featured image" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /hero.webp/i })).toBeVisible();
+    });
+
+    await user.type(screen.getByLabelText("Search images"), "about");
+
+    expect(screen.queryByRole("button", { name: /hero.webp/i })).toBeNull();
+    expect(screen.getByRole("button", { name: /team.webp/i })).toBeVisible();
+    expect(screen.getByText("1 of 2")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear search" }));
+
+    expect(screen.getByRole("button", { name: /hero.webp/i })).toBeVisible();
+    expect(screen.getByRole("button", { name: /team.webp/i })).toBeVisible();
+  });
+
   it("blocks invalid uploads locally", async () => {
     const user = userEvent.setup({ applyAccept: false });
     vi.mocked(imageApi.getImages).mockResolvedValueOnce([]);

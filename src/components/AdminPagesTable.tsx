@@ -237,7 +237,7 @@ export default function AdminPagesTable({ pages }: Props) {
               </td>
               <td className="admin-cell-actions" data-label="Actions">
                 <Link
-                  href={`/admin/pages/${page.id}/edit`}
+                  href={`/cms/pages/${page.id}/edit`}
                   className="admin-btn-action"
                 >
                   Edit

@@ -25,7 +25,7 @@ export default async function EditPageAdminPage({ params }: Props) {
 
   const page = pageRes.data;
   const menuItems = menuRes.data || [];
-  const breadcrumbItems = [{ href: "/admin/pages", label: "Pages" }];
+  const breadcrumbItems = [{ href: "/cms/pages", label: "Pages" }];
 
   // Resolve menu item id (might come via category)
   let menuItemId = page.menuItemId;

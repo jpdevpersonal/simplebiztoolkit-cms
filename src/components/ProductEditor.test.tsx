@@ -150,7 +150,7 @@ describe("ProductEditor", () => {
     await waitFor(
       () => {
         expect(clientApi.createProduct).toHaveBeenCalled();
-        expect(routerPush).toHaveBeenCalledWith("/admin/templates");
+        expect(routerPush).toHaveBeenCalledWith("/cms/templates");
         expect(routerRefresh).toHaveBeenCalled();
       },
       { timeout: 2000 },
@@ -201,7 +201,7 @@ describe("ProductEditor", () => {
           "p-1",
           expect.any(Object),
         );
-        expect(routerPush).toHaveBeenCalledWith("/admin/templates");
+        expect(routerPush).toHaveBeenCalledWith("/cms/templates");
         expect(routerRefresh).toHaveBeenCalled();
       },
       { timeout: 2000 },
@@ -307,7 +307,7 @@ describe("ProductEditor", () => {
     await waitFor(
       () => {
         expect(clientApi.deleteProduct).toHaveBeenCalledWith("p-1");
-        expect(routerPush).toHaveBeenCalledWith("/admin/templates");
+        expect(routerPush).toHaveBeenCalledWith("/cms/templates");
       },
       { timeout: 2000 },
     );

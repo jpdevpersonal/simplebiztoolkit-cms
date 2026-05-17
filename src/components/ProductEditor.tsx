@@ -201,7 +201,7 @@ export default function ProductEditor({
         : await clientApi.updateProduct(productData.id, payload);
 
       if (isCreateMode) {
-        redirectAndRefresh(router, "/admin/templates");
+        redirectAndRefresh(router, "/cms/templates");
       } else {
         // Keep local form state in sync in case a user navigates back quickly.
         if (saved && typeof saved === "object") {
@@ -225,7 +225,7 @@ export default function ProductEditor({
           setStatus((saved.status as "draft" | "published") || status);
         }
 
-        redirectAndRefresh(router, "/admin/templates");
+        redirectAndRefresh(router, "/cms/templates");
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -260,7 +260,7 @@ export default function ProductEditor({
     try {
       await clientApi.deleteProduct(productData.id);
       setMessage("Template deleted!");
-      redirectAndRefresh(router, "/admin/templates");
+      redirectAndRefresh(router, "/cms/templates");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);

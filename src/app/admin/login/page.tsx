@@ -1,5 +1,5 @@
 /**
- * Admin Login Page
+ * CMS Login Page
  */
 
 "use client";
@@ -7,6 +7,7 @@
 import React, { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getSafeCmsCallbackUrl } from "@/lib/adminRoutes";
 
 export default function LoginPage() {
   return (
@@ -19,7 +20,10 @@ export default function LoginPage() {
 function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+  const callbackUrl = getSafeCmsCallbackUrl(
+    searchParams.get("callbackUrl"),
+    typeof window === "undefined" ? undefined : window.location.origin,
+  );
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,7 +45,7 @@ function LoginPageInner() {
       if (result?.error) {
         setError("Invalid credentials");
       } else {
-        router.push(callbackUrl);
+        router.replace(callbackUrl);
       }
     } catch (error) {
       console.error(error);
@@ -55,19 +59,8 @@ function LoginPageInner() {
     <div className="admin-login-wrap">
       <div className="admin-login-card">
         <div className="admin-login-header">
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: "rgba(255,255,255,0.15)",
-              marginBottom: "0.75rem",
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <div className="admin-login-mark" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <rect
                 x="3"
                 y="11"
@@ -89,40 +82,20 @@ function LoginPageInner() {
               />
             </svg>
           </div>
-          <h1>Admin Login</h1>
-          <p>Sign in to access the CMS dashboard</p>
+          <div className="admin-login-eyebrow">Simple Biz Toolkit</div>
+          <h1>Content Studio</h1>
+          <p>Manage pages, menus, templates, and media.</p>
         </div>
         <div className="admin-login-body">
           {error && (
-            <div
-              role="alert"
-              style={{
-                marginBottom: "1rem",
-                padding: "0.75rem 1rem",
-                background: "#fff5f5",
-                border: "1px solid #fca5a5",
-                borderRadius: "8px",
-                color: "#dc2626",
-                fontSize: "0.875rem",
-                fontWeight: 500,
-              }}
-            >
+            <div role="alert" className="admin-login-alert">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: "1rem" }}>
-              <label
-                htmlFor="email"
-                style={{
-                  display: "block",
-                  marginBottom: "0.375rem",
-                  fontSize: "0.875rem",
-                  fontWeight: 600,
-                  color: "var(--sb-brand-blue)",
-                }}
-              >
+            <div className="admin-login-field">
+              <label htmlFor="email" className="admin-login-label">
                 Email address
               </label>
               <input
@@ -133,23 +106,18 @@ function LoginPageInner() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setEmail(e.target.value)
                 }
-                placeholder="admin@example.com"
+                placeholder="you@example.com"
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                inputMode="email"
                 required
                 disabled={loading}
               />
             </div>
 
-            <div style={{ marginBottom: "1.5rem" }}>
-              <label
-                htmlFor="password"
-                style={{
-                  display: "block",
-                  marginBottom: "0.375rem",
-                  fontSize: "0.875rem",
-                  fontWeight: 600,
-                  color: "var(--sb-brand-blue)",
-                }}
-              >
+            <div className="admin-login-field">
+              <label htmlFor="password" className="admin-login-label">
                 Password
               </label>
               <input
@@ -160,6 +128,7 @@ function LoginPageInner() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setPassword(e.target.value)
                 }
+                autoComplete="current-password"
                 required
                 disabled={loading}
               />
@@ -167,13 +136,16 @@ function LoginPageInner() {
 
             <button
               type="submit"
-              className="admin-btn-save w-100"
-              style={{ justifyContent: "center" }}
+              className="admin-btn-save admin-login-submit"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
+          <p className="admin-login-security-note">
+            This workspace is not indexed and only accepts authenticated editor
+            sessions.
+          </p>
         </div>
       </div>
     </div>

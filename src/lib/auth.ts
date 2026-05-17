@@ -13,6 +13,7 @@ import {
   unwrapDataEnvelope,
 } from "@/lib/httpTransport";
 import { getApiBaseUrlForServer } from "@/config/apiBaseUrl";
+import { CMS_LOGIN_PATH } from "@/lib/adminRoutes";
 
 function shouldUseSecureAuthCookies(): boolean {
   const configuredUrl = process.env.NEXTAUTH_URL?.trim();
@@ -102,7 +103,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/admin/login",
+    signIn: CMS_LOGIN_PATH,
   },
   trustHost: true, // Required for NextAuth v5 and localhost development
   session: {

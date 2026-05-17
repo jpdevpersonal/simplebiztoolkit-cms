@@ -18,7 +18,8 @@ export default function SiteHeader({
 }: Props) {
   const headerRef = useRef<HTMLElement | null>(null);
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin");
+  const isAdmin =
+    pathname?.startsWith("/admin") || pathname?.startsWith("/cms");
 
   return (
     <>

@@ -84,7 +84,7 @@ describe("AdminProductsTable", () => {
 
     expect(screen.getByText("Alpha")).toBeInTheDocument();
     const editLinks = screen.getAllByRole("link", { name: "Edit" });
-    expect(editLinks[0]).toHaveAttribute("href", "/admin/templates/p-1/edit");
+    expect(editLinks[0]).toHaveAttribute("href", "/cms/templates/p-1/edit");
   });
 
   it("sorts by status when header is clicked", () => {

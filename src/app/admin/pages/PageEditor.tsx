@@ -328,7 +328,7 @@ export default function PageEditor({
 
       if (isNew) {
         await clientApi.createMenuItemPage(payload);
-        redirectAndRefresh(router, "/admin/pages");
+        redirectAndRefresh(router, "/cms/pages");
       } else if (page?.id) {
         await clientApi.updateMenuItemPage(page.id, payload);
         const savedContent = splitPageContent(normalizedFormData.content);
@@ -362,7 +362,7 @@ export default function PageEditor({
 
     try {
       await clientApi.deleteMenuItemPage(page!.id);
-      redirectAndRefresh(router, "/admin/pages");
+      redirectAndRefresh(router, "/cms/pages");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
       setDeleting(false);
@@ -851,7 +851,7 @@ export default function PageEditor({
         saving={saving}
         isCreateMode={isNew}
         entityName="Page"
-        onCancel={() => router.push("/admin/pages")}
+        onCancel={() => router.push("/cms/pages")}
         onDelete={!isNew && page ? handleDelete : undefined}
         deleting={deleting}
         previewHref={previewHref}

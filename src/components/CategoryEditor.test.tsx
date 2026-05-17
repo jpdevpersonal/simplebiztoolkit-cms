@@ -89,7 +89,7 @@ describe("CategoryEditor", () => {
 
     await waitFor(() => {
       expect(clientApi.deleteCategory).toHaveBeenCalledWith("cat-1");
-      expect(routerPush).toHaveBeenCalledWith("/admin/categories");
+      expect(routerPush).toHaveBeenCalledWith("/cms/categories");
     });
   });
 });

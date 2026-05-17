@@ -19,7 +19,7 @@ export default async function ProductPreviewPage({ params }: Props) {
   const { service, session } = await getAdminApiService();
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/cms/login");
   }
 
   const [productResponse, categoriesResponse] = await Promise.all([
