@@ -180,17 +180,21 @@
 }
 
 .product-card-bullets li::before {
-  /* use a stylish arrow glyph instead of a dot */
-  content: "➜";
-  display: inline-block;
-  margin-right: 0.45rem;
-  color: var(--sb-brand-blue);
+  /* small filled-circle checkmark badge */
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--sb-brand-blue);
+  color: #fff;
+  font-size: 0.6rem;
   font-weight: 700;
-  font-size: 0.95rem;
   line-height: 1;
   flex-shrink: 0;
-  transform: translateY(1px);
-  filter: drop-shadow(0 1px 2px rgba(11, 22, 40, 0.06));
+  margin-right: 0.35rem;
 }
 
 @media (max-width: 576px) {
@@ -289,10 +293,11 @@
 
 .products-header p {
   font-size: 1.0625rem;
-  max-width: 460px;
+  max-width: 780px;
   margin: 1rem auto 0;
   line-height: 1.65;
   color: var(--sb-muted);
+  text-wrap: pretty;
 }
 
 /* CSS Grid for responsive category layout */
@@ -319,41 +324,56 @@
   background: #fff;
   border: 1px solid var(--sb-border);
   border-radius: var(--sb-radius);
-  padding: 1.75rem 1.5rem;
+  padding: 1.625rem 1.5rem 1.375rem;
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--sb-shadow);
   transition:
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s ease;
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s ease;
   position: relative;
   overflow: hidden;
 }
 
+/* Always-visible top accent bar */
 .category-card::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(135deg, var(--sb-green), var(--sb-brand-blue));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--sb-green) 0%,
+    var(--sb-brand-blue) 100%
+  );
 }
 
 .category-card:hover {
-  transform: translateY(-6px);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.06),
-    0 20px 56px rgba(0, 0, 0, 0.05);
-  border-color: rgba(65, 69, 86, 0.15);
+  transform: translateY(-4px);
+  box-shadow: var(--sb-shadow-hover);
+  border-color: rgba(65, 69, 86, 0.2);
 }
 
-.category-card:hover::before {
-  transform: scaleX(1);
+/* Icon badge */
+.category-card-icon {
+  font-size: 1.6rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    rgba(26, 127, 90, 0.1) 0%,
+    rgba(65, 69, 86, 0.08) 100%
+  );
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .category-card-title {
@@ -365,8 +385,8 @@
 
 .category-card-summary {
   color: var(--sb-muted);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.9375rem;
+  line-height: 1.55;
   margin: 0;
   flex-grow: 1;
 }
@@ -376,14 +396,23 @@
   align-items: center;
   gap: 0.35rem;
   margin-top: 1.25rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--sb-green);
-  transition: gap 0.2s ease;
+  padding: 0.375rem 0.875rem;
+  border: 1.5px solid rgba(26, 127, 90, 0.3);
+  border-radius: 999px;
+  align-self: flex-start;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    gap 0.2s ease;
 }
 
 .category-card:hover .category-card-cta {
-  gap: 0.6rem;
+  background: rgba(26, 127, 90, 0.07);
+  border-color: rgba(26, 127, 90, 0.55);
+  gap: 0.5rem;
 }
 
 .category-card-cta svg {
@@ -406,20 +435,42 @@
   grid-template-areas:
     "title"
     "image"
-    "content";
+    "content"
+    "description";
   gap: 2rem;
   margin-bottom: 5rem; /* Space for sticky CTA on mobile */
 }
 
+/* On mobile, flatten the right column wrapper so the title and content
+   can be reordered independently via grid-template-areas */
+.product-detail-right-column {
+  display: contents;
+}
+
+.product-detail-problem--under-image {
+  grid-area: description;
+}
+
 @media (min-width: 992px) {
   .product-detail-layout {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      "image title"
-      "image content";
-    gap: 3rem;
+      "image       right"
+      "description description";
+    column-gap: 3rem;
+    row-gap: 3rem;
     align-items: start;
     margin-bottom: 2rem; /* Less space on desktop (no sticky CTA) */
+  }
+
+  .product-detail-right-column {
+    display: flex;
+    flex-direction: column;
+    grid-area: right;
+  }
+
+  .product-detail-title-wrap {
+    margin-bottom: 1.25rem;
   }
 }
 
@@ -1107,4 +1158,67 @@
   .product-description-list li {
     font-size: 1.0625rem;
   }
+}
+
+/* =============================================
+   Product Detail – How-to & FAQ cards
+   ============================================= */
+
+.template-howto-card,
+.template-faq-card {
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  border: 1px solid var(--sb-border);
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.template-howto-card::before,
+.template-faq-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--sb-green), var(--sb-brand-blue));
+}
+
+.template-howto-card {
+  padding: 1.75rem 1.75rem 1.75rem 2.75rem;
+}
+
+.template-howto-card li {
+  padding-left: 0.25rem;
+}
+
+.template-howto-card li + li {
+  margin-top: 0.5rem;
+}
+
+.template-faq-card {
+  padding: 1.25rem 1.5rem 1.25rem 2rem;
+  margin-bottom: 0.875rem;
+}
+
+.template-faq-card[open] {
+  background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+}
+
+.template-faq-card > summary {
+  list-style: none;
+}
+
+.template-faq-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Description placed beneath the two-column hero (full width on desktop) */
+.product-detail-problem-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sb-ink);
 }

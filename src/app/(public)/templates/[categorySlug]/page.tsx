@@ -10,6 +10,8 @@ import { links } from "@/config/links";
 import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
+  createFaqJsonLd,
+  createItemListJsonLd,
   createPageMetadata,
 } from "@/lib/seo";
 import "@/styles/products.css";
@@ -19,6 +21,41 @@ type Props = {
 };
 
 export const revalidate = 300;
+
+/**
+ * Common buyer-intent FAQs surfaced on every category page. The phrasing is
+ * intentionally generic so it works as a baseline FAQPage signal for any
+ * category; per-category overrides can be added in a future pass.
+ */
+function getCategoryFaqItems(categoryName: string) {
+  return [
+    {
+      question: `What's included in the ${categoryName} templates?`,
+      answer:
+        "Each listing includes both A4 and US Letter sizes. Where applicable you get a fillable PDF (type directly into the form using Adobe Reader, Chrome, Edge or Apple Preview) and a print-and-write PDF. Full details are listed on every product page and in the Etsy listing.",
+    },
+    {
+      question: "Can I use the templates for my business and clients?",
+      answer:
+        "Yes. Every template is licensed for unlimited personal and business use by the buyer for a single business or shop. You may not resell, redistribute or share the source files.",
+    },
+    {
+      question: "How do I download my files after buying?",
+      answer:
+        "Etsy delivers the files instantly. Open your Etsy Purchases and Reviews page, find the order, and click Download Files. There's no shipping wait — most customers print or open their first copy within minutes.",
+    },
+    {
+      question: "Do I need special software?",
+      answer:
+        "No. A free PDF reader (Adobe Acrobat Reader, Chrome, Edge, Safari, Firefox or Apple Preview) is enough. No subscription, no account, no design software.",
+    },
+    {
+      question: "Will the templates print well on a home printer?",
+      answer:
+        "Yes — every template is laid out for clean printing on standard A4 or US Letter paper using a home or office printer. Use the 'Actual size' (100%) setting in your print dialog for best results.",
+    },
+  ];
+}
 
 /**
  * Generate static params for ISR
@@ -45,11 +82,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!response.data) return {};
 
   const category = response.data;
+  const itemCount = category.items?.length ?? 0;
+  const cleanSummary = (category.summary ?? "").replace(/\s+/g, " ").trim();
 
-  const description = `${category.summary} Browse templates and then checkout securely on Etsy.`;
+  const description = cleanSummary
+    ? `${cleanSummary} Browse ${itemCount > 0 ? `${itemCount} ` : ""}printable ${category.name.toLowerCase()} templates from Simple Biz Toolkit — instant PDF download via Etsy, A4 and US Letter included.`
+    : `Printable ${category.name.toLowerCase()} templates from Simple Biz Toolkit — instant PDF download via Etsy, A4 and US Letter included.`;
 
   return createPageMetadata({
-    title: category.name,
+    title: `${category.name} Templates`,
     description,
     pathname: `/templates/${category.slug}`,
     image: category.heroImage || undefined,
@@ -69,7 +110,7 @@ export default async function CategoryPage({ params }: Props) {
   const category = response.data;
 
   const jsonLd = createCollectionPageJsonLd({
-    name: category.name,
+    name: `${category.name} Templates`,
     description: category.summary,
     href: `/templates/${category.slug}`,
   });
@@ -80,10 +121,25 @@ export default async function CategoryPage({ params }: Props) {
     { name: category.name, href: `/templates/${category.slug}` },
   ]);
 
+  const items = category.items ?? [];
+  const itemListJsonLd = createItemListJsonLd({
+    name: `${category.name} templates`,
+    items: items.map((item) => ({
+      name: item.title,
+      href: `/templates/${category.slug}/${item.slug}`,
+      image: item.image,
+    })),
+  });
+
+  const faqItems = getCategoryFaqItems(category.name);
+  const faqJsonLd = createFaqJsonLd(faqItems);
+
   return (
     <>
       <JsonLd json={jsonLd} />
       <JsonLd json={breadcrumbJsonLd} />
+      <JsonLd json={itemListJsonLd} />
+      <JsonLd json={faqJsonLd} />
 
       <section className="sb-section">
         <div className="container">
@@ -124,7 +180,7 @@ export default async function CategoryPage({ params }: Props) {
                 <div className="sb-card p-3">
                   <Image
                     src={category.heroImage}
-                    alt=""
+                    alt={`${category.name} printable templates preview`}
                     className="img-fluid rounded-4"
                     width={900}
                     height={630}
@@ -148,6 +204,33 @@ export default async function CategoryPage({ params }: Props) {
               Visit our Etsy shop
             </a>
           </div>
+
+          {/* Category FAQ block — FAQPage JSON-LD already emitted above */}
+          <section
+            className="sb-section"
+            aria-labelledby="sb-category-faq-heading"
+          >
+            <h2
+              id="sb-category-faq-heading"
+              style={{ fontWeight: 700, marginBottom: "1rem" }}
+            >
+              {category.name} FAQs
+            </h2>
+            {faqItems.map((item) => (
+              <details key={item.question} className="sb-card p-3 mb-2">
+                <summary
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  {item.question}
+                </summary>
+                <p className="sb-muted mb-0 mt-2">{item.answer}</p>
+              </details>
+            ))}
+          </section>
         </div>
       </section>
     </>
