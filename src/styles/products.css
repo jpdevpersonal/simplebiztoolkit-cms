@@ -289,10 +289,11 @@
 
 .products-header p {
   font-size: 1.0625rem;
-  max-width: 460px;
+  max-width: 780px;
   margin: 1rem auto 0;
   line-height: 1.65;
   color: var(--sb-muted);
+  text-wrap: pretty;
 }
 
 /* CSS Grid for responsive category layout */
@@ -316,13 +317,14 @@
 
 /* Category card styling */
 .category-card {
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
   border: 1px solid var(--sb-border);
   border-radius: var(--sb-radius);
   padding: 1.75rem 1.5rem;
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -361,6 +363,14 @@
   font-weight: 700;
   margin: 0 0 0.5rem 0;
   color: var(--sb-ink);
+  background: linear-gradient(
+    135deg,
+    var(--sb-ink) 0%,
+    var(--sb-brand-blue) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .category-card-summary {
@@ -406,20 +416,42 @@
   grid-template-areas:
     "title"
     "image"
-    "content";
+    "content"
+    "description";
   gap: 2rem;
   margin-bottom: 5rem; /* Space for sticky CTA on mobile */
 }
 
+/* On mobile, flatten the right column wrapper so the title and content
+   can be reordered independently via grid-template-areas */
+.product-detail-right-column {
+  display: contents;
+}
+
+.product-detail-problem--under-image {
+  grid-area: description;
+}
+
 @media (min-width: 992px) {
   .product-detail-layout {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      "image title"
-      "image content";
-    gap: 3rem;
+      "image       right"
+      "description description";
+    column-gap: 3rem;
+    row-gap: 3rem;
     align-items: start;
     margin-bottom: 2rem; /* Less space on desktop (no sticky CTA) */
+  }
+
+  .product-detail-right-column {
+    display: flex;
+    flex-direction: column;
+    grid-area: right;
+  }
+
+  .product-detail-title-wrap {
+    margin-bottom: 1.25rem;
   }
 }
 
@@ -1107,4 +1139,67 @@
   .product-description-list li {
     font-size: 1.0625rem;
   }
+}
+
+/* =============================================
+   Product Detail – How-to & FAQ cards
+   ============================================= */
+
+.template-howto-card,
+.template-faq-card {
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  border: 1px solid var(--sb-border);
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.template-howto-card::before,
+.template-faq-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--sb-green), var(--sb-brand-blue));
+}
+
+.template-howto-card {
+  padding: 1.75rem 1.75rem 1.75rem 2.75rem;
+}
+
+.template-howto-card li {
+  padding-left: 0.25rem;
+}
+
+.template-howto-card li + li {
+  margin-top: 0.5rem;
+}
+
+.template-faq-card {
+  padding: 1.25rem 1.5rem 1.25rem 2rem;
+  margin-bottom: 0.875rem;
+}
+
+.template-faq-card[open] {
+  background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+}
+
+.template-faq-card > summary {
+  list-style: none;
+}
+
+.template-faq-card > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Description placed beneath the two-column hero (full width on desktop) */
+.product-detail-problem-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sb-ink);
 }

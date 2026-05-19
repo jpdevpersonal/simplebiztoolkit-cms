@@ -147,10 +147,6 @@ export default function ProductDetailClient({ product }: Props) {
   return (
     <>
       <div className="product-detail-layout">
-        <div className="product-detail-title-wrap">
-          <h1 className="product-detail-title">{product.title}</h1>
-        </div>
-
         <div className="product-detail-media-column">
           <div
             className="product-detail-image-container"
@@ -193,23 +189,131 @@ export default function ProductDetailClient({ product }: Props) {
           ) : null}
         </div>
 
-        <div className="product-detail-content">
-          <div className="product-detail-header">
-            <div className="product-detail-price-cta-row">
-              <div className="product-detail-price-wrapper">
-                <span className="product-detail-price">
-                  {product.price ? (
-                    <span style={{ fontSize: "1rem" }}>
-                      From{"   "}
-                      <span style={{ fontSize: "2rem" }}>{product.price}</span>
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: "1.2rem" }}>
-                      See our Etsy shop for pricing
-                    </span>
-                  )}
-                </span>
+        <div className="product-detail-right-column">
+          <div className="product-detail-title-wrap">
+            <h1 className="product-detail-title">{product.title}</h1>
+          </div>
+
+          <div className="product-detail-content">
+            <div className="product-detail-header">
+              <div className="product-detail-price-cta-row">
+                <div className="product-detail-price-wrapper">
+                  <span className="product-detail-price">
+                    {product.price ? (
+                      <span style={{ fontSize: "1rem" }}>
+                        From{"   "}
+                        <span style={{ fontSize: "2rem" }}>
+                          {product.price}
+                        </span>
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: "1.2rem" }}>
+                        See our Etsy shop for pricing
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <a
+                  href={product.etsyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
+                >
+                  <span>Get It Now</span>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 12L12 4M12 4H5M12 4v7"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
               </div>
+
+              <div className="product-detail-trust">
+                <div className="product-detail-trust-item">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  <span>Secure checkout</span>
+                </div>
+                <div className="product-detail-trust-item">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Instant download</span>
+                </div>
+                <div className="product-detail-trust-item">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span>Available 24/7</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="product-detail-features">
+              <h2>What&apos;s Included</h2>
+              <ul>
+                {product.bullets.map((bullet, index) => (
+                  <li key={index}>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="feature-check-icon"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {bullet}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Secondary CTA - Desktop only, less prominent */}
+            <div className="product-detail-cta product-detail-cta--primary">
               <a
                 href={product.etsyUrl}
                 target="_blank"
@@ -233,125 +337,24 @@ export default function ProductDetailClient({ product }: Props) {
                   />
                 </svg>
               </a>
+              <p className="product-detail-cta-note">
+                ✓ Secure payment via Etsy • Digital download available
+                immediately
+              </p>
+
+              <p className="product-detail-cta-note">
+                Price shown on Etsy may vary by currency and location
+              </p>
             </div>
-
-            <div className="product-detail-trust">
-              <div className="product-detail-trust-item">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-                <span>Secure checkout</span>
-              </div>
-              <div className="product-detail-trust-item">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span>Instant download</span>
-              </div>
-              <div className="product-detail-trust-item">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                <span>Available 24/7</span>
-              </div>
-            </div>
-          </div>
-
-          {descriptionContent ? (
-            <div className="product-detail-problem">
-              <h2 style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>
-                Description
-              </h2>
-              <ProductDescription description={descriptionContent} />
-            </div>
-          ) : null}
-
-          <div className="product-detail-features">
-            <h2>What&apos;s Included</h2>
-            <ul>
-              {product.bullets.map((bullet, index) => (
-                <li key={index}>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="feature-check-icon"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  {bullet}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Secondary CTA - Desktop only, less prominent */}
-          <div className="product-detail-cta product-detail-cta--primary">
-            <a
-              href={product.etsyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
-            >
-              <span>Get It Now</span>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 12L12 4M12 4H5M12 4v7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </a>
-            <p className="product-detail-cta-note">
-              ✓ Secure payment via Etsy • Digital download available immediately
-            </p>
-
-            <p className="product-detail-cta-note">
-              Price shown on Etsy may vary by currency and location
-            </p>
           </div>
         </div>
+
+        {descriptionContent ? (
+          <div className="product-detail-problem product-detail-problem--under-image">
+            <h2 className="product-detail-problem-title">Description</h2>
+            <ProductDescription description={descriptionContent} />
+          </div>
+        ) : null}
       </div>
 
       {/* Sticky Mobile CTA */}

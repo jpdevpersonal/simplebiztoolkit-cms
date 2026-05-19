@@ -17,7 +17,7 @@ import {
   PRIMARY_MENU_LOCATION_KEY,
 } from "@/lib/menuLocations";
 import type { MenuNavItem } from "@/lib/siteMenu";
-import { createWebsiteJsonLd } from "@/lib/seo";
+import { createOrganizationJsonLd, createWebsiteJsonLd } from "@/lib/seo";
 import {
   getMenuLayoutOrderIds,
   getMenuItemLandingHref,
@@ -154,6 +154,7 @@ export default async function PublicLayout({
       <ScrollToTop />
 
       <JsonLd json={createWebsiteJsonLd()} />
+      <JsonLd json={createOrganizationJsonLd()} />
 
       <a className="sb-skip-link" href="#content">
         Skip to content
