@@ -47,6 +47,35 @@ const templatesFaqItems = [
 
 export const revalidate = 300;
 
+/** Maps category slugs to a representative emoji icon. */
+const categoryIconMap: Record<string, string> = {
+  "attendance-record": "📋",
+  "sign-in-sheet": "✍️",
+  "sign-in": "✍️",
+  invoice: "🧾",
+  invoices: "🧾",
+  estimate: "💼",
+  estimates: "💼",
+  "time-sheet": "⏱️",
+  "time-sheets": "⏱️",
+  "accounting-ledger": "📒",
+  accounting: "📒",
+  ledger: "📒",
+  "rent-payment": "🏠",
+  rent: "🏠",
+  "order-form": "📦",
+  "order-forms": "📦",
+  mileage: "🚗",
+  planner: "📅",
+  profit: "💰",
+  "profit-loss": "💰",
+};
+
+function getCategoryIcon(slug: string): string {
+  const match = Object.keys(categoryIconMap).find((k) => slug.includes(k));
+  return match ? categoryIconMap[match] : "📄";
+}
+
 export const metadata: Metadata = createPageMetadata({
   title: productsTitle,
   description: productsDescription,
@@ -100,6 +129,9 @@ export default async function ProductsPage() {
                 key={c.slug}
               >
                 <article className="category-card">
+                  <div className="category-card-icon" aria-hidden="true">
+                    {getCategoryIcon(c.slug)}
+                  </div>
                   <h2 className="category-card-title">{c.name}</h2>
                   <p className="category-card-summary">{c.summary}</p>
                   <span className="category-card-cta">
