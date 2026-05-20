@@ -1098,7 +1098,7 @@ export default function EstimateQuoteGeneratorClient() {
                   🔒 <strong>Strict privacy:</strong> all processing happens
                   locally in your browser. No data, logo, or PDF is ever
                   uploaded, sent, or stored on any server. The PDF library is
-                  bundled locally — this page makes zero external network
+                  bundled locally. This page makes zero external network
                   requests.
                 </div>
               </section>
