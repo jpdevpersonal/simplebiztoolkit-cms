@@ -75,7 +75,7 @@ export default async function MenuPage() {
           <span className="admin-page-meta">
             {allCategories.length} topics tracked
           </span>
-          <Link href="/admin/menu/new" className="admin-btn-save">
+          <Link href="/cms/menu/new" className="admin-btn-save">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <line
                 x1="12"
@@ -158,7 +158,7 @@ export default async function MenuPage() {
                   </td>
                   <td className="admin-cell-actions" data-label="Actions">
                     <Link
-                      href={`/admin/menu/${item.id}/edit`}
+                      href={`/cms/menu/${item.id}/edit`}
                       className="admin-btn-action"
                     >
                       Edit
@@ -183,7 +183,7 @@ export default async function MenuPage() {
         <div className="admin-page-actions">
           {menuItems.length > 0 && (
             <Link
-              href={`/admin/menu/${menuItems[0].id}/categories/new`}
+              href={`/cms/menu/${menuItems[0].id}/categories/new`}
               className="admin-btn-save"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -247,7 +247,7 @@ export default async function MenuPage() {
                   </td>
                   <td className="admin-cell-actions" data-label="Actions">
                     <Link
-                      href={`/admin/menu/categories/${cat.id}/edit`}
+                      href={`/cms/menu/categories/${cat.id}/edit`}
                       className="admin-btn-action"
                     >
                       Edit
@@ -270,7 +270,7 @@ export default async function MenuPage() {
           </p>
         </div>
         <div className="admin-page-actions">
-          <Link href="/admin/pages/new" className="admin-btn-save">
+          <Link href="/cms/pages/new" className="admin-btn-save">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <line
                 x1="12"
@@ -345,7 +345,7 @@ export default async function MenuPage() {
                   </td>
                   <td className="admin-cell-actions" data-label="Actions">
                     <Link
-                      href={`/admin/pages/${page.id}/edit`}
+                      href={`/cms/pages/${page.id}/edit`}
                       className="admin-btn-action"
                     >
                       Edit

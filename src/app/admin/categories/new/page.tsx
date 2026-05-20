@@ -6,7 +6,7 @@ import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import CategoryEditor from "@/components/CategoryEditor";
 
 export default function NewCategoryPage() {
-  const breadcrumbItems = [{ href: "/admin/categories", label: "Categories" }];
+  const breadcrumbItems = [{ href: "/cms/categories", label: "Categories" }];
 
   return (
     <div>

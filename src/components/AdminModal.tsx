@@ -11,6 +11,21 @@ type AdminModalProps = {
   children: React.ReactNode;
 };
 
+const focusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "textarea:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(focusableSelector),
+  ).filter((element) => !element.hasAttribute("hidden"));
+}
+
 export default function AdminModal({
   isOpen,
   onCloseAction,
@@ -19,16 +34,24 @@ export default function AdminModal({
   children,
 }: AdminModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
 
   useEffect(() => {
     if (!isOpen) return;
+
+    previouslyFocusedRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
       document.body.style.overflow = previous;
+      previouslyFocusedRef.current?.focus({ preventScroll: true });
+      previouslyFocusedRef.current = null;
     };
   }, [isOpen]);
 
@@ -38,6 +61,40 @@ export default function AdminModal({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onCloseAction();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const dialog = dialogRef.current;
+      if (!dialog) {
+        return;
+      }
+
+      const focusableElements = getFocusableElements(dialog);
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+        return;
+      }
+
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements[focusableElements.length - 1];
+      const currentFocus = document.activeElement;
+
+      if (event.shiftKey) {
+        if (currentFocus === firstFocusable || !dialog.contains(currentFocus)) {
+          event.preventDefault();
+          lastFocusable.focus({ preventScroll: true });
+        }
+        return;
+      }
+
+      if (currentFocus === lastFocusable || !dialog.contains(currentFocus)) {
+        event.preventDefault();
+        firstFocusable.focus({ preventScroll: true });
       }
     }
 
@@ -47,7 +104,9 @@ export default function AdminModal({
 
   useEffect(() => {
     if (isOpen) {
-      dialogRef.current?.focus();
+      const dialog = dialogRef.current;
+      const firstFocusable = dialog ? getFocusableElements(dialog)[0] : null;
+      (firstFocusable ?? dialog)?.focus({ preventScroll: true });
     }
   }, [isOpen]);
 

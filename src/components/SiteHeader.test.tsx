@@ -28,7 +28,14 @@ describe("SiteHeader", () => {
     expect(screen.getByText("Site nav component")).toBeInTheDocument();
   });
 
-  it("hides nav and CTA on admin routes", () => {
+  it("hides nav and CTA on CMS routes", () => {
+    mockUsePathname.mockReturnValue("/cms/templates");
+    render(<SiteHeader />);
+
+    expect(screen.queryByText("Site nav component")).not.toBeInTheDocument();
+  });
+
+  it("hides nav and CTA on legacy admin routes", () => {
     mockUsePathname.mockReturnValue("/admin/templates");
     render(<SiteHeader />);
 

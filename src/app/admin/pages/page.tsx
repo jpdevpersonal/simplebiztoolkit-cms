@@ -94,7 +94,7 @@ export default async function AdminPagesListPage() {
           <span className="admin-page-meta">
             {menuItems.length} menu items linked
           </span>
-          <Link href="/admin/pages/new" className="admin-btn-save">
+          <Link href="/cms/pages/new" className="admin-btn-save">
             {plusIcon}
             New Page
           </Link>

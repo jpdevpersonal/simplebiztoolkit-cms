@@ -42,7 +42,7 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
 
       if (isNew) {
         await clientApi.createCategory(payload);
-        router.push("/admin/categories");
+        router.push("/cms/categories");
         router.refresh();
       } else if (category?.id) {
         await clientApi.updateCategory(category.id, payload);
@@ -67,7 +67,7 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
     try {
       await clientApi.deleteCategory(category!.id);
       setMessage("Category deleted");
-      router.push("/admin/categories");
+      router.push("/cms/categories");
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");

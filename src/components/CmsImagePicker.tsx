@@ -3,6 +3,7 @@
 import React, {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -53,6 +54,7 @@ export default function CmsImagePicker({
   minimumImageDimensions,
   modalAdditionalContent,
 }: CmsImagePickerProps) {
+  const imagePickerId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [images, setImages] = useState<ImageAsset[]>([]);
   const [selectedImage, setSelectedImage] = useState<ImageAsset | null>(null);
@@ -70,6 +72,7 @@ export default function CmsImagePicker({
   const [editCaption, setEditCaption] = useState("");
   const [isUploadSectionExpanded, setIsUploadSectionExpanded] = useState(false);
   const [isEditSectionExpanded, setIsEditSectionExpanded] = useState(false);
+  const [imageSearchTerm, setImageSearchTerm] = useState("");
   const [hoveredImage, setHoveredImage] = useState<ImageAsset | null>(null);
   const [zoomPosition, setZoomPosition] = useState<{
     top: number;
@@ -97,6 +100,7 @@ export default function CmsImagePicker({
 
     setHoveredImage(null);
     setZoomPosition(null);
+    setImageSearchTerm("");
     setIsUploadSectionExpanded(false);
     setIsEditSectionExpanded(false);
     setIsOpen(false);
@@ -212,6 +216,20 @@ export default function CmsImagePicker({
       }),
     [images],
   );
+
+  const filteredLibraryItems = useMemo(() => {
+    const normalizedSearchTerm = imageSearchTerm.trim().toLowerCase();
+
+    if (!normalizedSearchTerm) {
+      return libraryItems;
+    }
+
+    return libraryItems.filter((image) =>
+      [image.blobName, image.altText, image.caption].some((value) =>
+        value?.toLowerCase().includes(normalizedSearchTerm),
+      ),
+    );
+  }, [imageSearchTerm, libraryItems]);
 
   function updateSelection(image: ImageAsset | null) {
     setSelectedImage(image);
@@ -419,6 +437,8 @@ export default function CmsImagePicker({
               src={previewUrl}
               alt=""
               className="cms-image-picker-thumb-image"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <span className="cms-image-picker-thumb-empty">No image</span>
@@ -483,6 +503,8 @@ export default function CmsImagePicker({
                   src={previewUrl}
                   alt={selectedImage?.altText ?? ""}
                   className="cms-image-picker-preview-image"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="cms-image-picker-preview-copy">
                   <div className="cms-image-picker-preview-title">
@@ -505,6 +527,10 @@ export default function CmsImagePicker({
               <h3>Image library</h3>
               {libraryLoading ? (
                 <span className="cms-image-picker-meta-pill">Loading…</span>
+              ) : imageSearchTerm.trim() ? (
+                <span className="cms-image-picker-meta-pill">
+                  {filteredLibraryItems.length} of {libraryItems.length}
+                </span>
               ) : (
                 <span className="cms-image-picker-meta-pill">
                   {libraryItems.length} image
@@ -513,9 +539,37 @@ export default function CmsImagePicker({
               )}
             </div>
 
-            {libraryItems.length > 0 ? (
+            <div className="cms-image-picker-library-toolbar">
+              <label
+                className="visually-hidden"
+                htmlFor={`${imagePickerId}-image-search`}
+              >
+                Search images
+              </label>
+              <input
+                id={`${imagePickerId}-image-search`}
+                className="form-control cms-image-picker-search"
+                value={imageSearchTerm}
+                onChange={(event) => setImageSearchTerm(event.target.value)}
+                placeholder="Search file name, alt text, or caption"
+                disabled={
+                  libraryLoading || disabled || libraryItems.length === 0
+                }
+              />
+              {imageSearchTerm.trim() ? (
+                <button
+                  type="button"
+                  className="admin-btn-action"
+                  onClick={() => setImageSearchTerm("")}
+                >
+                  Clear search
+                </button>
+              ) : null}
+            </div>
+
+            {libraryItems.length > 0 && filteredLibraryItems.length > 0 ? (
               <div className="cms-image-picker-library" role="list">
-                {libraryItems.map((image) => (
+                {filteredLibraryItems.map((image) => (
                   <button
                     key={image.id}
                     type="button"
@@ -524,12 +578,16 @@ export default function CmsImagePicker({
                     onMouseEnter={(e) => handleThumbnailMouseEnter(image, e)}
                     onMouseLeave={handleThumbnailMouseLeave}
                     disabled={disabled}
+                    aria-pressed={selectedImage?.id === image.id}
+                    aria-label={`Select ${image.blobName}`}
                     title={image.blobName}
                   >
                     <img
                       src={image.url}
                       alt={image.altText ?? ""}
                       className="cms-image-picker-library-thumb"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <span className="cms-image-picker-library-name">
                       {image.blobName}
@@ -537,6 +595,10 @@ export default function CmsImagePicker({
                   </button>
                 ))}
               </div>
+            ) : libraryItems.length > 0 ? (
+              <p className="cms-image-picker-empty">
+                No images match that search.
+              </p>
             ) : libraryLoading ? null : (
               <p className="cms-image-picker-empty">No images found yet.</p>
             )}
@@ -578,12 +640,12 @@ export default function CmsImagePicker({
                 <div>
                   <label
                     className="form-label fw-semibold cms-image-picker-label"
-                    htmlFor={`${label}-upload-file`}
+                    htmlFor={`${imagePickerId}-upload-file`}
                   >
                     File
                   </label>
                   <input
-                    id={`${label}-upload-file`}
+                    id={`${imagePickerId}-upload-file`}
                     type="file"
                     className="form-control"
                     accept="image/jpeg,image/png,image/webp"
@@ -596,12 +658,12 @@ export default function CmsImagePicker({
                 <div>
                   <label
                     className="form-label fw-semibold cms-image-picker-label"
-                    htmlFor={`${label}-upload-alt`}
+                    htmlFor={`${imagePickerId}-upload-alt`}
                   >
                     Alt text
                   </label>
                   <input
-                    id={`${label}-upload-alt`}
+                    id={`${imagePickerId}-upload-alt`}
                     className="form-control"
                     value={uploadAltText}
                     onChange={(event) => setUploadAltText(event.target.value)}
@@ -611,12 +673,12 @@ export default function CmsImagePicker({
                 <div>
                   <label
                     className="form-label fw-semibold cms-image-picker-label"
-                    htmlFor={`${label}-upload-caption`}
+                    htmlFor={`${imagePickerId}-upload-caption`}
                   >
                     Caption
                   </label>
                   <input
-                    id={`${label}-upload-caption`}
+                    id={`${imagePickerId}-upload-caption`}
                     className="form-control"
                     value={uploadCaption}
                     onChange={(event) => setUploadCaption(event.target.value)}
@@ -656,12 +718,12 @@ export default function CmsImagePicker({
                 <div>
                   <label
                     className="form-label fw-semibold cms-image-picker-label"
-                    htmlFor={`${label}-edit-alt`}
+                    htmlFor={`${imagePickerId}-edit-alt`}
                   >
                     Alt text
                   </label>
                   <input
-                    id={`${label}-edit-alt`}
+                    id={`${imagePickerId}-edit-alt`}
                     className="form-control"
                     value={editAltText}
                     onChange={(event) => setEditAltText(event.target.value)}
@@ -671,12 +733,12 @@ export default function CmsImagePicker({
                 <div>
                   <label
                     className="form-label fw-semibold cms-image-picker-label"
-                    htmlFor={`${label}-edit-caption`}
+                    htmlFor={`${imagePickerId}-edit-caption`}
                   >
                     Caption
                   </label>
                   <input
-                    id={`${label}-edit-caption`}
+                    id={`${imagePickerId}-edit-caption`}
                     className="form-control"
                     value={editCaption}
                     onChange={(event) => setEditCaption(event.target.value)}
@@ -686,12 +748,12 @@ export default function CmsImagePicker({
                 <div>
                   <label
                     className="form-label fw-semibold cms-image-picker-label"
-                    htmlFor={`${label}-replace-file`}
+                    htmlFor={`${imagePickerId}-replace-file`}
                   >
                     Replace file
                   </label>
                   <input
-                    id={`${label}-replace-file`}
+                    id={`${imagePickerId}-replace-file`}
                     type="file"
                     className="form-control"
                     accept="image/jpeg,image/png,image/webp"

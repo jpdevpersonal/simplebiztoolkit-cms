@@ -10,6 +10,7 @@ import { links } from "@/config/links";
 import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
+  createItemListJsonLd,
   createPageMetadata,
 } from "@/lib/seo";
 import "@/styles/products.css";
@@ -45,11 +46,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!response.data) return {};
 
   const category = response.data;
+  const itemCount = category.items?.length ?? 0;
+  const cleanSummary = (category.summary ?? "").replace(/\s+/g, " ").trim();
 
-  const description = `${category.summary} Browse templates and then checkout securely on Etsy.`;
+  const description = cleanSummary
+    ? `${cleanSummary} Browse ${itemCount > 0 ? `${itemCount} ` : ""}printable ${category.name.toLowerCase()} templates from Simple Biz Toolkit — instant PDF download via Etsy, A4 and US Letter included.`
+    : `Printable ${category.name.toLowerCase()} templates from Simple Biz Toolkit — instant PDF download via Etsy, A4 and US Letter included.`;
 
   return createPageMetadata({
-    title: category.name,
+    title: `${category.name} Templates`,
     description,
     pathname: `/templates/${category.slug}`,
     image: category.heroImage || undefined,
@@ -69,7 +74,7 @@ export default async function CategoryPage({ params }: Props) {
   const category = response.data;
 
   const jsonLd = createCollectionPageJsonLd({
-    name: category.name,
+    name: `${category.name} Templates`,
     description: category.summary,
     href: `/templates/${category.slug}`,
   });
@@ -80,10 +85,21 @@ export default async function CategoryPage({ params }: Props) {
     { name: category.name, href: `/templates/${category.slug}` },
   ]);
 
+  const items = category.items ?? [];
+  const itemListJsonLd = createItemListJsonLd({
+    name: `${category.name} templates`,
+    items: items.map((item) => ({
+      name: item.title,
+      href: `/templates/${category.slug}/${item.slug}`,
+      image: item.image,
+    })),
+  });
+
   return (
     <>
       <JsonLd json={jsonLd} />
       <JsonLd json={breadcrumbJsonLd} />
+      <JsonLd json={itemListJsonLd} />
 
       <section className="sb-section">
         <div className="container">
@@ -124,7 +140,7 @@ export default async function CategoryPage({ params }: Props) {
                 <div className="sb-card p-3">
                   <Image
                     src={category.heroImage}
-                    alt=""
+                    alt={`${category.name} printable templates preview`}
                     className="img-fluid rounded-4"
                     width={900}
                     height={630}

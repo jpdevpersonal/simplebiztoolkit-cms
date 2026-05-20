@@ -13,6 +13,7 @@ import {
   sendHttpRequest,
   unwrapDataEnvelope,
 } from "@/lib/httpTransport";
+import { CMS_LOGIN_PATH, toCmsPath } from "@/lib/adminRoutes";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 type ApiScope = "public" | "admin";
@@ -79,8 +80,10 @@ function isExpired(expiresAtUtc?: string | null): boolean {
 function redirectToLogin(): void {
   if (typeof window === "undefined") return;
 
-  const callbackUrl = `${window.location.pathname}${window.location.search}`;
-  const loginUrl = `/admin/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  const callbackUrl = toCmsPath(
+    `${window.location.pathname}${window.location.search}`,
+  );
+  const loginUrl = `${CMS_LOGIN_PATH}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
   window.location.assign(loginUrl);
 }
 

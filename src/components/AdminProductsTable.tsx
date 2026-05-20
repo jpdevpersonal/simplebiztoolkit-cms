@@ -229,7 +229,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
                 </td>
                 <td className="admin-cell-actions" data-label="Actions">
                   <Link
-                    href={`/admin/templates/${product.id}/edit`}
+                    href={`/cms/templates/${product.id}/edit`}
                     className="admin-btn-action"
                   >
                     Edit

@@ -30,8 +30,8 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
     0,
   );
   const breadcrumbItems = [
-    { href: "/admin/menu", label: "Menu Items" },
-    { href: `/admin/menu/${menuItemId}/edit`, label: menuItem.title },
+    { href: "/cms/menu", label: "Menu Items" },
+    { href: `/cms/menu/${menuItemId}/edit`, label: menuItem.title },
   ];
 
   return (
@@ -43,7 +43,7 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
           <h1>Topics</h1>
         </div>
         <Link
-          href={`/admin/menu/${menuItemId}/categories/new`}
+          href={`/cms/menu/${menuItemId}/categories/new`}
           className="admin-btn-save"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -120,13 +120,13 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
                 <td>
                   <div style={{ display: "flex", gap: "0.4rem" }}>
                     <Link
-                      href={`/admin/menu/categories/${cat.id}/edit`}
+                      href={`/cms/menu/categories/${cat.id}/edit`}
                       className="admin-btn-action"
                     >
                       Pages
                     </Link>
                     <Link
-                      href={`/admin/menu/categories/${cat.id}/edit`}
+                      href={`/cms/menu/categories/${cat.id}/edit`}
                       className="admin-btn-action"
                     >
                       Edit

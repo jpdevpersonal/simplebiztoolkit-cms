@@ -31,8 +31,8 @@ describe("AdminPagesTable", () => {
     expect(screen.getByText("Zebra Page")).toBeTruthy();
 
     const editLinks = screen.getAllByRole("link", { name: "Edit" });
-    expect(editLinks[0]?.getAttribute("href")).toBe("/admin/pages/p-1/edit");
-    expect(editLinks[1]?.getAttribute("href")).toBe("/admin/pages/p-2/edit");
+    expect(editLinks[0]?.getAttribute("href")).toBe("/cms/pages/p-1/edit");
+    expect(editLinks[1]?.getAttribute("href")).toBe("/cms/pages/p-2/edit");
   });
 
   it("sorts by title desc when Title header is clicked", () => {

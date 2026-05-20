@@ -15,7 +15,7 @@ type Props = {
 export default async function NewPageAdminPage({ searchParams }: Props) {
   const { menuItemId, categoryId } = await searchParams;
   const { service } = await getAdminApiService();
-  const breadcrumbItems = [{ href: "/admin/pages", label: "Pages" }];
+  const breadcrumbItems = [{ href: "/cms/pages", label: "Pages" }];
 
   const menuRes = await service.getMenuItems();
   const menuItems = menuRes.data || [];

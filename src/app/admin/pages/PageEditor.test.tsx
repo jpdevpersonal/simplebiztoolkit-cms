@@ -245,7 +245,7 @@ describe("PageEditor", () => {
         menuItemId: undefined,
       }),
     );
-    expect(routerPush).toHaveBeenCalledWith("/admin/pages");
+    expect(routerPush).toHaveBeenCalledWith("/cms/pages");
     expect(routerRefresh).toHaveBeenCalled();
   });
 

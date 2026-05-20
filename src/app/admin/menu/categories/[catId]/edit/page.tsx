@@ -27,8 +27,8 @@ export default async function EditMenuCategoryPage({ params }: Props) {
   const category = catResponse.data;
   const pages = pagesResponse.data || [];
   const breadcrumbItems = [
-    { href: "/admin/menu", label: "Menu Items" },
-    { href: `/admin/menu/${category.menuItemId}/edit`, label: "Menu Item" },
+    { href: "/cms/menu", label: "Menu Items" },
+    { href: `/cms/menu/${category.menuItemId}/edit`, label: "Menu Item" },
   ];
 
   const plusIcon = (
@@ -81,7 +81,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
           Pages in this Topic
         </h2>
         <Link
-          href={`/admin/pages/new?menuItemId=${category.menuItemId}&categoryId=${catId}`}
+          href={`/cms/pages/new?menuItemId=${category.menuItemId}&categoryId=${catId}`}
           className="admin-btn-save"
         >
           {plusIcon}
@@ -137,7 +137,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
                 <td>
                   <div style={{ display: "flex", gap: "0.4rem" }}>
                     <Link
-                      href={`/admin/pages/${page.id}/edit`}
+                      href={`/cms/pages/${page.id}/edit`}
                       className="admin-btn-action"
                     >
                       Edit

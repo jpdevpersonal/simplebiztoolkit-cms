@@ -6,7 +6,7 @@ import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import MenuItemEditor from "@/components/MenuItemEditor";
 
 export default function NewMenuItemPage() {
-  const breadcrumbItems = [{ href: "/admin/menu", label: "Menu Items" }];
+  const breadcrumbItems = [{ href: "/cms/menu", label: "Menu Items" }];
 
   return (
     <div>

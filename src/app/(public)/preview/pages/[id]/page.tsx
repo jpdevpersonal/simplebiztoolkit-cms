@@ -23,7 +23,7 @@ export default async function PagePreview({ params }: Props) {
   const { service, session } = await getAdminApiService();
 
   if (!session) {
-    redirect("/admin/login");
+    redirect("/cms/login");
   }
 
   const pageResponse = await service.getMenuItemPageById(id);

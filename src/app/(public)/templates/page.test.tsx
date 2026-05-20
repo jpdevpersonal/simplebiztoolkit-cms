@@ -22,7 +22,10 @@ describe("Templates page", () => {
     render(await ProductsPage());
 
     expect(
-      screen.getByRole("heading", { name: "Template Categories" }),
+      screen.getByRole("heading", {
+        name: "Printable small business templates",
+        level: 1,
+      }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: /Browse templates/i }),
@@ -44,7 +47,10 @@ describe("Templates page", () => {
     render(await ProductsPage());
 
     expect(
-      screen.getByRole("heading", { name: "Template Categories" }),
+      screen.getByRole("heading", {
+        name: "Printable small business templates",
+        level: 1,
+      }),
     ).toBeInTheDocument();
     expect(screen.getByText("Accounting Ledger")).toBeInTheDocument();
     expect(screen.getByText("Track your transactions")).toBeInTheDocument();
@@ -60,8 +66,13 @@ describe("Templates page", () => {
     render(await ProductsPage());
 
     expect(
-      screen.getByRole("heading", { name: "Template Categories" }),
+      screen.getByRole("heading", {
+        name: "Printable small business templates",
+        level: 1,
+      }),
     ).toBeInTheDocument();
-    expect(screen.queryAllByRole("link")).toHaveLength(0);
+    expect(
+      screen.queryByRole("link", { name: /Browse templates/i }),
+    ).not.toBeInTheDocument();
   });
 });
