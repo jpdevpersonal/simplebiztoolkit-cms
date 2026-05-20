@@ -564,8 +564,20 @@
   margin: 0;
 }
 
+.product-detail-section-title {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--sb-ink);
+  margin: 0;
+}
+
 @media (max-width: 991px) {
   .product-detail-title {
+    font-size: clamp(1.25rem, 4vw, 1.5rem);
+  }
+
+  .product-detail-section-title {
     font-size: clamp(1.25rem, 4vw, 1.5rem);
   }
 
@@ -691,16 +703,6 @@
   border: 1px solid var(--sb-border);
   border-left: 4px solid var(--sb-brand-blue);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.product-detail-problem h2 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--sb-ink);
-  margin: 0 0 0.75rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 0.875rem;
 }
 
 .product-detail-problem p {
@@ -965,6 +967,13 @@
   gap: 1.25rem;
 }
 
+.product-description-content p {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--sb-ink);
+}
+
 .related-links-block {
   --related-links-image-base-size: 72px;
   --related-links-image-scale: 1;
@@ -1086,7 +1095,7 @@
 
 /* First paragraph gets special emphasis */
 .product-description-intro {
-  font-size: 1.0625rem;
+  font-size: 1.125rem;
   font-weight: 500;
   line-height: 1.7;
   color: var(--sb-ink);
@@ -1095,7 +1104,7 @@
 
 /* Regular paragraphs */
 .product-description-paragraph {
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.7;
   color: var(--sb-ink);
   margin: 0;
@@ -1165,13 +1174,18 @@
 
 /* Responsive adjustments */
 @media (min-width: 768px) {
-  .product-description-intro {
+  .product-description-content p {
     font-size: 1.125rem;
+    line-height: 1.8;
+  }
+
+  .product-description-intro {
+    font-size: 1.1875rem;
     line-height: 1.75;
   }
 
   .product-description-paragraph {
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
     line-height: 1.75;
   }
 
@@ -1185,11 +1199,10 @@
 }
 
 /* =============================================
-   Product Detail – How-to & FAQ cards
+  Product Detail – How-to card
    ============================================= */
 
-.template-howto-card,
-.template-faq-card {
+.template-howto-card {
   position: relative;
   background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
   border: 1px solid var(--sb-border);
@@ -1197,8 +1210,7 @@
   overflow: hidden;
 }
 
-.template-howto-card::before,
-.template-faq-card::before {
+.template-howto-card::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1220,29 +1232,11 @@
   margin-top: 0.5rem;
 }
 
-.template-faq-card {
-  padding: 1.25rem 1.5rem 1.25rem 2rem;
-  margin-bottom: 0.875rem;
-}
-
-.template-faq-card[open] {
-  background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
-}
-
-.template-faq-card > summary {
-  list-style: none;
-}
-
-.template-faq-card > summary::-webkit-details-marker {
-  display: none;
-}
-
 /* Description placed beneath the two-column hero (full width on desktop) */
 .product-detail-problem-title {
-  font-size: 0.875rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 1rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.01em;
   color: var(--sb-ink);
 }

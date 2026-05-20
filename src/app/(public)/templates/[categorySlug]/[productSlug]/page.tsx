@@ -7,7 +7,6 @@ import ProductDetailClient from "./ProductDetailClient";
 import { apiService } from "@/lib/api";
 import {
   createBreadcrumbJsonLd,
-  createFaqJsonLd,
   createHowToJsonLd,
   createPageMetadata,
   createProductJsonLd,
@@ -61,45 +60,6 @@ function buildHowToSteps(format: TemplateFormat) {
   });
 
   return steps;
-}
-
-/**
- * Generic product-level FAQs. These supplement the global FAQ but are
- * surfaced per-product so the FAQPage JSON-LD is co-located with the product
- * — a strong AI-citation signal.
- */
-function getProductFaqItems(productTitle: string, format: TemplateFormat) {
-  const formatQuestion =
-    format === "fillable"
-      ? {
-          question: "Can I type into the PDF on my computer?",
-          answer:
-            "Yes — this template is fillable. Type directly into the PDF fields using Adobe Acrobat Reader, your web browser (Chrome, Edge, Safari or Firefox) or Apple Preview, then save or print your filled copy. You can also print the blank template and complete it by hand if you prefer.",
-        }
-      : {
-          question: "Is this template fillable on a computer?",
-          answer:
-            "No — this is a print-and-write template, designed to be printed on A4 or US Letter paper and completed by hand. It does not contain editable form fields. If you'd like a fillable PDF version, check our other listings for the same template marked 'fillable'.",
-        };
-
-  return [
-    {
-      question: `How do I receive the ${productTitle} after purchase?`,
-      answer:
-        "Etsy delivers the files instantly after checkout. Find the Download Files button on your Etsy Purchases and Reviews page; most customers download and print within a minute or two.",
-    },
-    {
-      question: "What paper sizes does it support?",
-      answer:
-        "Both A4 and US Letter sizes are included. Choose the appropriate size at print time — no separate purchase needed.",
-    },
-    formatQuestion,
-    {
-      question: "Is there a refund policy?",
-      answer:
-        "Because the templates are delivered instantly as digital files, all sales are final per Etsy's policy. If you receive the wrong file or there's a problem with the download, message us through Etsy and we'll fix it.",
-    },
-  ];
 }
 
 /**
@@ -231,15 +191,11 @@ export default async function ProductDetailPage({ params }: Props) {
     steps: howToSteps,
   });
 
-  const faqItems = getProductFaqItems(product.title, templateFormat);
-  const faqJsonLd = createFaqJsonLd(faqItems);
-
   return (
     <>
       <JsonLd json={jsonLd} />
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={howToJsonLd} />
-      <JsonLd json={faqJsonLd} />
 
       <section className="sb-section">
         <div className="container">
@@ -265,7 +221,8 @@ export default async function ProductDetailPage({ params }: Props) {
           >
             <h2
               id="sb-howto-heading"
-              style={{ fontWeight: 700, marginBottom: "1.25rem" }}
+              className="product-detail-section-title"
+              style={{ marginBottom: "1.25rem" }}
             >
               How to use the {product.title}
             </h2>
@@ -282,37 +239,6 @@ export default async function ProductDetailPage({ params }: Props) {
                 </li>
               ))}
             </ol>
-          </section>
-
-          {/* Product FAQ block (FAQPage JSON-LD already emitted above) */}
-          <section
-            className="sb-section"
-            aria-labelledby="sb-product-faq-heading"
-            style={{ paddingTop: "1.5rem" }}
-          >
-            <h2
-              id="sb-product-faq-heading"
-              style={{ fontWeight: 700, marginBottom: "1.25rem" }}
-            >
-              Frequently asked questions
-            </h2>
-            {faqItems.map((item) => (
-              <details
-                key={item.question}
-                className="sb-card template-faq-card"
-              >
-                <summary
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                  }}
-                >
-                  {item.question}
-                </summary>
-                <p className="sb-muted mb-0 mt-2">{item.answer}</p>
-              </details>
-            ))}
           </section>
 
           <SiteBreadcrumb
