@@ -14,42 +14,69 @@ import EtsyCtaButton from "@/components/EtsyCtaButton";
 import { featuredProducts } from "@/data/featured";
 import { links } from "@/config/links";
 import { featureFlags } from "@/config/featureFlags";
+import { createFaqJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Essential Templates & Tools for Small Business Owners",
+  title:
+    "Printable Small Business Templates & Toolkits | Invoices, Time Sheets, Ledgers",
   description:
-    "Trusted printable templates and tools that save time and reduce admin for your small business. Run your business smarter with our guides, then shop securely on Etsy.",
+    "Printable templates for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, accounting ledgers, rent trackers and planners — instant PDF downloads via Etsy. 5.0 rated Etsy Star Seller with 3,500+ sales.",
   alternates: { canonical: "/" },
   openGraph: {
-    title:
-      "Simple Biz Toolkit | Essential Templates & Tools for Small Business Owners",
+    title: "Printable Small Business Templates & Toolkits | Simple Biz Toolkit",
     description:
-      "Trust-first templates and toolkits that save time and reduce admin. Shop securely on Etsy.",
+      "Printable invoices, time sheets, ledgers and planners for small business owners, freelancers and online sellers. Instant downloads via Etsy.",
     url: "/",
   },
 };
+
+const homeFaqItems = [
+  {
+    question: "Who are these templates for?",
+    answer:
+      "Simple Biz Toolkit templates are designed for small business owners, online sellers (Etsy, eBay, Shopify), freelancers, landlords, and anyone who needs a clear, printable system to run their business without subscription software. The same template typically works for both digital fill-in (Adobe Reader, GoodNotes, or your browser) and printing on A4 or US Letter paper.",
+  },
+  {
+    question: "How do I receive my templates?",
+    answer:
+      "Every template is an instant digital download delivered through Etsy. After checkout you'll find a Download Files button under your Etsy Purchases and Reviews page. There is no shipping wait — most customers print or open their first copy within a few minutes of buying.",
+  },
+  {
+    question: "Are the templates printable and editable?",
+    answer:
+      "All templates are designed for clean printing on A4 and US Letter paper. Fillable PDF versions can be typed into using your browser, Adobe Acrobat Reader, or Apple Preview before printing. Printable-only versions are intended to be printed first and then completed by hand.",
+  },
+  {
+    question: "What software do I need?",
+    answer:
+      "A free PDF reader such as Adobe Acrobat Reader, your web browser (Chrome, Edge, Safari, Firefox), or Apple Preview is enough. No subscription, account or special software is required to use the templates.",
+  },
+  {
+    question: "Do you offer refunds on digital downloads?",
+    answer:
+      "Because the templates are delivered immediately as digital downloads, Etsy's standard policy is that all sales are final. If you have a problem with a file or the wrong template was supplied, message us through Etsy and we will fix it or refund you.",
+  },
+  {
+    question: "Why buy a printable template instead of using software?",
+    answer:
+      "Printable templates have no monthly fee, no learning curve and no data lock-in. They suit small businesses, side hustles and landlords who want a quick, paper-friendly system for tracking income, expenses, hours, invoices and payments without committing to a SaaS tool.",
+  },
+];
 
 export default function HomePage() {
   const trust = [
     "Five Star Etsy rating",
     "Etsy Star Seller!",
-    "Over 3500 sales",
+    "Over 3800 sales",
     "Secure checkout via Etsy",
     "Excellent service & support",
   ];
 
-  const orgJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Simple Biz Toolkit",
-    url: "https://www.simplebiztoolkit.com",
-    logo: "https://www.simplebiztoolkit.com/images/simple-biz-toolkit-logo.png",
-    sameAs: [links.etsyShopUrl],
-  };
+  const homeFaqJsonLd = createFaqJsonLd(homeFaqItems);
 
   return (
     <>
-      <JsonLd json={orgJsonLd} />
+      <JsonLd json={homeFaqJsonLd} />
 
       {/* ====== HERO ====== */}
       <section className="sb-hero">
@@ -77,19 +104,20 @@ export default function HomePage() {
             {/* Eyebrow trust pill */}
             <span className="sb-hero-eyebrow">
               <span className="sb-hero-eyebrow-dot" aria-hidden="true" />
-              Trusted by 3,500+ small business owners
+              Trusted by 3,800+ small business owners
             </span>
 
             <h1 className="sb-hero-title">
-              Run your business smarter with templates
+              Printable small business templates
               <br />
-              <em>that work for you</em>
+              <em>that just work</em>
             </h1>
 
-            <p className="sb-hero-subtitle">
-              Ready-to-use, printable downloads designed for small business
-              owners. Cut admin time, stay organised, and get back to doing what
-              you love.
+            <p className="sb-hero-subtitle sb-speakable">
+              Instant-download invoices, time sheets, accounting ledgers, rent
+              trackers and planners for small business owners, online sellers,
+              freelancers and landlords. Print on A4 or US Letter, or fill in
+              digitally — no software subscription needed.
             </p>
 
             <div className="sb-hero-stars" aria-label="Five star rated on Etsy">
@@ -97,7 +125,7 @@ export default function HomePage() {
                 ★★★★★
               </span>
               <span className="sb-hero-stars-label">
-                <strong>5.0</strong> &middot; 3,700+ five-star reviews on Etsy
+                <strong>5.0</strong> &middot; 3,800+ five-star reviews on Etsy
               </span>
             </div>
 
@@ -172,7 +200,7 @@ export default function HomePage() {
           <div className="container">
             <div className="sb-hero-stats-grid">
               <div className="sb-hero-stat">
-                <span className="sb-hero-stat-value">3,500+</span>
+                <span className="sb-hero-stat-value">3,800+</span>
                 <span className="sb-hero-stat-label">Happy customers</span>
               </div>
               <div className="sb-hero-stat-divider" aria-hidden="true" />
@@ -341,6 +369,127 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* ====== WHAT IS SIMPLE BIZ TOOLKIT ====== */}
+      <section className="sb-section" aria-labelledby="sb-about-heading">
+        <div className="container">
+          <div style={{ maxWidth: 880, margin: "0 auto" }}>
+            <span className="sb-section-eyebrow">About</span>
+            <h2 id="sb-about-heading" style={{ fontWeight: 700 }}>
+              What is Simple Biz Toolkit?
+            </h2>
+            <p className="sb-muted">
+              Simple Biz Toolkit provides practical business tools and
+              ready-to-use templates designed to help small business owners and
+              online sellers stay organised and save time. Trusted by over 3,500
+              customers worldwide, with a 5.0 average rating and Etsy Star
+              Seller status, we focus on creating simple solutions that make
+              everyday business tasks easier.
+            </p>
+            <p className="sb-muted mb-0">
+              Our collection includes printable PDFs, fillable PDFs, and
+              easy-to-use business tools covering accounting ledgers, invoices,
+              estimates and quotes, timesheets, rent payment records, expense
+              trackers, petty cash logs, sign-in sheets, meeting notes, order
+              forms, business trackers, and service records. Everything is
+              designed to be straightforward, reusable, and available instantly.
+              We help business owners spend less time managing paperwork and
+              more time running their business.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ====== WHO IT'S FOR ====== */}
+      <section
+        className="sb-section sb-section-alt"
+        aria-labelledby="sb-personas-heading"
+      >
+        <div className="container">
+          <div className="text-center mb-4">
+            <span className="sb-section-eyebrow">Who it&apos;s for</span>
+            <h2 id="sb-personas-heading" style={{ fontWeight: 700 }}>
+              Built for the people running the business
+            </h2>
+            <p className="sb-muted" style={{ maxWidth: 600, margin: "0 auto" }}>
+              Our customers tell us they reach for a printable template when
+              software feels like overkill. Here&apos;s who that usually is.
+            </p>
+          </div>
+
+          <div className="row g-3">
+            <div className="col-md-6 col-lg-3">
+              <div className="sb-card p-3 h-100">
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.0625rem",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  Small business owners
+                </h3>
+                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                  Track income, expenses and invoices on paper or PDF — without
+                  paying for accounting software you only half-use.
+                </p>
+              </div>
+            </div>
+            <div className="col-md-6 col-lg-3">
+              <div className="sb-card p-3 h-100">
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.0625rem",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  Online sellers
+                </h3>
+                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                  Etsy, eBay and Shopify sellers use our order forms, profit
+                  trackers and ledgers to stay on top of fees, shipping costs
+                  and monthly margins.
+                </p>
+              </div>
+            </div>
+            <div className="col-md-6 col-lg-3">
+              <div className="sb-card p-3 h-100">
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.0625rem",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  Freelancers &amp; solopreneurs
+                </h3>
+                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                  Send estimates, log time sheets and produce simple invoices
+                  without rebuilding a document for every client.
+                </p>
+              </div>
+            </div>
+            <div className="col-md-6 col-lg-3">
+              <div className="sb-card p-3 h-100">
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.0625rem",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  Landlords &amp; managers
+                </h3>
+                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                  Rent payment ledgers, attendance records and sign-in sheets
+                  for properties, clubs, schools, salons and small teams.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ====== POPULAR PRODUCTS ====== */}
       <section className="sb-section sb-products-section">
@@ -514,6 +663,139 @@ export default function HomePage() {
 
           <div className="text-center mt-4">
             <EtsyCtaButton label="Browse the full shop" />
+          </div>
+        </div>
+      </section>
+
+      {/* ====== POPULAR CATEGORIES (internal linking) ====== */}
+      <section
+        className="sb-section sb-section-alt"
+        aria-labelledby="sb-categories-heading"
+      >
+        <div className="container">
+          <div className="text-center mb-4">
+            <span className="sb-section-eyebrow">Browse by need</span>
+            <h2 id="sb-categories-heading" style={{ fontWeight: 700 }}>
+              Popular template categories
+            </h2>
+            <p className="sb-muted" style={{ maxWidth: 600, margin: "0 auto" }}>
+              Jump straight to the workflow you need. Every category includes
+              both A4 and US Letter formats.
+            </p>
+          </div>
+          <div className="row g-3">
+            {[
+              {
+                href: "/templates/accounting-ledger",
+                title: "Accounting ledger templates",
+                blurb:
+                  "Track income, expenses and running balances on printable monthly or yearly sheets.",
+              },
+              {
+                href: "/templates/invoices",
+                title: "Invoice templates",
+                blurb:
+                  "Send clean, professional invoices in minutes — printable and fillable PDF options.",
+              },
+              {
+                href: "/templates/estimates",
+                title: "Estimate &amp; quote templates",
+                blurb:
+                  "Quick fillable PDF quotes for service businesses, freelancers and contractors.",
+              },
+              {
+                href: "/templates/time-sheet",
+                title: "Time sheet templates",
+                blurb:
+                  "Weekly, bi-weekly and monthly time tracking for employees and contractors.",
+              },
+              {
+                href: "/templates/rent-payment-ledger",
+                title: "Rent payment ledgers",
+                blurb:
+                  "Track rent received, late payments and balances per tenant or unit.",
+              },
+              {
+                href: "/templates/expense-and-spending",
+                title: "Expense &amp; spending trackers",
+                blurb:
+                  "Simple expense logs for budgeting, tax prep and household or business spending.",
+              },
+              {
+                href: "/templates/payment-tracker",
+                title: "Payment trackers",
+                blurb:
+                  "Log who paid, when and how — perfect for clients on instalment plans.",
+              },
+              {
+                href: "/templates/order-forms-and-trackers",
+                title: "Order forms &amp; trackers",
+                blurb:
+                  "Take, fulfil and track orders for handmade, print-on-demand and small e-commerce shops.",
+              },
+            ].map((cat) => (
+              <div className="col-md-6 col-lg-3" key={cat.href}>
+                <Link
+                  href={cat.href}
+                  className="sb-content-link d-block h-100 text-reset text-decoration-none"
+                >
+                  <article className="sb-card p-3 h-100">
+                    <h3
+                      style={{
+                        fontWeight: 700,
+                        fontSize: "1.0625rem",
+                        marginBottom: "0.35rem",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: cat.title }}
+                    />
+                    <p
+                      className="sb-muted mb-0"
+                      style={{ fontSize: "0.9375rem" }}
+                    >
+                      {cat.blurb}
+                    </p>
+                  </article>
+                </Link>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-4">
+            <Link href="/templates" className="btn sb-btn-ghost">
+              See all template categories
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ====== FAQ (Schema-rich) ====== */}
+      <section className="sb-section" aria-labelledby="sb-home-faq-heading">
+        <div className="container">
+          <div className="text-center mb-4">
+            <span className="sb-section-eyebrow">Common questions</span>
+            <h2 id="sb-home-faq-heading" style={{ fontWeight: 700 }}>
+              Frequently asked questions
+            </h2>
+          </div>
+          <div style={{ maxWidth: 880, margin: "0 auto" }}>
+            {homeFaqItems.map((item) => (
+              <details key={item.question} className="sb-card p-3 mb-2">
+                <summary
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  {item.question}
+                </summary>
+                <p className="sb-muted mb-0 mt-2">{item.answer}</p>
+              </details>
+            ))}
+            <div className="text-center mt-3">
+              <Link href="/faq" className="btn sb-btn-ghost">
+                See all FAQs
+              </Link>
+            </div>
           </div>
         </div>
       </section>

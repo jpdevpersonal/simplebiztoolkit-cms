@@ -101,15 +101,22 @@ async function injectLCPObserver(page: Page): Promise<void> {
 
 /**
  * Read the most-recent LCP value written by the observer.
- * Call after waitForLoadState("networkidle") and a brief settle pause.
+ * Call after image readiness and a brief settle pause.
  */
 async function getLCP(page: Page): Promise<number> {
-  // 500 ms settle after networkidle to allow the final LCP entry to be emitted
+  // 500 ms settle after image readiness to allow the final LCP entry to be emitted
   await page.waitForTimeout(500);
   return page.evaluate(() => {
     const val = (window as unknown as { __lcpValue?: number }).__lcpValue;
     return typeof val === "number" ? val : 0;
   });
+}
+
+async function waitForImagesToSettle(page: Page): Promise<void> {
+  await page.waitForLoadState("domcontentloaded");
+  await page.waitForFunction(() =>
+    Array.from(document.images).every((img) => img.complete),
+  );
 }
 
 interface ImageInfo {
@@ -147,7 +154,7 @@ async function getAllImages(page: Page): Promise<ImageInfo[]> {
 test.describe("Image integrity (unthrottled)", () => {
   test("home page – all images decoded", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     expect(
@@ -167,7 +174,7 @@ test.describe("Image integrity (unthrottled)", () => {
   test("home page – LCP within unthrottled threshold", async ({ page }) => {
     await injectLCPObserver(page);
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const lcp = await getLCP(page);
     test.info().annotations.push({
@@ -189,7 +196,7 @@ test.describe("Image integrity (unthrottled)", () => {
 
     await injectLCPObserver(page);
     await page.goto("/templates");
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const lcp = await getLCP(page);
     test.info().annotations.push({
@@ -204,7 +211,7 @@ test.describe("Image integrity (unthrottled)", () => {
     test.skip(!available, API_SKIP_MESSAGE);
 
     await page.goto("/templates");
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -221,7 +228,7 @@ test.describe("Image integrity (unthrottled)", () => {
     test.skip(!available, API_SKIP_MESSAGE);
 
     await page.goto(`/templates/${KNOWN_CATEGORY_SLUG}`);
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -241,7 +248,7 @@ test.describe("Image integrity (unthrottled)", () => {
     test.skip(!available, API_SKIP_MESSAGE);
 
     await page.goto(`/templates/${KNOWN_CATEGORY_SLUG}/${KNOWN_PRODUCT_SLUG}`);
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -255,7 +262,7 @@ test.describe("Image integrity (unthrottled)", () => {
 
   test("article page – all images decoded", async ({ page }) => {
     await page.goto(`/${KNOWN_ARTICLE_SLUG}`);
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -272,7 +279,7 @@ test.describe("Image integrity (unthrottled)", () => {
     test.skip(!available, API_SKIP_MESSAGE);
 
     await page.goto(`/pages/${KNOWN_PAGES_SLUG}`);
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -353,7 +360,7 @@ test.describe("Image integrity – dynamically discovered pages", () => {
     test.skip(!apiOnline || !discoveredCategorySlug, API_SKIP_MESSAGE);
 
     await page.goto(`/templates/${discoveredCategorySlug}`);
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -374,7 +381,7 @@ test.describe("Image integrity – dynamically discovered pages", () => {
     await page.goto(
       `/templates/${discoveredCategorySlug}/${discoveredProductSlug}`,
     );
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(
@@ -390,7 +397,7 @@ test.describe("Image integrity – dynamically discovered pages", () => {
     test.skip(!apiOnline || !discoveredMenuItemSlug, API_SKIP_MESSAGE);
 
     await page.goto(`/pages/${discoveredMenuItemSlug}`);
-    await page.waitForLoadState("networkidle");
+    await waitForImagesToSettle(page);
 
     const images = await getAllImages(page);
     const broken = images.filter(

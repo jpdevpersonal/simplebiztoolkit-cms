@@ -9,9 +9,9 @@ import { ContentRenderer } from "@/components/ContentRenderer";
 import { apiService } from "@/lib/api";
 import { getPublishedMenuItems } from "@/lib/menuContent";
 import {
+  createArticleJsonLd,
   createBreadcrumbJsonLd,
   createPageMetadata,
-  createWebPageJsonLd,
   normalizePublicUrl,
 } from "@/lib/seo";
 import "@/styles/contentPage.css";
@@ -157,15 +157,30 @@ export default async function MenuItemPageView({ params }: Props) {
 
   breadcrumbItems.push({ name: page.title, href: `/${page.slug}` });
 
-  const pageJsonLd = createWebPageJsonLd({
-    name: page.title,
-    description: page.description,
-    href: `/${page.slug}`,
+  const pageJsonLd = createArticleJsonLd({
+    headline: page.title,
+    description: page.seoDescription ?? page.description,
+    href: page.canonicalUrl ?? `/${page.slug}`,
     datePublished: page.dateISO,
     dateModified: page.dateModified,
-    image: headerImage,
+    image: headerImage ?? normalizePublicUrl(page.featuredImage),
+    wordCount: page.content
+      ? page.content
+          .replace(/<[^>]+>/g, " ")
+          .trim()
+          .split(/\s+/).length
+      : undefined,
   });
   const breadcrumbJsonLd = createBreadcrumbJsonLd(breadcrumbItems);
+
+  const lastUpdatedDate = page.dateModified ?? page.dateISO;
+  const lastUpdatedLabel = lastUpdatedDate
+    ? new Date(lastUpdatedDate).toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
 
   return (
     <>
@@ -178,6 +193,17 @@ export default async function MenuItemPageView({ params }: Props) {
         <header className="content-header">
           <h1 className="content-title">{page.title}</h1>
           {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
+          {lastUpdatedLabel && (
+            <p
+              className="sb-muted"
+              style={{ fontSize: "0.9rem", marginTop: "0.25rem" }}
+            >
+              <time dateTime={lastUpdatedDate ?? undefined}>
+                Last updated {lastUpdatedLabel}
+              </time>
+              {" · "}By Simple Biz Toolkit
+            </p>
+          )}
         </header>
 
         {/* Header image */}

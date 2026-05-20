@@ -6,7 +6,7 @@ type TestimonialGridProps = {
   count?: number;
 };
 
-function StarRating() {
+function StarRating({ stars }: { stars: string }) {
   return (
     <div
       style={{
@@ -16,9 +16,9 @@ function StarRating() {
         color: "#f59e0b",
         fontSize: "0.875rem",
       }}
-      aria-label="5 star rating"
+      aria-label={`${stars.length} star rating`}
     >
-      {"★★★★★".split("").map((star, i) => (
+      {stars.split("").map((star, i) => (
         <span key={i}>{star}</span>
       ))}
     </div>
@@ -75,7 +75,7 @@ export default function TestimonialGrid({ count }: TestimonialGridProps) {
         }}
         aria-hidden="true"
       />
-      <StarRating />
+      <StarRating stars={t.quote.match(/^[⭐★]+/)?.[0] ?? "⭐⭐⭐⭐⭐"} />
       <p
         style={{
           fontWeight: 500,
@@ -87,7 +87,7 @@ export default function TestimonialGrid({ count }: TestimonialGridProps) {
           color: "var(--sb-ink)",
         }}
       >
-        &ldquo;{t.quote}&rdquo;
+        &ldquo;{t.quote.replace(/^[⭐★\s]+/, "")}&rdquo;
       </p>
       <div
         style={{
