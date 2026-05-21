@@ -136,4 +136,132 @@ describe("POST /api/revalidate", () => {
       "page",
     );
   });
+
+  it("handles legacy category type with slug – adds a category-specific tag", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({ type: "category", slug: "spreadsheets" }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.mode).toBe("legacy");
+    expect(cacheMocks.revalidateTag).toHaveBeenCalledWith("products");
+    expect(cacheMocks.revalidateTag).toHaveBeenCalledWith(
+      "category-spreadsheets",
+    );
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith("/templates");
+  });
+
+  it("handles legacy category type without slug – only invalidates products tag", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({ type: "category" }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.tags).toEqual(["products"]);
+    expect(cacheMocks.revalidateTag).toHaveBeenCalledOnce();
+    expect(cacheMocks.revalidateTag).toHaveBeenCalledWith("products");
+  });
+
+  it("handles legacy page type with slug and previousSlug – deduplicates path targets", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({
+        type: "page",
+        slug: "my-guide",
+        previousSlug: "old-guide",
+      }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.mode).toBe("legacy");
+    expect(json.paths).toContain("/my-guide");
+    expect(json.paths).toContain("/old-guide");
+    expect(json.tags).toContain("page-my-guide");
+    expect(json.tags).toContain("page-old-guide");
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith("/pages");
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith(
+      "/pages/[menuItemSlug]",
+      "page",
+    );
+  });
+
+  it("handles legacy page type with same slug and previousSlug – deduplicates to one path", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({
+        type: "page",
+        slug: "my-guide",
+        previousSlug: "my-guide",
+      }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    const slugPaths = json.paths.filter((p: string) => p === "/my-guide");
+    expect(slugPaths).toHaveLength(1);
+    expect(json.tags).toEqual(["page-my-guide"]);
+  });
+
+  it("handles legacy all type – revalidates all known path groups", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({ type: "all" }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.mode).toBe("legacy");
+    expect(json.paths).toContain("/templates");
+    expect(json.paths).toContain("/pages");
+    expect(json.paths).toContain("/sitemap.xml");
+    expect(cacheMocks.revalidatePath).toHaveBeenCalledWith("/[slug]", "page");
+  });
+
+  it("returns 400 for an unrecognised legacy type value", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({ type: "unknown-type" }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error).toBe("Invalid revalidation type");
+  });
+
+  it("returns 400 for invalid tags payload", async () => {
+    const request = new Request("http://localhost/api/revalidate", {
+      method: "POST",
+      headers: { "x-revalidate-secret": "secret-123" },
+      body: JSON.stringify({ tags: 42 }),
+    });
+
+    const response = await POST(request as never);
+    const json = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(json.error).toBe("Invalid tags payload");
+  });
 });

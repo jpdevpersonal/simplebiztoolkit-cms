@@ -89,4 +89,32 @@ describe("ProductPreviewPage", () => {
       "/templates/spreadsheets",
     );
   });
+
+  it("redirects to login when session is not present", async () => {
+    const { getAdminApiService } =
+      await import("@/app/admin/_lib/getAdminApiService");
+    (getAdminApiService as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      service: serviceMock,
+      session: null,
+    });
+
+    const { default: ProductPreviewPage } = await import("./page");
+
+    await expect(
+      ProductPreviewPage({ params: Promise.resolve({ id: "p-1" }) }),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalledWith("/cms/login");
+  });
+
+  it("calls notFound when product data is not returned", async () => {
+    serviceMock.getProductById.mockResolvedValueOnce({ data: null });
+    serviceMock.getProductCategories.mockResolvedValueOnce({ data: [] });
+
+    const { default: ProductPreviewPage } = await import("./page");
+
+    await expect(
+      ProductPreviewPage({ params: Promise.resolve({ id: "missing" }) }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+  });
 });

@@ -250,4 +250,19 @@ describe("seo", () => {
       (jsonLd.offers as { seller?: { "@type"?: string } }).seller?.["@type"],
     ).toBe("Organization");
   });
+
+  it("returns undefined for whitespace-only public URL inputs", () => {
+    expect(normalizePublicUrl("   ")).toBeUndefined();
+    expect(normalizePublicUrl("")).toBeUndefined();
+    expect(normalizePublicUrl(null)).toBeUndefined();
+  });
+
+  it("returns undefined when an absolute URL is malformed", () => {
+    // Brackets in the host make this an invalid URL
+    expect(normalizePublicUrl("https://[bad host]/path")).toBeUndefined();
+  });
+
+  it("returns undefined when a protocol-relative URL is malformed", () => {
+    expect(normalizePublicUrl("//[bad host]/path")).toBeUndefined();
+  });
 });

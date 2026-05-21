@@ -134,6 +134,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
   }
 
   function clearBrowserStorageForPrivacy() {
+    if (!windowRef) return;
     try {
       windowRef.localStorage.clear();
     } catch (err) {

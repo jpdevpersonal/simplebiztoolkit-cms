@@ -95,4 +95,121 @@ describe("MenuItemPageView", () => {
       "/pages/guides/topic-a",
     );
   });
+
+  it("resolves parent menu item directly via page.menuItemId when not inline", async () => {
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({
+      data: {
+        id: "page-2",
+        title: "Guide B",
+        slug: "guide-b",
+        status: "published",
+        content: "<p>Body</p>",
+        menuItemId: "menu-1",
+        // No inline menuItem or menuCategory
+      },
+    });
+    apiServiceMock.getMenuItemById.mockResolvedValueOnce({
+      data: { id: "menu-1", title: "Guides" },
+    });
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
+      { id: "menu-1", title: "Guides", status: "published", categories: [] },
+    ]);
+
+    const { default: MenuItemPageView } = await import("./page");
+    render(
+      await MenuItemPageView({
+        params: Promise.resolve({ slug: "guide-b" }),
+      }),
+    );
+
+    expect(screen.getAllByRole("link", { name: "Guides" })[0]).toHaveAttribute(
+      "href",
+      "/pages/guides",
+    );
+  });
+
+  it("includes the parent category in the breadcrumb when category has a menuItemId", async () => {
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({
+      data: {
+        id: "page-3",
+        title: "Sub Guide",
+        slug: "sub-guide",
+        status: "published",
+        content: "<p>Sub body</p>",
+        menuCategoryId: "cat-2",
+        menuCategory: {
+          id: "cat-2",
+          title: "Category B",
+          menuItemId: "menu-2",
+          menuItem: { id: "menu-2", title: "Resources" },
+        },
+      },
+    });
+    // getMenuCategoryById NOT called because menuCategory.menuItemId is set
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([]);
+
+    const { default: MenuItemPageView } = await import("./page");
+    render(
+      await MenuItemPageView({
+        params: Promise.resolve({ slug: "sub-guide" }),
+      }),
+    );
+
+    expect(
+      screen.getAllByRole("link", { name: "Resources" })[0],
+    ).toHaveAttribute("href", "/pages/resources");
+    expect(
+      screen.getAllByRole("link", { name: "Category B" })[0],
+    ).toHaveAttribute("href", "/pages/resources/category-b");
+  });
+
+  it("fetches parent menu item via parentCategory.menuItemId when no inline menuItem", async () => {
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({
+      data: {
+        id: "page-4",
+        title: "Deep Page",
+        slug: "deep-page",
+        status: "published",
+        content: "<p>Content</p>",
+        menuCategoryId: "cat-3",
+        menuCategory: {
+          id: "cat-3",
+          title: "Sub Topic",
+          menuItemId: "menu-3",
+          // No inline menuItem — forces lines 101-104 fetch
+        },
+      },
+    });
+    apiServiceMock.getMenuCategoryById.mockResolvedValueOnce({
+      data: { id: "cat-3", title: "Sub Topic", menuItemId: "menu-3" },
+    });
+    apiServiceMock.getMenuItemById.mockResolvedValueOnce({
+      data: { id: "menu-3", title: "Parent Menu" },
+    });
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([]);
+
+    const { default: MenuItemPageView } = await import("./page");
+    render(
+      await MenuItemPageView({
+        params: Promise.resolve({ slug: "deep-page" }),
+      }),
+    );
+
+    expect(
+      screen.getAllByRole("link", { name: "Parent Menu" })[0],
+    ).toHaveAttribute("href", "/pages/parent-menu");
+    expect(
+      screen.getAllByRole("link", { name: "Sub Topic" })[0],
+    ).toHaveAttribute("href", "/pages/parent-menu/sub-topic");
+  });
+
+  it("calls notFound when page data is not returned", async () => {
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({ data: null });
+
+    const { default: MenuItemPageView } = await import("./page");
+
+    await expect(
+      MenuItemPageView({ params: Promise.resolve({ slug: "missing" }) }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+  });
 });
