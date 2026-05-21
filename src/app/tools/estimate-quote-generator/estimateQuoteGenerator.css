@@ -164,6 +164,26 @@
   max-width: 60ch;
 }
 
+.estimate-quote-generator-page .privacy-warning-card {
+  margin-bottom: 1.25rem;
+  background: #fffaf0;
+  border-color: #ead7ad;
+  padding: 0.75rem 1rem;
+}
+
+.estimate-quote-generator-page .privacy-warning-card strong {
+  color: #5f4520;
+  white-space: nowrap;
+}
+
+.estimate-quote-generator-page .privacy-warning-card p {
+  margin: 0;
+  width: 100%;
+  color: #6b5a42;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
 /* --- Two-column layout ------------------------------------------- */
 .estimate-quote-generator-page .container {
   max-width: 100%;
@@ -702,6 +722,12 @@
 @media (max-width: 640px) {
   .estimate-quote-generator-page .tool-hero {
     padding: 1.25rem;
+  }
+  .estimate-quote-generator-page .privacy-warning-card {
+    padding: 0.65rem 0.75rem;
+  }
+  .estimate-quote-generator-page .privacy-warning-card strong {
+    white-space: normal;
   }
   .estimate-quote-generator-page .card {
     padding: 1rem;

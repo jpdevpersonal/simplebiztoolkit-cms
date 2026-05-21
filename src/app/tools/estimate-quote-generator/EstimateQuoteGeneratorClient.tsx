@@ -103,6 +103,89 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       return map[c];
     });
 
+  function disableBrowserAutocomplete(container: ParentNode = root) {
+    container
+      .querySelectorAll<
+        HTMLInputElement | HTMLTextAreaElement
+      >("input, textarea")
+      .forEach((field) => {
+        field.autocomplete = "off";
+      });
+  }
+
+  function clearBrowserStorageForPrivacy() {
+    try {
+      windowRef.localStorage.clear();
+    } catch (err) {
+      console.warn(
+        "Estimate quote generator could not clear local browser storage.",
+        err,
+      );
+    }
+
+    try {
+      windowRef.sessionStorage.clear();
+    } catch (err) {
+      console.warn(
+        "Estimate quote generator could not clear session browser storage.",
+        err,
+      );
+    }
+  }
+
+  function clearInPageDataForPrivacy() {
+    try {
+      state.logoDataUrl = null;
+      state.logoWidth = 0;
+      state.logoHeight = 0;
+
+      root.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+        if (input.type === "checkbox" || input.type === "radio") {
+          input.checked = false;
+          return;
+        }
+
+        input.value = "";
+      });
+      root
+        .querySelectorAll<HTMLTextAreaElement>("textarea")
+        .forEach((field) => {
+          field.value = "";
+        });
+      root.querySelectorAll<HTMLSelectElement>("select").forEach((field) => {
+        field.selectedIndex = -1;
+      });
+
+      root
+        .querySelectorAll<HTMLElement>("#itemsBody, #preview")
+        .forEach((el) => {
+          el.replaceChildren();
+        });
+      root
+        .querySelectorAll<HTMLElement>(
+          "#validationError, #logoError, #logoPreview",
+        )
+        .forEach((el) => {
+          el.style.display = "none";
+        });
+      root
+        .querySelector<HTMLImageElement>("#logoPreviewImg")
+        ?.removeAttribute("src");
+    } catch (err) {
+      console.warn(
+        "Estimate quote generator could not clear in-page browser data.",
+        err,
+      );
+    }
+  }
+
+  function clearBrowserDataForPrivacy() {
+    clearBrowserStorageForPrivacy();
+    clearInPageDataForPrivacy();
+  }
+
+  disableBrowserAutocomplete();
+
   // ---------- Init defaults ----------
   ($("issueDate") as HTMLInputElement).value = todayISO();
   const d0 = new Date();
@@ -129,6 +212,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       tr.remove();
       update();
     });
+    disableBrowserAutocomplete(tr);
     tr.querySelectorAll<HTMLInputElement>("input").forEach((i) =>
       i.addEventListener("input", update),
     );
@@ -945,12 +1029,14 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
   on($("previewJump"), "click", () => {
     $("preview").scrollIntoView({ behavior: "smooth", block: "start" });
   });
+  on(windowRef, "pagehide", clearBrowserDataForPrivacy);
 
   // Start with one empty row + first render
   addRow();
   update();
 
   return () => {
+    clearBrowserDataForPrivacy();
     cleanupFns.forEach((fn) => fn());
   };
 }
@@ -994,6 +1080,18 @@ export default function EstimateQuoteGeneratorClient() {
               Everything runs in your browser — nothing is uploaded or stored.
             </p>
           </section>
+
+          <aside
+            className="card privacy-warning-card"
+            aria-label="Privacy reminder"
+          >
+            <p>
+              <strong>Privacy reminder:</strong> Your estimate or quote details
+              stay in this browser while you work and are cleared when this page
+              session closes. On a shared or public device, close the tab or
+              window when you are done.
+            </p>
+          </aside>
 
           <div className="container">
             {/* ============ FORM COLUMN ============ */}

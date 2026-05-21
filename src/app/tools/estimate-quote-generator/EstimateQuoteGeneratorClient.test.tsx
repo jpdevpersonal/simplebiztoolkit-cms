@@ -28,6 +28,15 @@ describe("EstimateQuoteGeneratorClient", () => {
     expect(screen.getByText("Quote")).toBeInTheDocument();
   });
 
+  it("shows a privacy reminder below the page intro", () => {
+    render(<EstimateQuoteGeneratorClient />);
+
+    expect(screen.getByLabelText(/Privacy reminder/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/cleared when this page session closes/i),
+    ).toBeInTheDocument();
+  });
+
   it("seeds an initial line item row and updates totals on input", async () => {
     const { container } = render(<EstimateQuoteGeneratorClient />);
 
@@ -76,5 +85,54 @@ describe("EstimateQuoteGeneratorClient", () => {
     ) as HTMLButtonElement;
     fireEvent.click(removeBtn);
     expect(container.querySelectorAll("#itemsBody tr")).toHaveLength(1);
+  });
+
+  it("clears stored browser data and form values when the page session closes", () => {
+    localStorage.setItem("estimate-quote-generator:draft", "private quote");
+    sessionStorage.setItem("estimate-quote-generator:draft", "private quote");
+
+    const { container } = render(<EstimateQuoteGeneratorClient />);
+
+    const bizNameInput = container.querySelector(
+      "#bizName",
+    ) as HTMLInputElement;
+    fireEvent.input(bizNameInput, { target: { value: "Private Company" } });
+
+    fireEvent(window, new Event("pagehide"));
+
+    expect(localStorage.length).toBe(0);
+    expect(sessionStorage.length).toBe(0);
+    expect(bizNameInput.value).toBe("");
+    expect(container.querySelectorAll("#itemsBody tr")).toHaveLength(0);
+  });
+
+  it("logs a warning when stored browser data cannot be cleared", () => {
+    const storageError = new Error("storage blocked");
+    const clearSpy = vi
+      .spyOn(Storage.prototype, "clear")
+      .mockImplementation(() => {
+        throw storageError;
+      });
+    const warnSpy = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
+
+    try {
+      render(<EstimateQuoteGeneratorClient />);
+
+      fireEvent(window, new Event("pagehide"));
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        "Estimate quote generator could not clear local browser storage.",
+        storageError,
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        "Estimate quote generator could not clear session browser storage.",
+        storageError,
+      );
+    } finally {
+      clearSpy.mockRestore();
+      warnSpy.mockRestore();
+    }
   });
 });
