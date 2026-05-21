@@ -32,6 +32,18 @@ describe("menuContent", () => {
     ).toBe("/starter-guide");
   });
 
+  it("keeps tools on the tools landing page when only one direct page is published", async () => {
+    const { getMenuItemLandingHref } = await import("./menuContent");
+
+    expect(
+      getMenuItemLandingHref({
+        title: "Tools",
+        directPages: [{ slug: "csv-profit-calculator-for-etsy" }] as any,
+        publishedCategories: [],
+      }),
+    ).toBe("/pages/tools");
+  });
+
   it("uses the landing page href when a menu item has multiple direct pages", async () => {
     const { getMenuItemLandingHref } = await import("./menuContent");
 

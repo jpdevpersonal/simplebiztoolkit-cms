@@ -119,6 +119,10 @@ export function getMenuItemLandingHref(
     "title" | "directPages" | "publishedCategories"
   >,
 ): string {
+  if (slugify(item.title) === "tools") {
+    return "/pages/tools";
+  }
+
   if (item.publishedCategories.length === 0 && item.directPages.length === 1) {
     return `/${item.directPages[0].slug}`;
   }
