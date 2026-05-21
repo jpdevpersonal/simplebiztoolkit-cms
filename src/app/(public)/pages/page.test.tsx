@@ -187,6 +187,19 @@ describe("Pages overview", () => {
     expect(screen.getByText(/1 topic$/i)).toBeInTheDocument();
   });
 
+  it("renders the empty state when no published menu items are available", async () => {
+    apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
+      statusCode: 200,
+      data: [],
+    });
+
+    const { default: PagesOverview } = await import("./page");
+    render(await PagesOverview());
+
+    expect(screen.getByText("No pages available yet")).toBeInTheDocument();
+    expect(apiServiceMock.getMenuItemPages).not.toHaveBeenCalled();
+  });
+
   it("does not render description when absent", async () => {
     apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
       statusCode: 200,
