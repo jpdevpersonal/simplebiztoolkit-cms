@@ -52,6 +52,26 @@ type FieldValidator = (value: string) => string;
 const MAX_LOGO_BYTES = 3 * 1024 * 1024; // 3MB
 const MAX_LOGO_DIM = 400;
 
+type StylePreset = {
+  id: "classic" | "modern" | "minimal";
+  accentRgb: [number, number, number];
+};
+
+const STYLE_PRESETS: Record<string, StylePreset> = {
+  classic: {
+    id: "classic",
+    accentRgb: [17, 24, 39],
+  },
+  modern: {
+    id: "modern",
+    accentRgb: [26, 127, 90],
+  },
+  minimal: {
+    id: "minimal",
+    accentRgb: [55, 65, 81],
+  },
+};
+
 function setupEstimateQuoteGenerator(root: HTMLElement) {
   const documentRef = root.ownerDocument;
   const windowRef = documentRef.defaultView as JsPdfWindow | null;
@@ -271,11 +291,17 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
   }
 
   // ---------- Preview render ----------
+  function getDocStyle(): StylePreset {
+    const sel = root.querySelector<HTMLSelectElement>("#docStyle");
+    return STYLE_PRESETS[sel?.value ?? "classic"] ?? STYLE_PRESETS.classic;
+  }
+
   function renderPreview(t: Totals) {
     const docTypeEl = root.querySelector<HTMLInputElement>(
       'input[name="docType"]:checked',
     );
     const docType = docTypeEl ? docTypeEl.value : "Estimate";
+    const style = getDocStyle();
     const logoPos = ($("logoPos") as HTMLSelectElement).value;
     const logoHtml = state.logoDataUrl
       ? `<div class="pd-logo"><img src="${state.logoDataUrl}" alt="Logo"/></div>`
@@ -290,11 +316,19 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       .filter(Boolean)
       .map(escapeHtml)
       .join("<br/>");
+    const businessBlock = `<div class="pd-business"><strong>${escapeHtml(businessName) || "Your Company"}</strong>${businessLines ? "<br/>" + businessLines : ""}</div>`;
 
     const clientName = ($("clientName") as HTMLInputElement).value.trim();
     const clientBiz = ($("clientBiz") as HTMLInputElement).value.trim();
     const clientAddr = ($("clientAddress") as HTMLTextAreaElement).value.trim();
     const clientEmail = ($("clientEmail") as HTMLInputElement).value.trim();
+    const clientBlock = `<div class="pd-client">
+        <div class="label">Bill to</div>
+        ${clientBiz ? `<strong>${escapeHtml(clientBiz)}</strong><br/>` : ""}
+        ${clientName ? escapeHtml(clientName) + "<br/>" : ""}
+        ${clientAddr ? escapeHtml(clientAddr).replace(/\n/g, "<br/>") + "<br/>" : ""}
+        ${clientEmail ? escapeHtml(clientEmail) : ""}
+      </div>`;
 
     const rowsHtml =
       t.items
@@ -311,57 +345,99 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         )
         .join("") ||
       `<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:1rem;">No line items yet</td></tr>`;
-
-    const notes = ($("notes") as HTMLTextAreaElement).value.trim();
-    const projectTitle = ($("projectTitle") as HTMLInputElement).value;
-
-    $("preview").innerHTML = `
-      <div class="pd-header ${logoPos === "right" ? "right-logo" : ""}">
-        ${
-          logoHtml ||
-          `<div class="pd-business"><strong>${escapeHtml(businessName) || "Your Company"}</strong>${businessLines ? "<br/>" + businessLines : ""}</div>`
-        }
-        <div style="text-align:right;">
-          <h3>${escapeHtml(docType).toUpperCase()}</h3>
-          <div class="pd-meta" style="margin-top:0.5rem; text-align:left;">
-            <div><span>Number:</span><strong>${escapeHtml(($("docNumber") as HTMLInputElement).value)}</strong></div>
-            <div><span>Issued:</span><strong>${escapeHtml(($("issueDate") as HTMLInputElement).value)}</strong></div>
-            <div><span>Valid until:</span><strong>${escapeHtml(($("expiryDate") as HTMLInputElement).value)}</strong></div>
-          </div>
-        </div>
-      </div>
-
-      ${
-        state.logoDataUrl && businessName
-          ? `<div class="pd-business" style="margin-bottom:1rem;"><strong>${escapeHtml(businessName)}</strong>${businessLines ? "<br/>" + businessLines : ""}</div>`
-          : ""
-      }
-
-      <div class="pd-client">
-        <div class="label">Bill to</div>
-        ${clientBiz ? `<strong>${escapeHtml(clientBiz)}</strong><br/>` : ""}
-        ${clientName ? escapeHtml(clientName) + "<br/>" : ""}
-        ${clientAddr ? escapeHtml(clientAddr).replace(/\n/g, "<br/>") + "<br/>" : ""}
-        ${clientEmail ? escapeHtml(clientEmail) : ""}
-      </div>
-
-      ${projectTitle ? `<div style="margin-bottom:0.5rem;"><strong>Project:</strong> ${escapeHtml(projectTitle)}</div>` : ""}
-
-      <table>
+    const tableBlock = `<table>
         <thead>
           <tr><th>Description</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Unit price</th><th style="text-align:right;">Total</th></tr>
         </thead>
         <tbody>${rowsHtml}</tbody>
-      </table>
+      </table>`;
 
-      <div class="pd-totals">
+    const totalsBlock = `<div class="pd-totals">
         <div><span>Subtotal</span><span>${fmt(t.subtotal)}</span></div>
         ${t.discount > 0 ? `<div><span>Discount</span><span>-${fmt(t.discount)}</span></div>` : ""}
         ${t.taxRate > 0 ? `<div><span>Tax (${t.taxRate}%)</span><span>${fmt(t.tax)}</span></div>` : ""}
         <div class="grand"><span>Total</span><span>${fmt(t.grand)}</span></div>
-      </div>
+      </div>`;
 
-      ${notes ? `<div class="pd-notes"><div class="label">Notes / Terms</div>${escapeHtml(notes)}</div>` : ""}
+    const notes = ($("notes") as HTMLTextAreaElement).value.trim();
+    const projectTitle = ($("projectTitle") as HTMLInputElement).value;
+    const notesBlock = notes
+      ? `<div class="pd-notes"><div class="label">Notes / Terms</div>${escapeHtml(notes)}</div>`
+      : "";
+    const projectBlock = projectTitle
+      ? `<div class="pd-project"><strong>Project:</strong> ${escapeHtml(projectTitle)}</div>`
+      : "";
+
+    const docNumber = ($("docNumber") as HTMLInputElement).value;
+    const issueDate = ($("issueDate") as HTMLInputElement).value;
+    const expiryDate = ($("expiryDate") as HTMLInputElement).value;
+
+    const previewEl = $("preview");
+    previewEl.dataset.style = style.id;
+
+    let headerHtml = "";
+    if (style.id === "modern") {
+      headerHtml = `
+        <div class="pd-band">
+          <div class="pd-band-title">${escapeHtml(docType).toUpperCase()}</div>
+          <div class="pd-band-meta">
+            <div><span>No.</span> <strong>${escapeHtml(docNumber)}</strong></div>
+            <div><span>Issued</span> <strong>${escapeHtml(issueDate)}</strong></div>
+            <div><span>Valid until</span> <strong>${escapeHtml(expiryDate)}</strong></div>
+          </div>
+        </div>
+        <div class="pd-modern-row">
+          ${logoHtml}
+          ${businessBlock}
+        </div>
+      `;
+    } else if (style.id === "minimal") {
+      const metaInline = [
+        docNumber ? `No. ${escapeHtml(docNumber)}` : "",
+        issueDate ? `Issued ${escapeHtml(issueDate)}` : "",
+        expiryDate ? `Valid until ${escapeHtml(expiryDate)}` : "",
+      ]
+        .filter(Boolean)
+        .join(" &middot; ");
+      headerHtml = `
+        <div class="pd-minimal-head">
+          <h3>${escapeHtml(docType)}</h3>
+          <div class="pd-minimal-meta">${metaInline}</div>
+        </div>
+        <div class="pd-minimal-cols">
+          <div>${logoHtml}${businessBlock}</div>
+          ${clientBlock}
+        </div>
+      `;
+    } else {
+      headerHtml = `
+        <div class="pd-header ${logoPos === "right" ? "right-logo" : ""}">
+          ${logoHtml || businessBlock}
+          <div style="text-align:right;">
+            <h3>${escapeHtml(docType).toUpperCase()}</h3>
+            <div class="pd-meta" style="margin-top:0.5rem; text-align:left;">
+              <div><span>Number:</span><strong>${escapeHtml(docNumber)}</strong></div>
+              <div><span>Issued:</span><strong>${escapeHtml(issueDate)}</strong></div>
+              <div><span>Valid until:</span><strong>${escapeHtml(expiryDate)}</strong></div>
+            </div>
+          </div>
+        </div>
+        ${
+          state.logoDataUrl && businessName
+            ? `<div class="pd-business" style="margin-bottom:1rem;"><strong>${escapeHtml(businessName)}</strong>${businessLines ? "<br/>" + businessLines : ""}</div>`
+            : ""
+        }
+      `;
+    }
+
+    const showClientAfterHeader = style.id !== "minimal";
+    previewEl.innerHTML = `
+      ${headerHtml}
+      ${showClientAfterHeader ? clientBlock : ""}
+      ${projectBlock}
+      ${tableBlock}
+      ${totalsBlock}
+      ${notesBlock}
     `;
   }
 
@@ -386,11 +462,13 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     "taxRate",
     "currency",
     "logoPos",
+    "docStyle",
   ];
   liveInputs.forEach((id) => on($(id), "input", update));
   root
     .querySelectorAll<HTMLInputElement>('input[name="docType"]')
     .forEach((r) => on(r, "change", update));
+  on($("docStyle"), "change", update);
 
   // ---------- Logo upload ----------
   on($("logoFile"), "change", (e) => {
@@ -748,117 +826,297 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       'input[name="docType"]:checked',
     );
     const docType = docTypeEl ? docTypeEl.value : "Estimate";
+    const style = getDocStyle();
     const logoPos = ($("logoPos") as HTMLSelectElement).value;
     const businessName = ($("bizName") as HTMLInputElement).value.trim();
+    const bizAddress = ($("bizAddress") as HTMLTextAreaElement).value;
+    const bizEmail = ($("bizEmail") as HTMLInputElement).value;
+    const bizPhone = ($("bizPhone") as HTMLInputElement).value;
+    const bizWebsite = ($("bizWebsite") as HTMLInputElement).value;
+    const docNumber = ($("docNumber") as HTMLInputElement).value;
+    const issueDate = ($("issueDate") as HTMLInputElement).value;
+    const expiryDate = ($("expiryDate") as HTMLInputElement).value;
     const t = calcTotals();
 
-    let logoBottom = y;
-    if (state.logoDataUrl) {
-      const maxW = 130;
-      const maxH = 65;
-      const ratio = Math.min(maxW / state.logoWidth, maxH / state.logoHeight);
-      const w = state.logoWidth * ratio;
-      const h = state.logoHeight * ratio;
-      const x = logoPos === "right" ? pageW - margin - w : margin;
-      try {
-        doc.addImage(state.logoDataUrl, "PNG", x, y, w, h);
-        logoBottom = y + h;
-      } catch (err) {
-        console.warn("Logo render failed:", err);
-      }
-    }
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.setTextColor(17, 24, 39);
-    const titleText = docType.toUpperCase();
-    const titleX =
-      logoPos === "right" && state.logoDataUrl ? margin : pageW - margin;
-    const titleAlign: "left" | "right" =
-      logoPos === "right" && state.logoDataUrl ? "left" : "right";
-    doc.text(titleText, titleX, y + 22, { align: titleAlign });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(75, 85, 99);
-    const metaLines = [
-      `Number: ${($("docNumber") as HTMLInputElement).value}`,
-      `Issued: ${($("issueDate") as HTMLInputElement).value}`,
-      `Valid until: ${($("expiryDate") as HTMLInputElement).value}`,
+    const tint = (
+      rgb: [number, number, number],
+      amount = 0.92,
+    ): [number, number, number] => [
+      Math.round(rgb[0] + (255 - rgb[0]) * amount),
+      Math.round(rgb[1] + (255 - rgb[1]) * amount),
+      Math.round(rgb[2] + (255 - rgb[2]) * amount),
     ];
-    metaLines.forEach((l, i) => {
-      doc.text(l, titleX, y + 44 + i * 14, { align: titleAlign });
-    });
 
-    y = Math.max(logoBottom, y + 90) + SP.section;
-
-    if (
-      businessName ||
-      ($("bizAddress") as HTMLTextAreaElement).value ||
-      ($("bizEmail") as HTMLInputElement).value ||
-      ($("bizPhone") as HTMLInputElement).value ||
-      ($("bizWebsite") as HTMLInputElement).value
-    ) {
+    // -------------------- HEADER (per style) --------------------
+    if (style.id === "modern") {
+      // Full-width accent band with title + meta inside it
+      const bandH = 90;
+      doc.setFillColor(
+        style.accentRgb[0],
+        style.accentRgb[1],
+        style.accentRgb[2],
+      );
+      doc.rect(0, 0, pageW, bandH, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setTextColor(17, 24, 39);
+      doc.setFontSize(28);
+      doc.setTextColor(255, 255, 255);
+      doc.text(docType.toUpperCase(), margin, 48);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      [
+        `No. ${docNumber}`,
+        `Issued ${issueDate}`,
+        `Valid until ${expiryDate}`,
+      ].forEach((l, i) => {
+        doc.text(l, pageW - margin, 30 + i * 16, { align: "right" });
+      });
+      y = bandH + SP.section;
+
+      // Logo + business below band
+      let bizY = y;
+      if (state.logoDataUrl) {
+        const maxW = 130;
+        const maxH = 60;
+        const ratio = Math.min(maxW / state.logoWidth, maxH / state.logoHeight);
+        const w = state.logoWidth * ratio;
+        const h = state.logoHeight * ratio;
+        try {
+          doc.addImage(state.logoDataUrl, "PNG", margin, y, w, h);
+          bizY = y + h + 8;
+        } catch (err) {
+          console.warn("Logo render failed:", err);
+        }
+      }
       if (businessName) {
-        doc.text(businessName, margin, y);
-        y += SP.line + 2;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(17, 24, 39);
+        doc.text(businessName, margin, bizY);
+        bizY += SP.line + 2;
       }
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(75, 85, 99);
-      const bizLines = [
-        ($("bizAddress") as HTMLTextAreaElement).value,
-        ($("bizEmail") as HTMLInputElement).value,
-        ($("bizPhone") as HTMLInputElement).value,
-        ($("bizWebsite") as HTMLInputElement).value,
-      ].filter(Boolean);
-      bizLines.forEach((line) => {
-        line.split("\n").forEach((seg) => {
-          doc.text(seg, margin, y);
-          y += SP.line;
+      [bizAddress, bizEmail, bizPhone, bizWebsite]
+        .filter(Boolean)
+        .forEach((line) => {
+          line.split("\n").forEach((seg) => {
+            doc.text(seg, margin, bizY);
+            bizY += SP.line;
+          });
         });
-      });
+      y = bizY + SP.section;
+    } else if (style.id === "minimal") {
+      // Centered title between two hairlines, inline meta below
+      doc.setDrawColor(17, 24, 39);
+      doc.setLineWidth(0.6);
+      doc.line(margin, y, pageW - margin, y);
+      y += 26;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(20);
+      doc.setTextColor(17, 24, 39);
+      doc.text(docType, pageW / 2, y, { align: "center" });
+      y += 10;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(107, 114, 128);
+      const metaInline = [
+        docNumber ? `No. ${docNumber}` : "",
+        issueDate ? `Issued ${issueDate}` : "",
+        expiryDate ? `Valid until ${expiryDate}` : "",
+      ]
+        .filter(Boolean)
+        .join("  \u00B7  ");
+      doc.text(metaInline, pageW / 2, y + 14, { align: "center" });
+      y += 28;
+      doc.line(margin, y, pageW - margin, y);
+      doc.setLineWidth(0.2);
       y += SP.section;
+
+      // Business + client side-by-side (two columns)
+      const colGap = 30;
+      const colW = (pageW - margin * 2 - colGap) / 2;
+      const leftX = margin;
+      const rightX = margin + colW + colGap;
+      let leftY = y;
+      let rightY = y;
+
+      if (state.logoDataUrl) {
+        const maxW = 100;
+        const maxH = 50;
+        const ratio = Math.min(maxW / state.logoWidth, maxH / state.logoHeight);
+        const w = state.logoWidth * ratio;
+        const h = state.logoHeight * ratio;
+        try {
+          doc.addImage(state.logoDataUrl, "PNG", leftX, leftY, w, h);
+          leftY += h + 8;
+        } catch (err) {
+          console.warn("Logo render failed:", err);
+        }
+      }
+      if (businessName) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.text(businessName, leftX, leftY);
+        leftY += SP.line + 2;
+      }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(75, 85, 99);
+      [bizAddress, bizEmail, bizPhone, bizWebsite]
+        .filter(Boolean)
+        .forEach((line) => {
+          line.split("\n").forEach((seg) => {
+            doc.text(seg, leftX, leftY);
+            leftY += SP.line;
+          });
+        });
+
+      // Right column: client
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(107, 114, 128);
+      doc.text("BILL TO", rightX, rightY);
+      rightY += SP.line + 2;
+      const clientBizV = ($("clientBiz") as HTMLInputElement).value.trim();
+      const clientNameV = ($("clientName") as HTMLInputElement).value.trim();
+      const clientAddrV = (
+        $("clientAddress") as HTMLTextAreaElement
+      ).value.trim();
+      const clientEmailV = ($("clientEmail") as HTMLInputElement).value.trim();
+      if (clientBizV) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.text(clientBizV, rightX, rightY);
+        rightY += SP.line + 1;
+      }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(55, 65, 81);
+      if (clientNameV) {
+        doc.text(clientNameV, rightX, rightY);
+        rightY += SP.line;
+      }
+      if (clientAddrV) {
+        clientAddrV.split("\n").forEach((line) => {
+          doc.text(line, rightX, rightY);
+          rightY += SP.line;
+        });
+      }
+      if (clientEmailV) {
+        doc.text(clientEmailV, rightX, rightY);
+        rightY += SP.line;
+      }
+
+      y = Math.max(leftY, rightY) + SP.section;
+    } else {
+      // CLASSIC — current layout
+      let logoBottom = y;
+      if (state.logoDataUrl) {
+        const maxW = 130;
+        const maxH = 65;
+        const ratio = Math.min(maxW / state.logoWidth, maxH / state.logoHeight);
+        const w = state.logoWidth * ratio;
+        const h = state.logoHeight * ratio;
+        const x = logoPos === "right" ? pageW - margin - w : margin;
+        try {
+          doc.addImage(state.logoDataUrl, "PNG", x, y, w, h);
+          logoBottom = y + h;
+        } catch (err) {
+          console.warn("Logo render failed:", err);
+        }
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(24);
+      doc.setTextColor(17, 24, 39);
+      const titleX =
+        logoPos === "right" && state.logoDataUrl ? margin : pageW - margin;
+      const titleAlign: "left" | "right" =
+        logoPos === "right" && state.logoDataUrl ? "left" : "right";
+      doc.text(docType.toUpperCase(), titleX, y + 22, { align: titleAlign });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(75, 85, 99);
+      [
+        `Number: ${docNumber}`,
+        `Issued: ${issueDate}`,
+        `Valid until: ${expiryDate}`,
+      ].forEach((l, i) => {
+        doc.text(l, titleX, y + 44 + i * 14, { align: titleAlign });
+      });
+
+      y = Math.max(logoBottom, y + 90) + SP.section;
+
+      if (businessName || bizAddress || bizEmail || bizPhone || bizWebsite) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(17, 24, 39);
+        if (businessName) {
+          doc.text(businessName, margin, y);
+          y += SP.line + 2;
+        }
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(75, 85, 99);
+        [bizAddress, bizEmail, bizPhone, bizWebsite]
+          .filter(Boolean)
+          .forEach((line) => {
+            line.split("\n").forEach((seg) => {
+              doc.text(seg, margin, y);
+              y += SP.line;
+            });
+          });
+        y += SP.section;
+      }
     }
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(107, 114, 128);
-    doc.text("BILL TO", margin, y);
-    y += SP.line + 2;
-    doc.setFontSize(11);
-    doc.setTextColor(17, 24, 39);
-    if (($("clientBiz") as HTMLInputElement).value.trim()) {
-      doc.text(($("clientBiz") as HTMLInputElement).value.trim(), margin, y);
-      y += SP.line + 1;
+    // -------------------- BILL TO (classic + modern only; minimal already drew it) --------------------
+    if (style.id !== "minimal") {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(107, 114, 128);
+      doc.text("BILL TO", margin, y);
+      y += SP.line + 2;
+      doc.setFontSize(11);
+      doc.setTextColor(17, 24, 39);
+      if (($("clientBiz") as HTMLInputElement).value.trim()) {
+        doc.text(($("clientBiz") as HTMLInputElement).value.trim(), margin, y);
+        y += SP.line + 1;
+      }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      if (($("clientName") as HTMLInputElement).value.trim()) {
+        doc.text(($("clientName") as HTMLInputElement).value.trim(), margin, y);
+        y += SP.line;
+      }
+      if (($("clientAddress") as HTMLTextAreaElement).value.trim()) {
+        ($("clientAddress") as HTMLTextAreaElement).value
+          .trim()
+          .split("\n")
+          .forEach((line) => {
+            doc.text(line, margin, y);
+            y += SP.line;
+          });
+      }
+      if (($("clientEmail") as HTMLInputElement).value.trim()) {
+        doc.text(
+          ($("clientEmail") as HTMLInputElement).value.trim(),
+          margin,
+          y,
+        );
+        y += SP.line;
+      }
+      y += SP.section;
     }
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    if (($("clientName") as HTMLInputElement).value.trim()) {
-      doc.text(($("clientName") as HTMLInputElement).value.trim(), margin, y);
-      y += SP.line;
-    }
-    if (($("clientAddress") as HTMLTextAreaElement).value.trim()) {
-      ($("clientAddress") as HTMLTextAreaElement).value
-        .trim()
-        .split("\n")
-        .forEach((line) => {
-          doc.text(line, margin, y);
-          y += SP.line;
-        });
-    }
-    if (($("clientEmail") as HTMLInputElement).value.trim()) {
-      doc.text(($("clientEmail") as HTMLInputElement).value.trim(), margin, y);
-      y += SP.line;
-    }
-    y += SP.section;
 
     if (($("projectTitle") as HTMLInputElement).value.trim()) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
+      doc.setTextColor(17, 24, 39);
       doc.text("Project:", margin, y);
       doc.setFont("helvetica", "normal");
       doc.text(
@@ -869,6 +1127,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       y += SP.section;
     }
 
+    // -------------------- ITEMS TABLE (per style) --------------------
     const colX = {
       desc: margin,
       qty: pageW - margin - 270,
@@ -880,55 +1139,127 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     };
 
     const headerH = 24;
-    doc.setFillColor(243, 244, 246);
-    doc.rect(margin, y, pageW - margin * 2, headerH, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(107, 114, 128);
-    const headerTextY = y + 16;
-    doc.text("DESCRIPTION", colX.desc + 6, headerTextY);
-    doc.text("QTY", colX.qty, headerTextY, { align: "right" });
-    doc.text("UNIT PRICE", colX.price, headerTextY, { align: "right" });
-    doc.text("TOTAL", colX.total - 6, headerTextY, { align: "right" });
-    y += headerH;
+    if (style.id === "modern") {
+      // No fill; accent underline rule below header text
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(
+        style.accentRgb[0],
+        style.accentRgb[1],
+        style.accentRgb[2],
+      );
+      doc.text("DESCRIPTION", colX.desc + 6, y + 16);
+      doc.text("QTY", colX.qty, y + 16, { align: "right" });
+      doc.text("UNIT PRICE", colX.price, y + 16, { align: "right" });
+      doc.text("TOTAL", colX.total - 6, y + 16, { align: "right" });
+      y += headerH;
+      doc.setDrawColor(
+        style.accentRgb[0],
+        style.accentRgb[1],
+        style.accentRgb[2],
+      );
+      doc.setLineWidth(1.2);
+      doc.line(margin, y, pageW - margin, y);
+      doc.setLineWidth(0.2);
+    } else if (style.id === "minimal") {
+      // Borderless small-caps headings; thin gray underline only
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(107, 114, 128);
+      doc.text("Description", colX.desc, y + 14);
+      doc.text("Qty", colX.qty, y + 14, { align: "right" });
+      doc.text("Unit price", colX.price, y + 14, { align: "right" });
+      doc.text("Total", colX.total, y + 14, { align: "right" });
+      y += headerH - 4;
+      doc.setDrawColor(209, 213, 219);
+      doc.setLineWidth(0.4);
+      doc.line(margin, y, pageW - margin, y);
+      doc.setLineWidth(0.2);
+    } else {
+      // CLASSIC
+      doc.setFillColor(243, 244, 246);
+      doc.rect(margin, y, pageW - margin * 2, headerH, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(107, 114, 128);
+      const headerTextY = y + 16;
+      doc.text("DESCRIPTION", colX.desc + 6, headerTextY);
+      doc.text("QTY", colX.qty, headerTextY, { align: "right" });
+      doc.text("UNIT PRICE", colX.price, headerTextY, { align: "right" });
+      doc.text("TOTAL", colX.total - 6, headerTextY, { align: "right" });
+      y += headerH;
+    }
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
+    doc.setFontSize(style.id === "minimal" ? 9.5 : 10);
     doc.setTextColor(17, 24, 39);
 
     const validItems = t.items.filter((i) => i.desc && i.qty > 0);
-    validItems.forEach((item) => {
-      const descLines = doc.splitTextToSize(item.desc, colW.desc);
-      const rowH = Math.max(26, descLines.length * SP.line + SP.rowPadV * 2);
+    const descLeft = style.id === "minimal" ? colX.desc : colX.desc + 6;
+    const totalRight = style.id === "minimal" ? colX.total : colX.total - 6;
+    const rowPad = style.id === "minimal" ? 6 : SP.rowPadV;
+    validItems.forEach((item, idx) => {
+      const descLines = doc.splitTextToSize(
+        item.desc,
+        style.id === "minimal" ? colW.desc + 6 : colW.desc,
+      );
+      const rowH = Math.max(
+        style.id === "minimal" ? 20 : 26,
+        descLines.length * SP.line + rowPad * 2,
+      );
 
       if (y + rowH > pageH - margin - 140) {
         doc.addPage();
         y = margin;
       }
 
-      const textY = y + SP.rowPadV + 4;
-      doc.text(descLines, colX.desc + 6, textY);
+      // Zebra striping for modern
+      if (style.id === "modern" && idx % 2 === 1) {
+        const tinted = tint(style.accentRgb, 0.94);
+        doc.setFillColor(tinted[0], tinted[1], tinted[2]);
+        doc.rect(margin, y, pageW - margin * 2, rowH, "F");
+      }
+
+      const textY = y + rowPad + 4;
+      doc.setTextColor(17, 24, 39);
+      doc.text(descLines, descLeft, textY);
       doc.text(String(item.qty), colX.qty, textY, { align: "right" });
       doc.text(fmt(item.price), colX.price, textY, { align: "right" });
-      doc.text(fmt(item.total), colX.total - 6, textY, { align: "right" });
+      doc.text(fmt(item.total), totalRight, textY, { align: "right" });
       y += rowH;
-      doc.setDrawColor(229, 231, 235);
-      doc.line(margin, y, pageW - margin, y);
+
+      if (style.id === "minimal") {
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y, pageW - margin, y);
+      } else if (style.id === "classic") {
+        doc.setDrawColor(229, 231, 235);
+        doc.line(margin, y, pageW - margin, y);
+      }
+      // modern: no per-row rule, zebra fill carries it
     });
+    doc.setLineWidth(0.2);
 
     y += SP.section;
 
+    // -------------------- TOTALS (per style) --------------------
     const totalsX = pageW - margin - 200;
     const totalsValueX = pageW - margin;
 
-    const drawTotalRow = (label: string, value: string, bold = false) => {
+    const drawTotalRow = (
+      label: string,
+      value: string,
+      opts?: { bold?: boolean; color?: [number, number, number] },
+    ) => {
+      const bold = !!opts?.bold;
       if (y > pageH - margin - 50) {
         doc.addPage();
         y = margin;
       }
       doc.setFont("helvetica", bold ? "bold" : "normal");
       doc.setFontSize(bold ? 12 : 10);
-      doc.setTextColor(17, 24, 39);
+      const c = opts?.color ?? [17, 24, 39];
+      doc.setTextColor(c[0], c[1], c[2]);
       doc.text(label, totalsX, y);
       doc.text(value, totalsValueX, y, { align: "right" });
       y += bold ? 20 : 16;
@@ -938,13 +1269,46 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     if (t.discount > 0) drawTotalRow("Discount", "-" + fmt(t.discount));
     if (t.taxRate > 0) drawTotalRow(`Tax (${t.taxRate}%)`, fmt(t.tax));
 
-    y += 4;
-    doc.setDrawColor(17, 24, 39);
-    doc.setLineWidth(1);
-    doc.line(totalsX, y - 4, totalsValueX, y - 4);
-    y += 8;
-    drawTotalRow("TOTAL", fmt(t.grand), true);
-    doc.setLineWidth(0.2);
+    if (style.id === "modern") {
+      // Accent-filled pill for grand total
+      y += 6;
+      const pillH = 26;
+      doc.setFillColor(
+        style.accentRgb[0],
+        style.accentRgb[1],
+        style.accentRgb[2],
+      );
+      doc.rect(totalsX - 10, y - 2, totalsValueX - totalsX + 20, pillH, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(255, 255, 255);
+      doc.text("TOTAL", totalsX, y + 16);
+      doc.text(fmt(t.grand), totalsValueX - 4, y + 16, { align: "right" });
+      y += pillH + 4;
+    } else if (style.id === "minimal") {
+      // Thin rule, plain text TOTAL
+      y += 6;
+      doc.setDrawColor(17, 24, 39);
+      doc.setLineWidth(0.5);
+      doc.line(totalsX, y, totalsValueX, y);
+      y += 14;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(17, 24, 39);
+      doc.text("Total", totalsX, y);
+      doc.text(fmt(t.grand), totalsValueX, y, { align: "right" });
+      y += 20;
+      doc.setLineWidth(0.2);
+    } else {
+      // CLASSIC — accent rule then bold TOTAL row
+      y += 4;
+      doc.setDrawColor(17, 24, 39);
+      doc.setLineWidth(1);
+      doc.line(totalsX, y - 4, totalsValueX, y - 4);
+      y += 8;
+      drawTotalRow("TOTAL", fmt(t.grand), { bold: true });
+      doc.setLineWidth(0.2);
+    }
 
     const notesVal = ($("notes") as HTMLTextAreaElement).value.trim();
     if (notesVal) {
@@ -975,10 +1339,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       });
     }
 
-    const num = (($("docNumber") as HTMLInputElement).value || "001").replace(
-      /[^a-zA-Z0-9\-_]/g,
-      "",
-    );
+    const num = (docNumber || "001").replace(/[^a-zA-Z0-9\-_]/g, "");
     const filename = `${docType.toLowerCase()}-${num}.pdf`;
     doc.save(filename);
   }
@@ -1000,6 +1361,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     ($("taxRate") as HTMLInputElement).value = "0";
     ($("discountType") as HTMLSelectElement).value = "amount";
     ($("logoPos") as HTMLSelectElement).value = "left";
+    ($("docStyle") as HTMLSelectElement).value = "classic";
     ($("issueDate") as HTMLInputElement).value = todayISO();
     const dd = new Date();
     dd.setDate(dd.getDate() + 30);
@@ -1112,6 +1474,16 @@ export default function EstimateQuoteGeneratorClient() {
                     <input type="radio" name="docType" value="Quote" />
                     <span>Quote</span>
                   </label>
+                </div>
+                <div className="form-row" style={{ marginTop: "0.75rem" }}>
+                  <div>
+                    <label htmlFor="docStyle">Style</label>
+                    <select id="docStyle" defaultValue="classic">
+                      <option value="classic">Classic</option>
+                      <option value="modern">Modern</option>
+                      <option value="minimal">Minimal</option>
+                    </select>
+                  </div>
                 </div>
               </section>
 
