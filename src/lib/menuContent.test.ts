@@ -244,4 +244,75 @@ describe("menuContent", () => {
 
     expect(result.map((item) => item.id)).toEqual(["menu-1", "menu-2"]);
   });
+
+  it("returns empty array and logs error when menu layout settings call throws", async () => {
+    const { getMenuLayoutOrderIds } = await import("./menuContent");
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    apiServiceMock.getMenuLayoutSettings.mockRejectedValueOnce(
+      new Error("timeout"),
+    );
+
+    const result = await getMenuLayoutOrderIds("primary");
+
+    expect(result).toEqual([]);
+    expect(consoleErrorSpy).toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("includes published categories with their published pages in getPublishedMenuItemContent", async () => {
+    const { getPublishedMenuItemContent } = await import("./menuContent");
+
+    const result = await getPublishedMenuItemContent({
+      id: "item-1",
+      title: "Guides",
+      status: "published",
+      pages: [],
+      categories: [
+        {
+          id: "cat-1",
+          title: "Topic A",
+          status: "published",
+          pages: [
+            { id: "p-1", slug: "page-a", title: "Page A", status: "published" },
+            { id: "p-2", slug: "page-b", title: "Page B", status: "draft" },
+          ],
+        } as any,
+        {
+          id: "cat-2",
+          title: "Topic B",
+          status: "draft",
+          pages: [
+            { id: "p-3", slug: "page-c", title: "Page C", status: "published" },
+          ],
+        } as any,
+      ],
+    });
+
+    // Only the published category with at least one published page
+    expect(result.publishedCategories).toHaveLength(1);
+    expect(result.publishedCategories[0]?.id).toBe("cat-1");
+    expect(result.publishedCategories[0]?.publishedPages).toHaveLength(1);
+    expect(result.publishedCategories[0]?.publishedPages[0]?.slug).toBe(
+      "page-a",
+    );
+    expect(result.totalPages).toBe(1);
+  });
+
+  it("orderMenuItemsByLayout sorts items according to provided ids", async () => {
+    const { orderMenuItemsByLayout } = await import("./menuContent");
+
+    const items = [
+      { id: "a", title: "A", status: "published" },
+      { id: "b", title: "B", status: "published" },
+      { id: "c", title: "C", status: "published" },
+    ] as any[];
+
+    const result = orderMenuItemsByLayout(items, ["c", "a", "b"]);
+
+    expect(result.map((i: any) => i.id)).toEqual(["c", "a", "b"]);
+  });
 });

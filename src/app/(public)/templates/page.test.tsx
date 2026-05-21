@@ -75,4 +75,21 @@ describe("Templates page", () => {
       screen.queryByRole("link", { name: /Browse templates/i }),
     ).not.toBeInTheDocument();
   });
+
+  it("uses the default icon for unknown category slugs", async () => {
+    getProductCategoriesMock.mockResolvedValueOnce({
+      data: [
+        {
+          slug: "general-tools",
+          name: "General Tools",
+          summary: "Misc items",
+        },
+      ],
+    });
+
+    const { default: ProductsPage } = await import("./page");
+    render(await ProductsPage());
+
+    expect(screen.getByText("General Tools")).toBeInTheDocument();
+  });
 });

@@ -154,6 +154,75 @@ describe("Menu item landing page", () => {
     expect(screen.getByText("Expert guidance").tagName).toBe("STRONG");
   });
 
+  it("renders tool direct pages from their CMS content", async () => {
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
+      {
+        id: "tools",
+        title: "Tools",
+        status: "published",
+      },
+    ]);
+    menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
+      id: "tools",
+      title: "Tools",
+      status: "published",
+      publishedCategories: [],
+      directPages: [
+        {
+          id: "page-1",
+          slug: "estimate-quote-generator",
+          title: "Estimate & Quote PDF Generator",
+          description: "Old summary card copy",
+          content:
+            '<style>@media(min-width:860px){.sbth-wrap{grid-template-columns:1.15fr 1fr!important;}}</style><section class="sbth-wrap" aria-labelledby="hero-heading"><h1 id="hero-heading">Send Professional Estimates &amp; Quotes in Minutes</h1><a href="/tools/estimate-quote-generator">Create your estimate now</a></section>',
+          status: "published",
+        },
+        {
+          id: "page-2",
+          slug: "csv-profit-calculator-for-etsy",
+          title: "CSV Profit Calculator for Etsy",
+          content:
+            '<section class="sbth-wrap" aria-labelledby="hero-heading"><h1 id="hero-heading">CSV Profit Calculator for Etsy</h1><a href="/tools/csv-profit-calculator">See your profit now</a></section>',
+          status: "published",
+        },
+      ],
+      totalPages: 2,
+    });
+
+    const { default: MenuItemLandingPage } = await import("./page");
+    const { container } = render(
+      await MenuItemLandingPage({
+        params: Promise.resolve({ menuItemSlug: "tools" }),
+      }),
+    );
+
+    expect(container.querySelectorAll(".tools-content-grid")).toHaveLength(1);
+    expect(container.querySelectorAll(".tool-content-card")).toHaveLength(2);
+    expect(container.querySelector("style")?.textContent).toContain(
+      ".sbth-wrap",
+    );
+    expect(container.querySelectorAll("#hero-heading")).toHaveLength(0);
+    expect(
+      container.querySelector("#tool-page-1-hero-heading"),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector("#tool-page-2-hero-heading"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "Send Professional Estimates & Quotes in Minutes",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "CSV Profit Calculator for Etsy" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Create your estimate now" }),
+    ).toHaveAttribute("href", "/tools/estimate-quote-generator");
+    expect(screen.queryByText("Old summary card copy")).not.toBeInTheDocument();
+  });
+
   it("falls back to a valid header image when a featured image is a local file path", async () => {
     menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
       {

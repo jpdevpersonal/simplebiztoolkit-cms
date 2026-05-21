@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
-import { sanitizeHtml } from "@/lib/sanitize";
+import { sanitizeHtml, sanitizePublicContentHtml } from "@/lib/sanitize";
 import { slugify } from "@/lib/slugify";
 import {
   getPublishedMenuItemContent,
@@ -34,6 +34,38 @@ export const revalidate = 300;
 async function resolveMenuItem(slug: string) {
   const items = await getPublishedMenuItems();
   return items.find((i) => slugify(i.title) === slug);
+}
+
+function namespaceToolContentHtml(html: string, pageId: string) {
+  const prefix = `tool-${pageId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const idMap = new Map<string, string>();
+  const withNamespacedIds = html.replace(
+    /\bid=(['"])([^'"]+)\1/g,
+    (_match, quote: string, id: string) => {
+      const namespacedId = `${prefix}-${id}`;
+      idMap.set(id, namespacedId);
+      return `id=${quote}${namespacedId}${quote}`;
+    },
+  );
+
+  return withNamespacedIds
+    .replace(
+      /\b(aria-labelledby|aria-describedby|aria-controls)=(['"])([^'"]+)\2/g,
+      (_match, attr: string, quote: string, value: string) => {
+        const namespacedRefs = value
+          .split(/\s+/)
+          .map((id) => idMap.get(id) ?? id)
+          .join(" ");
+        return `${attr}=${quote}${namespacedRefs}${quote}`;
+      },
+    )
+    .replace(
+      /\bhref=(['"])#([^'"]+)\1/g,
+      (match, quote: string, id: string) => {
+        const namespacedId = idMap.get(id);
+        return namespacedId ? `href=${quote}#${namespacedId}${quote}` : match;
+      },
+    );
 }
 
 export async function generateStaticParams() {
@@ -62,6 +94,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
   const publishedCats = content.publishedCategories;
   const directPages = content.directPages;
   const showDirectPageCards = directPages.length > 0;
+  const showToolContentCards = menuItemSlug === "tools";
 
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
@@ -190,7 +223,49 @@ export default async function MenuItemLandingPage({ params }: Props) {
                   Other Pages
                 </h2>
               )}
-              {showDirectPageCards ? (
+              {showToolContentCards ? (
+                <div className="tools-content-grid mt-2">
+                  {directPages.map((page) => {
+                    const contentHtml = sanitizePublicContentHtml(
+                      page.content ?? "",
+                    ).trim();
+                    const toolContentHtml = contentHtml
+                      ? namespaceToolContentHtml(contentHtml, page.id)
+                      : "";
+
+                    return (
+                      <article className="tool-content-card" key={page.id}>
+                        {toolContentHtml ? (
+                          <div
+                            className="tool-content-card-body"
+                            dangerouslySetInnerHTML={{
+                              __html: toolContentHtml,
+                            }}
+                          />
+                        ) : (
+                          <Link
+                            href={`/${page.slug}`}
+                            className="page-card-link"
+                            aria-label={`Open ${page.title}`}
+                          >
+                            <div className="page-card">
+                              <h2 className="page-card-title">{page.title}</h2>
+                              {(page.description || page.subtitle) && (
+                                <p className="page-card-summary">
+                                  {page.description || page.subtitle}
+                                </p>
+                              )}
+                              <span className="page-card-cta">
+                                Open tool {arrowIcon}
+                              </span>
+                            </div>
+                          </Link>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : showDirectPageCards ? (
                 <div className="row g-3 mt-2">
                   {directPages.map((page) => {
                     const imageSrc =

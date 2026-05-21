@@ -103,4 +103,63 @@ describe("PagePreview", () => {
 
     expect(container.querySelector("img")).toBeNull();
   });
+
+  it("redirects to login when session is not present", async () => {
+    const { getAdminApiService } =
+      await import("@/app/admin/_lib/getAdminApiService");
+    (getAdminApiService as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      service: serviceMock,
+      session: null,
+    });
+
+    const { default: PagePreview } = await import("./page");
+
+    await expect(
+      PagePreview({ params: Promise.resolve({ id: "page-1" }) }),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalledWith("/cms/login");
+  });
+
+  it("calls notFound when page data is not returned", async () => {
+    serviceMock.getMenuItemPageById.mockResolvedValueOnce({ data: null });
+
+    const { default: PagePreview } = await import("./page");
+
+    await expect(
+      PagePreview({ params: Promise.resolve({ id: "missing" }) }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+  });
+
+  it("resolves parent menu item via menuCategoryId when not inline", async () => {
+    serviceMock.getMenuItemPageById.mockResolvedValueOnce({
+      data: {
+        id: "page-3",
+        title: "Category Guide",
+        slug: "category-guide",
+        status: "published",
+        content: "<p>Body</p>",
+        menuCategoryId: "cat-1",
+        // No inline menuItem or menuCategory
+      },
+    });
+    serviceMock.getMenuCategoryById.mockResolvedValueOnce({
+      data: { id: "cat-1", menuItemId: "menu-1" },
+    });
+    serviceMock.getMenuItemById.mockResolvedValueOnce({
+      data: { id: "menu-1", title: "Resources" },
+    });
+
+    const { default: PagePreview } = await import("./page");
+    render(
+      await PagePreview({
+        params: Promise.resolve({ id: "page-3" }),
+      }),
+    );
+
+    expect(screen.getByRole("link", { name: "Resources" })).toHaveAttribute(
+      "href",
+      "/pages/resources",
+    );
+  });
 });
