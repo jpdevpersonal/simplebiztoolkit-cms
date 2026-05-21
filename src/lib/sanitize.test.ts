@@ -49,6 +49,18 @@ describe("sanitize", () => {
     expect(sanitized).toContain(`style="color:#0d5c3f;"`);
   });
 
+  it("preserves authored style blocks for responsive CMS layouts", () => {
+    const sanitized = sanitizeHtml(
+      `<style>@media(min-width:860px){.sbth-wrap{grid-template-columns:1.15fr 1fr!important;background:url(javascript:alert(1));}}</style><section class="sbth-wrap">Hero</section>`,
+    );
+
+    expect(sanitized).toContain("<style>");
+    expect(sanitized).toContain("@media(min-width:860px)");
+    expect(sanitized).toContain(".sbth-wrap");
+    expect(sanitized).toContain(`class="sbth-wrap"`);
+    expect(sanitized).not.toContain("javascript:");
+  });
+
   it("preserves inline SVG with its presentation attributes", () => {
     const sanitized = sanitizeHtml(
       `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
