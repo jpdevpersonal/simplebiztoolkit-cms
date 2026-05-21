@@ -43,6 +43,78 @@ describe("MenuItemPageView", () => {
     notFoundMock.mockClear();
   });
 
+  it("generates static params for published CMS pages only", async () => {
+    apiServiceMock.getMenuItemPages.mockResolvedValueOnce({
+      data: [
+        { id: "page-1", slug: "published-guide", status: "published" },
+        { id: "page-2", slug: "draft-guide", status: "draft" },
+      ],
+    });
+
+    const { generateStaticParams } = await import("./page");
+
+    await expect(generateStaticParams()).resolves.toEqual([
+      { slug: "published-guide" },
+    ]);
+  });
+
+  it("returns no static params when the API response has no page data", async () => {
+    apiServiceMock.getMenuItemPages.mockResolvedValueOnce({ data: null });
+
+    const { generateStaticParams } = await import("./page");
+
+    await expect(generateStaticParams()).resolves.toEqual([]);
+  });
+
+  it("generates metadata from the CMS page SEO fields", async () => {
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({
+      data: {
+        id: "page-meta",
+        title: "Fallback Title",
+        slug: "metadata-guide",
+        status: "published",
+        seoTitle: "SEO Title",
+        description: "Fallback description",
+        seoDescription: "SEO description",
+        canonicalUrl: "https://example.com/metadata-guide",
+        featuredImage: "/images/featured.webp",
+      },
+    });
+
+    const { generateMetadata } = await import("./page");
+
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ slug: "metadata-guide" }),
+    });
+
+    expect(metadata.title).toBe("SEO Title");
+    expect(metadata.description).toBe("SEO description");
+    expect(metadata.alternates).toEqual({
+      canonical: "https://example.com/metadata-guide",
+    });
+    expect(metadata.openGraph).toMatchObject({
+      title: "SEO Title",
+      description: "SEO description",
+      type: "website",
+      url: "/metadata-guide",
+      images: [
+        {
+          url: "/images/featured.webp",
+        },
+      ],
+    });
+  });
+
+  it("returns empty metadata when a CMS page is missing", async () => {
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({ data: null });
+
+    const { generateMetadata } = await import("./page");
+
+    await expect(
+      generateMetadata({ params: Promise.resolve({ slug: "missing" }) }),
+    ).resolves.toEqual({});
+  });
+
   it("shows a link back to the topic page when page data only has a partial topic object", async () => {
     apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({
       data: {
