@@ -7,6 +7,14 @@
 import DOMPurify from "isomorphic-dompurify";
 
 const BODY_H1_REGEX = /<(\/?)h1(\s|>)/gi;
+const STYLE_BLOCK_REGEX = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+const STYLE_BLOCK_PLACEHOLDER_ATTR = "data-sbt-style-block";
+const STYLE_BLOCK_PLACEHOLDER_REGEX =
+  /<span\s+data-sbt-style-block="(\d+)"><\/span>/gi;
+
+type PreservedStyleBlock = {
+  css: string;
+};
 
 // DOMPurify (v3) leaves dangerous CSS values such as `url(javascript:…)`,
 // `expression(…)` and `behavior:` inside `style` attributes intact when
@@ -29,9 +37,38 @@ function scrubStyleValue(value: string): string {
   return cleaned;
 }
 
+function extractStyleBlocks(html: string) {
+  const styleBlocks: PreservedStyleBlock[] = [];
+  const htmlWithPlaceholders = html.replace(
+    STYLE_BLOCK_REGEX,
+    (_match, css: string) => {
+      const index = styleBlocks.push({ css: scrubStyleValue(css) }) - 1;
+      return `<span ${STYLE_BLOCK_PLACEHOLDER_ATTR}="${index}"></span>`;
+    },
+  );
+
+  return { htmlWithPlaceholders, styleBlocks };
+}
+
+function restoreStyleBlocks(html: string, styleBlocks: PreservedStyleBlock[]) {
+  return html.replace(
+    STYLE_BLOCK_PLACEHOLDER_REGEX,
+    (_match, index: string) => {
+      const styleBlock = styleBlocks[Number(index)];
+      return styleBlock ? `<style>${styleBlock.css}</style>` : "";
+    },
+  );
+}
+
 DOMPurify.addHook("uponSanitizeAttribute", (_node, data) => {
   if (data.attrName === "style" && typeof data.attrValue === "string") {
     data.attrValue = scrubStyleValue(data.attrValue);
+  }
+});
+
+DOMPurify.addHook("uponSanitizeElement", (node) => {
+  if (node.nodeName.toLowerCase() === "style") {
+    node.textContent = scrubStyleValue(node.textContent || "");
   }
 });
 
@@ -41,7 +78,8 @@ DOMPurify.addHook("uponSanitizeAttribute", (_node, data) => {
  */
 export function sanitizeHtml(html: string): string {
   if (!html) return "";
-  return DOMPurify.sanitize(html, {
+  const { htmlWithPlaceholders, styleBlocks } = extractStyleBlocks(html);
+  const sanitized = DOMPurify.sanitize(htmlWithPlaceholders, {
     // Allow the structural/formatting tags Tiptap produces, plus layout
     // tags that the CMS supports through RawHtmlBlock (section, aside,
     // svg, etc.) so authored hero/marketing sections render correctly on
@@ -86,6 +124,7 @@ export function sanitizeHtml(html: string): string {
       "figcaption",
       "picture",
       "source",
+      "style",
       // Sectioning & layout
       "section",
       "aside",
@@ -245,6 +284,8 @@ export function sanitizeHtml(html: string): string {
     RETURN_DOM: false,
     RETURN_DOM_FRAGMENT: false,
   });
+
+  return restoreStyleBlocks(sanitized, styleBlocks);
 }
 
 export function demoteBodyH1ToH2(html: string): string {

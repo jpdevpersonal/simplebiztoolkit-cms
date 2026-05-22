@@ -17,5 +17,6 @@ export default defineConfig([
     'src/test',
     '**/*.test.ts',
     '**/*.test.tsx',
+    'public/vendor/**',
   ]),
 ])

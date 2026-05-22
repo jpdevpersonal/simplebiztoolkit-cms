@@ -1,0 +1,1067 @@
+/* ===================================================================
+   Estimate & Quote PDF Generator — Stylesheet
+   SimpleBizToolkit.com
+   Scoped under .estimate-quote-generator-page so the global site styles
+   continue to win outside the tool.
+   =================================================================== */
+
+/* --- Design tokens (aligned with the CSV Profit Calculator theme) --- */
+.estimate-quote-generator-page {
+  --bg: #f8f9fb;
+  --card: #ffffff;
+  --text: #0f1724;
+  --muted: #475569;
+  --heading: #414556;
+  --border: #e2e5ea;
+  --border-strong: rgba(65, 69, 86, 0.25);
+  --primary: #1a7f5a;
+  --primary-hover: #156b4c;
+  --primary-deep: #0d5c3f;
+  --brand-blue: #414556;
+  --accent: #f0f7f4;
+  --danger: #8a3a23;
+  --danger-bg: #fdf0ec;
+  --danger-border: #d9a89a;
+  --success: #234f2e;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 8px 30px rgba(26, 127, 90, 0.22);
+  --font-body:
+    var(--font-roboto), Roboto, ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-heading:
+    var(--font-poppins), Poppins, var(--font-roboto), Roboto, ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* --- Reset (scoped) ----------------------------------------------- */
+.estimate-quote-generator-page,
+.estimate-quote-generator-page *,
+.estimate-quote-generator-page *::before,
+.estimate-quote-generator-page *::after {
+  box-sizing: border-box;
+}
+
+/* --- Page layout -------------------------------------------------- */
+.estimate-quote-generator-page {
+  width: min(1200px, calc(100% - 2rem));
+  margin: 0 auto;
+  font-family: var(--font-body);
+  color: var(--text);
+  line-height: 1.55;
+  padding: 1.5rem 0 4rem;
+}
+
+.estimate-quote-generator-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      1200px 600px at 80% -10%,
+      rgba(26, 127, 90, 0.06),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at -10% 10%,
+      rgba(65, 69, 86, 0.05),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+  pointer-events: none;
+}
+
+.estimate-quote-generator-page .skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--brand-blue);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 var(--radius-sm) 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 100;
+}
+.estimate-quote-generator-page .skip-link:focus {
+  left: 0;
+}
+
+/* --- Breadcrumb --------------------------------------------------- */
+.estimate-quote-generator-page .page-breadcrumb {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.estimate-quote-generator-page .page-breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.estimate-quote-generator-page .page-breadcrumb li + li::before {
+  content: "/";
+  margin-right: 0.4rem;
+  color: var(--border-strong);
+}
+.estimate-quote-generator-page .page-breadcrumb a {
+  color: var(--brand-blue);
+  text-decoration: none;
+}
+.estimate-quote-generator-page .page-breadcrumb a:hover {
+  text-decoration: underline;
+}
+.estimate-quote-generator-page .page-breadcrumb li[aria-current="page"] {
+  color: var(--muted);
+}
+
+/* --- Hero --------------------------------------------------------- */
+.estimate-quote-generator-page .tool-hero {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.75rem 1.5rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+.estimate-quote-generator-page .tool-hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--accent);
+  color: var(--primary-deep);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+}
+.estimate-quote-generator-page .tool-hero .eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: inline-block;
+}
+.estimate-quote-generator-page .tool-hero h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  line-height: 1.15;
+  margin: 0.7rem 0 0.5rem;
+  color: var(--heading);
+}
+.estimate-quote-generator-page .tool-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 60ch;
+}
+
+.estimate-quote-generator-page .privacy-warning-card {
+  margin-bottom: 1.25rem;
+  background: #fffaf0;
+  border-color: #ead7ad;
+  padding: 0.75rem 1rem;
+}
+
+.estimate-quote-generator-page .privacy-warning-card strong {
+  color: #5f4520;
+  white-space: nowrap;
+}
+
+.estimate-quote-generator-page .privacy-warning-card p {
+  margin: 0;
+  width: 100%;
+  color: #6b5a42;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+/* --- Two-column layout ------------------------------------------- */
+.estimate-quote-generator-page .container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .estimate-quote-generator-page .container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* --- Card --------------------------------------------------------- */
+.estimate-quote-generator-page .card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.estimate-quote-generator-page .card h2 {
+  font-family: var(--font-heading);
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--heading);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+/* --- Form rows ---------------------------------------------------- */
+.estimate-quote-generator-page .form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+@media (min-width: 600px) {
+  .estimate-quote-generator-page .form-row.two {
+    grid-template-columns: 1fr 1fr;
+  }
+  .estimate-quote-generator-page .form-row.three {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.estimate-quote-generator-page label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin-bottom: 0.25rem;
+}
+
+.estimate-quote-generator-page input[type="text"],
+.estimate-quote-generator-page input[type="email"],
+.estimate-quote-generator-page input[type="number"],
+.estimate-quote-generator-page input[type="date"],
+.estimate-quote-generator-page input[type="url"],
+.estimate-quote-generator-page input[type="tel"],
+.estimate-quote-generator-page select,
+.estimate-quote-generator-page textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #f8fafc;
+  color: var(--text);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background-color 0.15s;
+}
+
+.estimate-quote-generator-page input::placeholder,
+.estimate-quote-generator-page textarea::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+.estimate-quote-generator-page input:focus,
+.estimate-quote-generator-page select:focus,
+.estimate-quote-generator-page textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(26, 127, 90, 0.15);
+}
+
+.estimate-quote-generator-page textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.estimate-quote-generator-page input[type="file"] {
+  padding: 0.4rem 0;
+  background: transparent;
+  border: none;
+}
+
+/* --- Doc type pills ----------------------------------------------- */
+.estimate-quote-generator-page .doc-type {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.estimate-quote-generator-page .doc-type label {
+  flex: 1 1 120px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  margin: 0;
+  background: #fff;
+  transition: all 0.15s;
+}
+.estimate-quote-generator-page .doc-type input {
+  display: none;
+}
+.estimate-quote-generator-page .doc-type input:checked + span {
+  color: var(--primary-deep);
+}
+.estimate-quote-generator-page .doc-type label:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--accent);
+  box-shadow: 0 0 0 2px rgba(26, 127, 90, 0.12);
+}
+
+/* --- Privacy note ------------------------------------------------- */
+.estimate-quote-generator-page .privacy-note {
+  font-size: 0.85rem;
+  background: #edf7ef;
+  border: 1px solid #9bb59d;
+  color: #234f2e;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+.estimate-quote-generator-page .privacy-note p {
+  margin: 0;
+}
+.estimate-quote-generator-page .privacy-note-primary {
+  font-weight: 500;
+}
+.estimate-quote-generator-page .privacy-note-secondary {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin-top: 0.2rem !important;
+}
+
+/* --- Logo preview ------------------------------------------------- */
+.estimate-quote-generator-page .logo-preview {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.estimate-quote-generator-page .logo-preview img {
+  max-width: 100px;
+  max-height: 60px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  padding: 4px;
+}
+.estimate-quote-generator-page .logo-remove {
+  font-size: 0.8rem;
+  color: var(--danger);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+.estimate-quote-generator-page .logo-remove:hover {
+  text-decoration: underline;
+}
+
+/* --- Line items table -------------------------------------------- */
+.estimate-quote-generator-page .items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.estimate-quote-generator-page .items-table th {
+  text-align: left;
+  padding: 0.4rem;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.estimate-quote-generator-page .items-table td {
+  padding: 0.35rem 0.25rem;
+  vertical-align: top;
+}
+.estimate-quote-generator-page .items-table input {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.9rem;
+}
+.estimate-quote-generator-page .items-table .line-total {
+  padding: 0.55rem 0.5rem;
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+.estimate-quote-generator-page .remove-row {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+  border-radius: 6px;
+}
+.estimate-quote-generator-page .remove-row:hover {
+  background: rgba(138, 58, 35, 0.08);
+}
+.estimate-quote-generator-page .items-mobile-wrap {
+  overflow-x: auto;
+}
+
+/* --- Buttons ------------------------------------------------------ */
+.estimate-quote-generator-page button {
+  font-family: inherit;
+  cursor: pointer;
+}
+.estimate-quote-generator-page .btn {
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.estimate-quote-generator-page .btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.estimate-quote-generator-page .btn-primary:hover {
+  background: var(--primary-hover);
+}
+.estimate-quote-generator-page .btn-secondary {
+  background: #fff;
+  color: var(--heading);
+  border-color: var(--border-strong);
+}
+.estimate-quote-generator-page .btn-secondary:hover {
+  background: var(--accent);
+}
+.estimate-quote-generator-page .btn-ghost {
+  background: transparent;
+  color: var(--primary-deep);
+  border: 1px dashed var(--border-strong);
+  padding: 0.55rem 0.9rem;
+}
+.estimate-quote-generator-page .btn-ghost:hover {
+  background: var(--accent);
+}
+
+/* --- Totals ------------------------------------------------------- */
+.estimate-quote-generator-page .totals {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+@media (min-width: 500px) {
+  .estimate-quote-generator-page .totals {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.estimate-quote-generator-page .totals-summary {
+  background: var(--accent);
+  border: 1px solid #c9e1d4;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+}
+.estimate-quote-generator-page .totals-summary div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.2rem 0;
+}
+.estimate-quote-generator-page .totals-summary .grand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-top: 1px solid #c9e1d4;
+  margin-top: 0.4rem;
+  padding-top: 0.5rem;
+  color: var(--primary-deep);
+}
+
+.estimate-quote-generator-page .actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* --- Validation --------------------------------------------------- */
+.estimate-quote-generator-page .error-msg {
+  color: var(--danger);
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: 10px;
+}
+.estimate-quote-generator-page .error-msg ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+}
+.estimate-quote-generator-page .field-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+}
+
+.estimate-quote-generator-page .field-hint {
+  display: none;
+  color: var(--danger);
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  line-height: 1.35;
+}
+.estimate-quote-generator-page .field-hint.show {
+  display: block;
+}
+.estimate-quote-generator-page .field-hint::before {
+  content: "⚠ ";
+  font-weight: 600;
+}
+.estimate-quote-generator-page input.is-invalid,
+.estimate-quote-generator-page select.is-invalid,
+.estimate-quote-generator-page textarea.is-invalid {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  box-shadow: 0 0 0 1px var(--danger-border) inset;
+}
+.estimate-quote-generator-page input.is-invalid:focus,
+.estimate-quote-generator-page select.is-invalid:focus,
+.estimate-quote-generator-page textarea.is-invalid:focus {
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(138, 58, 35, 0.18);
+}
+.estimate-quote-generator-page input.is-invalid:placeholder-shown:not(.touched),
+.estimate-quote-generator-page
+  textarea.is-invalid:placeholder-shown:not(.touched) {
+  border-color: var(--border);
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+/* --- Live preview ------------------------------------------------- */
+.estimate-quote-generator-page .preview-wrap {
+  border: 1.5px solid #b0bac8;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f5f7fa;
+  padding: 1rem;
+}
+.estimate-quote-generator-page .preview-doc {
+  background: #fff;
+  padding: 1.75rem;
+  font-size: 0.85rem;
+  color: #111827;
+  min-height: 400px;
+  border-radius: 6px;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.estimate-quote-generator-page .preview-doc h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+}
+.estimate-quote-generator-page .preview-doc .pd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.estimate-quote-generator-page .preview-doc .pd-header.right-logo {
+  flex-direction: row-reverse;
+}
+.estimate-quote-generator-page .preview-doc .pd-logo img {
+  max-width: 140px;
+  max-height: 70px;
+  object-fit: contain;
+}
+.estimate-quote-generator-page .preview-doc .pd-business {
+  font-size: 0.8rem;
+  color: #374151;
+}
+.estimate-quote-generator-page .preview-doc .pd-business strong {
+  font-size: 1rem;
+  color: #111827;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.estimate-quote-generator-page .preview-doc .pd-meta {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+}
+.estimate-quote-generator-page .preview-doc .pd-meta div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.1rem 0;
+}
+.estimate-quote-generator-page .preview-doc .pd-client {
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+.estimate-quote-generator-page .preview-doc .pd-client .label {
+  color: #6b7280;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+.estimate-quote-generator-page .preview-doc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.8rem;
+}
+.estimate-quote-generator-page .preview-doc table th {
+  background: #f3f4f6;
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+.estimate-quote-generator-page .preview-doc table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+.estimate-quote-generator-page .preview-doc table td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+.estimate-quote-generator-page .preview-doc .pd-totals {
+  margin-left: auto;
+  width: 100%;
+  max-width: 280px;
+  font-size: 0.85rem;
+}
+.estimate-quote-generator-page .preview-doc .pd-totals div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+.estimate-quote-generator-page .preview-doc .pd-totals .grand {
+  border-top: 2px solid #111827;
+  margin-top: 0.4rem;
+  padding-top: 0.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.estimate-quote-generator-page .preview-doc .pd-notes {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.78rem;
+  color: #374151;
+  white-space: pre-wrap;
+}
+.estimate-quote-generator-page .preview-doc .pd-notes .label {
+  text-transform: uppercase;
+  color: #6b7280;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+}
+
+/* --- Style variants (Classic / Modern / Minimal) --- */
+
+/* Modern: full-width accent band header, zebra rows, accent pill total */
+.estimate-quote-generator-page .preview-doc[data-style="modern"] {
+  padding: 0 0 1.75rem;
+}
+.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-band {
+  background: #1a7f5a;
+  color: #fff;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="modern"]
+  .pd-band-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-band-meta {
+  font-size: 0.78rem;
+  text-align: right;
+  opacity: 0.95;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="modern"]
+  .pd-band-meta
+  span {
+  opacity: 0.7;
+  margin-right: 0.25rem;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="modern"]
+  .pd-modern-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 0 1.75rem 0;
+  margin-bottom: 1.25rem;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="modern"]
+  .pd-modern-row
+  .pd-logo
+  img {
+  max-width: 110px;
+  max-height: 55px;
+}
+.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-client,
+.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-project,
+.estimate-quote-generator-page .preview-doc[data-style="modern"] table,
+.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-totals,
+.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-notes {
+  margin-left: 1.75rem;
+  margin-right: 1.75rem;
+  width: auto;
+}
+.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-totals {
+  margin-left: auto;
+  margin-right: 1.75rem;
+}
+.estimate-quote-generator-page .preview-doc[data-style="modern"] table th {
+  background: transparent;
+  border-bottom: 2px solid #1a7f5a;
+  color: #1a7f5a;
+  text-transform: uppercase;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="modern"]
+  tbody
+  tr:nth-child(even)
+  td {
+  background: #ecf6f1;
+}
+.estimate-quote-generator-page .preview-doc[data-style="modern"] tbody tr td {
+  border-bottom: none;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="modern"]
+  .pd-totals
+  .grand {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #1a7f5a;
+  color: #fff;
+  border-top: none;
+  border-radius: 4px;
+}
+
+/* Minimal: centered title between rules, two-col business/client, hairline table */
+.estimate-quote-generator-page
+  .preview-doc[data-style="minimal"]
+  .pd-minimal-head {
+  border-top: 1px solid #111827;
+  border-bottom: 1px solid #111827;
+  padding: 0.9rem 0;
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="minimal"]
+  .pd-minimal-head
+  h3 {
+  font-weight: 400;
+  font-size: 1.4rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #111827;
+  margin: 0;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="minimal"]
+  .pd-minimal-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.4rem;
+  letter-spacing: 0.04em;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="minimal"]
+  .pd-minimal-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="minimal"]
+  .pd-minimal-cols
+  .pd-client {
+  margin-bottom: 0;
+}
+.estimate-quote-generator-page .preview-doc[data-style="minimal"] table {
+  font-size: 0.78rem;
+}
+.estimate-quote-generator-page .preview-doc[data-style="minimal"] table th {
+  background: transparent;
+  border-bottom: 1px solid #d1d5db;
+  text-transform: none;
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: #6b7280;
+  letter-spacing: 0.05em;
+}
+.estimate-quote-generator-page .preview-doc[data-style="minimal"] table td {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 0.4rem 0.25rem;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="minimal"]
+  .pd-totals
+  .grand {
+  border-top: 1px solid #111827;
+  font-weight: 400;
+  font-size: 0.95rem;
+}
+@media (max-width: 600px) {
+  .estimate-quote-generator-page
+    .preview-doc[data-style="minimal"]
+    .pd-minimal-cols {
+    grid-template-columns: 1fr;
+  }
+  .estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-band {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .estimate-quote-generator-page
+    .preview-doc[data-style="modern"]
+    .pd-band-meta {
+    text-align: left;
+  }
+}
+
+.estimate-quote-generator-page .small-muted {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* Sticky preview on desktop */
+@media (min-width: 1024px) {
+  .estimate-quote-generator-page .preview-col {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+}
+
+.estimate-quote-generator-page :focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .estimate-quote-generator-page *,
+  .estimate-quote-generator-page *::before,
+  .estimate-quote-generator-page *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hidden by default; shown only on mobile */
+.estimate-quote-generator-page .preview-jump {
+  display: none;
+}
+
+/* --- Tablet ------------------------------------------------------- */
+@media (max-width: 1023px) {
+  .estimate-quote-generator-page {
+    width: min(100%, calc(100% - 1.5rem));
+  }
+}
+
+/* --- Mobile ------------------------------------------------------- */
+@media (max-width: 640px) {
+  .estimate-quote-generator-page .tool-hero {
+    padding: 1.25rem;
+  }
+  .estimate-quote-generator-page .privacy-warning-card {
+    padding: 0.65rem 0.75rem;
+  }
+  .estimate-quote-generator-page .privacy-warning-card strong {
+    white-space: normal;
+  }
+  .estimate-quote-generator-page .card {
+    padding: 1rem;
+  }
+  .estimate-quote-generator-page .card h2 {
+    font-size: 1rem;
+  }
+
+  .estimate-quote-generator-page .form-row.two,
+  .estimate-quote-generator-page .form-row.three {
+    grid-template-columns: 1fr;
+  }
+
+  /* Prevent iOS auto-zoom on focus (needs ≥ 16px font on inputs) */
+  .estimate-quote-generator-page input[type="text"],
+  .estimate-quote-generator-page input[type="email"],
+  .estimate-quote-generator-page input[type="number"],
+  .estimate-quote-generator-page input[type="date"],
+  .estimate-quote-generator-page input[type="url"],
+  .estimate-quote-generator-page input[type="tel"],
+  .estimate-quote-generator-page select,
+  .estimate-quote-generator-page textarea {
+    font-size: 16px;
+    padding: 0.7rem 0.75rem;
+    min-height: 44px;
+  }
+
+  .estimate-quote-generator-page .doc-type label {
+    flex: 1 1 0;
+    padding: 0.85rem 0.5rem;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .estimate-quote-generator-page .btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+  .estimate-quote-generator-page .actions .btn {
+    flex: 1 1 auto;
+  }
+  .estimate-quote-generator-page .preview-jump {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .estimate-quote-generator-page .actions-card {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: saturate(180%) blur(6px);
+    -webkit-backdrop-filter: saturate(180%) blur(6px);
+  }
+  .estimate-quote-generator-page .actions-card .actions {
+    margin-top: 0;
+  }
+
+  /* Stacked line item cards */
+  .estimate-quote-generator-page .items-mobile-wrap {
+    overflow-x: visible;
+  }
+  .estimate-quote-generator-page .items-table thead {
+    display: none;
+  }
+  .estimate-quote-generator-page .items-table,
+  .estimate-quote-generator-page .items-table tbody,
+  .estimate-quote-generator-page .items-table tr,
+  .estimate-quote-generator-page .items-table td {
+    display: block;
+    width: 100%;
+  }
+  .estimate-quote-generator-page .items-table tr {
+    background: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem 0.75rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+  }
+  .estimate-quote-generator-page .items-table td {
+    padding: 0.4rem 0;
+    border: none;
+  }
+  .estimate-quote-generator-page .items-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+  .estimate-quote-generator-page .items-table td.line-total {
+    text-align: left;
+    padding: 0.4rem 0;
+    font-size: 1rem;
+  }
+  .estimate-quote-generator-page .items-table td.row-actions {
+    padding: 0;
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+  }
+  .estimate-quote-generator-page .items-table .remove-row {
+    font-size: 1.4rem;
+    padding: 0.25rem 0.55rem;
+  }
+
+  .estimate-quote-generator-page .totals {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .estimate-quote-generator-page .preview-wrap {
+    padding: 0.5rem;
+  }
+  .estimate-quote-generator-page .preview-doc {
+    padding: 1rem;
+    min-height: 320px;
+  }
+  .estimate-quote-generator-page .preview-doc h3 {
+    font-size: 1.25rem;
+  }
+  .estimate-quote-generator-page .preview-doc .pd-header {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .estimate-quote-generator-page .preview-doc .pd-totals {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .estimate-quote-generator-page .card {
+    padding: 0.85rem;
+  }
+  .estimate-quote-generator-page .actions .btn {
+    font-size: 0.9rem;
+    padding: 0.65rem 0.75rem;
+  }
+}

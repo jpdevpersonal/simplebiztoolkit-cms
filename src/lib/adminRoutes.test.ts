@@ -54,4 +54,33 @@ describe("adminRoutes", () => {
       CMS_HOME_PATH,
     );
   });
+
+  it("canonicalizes admin paths with query strings to CMS paths", () => {
+    expect(toCmsPath("/admin?redirect=1")).toBe("/cms?redirect=1");
+    expect(toCmsPath("/admin#section")).toBe("/cms#section");
+  });
+
+  it("rewrites CMS paths with query strings back to admin routes", () => {
+    expect(toLegacyAdminPath("/cms?tab=seo")).toBe("/admin?tab=seo");
+    expect(toLegacyAdminPath("/cms#top")).toBe("/admin#top");
+  });
+
+  it("returns the CMS home path for malformed callback URLs", () => {
+    // An invalid URL that can't be parsed at all
+    expect(getSafeCmsCallbackUrl("://bad-url", "https://example.com")).toBe(
+      CMS_HOME_PATH,
+    );
+  });
+
+  it("returns CMS home path when callback URL is null or empty", () => {
+    expect(getSafeCmsCallbackUrl(null, "https://example.com")).toBe(
+      CMS_HOME_PATH,
+    );
+    expect(getSafeCmsCallbackUrl("", "https://example.com")).toBe(
+      CMS_HOME_PATH,
+    );
+    expect(getSafeCmsCallbackUrl("   ", "https://example.com")).toBe(
+      CMS_HOME_PATH,
+    );
+  });
 });

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  getApiBaseUrl,
   getApiBaseUrlForBrowser,
   getApiBaseUrlForServer,
   normalizeApiBaseUrl,
@@ -45,5 +46,30 @@ describe("apiBaseUrl", () => {
     vi.stubEnv("NEXT_PUBLIC_API_URL", undefined);
 
     expect(getApiBaseUrlForBrowser()).toBe("http://localhost:5117");
+  });
+
+  it("returns an empty string for a blank base URL", () => {
+    expect(normalizeApiBaseUrl("   ")).toBe("");
+    expect(normalizeApiBaseUrl("")).toBe("");
+  });
+
+  it("throws in production when no API URL is configured", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("API_URL", undefined);
+    vi.stubEnv("INTERNAL_API_URL", undefined);
+    vi.stubEnv("NEXT_PUBLIC_API_URL", undefined);
+
+    expect(() => getApiBaseUrlForServer()).toThrow(
+      "Missing API base URL for server builds",
+    );
+  });
+
+  it("getApiBaseUrl delegates to the server path in a Node.js environment", () => {
+    vi.stubEnv("NODE_ENV", "test");
+    vi.stubEnv("NEXT_PUBLIC_API_URL", undefined);
+
+    // In Node.js (test environment), window is undefined so server path is used
+    const url = getApiBaseUrl();
+    expect(url).toBe("http://localhost:5117");
   });
 });

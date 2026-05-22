@@ -190,7 +190,7 @@ export default function RichContentField({
     try {
       const saved = localStorage.getItem(storageKey) as EditorMode | null;
       if (saved === "html" || saved === "tiptap") {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         setMode(saved);
       }
     } catch {

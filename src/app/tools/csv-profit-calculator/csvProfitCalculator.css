@@ -1056,6 +1056,28 @@ html {
   margin: 0;
 }
 
+.upload-clear-row {
+  margin-top: 0.6rem;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-clear-button {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.upload-clear-button:hover,
+.upload-clear-button:focus-visible {
+  color: var(--text);
+}
+
 /* --- File count pill --------------------------------------------- */
 .file-count-pill {
   display: inline-flex;
