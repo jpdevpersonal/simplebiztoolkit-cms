@@ -331,6 +331,17 @@
   border-radius: 8px;
   margin-top: 0.5rem;
 }
+.estimate-quote-generator-page .privacy-note p {
+  margin: 0;
+}
+.estimate-quote-generator-page .privacy-note-primary {
+  font-weight: 500;
+}
+.estimate-quote-generator-page .privacy-note-secondary {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin-top: 0.2rem !important;
+}
 
 /* --- Logo preview ------------------------------------------------- */
 .estimate-quote-generator-page .logo-preview {
