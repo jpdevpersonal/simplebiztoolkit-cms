@@ -688,11 +688,11 @@
 /* --- Style variants (Classic / Modern / Minimal) --- */
 
 /* Modern: full-width accent band header, zebra rows, accent pill total */
-.estimate-quote-generator-page .preview-doc[data-style="modern"] {
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] {
   padding: 0 0 1.75rem;
 }
-.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-band {
-  background: #1a7f5a;
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-band {
+  background: var(--accent, #1a7f5a);
   color: #fff;
   padding: 1.25rem 1.75rem;
   display: flex;
@@ -703,26 +703,26 @@
   margin-bottom: 1.25rem;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="modern"]
+  .preview-doc[data-layout="modern"]
   .pd-band-title {
   font-size: 1.75rem;
   font-weight: 800;
   letter-spacing: 0.06em;
 }
-.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-band-meta {
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-band-meta {
   font-size: 0.78rem;
   text-align: right;
   opacity: 0.95;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="modern"]
+  .preview-doc[data-layout="modern"]
   .pd-band-meta
   span {
   opacity: 0.7;
   margin-right: 0.25rem;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="modern"]
+  .preview-doc[data-layout="modern"]
   .pd-modern-row {
   display: flex;
   align-items: flex-start;
@@ -731,49 +731,49 @@
   margin-bottom: 1.25rem;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="modern"]
+  .preview-doc[data-layout="modern"]
   .pd-modern-row
   .pd-logo
   img {
   max-width: 110px;
   max-height: 55px;
 }
-.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-client,
-.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-project,
-.estimate-quote-generator-page .preview-doc[data-style="modern"] table,
-.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-totals,
-.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-notes {
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-client,
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-project,
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] table,
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-totals,
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-notes {
   margin-left: 1.75rem;
   margin-right: 1.75rem;
   width: auto;
 }
-.estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-totals {
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-totals {
   margin-left: auto;
   margin-right: 1.75rem;
 }
-.estimate-quote-generator-page .preview-doc[data-style="modern"] table th {
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] table th {
   background: transparent;
-  border-bottom: 2px solid #1a7f5a;
-  color: #1a7f5a;
+  border-bottom: 2px solid var(--accent, #1a7f5a);
+  color: var(--accent, #1a7f5a);
   text-transform: uppercase;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="modern"]
+  .preview-doc[data-layout="modern"]
   tbody
   tr:nth-child(even)
   td {
-  background: #ecf6f1;
+  background: var(--accent-tint, #ecf6f1);
 }
-.estimate-quote-generator-page .preview-doc[data-style="modern"] tbody tr td {
+.estimate-quote-generator-page .preview-doc[data-layout="modern"] tbody tr td {
   border-bottom: none;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="modern"]
+  .preview-doc[data-layout="modern"]
   .pd-totals
   .grand {
   margin-top: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: #1a7f5a;
+  background: var(--accent, #1a7f5a);
   color: #fff;
   border-top: none;
   border-radius: 4px;
@@ -781,27 +781,27 @@
 
 /* Minimal: centered title between rules, two-col business/client, hairline table */
 .estimate-quote-generator-page
-  .preview-doc[data-style="minimal"]
+  .preview-doc[data-layout="minimal"]
   .pd-minimal-head {
-  border-top: 1px solid #111827;
-  border-bottom: 1px solid #111827;
+  border-top: 1px solid var(--accent, #111827);
+  border-bottom: 1px solid var(--accent, #111827);
   padding: 0.9rem 0;
   text-align: center;
   margin-bottom: 1.25rem;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="minimal"]
+  .preview-doc[data-layout="minimal"]
   .pd-minimal-head
   h3 {
   font-weight: 400;
   font-size: 1.4rem;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: #111827;
+  color: var(--accent, #111827);
   margin: 0;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="minimal"]
+  .preview-doc[data-layout="minimal"]
   .pd-minimal-meta {
   font-size: 0.75rem;
   color: #6b7280;
@@ -809,7 +809,7 @@
   letter-spacing: 0.04em;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="minimal"]
+  .preview-doc[data-layout="minimal"]
   .pd-minimal-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -817,15 +817,15 @@
   margin-bottom: 1.5rem;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="minimal"]
+  .preview-doc[data-layout="minimal"]
   .pd-minimal-cols
   .pd-client {
   margin-bottom: 0;
 }
-.estimate-quote-generator-page .preview-doc[data-style="minimal"] table {
+.estimate-quote-generator-page .preview-doc[data-layout="minimal"] table {
   font-size: 0.78rem;
 }
-.estimate-quote-generator-page .preview-doc[data-style="minimal"] table th {
+.estimate-quote-generator-page .preview-doc[data-layout="minimal"] table th {
   background: transparent;
   border-bottom: 1px solid #d1d5db;
   text-transform: none;
@@ -834,30 +834,132 @@
   color: #6b7280;
   letter-spacing: 0.05em;
 }
-.estimate-quote-generator-page .preview-doc[data-style="minimal"] table td {
+.estimate-quote-generator-page .preview-doc[data-layout="minimal"] table td {
   border-bottom: 1px solid #f3f4f6;
   padding: 0.4rem 0.25rem;
 }
 .estimate-quote-generator-page
-  .preview-doc[data-style="minimal"]
+  .preview-doc[data-layout="minimal"]
   .pd-totals
   .grand {
-  border-top: 1px solid #111827;
+  border-top: 1px solid var(--accent, #111827);
   font-weight: 400;
   font-size: 0.95rem;
 }
+
+/* --- Bold: modern band layout, deeper accent, stronger table headers --- */
+.estimate-quote-generator-page .preview-doc[data-style="bold"] .pd-band {
+  padding: 1.5rem 1.75rem;
+}
+.estimate-quote-generator-page .preview-doc[data-style="bold"] .pd-band-title {
+  font-size: 2rem;
+  letter-spacing: 0.12em;
+}
+.estimate-quote-generator-page .preview-doc[data-style="bold"] table th {
+  border-bottom-width: 3px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="bold"]
+  tbody
+  tr
+  td {
+  border-bottom: 1px solid #e5e7eb;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="bold"]
+  .pd-totals
+  .grand {
+  border-radius: 0;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* --- Elegant: minimal layout with serif typography and burgundy accent --- */
+.estimate-quote-generator-page .preview-doc[data-style="elegant"] {
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="elegant"]
+  .pd-minimal-head {
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+  position: relative;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="elegant"]
+  .pd-minimal-head
+  h3 {
+  font-style: italic;
+  letter-spacing: 0.18em;
+  font-weight: 400;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="elegant"]
+  .pd-minimal-head::after {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--accent);
+  margin: 0.5rem auto 0;
+}
+.estimate-quote-generator-page .preview-doc[data-style="elegant"] table th {
+  font-style: italic;
+  color: var(--accent);
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="elegant"]
+  .pd-totals
+  .grand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--accent);
+  border-top-width: 2px;
+}
+
+/* --- Corporate: classic layout with a vertical accent stripe --- */
+.estimate-quote-generator-page .preview-doc[data-style="corporate"] {
+  border-left: 6px solid var(--accent);
+}
+.estimate-quote-generator-page .preview-doc[data-style="corporate"] h3 {
+  color: var(--accent);
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="corporate"]
+  .pd-business
+  strong {
+  color: var(--accent);
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="corporate"]
+  table
+  th {
+  background: var(--accent);
+  color: #fff;
+  border-bottom: none;
+}
+.estimate-quote-generator-page
+  .preview-doc[data-style="corporate"]
+  .pd-totals
+  .grand {
+  border-top: 2px solid var(--accent);
+  color: var(--accent);
+}
+
 @media (max-width: 600px) {
   .estimate-quote-generator-page
-    .preview-doc[data-style="minimal"]
+    .preview-doc[data-layout="minimal"]
     .pd-minimal-cols {
     grid-template-columns: 1fr;
   }
-  .estimate-quote-generator-page .preview-doc[data-style="modern"] .pd-band {
+  .estimate-quote-generator-page .preview-doc[data-layout="modern"] .pd-band {
     flex-direction: column;
     align-items: flex-start;
   }
   .estimate-quote-generator-page
-    .preview-doc[data-style="modern"]
+    .preview-doc[data-layout="modern"]
     .pd-band-meta {
     text-align: left;
   }
