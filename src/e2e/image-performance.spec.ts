@@ -114,8 +114,27 @@ async function getLCP(page: Page): Promise<number> {
 
 async function waitForImagesToSettle(page: Page): Promise<void> {
   await page.waitForLoadState("domcontentloaded");
+  await page.evaluate(async () => {
+    const viewportStep = window.innerHeight || 800;
+    const maxScrollY = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+    );
+
+    for (let scrollY = 0; scrollY <= maxScrollY; scrollY += viewportStep) {
+      window.scrollTo(0, scrollY);
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    }
+
+    window.scrollTo(0, 0);
+  });
   await page.waitForFunction(() =>
-    Array.from(document.images).every((img) => img.complete),
+    Array.from(document.images)
+      .filter((img) => {
+        const src = img.currentSrc || img.src;
+        return src !== "" && !src.startsWith("data:");
+      })
+      .every((img) => img.complete),
   );
 }
 
