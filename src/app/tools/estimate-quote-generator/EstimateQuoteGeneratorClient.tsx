@@ -135,23 +135,31 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
 
   function clearBrowserStorageForPrivacy() {
     if (!windowRef) return;
-    try {
-      windowRef.localStorage.clear();
-    } catch (err) {
-      console.warn(
-        "Estimate quote generator could not clear local browser storage.",
-        err,
-      );
-    }
 
-    try {
-      windowRef.sessionStorage.clear();
-    } catch (err) {
-      console.warn(
-        "Estimate quote generator could not clear session browser storage.",
-        err,
-      );
-    }
+    // Privacy:
+    // Only remove keys this tool may have touched (prefix "tool-estimate-").
+    // Do NOT call storage.clear() — that would wipe unrelated keys belonging
+    // to the rest of the site (e.g. theme preferences, consent flags).
+    const removeToolKeys = (storage: Storage, label: string) => {
+      try {
+        const keysToRemove: string[] = [];
+        for (let index = 0; index < storage.length; index += 1) {
+          const key = storage.key(index);
+          if (key && key.startsWith("tool-estimate-")) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((key) => storage.removeItem(key));
+      } catch (err) {
+        console.warn(
+          `Estimate quote generator could not clear ${label} browser storage.`,
+          err,
+        );
+      }
+    };
+
+    removeToolKeys(windowRef.localStorage, "local");
+    removeToolKeys(windowRef.sessionStorage, "session");
   }
 
   function clearInPageDataForPrivacy() {
@@ -1346,6 +1354,10 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
   }
 
   // ---------- Reset ----------
+  // Privacy:
+  // The Reset button only clears this tool's form fields, line items, and
+  // in-memory logo state. It must NOT touch any browser storage outside the
+  // "tool-estimate-" prefix scope handled by clearBrowserStorageForPrivacy.
   on($("resetBtn"), "click", () => {
     if (!windowRef.confirm("Reset the entire form? This cannot be undone."))
       return;
@@ -1414,6 +1426,17 @@ export default function EstimateQuoteGeneratorClient() {
 
   return (
     <>
+      {/*
+        Third-party script kept (not migrated to an npm ES import):
+        jsPDF is served from /public/vendor/jspdf.umd.min.js, which is a
+        self-hosted, version-pinned bundle. This deliberately avoids any
+        external CDN request and keeps the tool fully self-contained for
+        privacy. Library exposes itself on `window.jspdf` and is consumed
+        synchronously inside the PDF generation handler, which is awkward
+        to refactor into a top-level ES import without changing behaviour.
+        If migrating to `import { jsPDF } from "jspdf"`, verify that the
+        TypeScript surface and signing of the generated PDF remain identical.
+      */}
       <Script src="/vendor/jspdf.umd.min.js" strategy="afterInteractive" />
       <div ref={rootRef} className="estimate-quote-generator-page">
         <a className="skip-link" href="#docType">
@@ -1565,12 +1588,26 @@ export default function EstimateQuoteGeneratorClient() {
                     </select>
                   </div>
                 </div>
-                <div className="privacy-note">
-                  🔒 <strong>Strict privacy:</strong> all processing happens
-                  locally in your browser. No data, logo, or PDF is ever
-                  uploaded, sent, or stored on any server. The PDF library is
-                  bundled locally. This page makes zero external network
-                  requests.
+                <div className="privacy-note" role="note">
+                  {/*
+                    Privacy:
+                    Business details, client details, logo image and all
+                    line-item data live only in React/DOM state on the user's
+                    device. Nothing here is transmitted to a server.
+                  */}
+                  <p className="privacy-note-primary">
+                    <span aria-hidden="true">🔒</span> Processed locally in your
+                    browser — your information is not uploaded or stored on our
+                    servers.
+                  </p>
+                  <p className="privacy-note-secondary">
+                    For best practice, avoid entering unnecessary personal or
+                    sensitive information.
+                  </p>
+                  <p className="privacy-note-secondary">
+                    Generated files remain on your device unless you choose to
+                    save or share them.
+                  </p>
                 </div>
               </section>
 

@@ -310,6 +310,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
   const downloadXlsxButton = query<HTMLButtonElement>("#downloadXlsxButton");
   const downloadReadyMessage = query<HTMLElement>("#downloadReadyMessage");
   const submitAnotherButton = query<HTMLButtonElement>("#submitAnotherButton");
+  const clearFormButton = query<HTMLButtonElement>("#clearFormButton");
 
   const statusMessage = query<HTMLElement>("#statusMessage");
 
@@ -2259,6 +2260,29 @@ function setupCsvProfitCalculator(root: HTMLElement) {
   on(extraCostsToggle, "keydown", handleExtraCostsToggleKeyDown);
   on(submitAnotherButton, "click", resetToolState);
   on(cancelButton, "click", resetToolState);
+  // Privacy:
+  // "Clear Form" only resets in-memory tool state (uploaded CSV rows,
+  // company name, mappings, summary) — it does not clear any browser
+  // storage outside this tool's scope. Confirmation is requested only
+  // when the user has populated multiple fields.
+  on(clearFormButton, "click", () => {
+    const populatedFields = [
+      state.uploadedFiles.length > 0,
+      state.companyName.length > 0,
+      state.summaryRows.length > 0,
+    ].filter(Boolean).length;
+
+    if (
+      populatedFields >= 2 &&
+      windowRef &&
+      !windowRef.confirm(
+        "Clear the form and remove all uploaded CSV data from this page? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    resetToolState();
+  });
   on(processButton, "click", handleProcessClick);
   on(downloadCsvButton, "click", handleDownloadCsvClick);
   on(downloadXlsxButton, "click", handleDownloadXlsxClick);
@@ -2721,6 +2745,13 @@ export default function CsvProfitCalculatorClient() {
               </div>
             </div>
 
+            {/*
+              Privacy:
+              User-entered data and uploaded CSVs remain client-side only.
+              No form values, file contents, or generated reports are
+              transmitted externally — the notice below reflects actual
+              behaviour, not just intent.
+            */}
             <div className="upload-trust" role="note">
               <p className="upload-trust-primary">
                 <svg
@@ -2737,12 +2768,26 @@ export default function CsvProfitCalculatorClient() {
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                Processed locally in your browser, nothing is uploaded or stored
+                Processed locally in your browser — your information is not
+                uploaded or stored on our servers.
               </p>
               <p className="upload-trust-secondary">
-                For best practice, avoid including personal or sensitive
-                information
+                For best practice, avoid entering unnecessary personal or
+                sensitive information.
               </p>
+              <p className="upload-trust-secondary">
+                Generated files remain on your device unless you choose to save
+                or share them.
+              </p>
+            </div>
+            <div className="upload-clear-row">
+              <button
+                type="button"
+                id="clearFormButton"
+                className="upload-clear-button"
+              >
+                Clear Form
+              </button>
             </div>
           </section>
 

@@ -87,9 +87,13 @@ describe("EstimateQuoteGeneratorClient", () => {
     expect(container.querySelectorAll("#itemsBody tr")).toHaveLength(1);
   });
 
-  it("clears stored browser data and form values when the page session closes", () => {
-    localStorage.setItem("estimate-quote-generator:draft", "private quote");
-    sessionStorage.setItem("estimate-quote-generator:draft", "private quote");
+  it("clears only tool-prefixed storage keys and form values when the page session closes", () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    localStorage.setItem("tool-estimate-draft", "private quote");
+    localStorage.setItem("unrelated-site-setting", "keep me");
+    sessionStorage.setItem("tool-estimate-draft", "private quote");
+    sessionStorage.setItem("unrelated-session-flag", "keep me");
 
     const { container } = render(<EstimateQuoteGeneratorClient />);
 
@@ -100,16 +104,25 @@ describe("EstimateQuoteGeneratorClient", () => {
 
     fireEvent(window, new Event("pagehide"));
 
-    expect(localStorage.length).toBe(0);
-    expect(sessionStorage.length).toBe(0);
+    // Tool-prefixed keys must be removed.
+    expect(localStorage.getItem("tool-estimate-draft")).toBeNull();
+    expect(sessionStorage.getItem("tool-estimate-draft")).toBeNull();
+    // Unrelated keys belonging to the rest of the site must be preserved.
+    expect(localStorage.getItem("unrelated-site-setting")).toBe("keep me");
+    expect(sessionStorage.getItem("unrelated-session-flag")).toBe("keep me");
     expect(bizNameInput.value).toBe("");
     expect(container.querySelectorAll("#itemsBody tr")).toHaveLength(0);
   });
 
-  it("logs a warning when stored browser data cannot be cleared", () => {
+  it("logs a warning when tool-prefixed storage cannot be cleared", () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    localStorage.setItem("tool-estimate-draft", "private quote");
+    sessionStorage.setItem("tool-estimate-draft", "private quote");
+
     const storageError = new Error("storage blocked");
-    const clearSpy = vi
-      .spyOn(Storage.prototype, "clear")
+    const removeSpy = vi
+      .spyOn(Storage.prototype, "removeItem")
       .mockImplementation(() => {
         throw storageError;
       });
@@ -131,7 +144,7 @@ describe("EstimateQuoteGeneratorClient", () => {
         storageError,
       );
     } finally {
-      clearSpy.mockRestore();
+      removeSpy.mockRestore();
       warnSpy.mockRestore();
     }
   });
