@@ -172,6 +172,25 @@ describe("AdminModal", () => {
     expect(closeButton).toHaveFocus();
   });
 
+  it("shift+tab wraps focus backward within the dialog", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AdminModal isOpen={true} onCloseAction={vi.fn()} title="Shift tab test">
+        <button type="button">Action A</button>
+        <button type="button">Action B</button>
+      </AdminModal>,
+    );
+
+    const closeButton = screen.getByRole("button", { name: "Close" });
+    expect(closeButton).toHaveFocus();
+
+    // Shift+Tab from the first focusable (closeButton) should wrap to last
+    await user.keyboard("{Shift>}{Tab}{/Shift}");
+    const actionB = screen.getByRole("button", { name: "Action B" });
+    expect(actionB).toHaveFocus();
+  });
+
   it("restores focus to the previously focused element when closed", async () => {
     const user = userEvent.setup();
 

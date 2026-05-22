@@ -89,4 +89,32 @@ describe("AdminPagesTable", () => {
       expect(cell.getAttribute("data-label")).toBe(expectedLabels[i]);
     });
   });
+
+  it("adds sort-active class to Menu Item, Status, and Published column headers when clicked", () => {
+    render(<AdminPagesTable pages={pages} />);
+
+    const menuItemHeader = screen.getByRole("columnheader", {
+      name: /menu item/i,
+    });
+    fireEvent.click(menuItemHeader);
+    expect(menuItemHeader).toHaveClass("sort-active");
+
+    const statusHeader = screen.getByRole("columnheader", { name: /status/i });
+    fireEvent.click(statusHeader);
+    expect(statusHeader).toHaveClass("sort-active");
+
+    const publishedHeader = screen.getByRole("columnheader", {
+      name: /published/i,
+    });
+    fireEvent.click(publishedHeader);
+    expect(publishedHeader).toHaveClass("sort-active");
+  });
+
+  it("adds sort-active class to Slug column header when clicked", () => {
+    render(<AdminPagesTable pages={pages} />);
+
+    const slugHeader = screen.getByRole("columnheader", { name: /slug/i });
+    fireEvent.click(slugHeader);
+    expect(slugHeader).toHaveClass("sort-active");
+  });
 });
