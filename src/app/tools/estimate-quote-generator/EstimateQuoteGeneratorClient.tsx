@@ -52,23 +52,56 @@ type FieldValidator = (value: string) => string;
 const MAX_LOGO_BYTES = 3 * 1024 * 1024; // 3MB
 const MAX_LOGO_DIM = 400;
 
+type StyleId =
+  | "classic"
+  | "modern"
+  | "minimal"
+  | "bold"
+  | "elegant"
+  | "corporate";
+
 type StylePreset = {
-  id: "classic" | "modern" | "minimal";
+  id: StyleId;
+  layout: "classic" | "modern" | "minimal";
   accentRgb: [number, number, number];
+  zebra?: boolean;
+  serif?: boolean;
+  sidebar?: boolean;
 };
 
 const STYLE_PRESETS: Record<string, StylePreset> = {
   classic: {
     id: "classic",
+    layout: "classic",
     accentRgb: [17, 24, 39],
   },
   modern: {
     id: "modern",
+    layout: "modern",
     accentRgb: [26, 127, 90],
+    zebra: true,
   },
   minimal: {
     id: "minimal",
+    layout: "minimal",
     accentRgb: [55, 65, 81],
+  },
+  bold: {
+    id: "bold",
+    layout: "modern",
+    accentRgb: [49, 46, 129],
+  },
+  elegant: {
+    id: "elegant",
+    layout: "minimal",
+    accentRgb: [127, 29, 29],
+    serif: true,
+  },
+  corporate: {
+    id: "corporate",
+    layout: "classic",
+    accentRgb: [30, 58, 138],
+    sidebar: true,
   },
 };
 
@@ -383,9 +416,20 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
 
     const previewEl = $("preview");
     previewEl.dataset.style = style.id;
+    previewEl.dataset.layout = style.layout;
+    previewEl.style.setProperty(
+      "--accent",
+      `rgb(${style.accentRgb[0]}, ${style.accentRgb[1]}, ${style.accentRgb[2]})`,
+    );
+    const tintRgb = (rgb: [number, number, number], amount: number) =>
+      `rgb(${Math.round(rgb[0] + (255 - rgb[0]) * amount)}, ${Math.round(rgb[1] + (255 - rgb[1]) * amount)}, ${Math.round(rgb[2] + (255 - rgb[2]) * amount)})`;
+    previewEl.style.setProperty(
+      "--accent-tint",
+      tintRgb(style.accentRgb, 0.92),
+    );
 
     let headerHtml = "";
-    if (style.id === "modern") {
+    if (style.layout === "modern") {
       headerHtml = `
         <div class="pd-band">
           <div class="pd-band-title">${escapeHtml(docType).toUpperCase()}</div>
@@ -400,7 +444,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
           ${businessBlock}
         </div>
       `;
-    } else if (style.id === "minimal") {
+    } else if (style.layout === "minimal") {
       const metaInline = [
         docNumber ? `No. ${escapeHtml(docNumber)}` : "",
         issueDate ? `Issued ${escapeHtml(issueDate)}` : "",
@@ -439,7 +483,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       `;
     }
 
-    const showClientAfterHeader = style.id !== "minimal";
+    const showClientAfterHeader = style.layout !== "minimal";
     previewEl.innerHTML = `
       ${headerHtml}
       ${showClientAfterHeader ? clientBlock : ""}
@@ -846,6 +890,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     const issueDate = ($("issueDate") as HTMLInputElement).value;
     const expiryDate = ($("expiryDate") as HTMLInputElement).value;
     const t = calcTotals();
+    const font = style.serif ? "times" : "helvetica";
 
     const tint = (
       rgb: [number, number, number],
@@ -857,7 +902,15 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     ];
 
     // -------------------- HEADER (per style) --------------------
-    if (style.id === "modern") {
+    if (style.sidebar) {
+      doc.setFillColor(
+        style.accentRgb[0],
+        style.accentRgb[1],
+        style.accentRgb[2],
+      );
+      doc.rect(0, 0, 10, pageH, "F");
+    }
+    if (style.layout === "modern") {
       // Full-width accent band with title + meta inside it
       const bandH = 90;
       doc.setFillColor(
@@ -866,11 +919,11 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         style.accentRgb[2],
       );
       doc.rect(0, 0, pageW, bandH, "F");
-      doc.setFont("helvetica", "bold");
+      doc.setFont(font, "bold");
       doc.setFontSize(28);
       doc.setTextColor(255, 255, 255);
       doc.text(docType.toUpperCase(), margin, 48);
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(10);
       [
         `No. ${docNumber}`,
@@ -897,13 +950,13 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         }
       }
       if (businessName) {
-        doc.setFont("helvetica", "bold");
+        doc.setFont(font, "bold");
         doc.setFontSize(12);
         doc.setTextColor(17, 24, 39);
         doc.text(businessName, margin, bizY);
         bizY += SP.line + 2;
       }
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(10);
       doc.setTextColor(75, 85, 99);
       [bizAddress, bizEmail, bizPhone, bizWebsite]
@@ -915,18 +968,18 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
           });
         });
       y = bizY + SP.section;
-    } else if (style.id === "minimal") {
+    } else if (style.layout === "minimal") {
       // Centered title between two hairlines, inline meta below
       doc.setDrawColor(17, 24, 39);
       doc.setLineWidth(0.6);
       doc.line(margin, y, pageW - margin, y);
       y += 26;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(20);
       doc.setTextColor(17, 24, 39);
       doc.text(docType, pageW / 2, y, { align: "center" });
       y += 10;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(9);
       doc.setTextColor(107, 114, 128);
       const metaInline = [
@@ -964,13 +1017,13 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         }
       }
       if (businessName) {
-        doc.setFont("helvetica", "bold");
+        doc.setFont(font, "bold");
         doc.setFontSize(11);
         doc.setTextColor(17, 24, 39);
         doc.text(businessName, leftX, leftY);
         leftY += SP.line + 2;
       }
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(10);
       doc.setTextColor(75, 85, 99);
       [bizAddress, bizEmail, bizPhone, bizWebsite]
@@ -983,7 +1036,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         });
 
       // Right column: client
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(8);
       doc.setTextColor(107, 114, 128);
       doc.text("BILL TO", rightX, rightY);
@@ -995,13 +1048,13 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       ).value.trim();
       const clientEmailV = ($("clientEmail") as HTMLInputElement).value.trim();
       if (clientBizV) {
-        doc.setFont("helvetica", "bold");
+        doc.setFont(font, "bold");
         doc.setFontSize(11);
         doc.setTextColor(17, 24, 39);
         doc.text(clientBizV, rightX, rightY);
         rightY += SP.line + 1;
       }
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(10);
       doc.setTextColor(55, 65, 81);
       if (clientNameV) {
@@ -1038,7 +1091,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         }
       }
 
-      doc.setFont("helvetica", "bold");
+      doc.setFont(font, "bold");
       doc.setFontSize(24);
       doc.setTextColor(17, 24, 39);
       const titleX =
@@ -1047,7 +1100,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         logoPos === "right" && state.logoDataUrl ? "left" : "right";
       doc.text(docType.toUpperCase(), titleX, y + 22, { align: titleAlign });
 
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(10);
       doc.setTextColor(75, 85, 99);
       [
@@ -1061,14 +1114,14 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       y = Math.max(logoBottom, y + 90) + SP.section;
 
       if (businessName || bizAddress || bizEmail || bizPhone || bizWebsite) {
-        doc.setFont("helvetica", "bold");
+        doc.setFont(font, "bold");
         doc.setFontSize(12);
         doc.setTextColor(17, 24, 39);
         if (businessName) {
           doc.text(businessName, margin, y);
           y += SP.line + 2;
         }
-        doc.setFont("helvetica", "normal");
+        doc.setFont(font, "normal");
         doc.setFontSize(10);
         doc.setTextColor(75, 85, 99);
         [bizAddress, bizEmail, bizPhone, bizWebsite]
@@ -1084,8 +1137,8 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     }
 
     // -------------------- BILL TO (classic + modern only; minimal already drew it) --------------------
-    if (style.id !== "minimal") {
-      doc.setFont("helvetica", "bold");
+    if (style.layout !== "minimal") {
+      doc.setFont(font, "bold");
       doc.setFontSize(9);
       doc.setTextColor(107, 114, 128);
       doc.text("BILL TO", margin, y);
@@ -1096,7 +1149,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         doc.text(($("clientBiz") as HTMLInputElement).value.trim(), margin, y);
         y += SP.line + 1;
       }
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(10);
       if (($("clientName") as HTMLInputElement).value.trim()) {
         doc.text(($("clientName") as HTMLInputElement).value.trim(), margin, y);
@@ -1123,11 +1176,11 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     }
 
     if (($("projectTitle") as HTMLInputElement).value.trim()) {
-      doc.setFont("helvetica", "bold");
+      doc.setFont(font, "bold");
       doc.setFontSize(11);
       doc.setTextColor(17, 24, 39);
       doc.text("Project:", margin, y);
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.text(
         ($("projectTitle") as HTMLInputElement).value.trim(),
         margin + 55,
@@ -1148,9 +1201,9 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     };
 
     const headerH = 24;
-    if (style.id === "modern") {
+    if (style.layout === "modern") {
       // No fill; accent underline rule below header text
-      doc.setFont("helvetica", "bold");
+      doc.setFont(font, "bold");
       doc.setFontSize(9);
       doc.setTextColor(
         style.accentRgb[0],
@@ -1170,9 +1223,9 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       doc.setLineWidth(1.2);
       doc.line(margin, y, pageW - margin, y);
       doc.setLineWidth(0.2);
-    } else if (style.id === "minimal") {
+    } else if (style.layout === "minimal") {
       // Borderless small-caps headings; thin gray underline only
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(8);
       doc.setTextColor(107, 114, 128);
       doc.text("Description", colX.desc, y + 14);
@@ -1188,7 +1241,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       // CLASSIC
       doc.setFillColor(243, 244, 246);
       doc.rect(margin, y, pageW - margin * 2, headerH, "F");
-      doc.setFont("helvetica", "bold");
+      doc.setFont(font, "bold");
       doc.setFontSize(9);
       doc.setTextColor(107, 114, 128);
       const headerTextY = y + 16;
@@ -1199,21 +1252,21 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       y += headerH;
     }
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(style.id === "minimal" ? 9.5 : 10);
+    doc.setFont(font, "normal");
+    doc.setFontSize(style.layout === "minimal" ? 9.5 : 10);
     doc.setTextColor(17, 24, 39);
 
     const validItems = t.items.filter((i) => i.desc && i.qty > 0);
-    const descLeft = style.id === "minimal" ? colX.desc : colX.desc + 6;
-    const totalRight = style.id === "minimal" ? colX.total : colX.total - 6;
-    const rowPad = style.id === "minimal" ? 6 : SP.rowPadV;
+    const descLeft = style.layout === "minimal" ? colX.desc : colX.desc + 6;
+    const totalRight = style.layout === "minimal" ? colX.total : colX.total - 6;
+    const rowPad = style.layout === "minimal" ? 6 : SP.rowPadV;
     validItems.forEach((item, idx) => {
       const descLines = doc.splitTextToSize(
         item.desc,
-        style.id === "minimal" ? colW.desc + 6 : colW.desc,
+        style.layout === "minimal" ? colW.desc + 6 : colW.desc,
       );
       const rowH = Math.max(
-        style.id === "minimal" ? 20 : 26,
+        style.layout === "minimal" ? 20 : 26,
         descLines.length * SP.line + rowPad * 2,
       );
 
@@ -1223,7 +1276,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       }
 
       // Zebra striping for modern
-      if (style.id === "modern" && idx % 2 === 1) {
+      if (style.zebra && idx % 2 === 1) {
         const tinted = tint(style.accentRgb, 0.94);
         doc.setFillColor(tinted[0], tinted[1], tinted[2]);
         doc.rect(margin, y, pageW - margin * 2, rowH, "F");
@@ -1237,15 +1290,19 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       doc.text(fmt(item.total), totalRight, textY, { align: "right" });
       y += rowH;
 
-      if (style.id === "minimal") {
+      if (style.layout === "minimal") {
         doc.setDrawColor(229, 231, 235);
         doc.setLineWidth(0.3);
         doc.line(margin, y, pageW - margin, y);
-      } else if (style.id === "classic") {
+      } else if (style.layout === "classic") {
         doc.setDrawColor(229, 231, 235);
         doc.line(margin, y, pageW - margin, y);
+      } else if (style.layout === "modern" && !style.zebra) {
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y, pageW - margin, y);
       }
-      // modern: no per-row rule, zebra fill carries it
+      // modern w/ zebra: no per-row rule, zebra fill carries it
     });
     doc.setLineWidth(0.2);
 
@@ -1265,7 +1322,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         doc.addPage();
         y = margin;
       }
-      doc.setFont("helvetica", bold ? "bold" : "normal");
+      doc.setFont(font, bold ? "bold" : "normal");
       doc.setFontSize(bold ? 12 : 10);
       const c = opts?.color ?? [17, 24, 39];
       doc.setTextColor(c[0], c[1], c[2]);
@@ -1278,7 +1335,7 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     if (t.discount > 0) drawTotalRow("Discount", "-" + fmt(t.discount));
     if (t.taxRate > 0) drawTotalRow(`Tax (${t.taxRate}%)`, fmt(t.tax));
 
-    if (style.id === "modern") {
+    if (style.layout === "modern") {
       // Accent-filled pill for grand total
       y += 6;
       const pillH = 26;
@@ -1288,20 +1345,20 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
         style.accentRgb[2],
       );
       doc.rect(totalsX - 10, y - 2, totalsValueX - totalsX + 20, pillH, "F");
-      doc.setFont("helvetica", "bold");
+      doc.setFont(font, "bold");
       doc.setFontSize(13);
       doc.setTextColor(255, 255, 255);
       doc.text("TOTAL", totalsX, y + 16);
       doc.text(fmt(t.grand), totalsValueX - 4, y + 16, { align: "right" });
       y += pillH + 4;
-    } else if (style.id === "minimal") {
+    } else if (style.layout === "minimal") {
       // Thin rule, plain text TOTAL
       y += 6;
       doc.setDrawColor(17, 24, 39);
       doc.setLineWidth(0.5);
       doc.line(totalsX, y, totalsValueX, y);
       y += 14;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(11);
       doc.setTextColor(17, 24, 39);
       doc.text("Total", totalsX, y);
@@ -1329,12 +1386,12 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
       doc.setDrawColor(229, 231, 235);
       doc.line(margin, y, pageW - margin, y);
       y += SP.section - 6;
-      doc.setFont("helvetica", "bold");
+      doc.setFont(font, "bold");
       doc.setFontSize(9);
       doc.setTextColor(107, 114, 128);
       doc.text("NOTES / TERMS", margin, y);
       y += SP.line + 4;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(font, "normal");
       doc.setFontSize(10);
       doc.setTextColor(55, 65, 81);
       const noteLines = doc.splitTextToSize(notesVal, pageW - margin * 2);
@@ -1506,6 +1563,9 @@ export default function EstimateQuoteGeneratorClient() {
                       <option value="classic">Classic</option>
                       <option value="modern">Modern</option>
                       <option value="minimal">Minimal</option>
+                      <option value="bold">Bold</option>
+                      <option value="elegant">Elegant</option>
+                      <option value="corporate">Corporate</option>
                     </select>
                   </div>
                 </div>
