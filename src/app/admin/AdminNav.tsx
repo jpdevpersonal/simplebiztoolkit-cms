@@ -19,6 +19,7 @@ const navItems = [
   { href: "/cms/menu", label: "Menu Items", exact: false },
   { href: "/cms/templates", label: "Templates", exact: false },
   { href: "/cms/categories", label: "Template Categories", exact: false },
+  { href: "/cms/faqs", label: "FAQs", exact: false },
 ];
 
 function isActive(href: string, exact: boolean, pathname: string): boolean {

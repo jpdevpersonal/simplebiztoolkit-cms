@@ -1,4 +1,6 @@
 import type {
+  Faq,
+  FaqInput,
   MenuCategory,
   MenuLayoutSettings,
   MenuItem,
@@ -413,6 +415,34 @@ export const adminApi = {
     return request<MenuLayoutSettings>("admin", buildAdminPath("menu-layout"), {
       method: "PUT",
       body: settings,
+    });
+  },
+
+  getFaqs() {
+    return request<Faq[]>("admin", buildAdminPath("faqs"));
+  },
+
+  getFaqById(id: string) {
+    return request<Faq>("admin", buildAdminPath("faqs", id));
+  },
+
+  createFaq(faq: FaqInput) {
+    return request<Faq>("admin", buildAdminPath("faqs"), {
+      method: "POST",
+      body: faq,
+    });
+  },
+
+  updateFaq(id: string, faq: Partial<FaqInput>) {
+    return request<Faq>("admin", buildAdminPath("faqs", id), {
+      method: "PUT",
+      body: faq,
+    });
+  },
+
+  deleteFaq(id: string) {
+    return request<void>("admin", buildAdminPath("faqs", id), {
+      method: "DELETE",
     });
   },
 };
