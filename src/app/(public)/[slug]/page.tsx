@@ -7,7 +7,10 @@ import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { apiService } from "@/lib/api";
-import { getPublishedMenuItems } from "@/lib/menuContent";
+import {
+  getPublishedMenuItemContent,
+  getPublishedMenuItems,
+} from "@/lib/menuContent";
 import {
   createArticleJsonLd,
   createBreadcrumbJsonLd,
@@ -157,6 +160,16 @@ export default async function MenuItemPageView({ params }: Props) {
 
   breadcrumbItems.push({ name: page.title, href: `/${page.slug}` });
 
+  // Hide breadcrumb when this page is the sole direct page of its menu item
+  // (no topics, single page — menu links straight here).
+  let isStandaloneMenuPage = false;
+  if (parentMenuItem && !page.menuCategoryId) {
+    const parentContent = await getPublishedMenuItemContent(parentMenuItem);
+    isStandaloneMenuPage =
+      parentContent.publishedCategories.length === 0 &&
+      parentContent.directPages.length === 1;
+  }
+
   const pageJsonLd = createArticleJsonLd({
     headline: page.title,
     description: page.seoDescription ?? page.description,
@@ -187,8 +200,10 @@ export default async function MenuItemPageView({ params }: Props) {
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={pageJsonLd} />
 
-      <main className="content-page">
-        <SiteBreadcrumb items={breadcrumbItems} />
+      <main
+        className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}`}
+      >
+        {!isStandaloneMenuPage && <SiteBreadcrumb items={breadcrumbItems} />}
 
         <header className="content-header">
           <h1 className="content-title">{page.title}</h1>
@@ -225,7 +240,9 @@ export default async function MenuItemPageView({ params }: Props) {
           <ContentRenderer html={page.content ?? ""} />
         </article>
 
-        <SiteBreadcrumb items={breadcrumbItems} bottom />
+        {!isStandaloneMenuPage && (
+          <SiteBreadcrumb items={breadcrumbItems} bottom />
+        )}
       </main>
     </>
   );
