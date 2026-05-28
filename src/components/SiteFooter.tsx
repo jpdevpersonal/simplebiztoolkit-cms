@@ -57,7 +57,6 @@ export default function SiteFooter({
   ].filter((entry): entry is FooterLink => Boolean(entry));
   const supportLinks = [
     getStaticLink("/faq"),
-    getStaticLink("/help"),
     getStaticLink("/contact"),
   ].filter((entry): entry is FooterLink => Boolean(entry));
   const companyLinks = [getStaticLink("/about")].filter(

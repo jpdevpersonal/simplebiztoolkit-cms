@@ -193,7 +193,7 @@ export default async function MenuItemPageView({ params }: Props) {
         <header className="content-header">
           <h1 className="content-title">{page.title}</h1>
           {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
-          {lastUpdatedLabel && (
+          {lastUpdatedLabel && page.showLastUpdated !== false && (
             <p
               className="sb-muted"
               style={{ fontSize: "0.9rem", marginTop: "0.25rem" }}
