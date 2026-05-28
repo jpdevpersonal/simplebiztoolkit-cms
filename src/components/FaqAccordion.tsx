@@ -1,15 +1,31 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { faqs } from "../data/faqs";
+import type { Faq } from "@/lib/api";
+import { sanitizeHtml, stripHtml } from "@/lib/sanitize";
 
-export default function FaqAccordion() {
+type FaqAccordionProps = {
+  faqs?: Faq[];
+};
+
+export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
   const [query, setQuery] = useState("");
+
+  // Pre-compute plain-text form of each answer for searching/highlight,
+  // while preserving the original HTML for rendering.
+  const indexed = useMemo(
+    () =>
+      faqs.map((f) => ({
+        faq: f,
+        answerText: stripHtml(f.a || ""),
+      })),
+    [faqs],
+  );
 
   const items = useMemo(() => {
     const raw = query || "";
     const q = raw.trim().toLowerCase();
-    if (!q) return faqs;
+    if (!q) return indexed;
 
     // remove irrelevant leading phrases from the query
     const stopPhrases = ["how can i", "how do i", "how to", "where can i"];
@@ -22,12 +38,12 @@ export default function FaqAccordion() {
     const tokens = (cleaned.match(/\b\w+\b/g) || [])
       .map((t) => t.toLowerCase())
       .filter((t) => t.length > 1);
-    if (tokens.length === 0) return faqs;
+    if (tokens.length === 0) return indexed;
 
     // match only whole words using word-boundary regex for each token
-    return faqs.filter((f) => {
-      const question = f.q?.toLowerCase() || "";
-      const answer = f.a?.toLowerCase() || "";
+    return indexed.filter(({ faq, answerText }) => {
+      const question = faq.q?.toLowerCase() || "";
+      const answer = answerText.toLowerCase();
       return tokens.some((t) => {
         const re = new RegExp(
           `\\b${t.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\b`,
@@ -36,9 +52,9 @@ export default function FaqAccordion() {
         return re.test(question) || re.test(answer);
       });
     });
-  }, [query]);
+  }, [indexed, query]);
 
-  // prepare tokens and regex for highlighting
+  // prepare tokens and regex for highlighting the question text
   const highlightRegex = useMemo(() => {
     const raw = query || "";
     const q = raw.trim().toLowerCase();
@@ -88,9 +104,31 @@ export default function FaqAccordion() {
         </div>
 
         <div className="mb-3 sb-search">
-          <svg className="sb-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <svg
+            className="sb-search-icon"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M21 21l-4.35-4.35"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle
+              cx="11"
+              cy="11"
+              r="6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
           </svg>
           <input
             type="search"
@@ -103,18 +141,24 @@ export default function FaqAccordion() {
         </div>
 
         <div className="accordion sb-accordion" id="faqAcc">
-          {items.length === 0 && (
+          {indexed.length === 0 && (
+            <div className="alert alert-info">
+              No questions are available right now. Please check back soon.
+            </div>
+          )}
+
+          {indexed.length > 0 && items.length === 0 && (
             <div className="alert alert-info">
               No questions match your search.
             </div>
           )}
 
-          {items.map((f, idx) => {
-            const id = `faq-${idx}`;
-            // when searching, expand matched items so answers are visible even if collapsed
+          {items.map(({ faq }, idx) => {
+            const id = `faq-${faq.id || idx}`;
             const q = query.trim().toLowerCase();
             const searching = q.length > 0;
             const shouldExpand = searching ? true : idx === 0;
+            const safeAnswerHtml = sanitizeHtml(faq.a || "");
 
             return (
               <div className="accordion-item" key={id}>
@@ -128,7 +172,7 @@ export default function FaqAccordion() {
                     aria-controls={id}
                   >
                     <span className="sb-accordion-title">
-                      {highlightText(String(f.q), true)}
+                      {highlightText(String(faq.q), true)}
                     </span>
                   </button>
                 </h2>
@@ -137,9 +181,10 @@ export default function FaqAccordion() {
                   className={`accordion-collapse collapse ${shouldExpand ? "show" : ""}`}
                   data-bs-parent="#faqAcc"
                 >
-                  <div className="accordion-body sb-muted">
-                    {highlightText(String(f.a), false)}
-                  </div>
+                  <div
+                    className="accordion-body sb-muted"
+                    dangerouslySetInnerHTML={{ __html: safeAnswerHtml }}
+                  />
                 </div>
               </div>
             );

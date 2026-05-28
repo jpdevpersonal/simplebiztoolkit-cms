@@ -94,6 +94,11 @@ function normalizeLegacyTargets(body: RevalidateRequestBody): {
         tags: pageSlugs.map((pageSlug) => `page-${pageSlug}`),
       };
     }
+    case "faq":
+      return {
+        paths: [{ path: "/faq" }],
+        tags: ["faqs"],
+      };
     case "all":
       return {
         paths: [
@@ -104,9 +109,10 @@ function normalizeLegacyTargets(body: RevalidateRequestBody): {
           { path: "/pages/[menuItemSlug]", type: "page" },
           { path: "/pages/[menuItemSlug]/[categorySlug]", type: "page" },
           { path: "/[slug]", type: "page" },
+          { path: "/faq" },
           { path: "/sitemap.xml" },
         ],
-        tags: ["products"],
+        tags: ["products", "faqs"],
       };
     default:
       throw new Error("Invalid revalidation type");
