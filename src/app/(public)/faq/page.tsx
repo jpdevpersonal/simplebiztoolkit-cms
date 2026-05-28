@@ -78,7 +78,6 @@ export default async function FaqPage() {
                 description="If the FAQ doesn't answer your question you can contact us and we'll get back to you."
                 linksHeading="Helpful links"
                 links={[
-                  { href: "/help", label: "Help & Troubleshooting" },
                   {
                     href: "https://www.etsy.com/",
                     label: "Etsy Help",

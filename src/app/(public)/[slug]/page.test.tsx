@@ -10,6 +10,7 @@ const apiServiceMock = vi.hoisted(() => ({
 
 const menuContentMock = vi.hoisted(() => ({
   getPublishedMenuItems: vi.fn(),
+  getPublishedMenuItemContent: vi.fn(),
 }));
 
 const notFoundMock = vi.hoisted(() =>
@@ -40,6 +41,7 @@ describe("MenuItemPageView", () => {
     apiServiceMock.getMenuItemById.mockReset();
     apiServiceMock.getMenuItemPages.mockReset();
     menuContentMock.getPublishedMenuItems.mockReset();
+    menuContentMock.getPublishedMenuItemContent.mockReset();
     notFoundMock.mockClear();
   });
 
@@ -186,6 +188,14 @@ describe("MenuItemPageView", () => {
     menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
       { id: "menu-1", title: "Guides", status: "published", categories: [] },
     ]);
+    // Two direct pages → not a standalone single-page menu item
+    menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
+      publishedCategories: [],
+      directPages: [
+        { id: "page-2", slug: "guide-b" },
+        { id: "page-3", slug: "guide-c" },
+      ],
+    });
 
     const { default: MenuItemPageView } = await import("./page");
     render(

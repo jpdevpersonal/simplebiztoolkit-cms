@@ -90,6 +90,8 @@ export interface MenuItemPage {
   seoDescription?: string;
   ogImage?: string;
   canonicalUrl?: string;
+  /** When false, hide the "Last updated" date stamp on the public page. Defaults to true when omitted. */
+  showLastUpdated?: boolean;
   menuCategory?: MenuCategory;
   menuItem?: MenuItem;
 }

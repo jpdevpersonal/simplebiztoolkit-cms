@@ -36,9 +36,6 @@ describe("FAQ page", () => {
       screen.getByRole("heading", { name: "Frequently Asked Questions" }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Search FAQs")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Help & Troubleshooting" }),
-    ).toHaveAttribute("href", "/help");
     expect(screen.getByRole("link", { name: "Etsy Help" })).toHaveAttribute(
       "href",
       "https://www.etsy.com/",

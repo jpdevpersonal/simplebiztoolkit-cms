@@ -338,6 +338,73 @@ describe("PageEditor", () => {
     expect(screen.getByText("Title *")).toBeInTheDocument();
   });
 
+  it("reads showLastUpdated from the page and persists it via the save payload", async () => {
+    const user = userEvent.setup();
+    vi.mocked(clientApi.updateMenuItemPage).mockResolvedValueOnce({
+      slug: "page-slug",
+    } as never);
+
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "page-slug",
+            title: "Existing Page",
+            status: "draft",
+            showLastUpdated: true,
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitForMenuCategoriesLoad();
+
+    const checkbox = screen.getByRole("checkbox", {
+      name: /Show .*Last updated.* date/i,
+    });
+    expect(checkbox).toBeChecked();
+
+    await user.click(checkbox);
+    expect(checkbox).not.toBeChecked();
+
+    await user.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    await waitFor(() => {
+      expect(clientApi.updateMenuItemPage).toHaveBeenCalled();
+    });
+
+    const [, payload] = vi.mocked(clientApi.updateMenuItemPage).mock.calls[0];
+    expect(payload).toMatchObject({ showLastUpdated: false });
+  });
+
+  it("defaults showLastUpdated to true when the page does not provide it", async () => {
+    render(
+      <PageEditor
+        page={
+          {
+            id: "page-1",
+            menuItemId: "menu-1",
+            slug: "page-slug",
+            title: "Existing Page",
+            status: "draft",
+          } as any
+        }
+        menuItems={[{ id: "menu-1", title: "Menu", status: "draft" } as any]}
+      />,
+    );
+
+    await waitForMenuCategoriesLoad();
+
+    expect(
+      screen.getByRole("checkbox", {
+        name: /Show .*Last updated.* date/i,
+      }),
+    ).toBeChecked();
+  });
+
   it("tracks sidebar collapse state classes without hiding the sidebar", async () => {
     const user = userEvent.setup();
 
