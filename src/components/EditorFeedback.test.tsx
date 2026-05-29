@@ -43,4 +43,19 @@ describe("EditorFeedback", () => {
     expect(screen.getByText("Saved!")).toBeTruthy();
     expect(screen.getByRole("alert")).toBeTruthy();
   });
+
+  it("shows a 'Sign in again' re-auth link for an expired-session error", () => {
+    render(
+      <EditorFeedback error="Your session has expired. Please sign in again." />,
+    );
+    const link = screen.getByRole("link", { name: "Sign in again" });
+    expect(link).toBeTruthy();
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toContain("noopener");
+  });
+
+  it("does not show a re-auth link for an ordinary error", () => {
+    render(<EditorFeedback error="Something went wrong" />);
+    expect(screen.queryByRole("link", { name: "Sign in again" })).toBeNull();
+  });
 });
