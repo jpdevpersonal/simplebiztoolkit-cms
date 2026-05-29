@@ -35,7 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${site.url}/about`, lastModified: now },
     { url: `${site.url}/testimonials`, lastModified: now },
     { url: `${site.url}/faq`, lastModified: now },
-    { url: `${site.url}/help`, lastModified: now },
     { url: `${site.url}/contact`, lastModified: now },
     { url: `${site.url}/free`, lastModified: now },
     { url: `${site.url}/tools/csv-profit-calculator`, lastModified: now },

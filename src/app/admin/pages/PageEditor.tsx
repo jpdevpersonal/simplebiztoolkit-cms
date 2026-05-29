@@ -45,9 +45,14 @@ type SectionKey =
   | "relatedLinks"
   | "assignment"
   | "publish"
+  | "displayOptions"
   | "seo";
 
-const SIDEBAR_SECTION_KEYS: SectionKey[] = ["assignment", "publish"];
+const SIDEBAR_SECTION_KEYS: SectionKey[] = [
+  "assignment",
+  "publish",
+  "displayOptions",
+];
 
 type Props = {
   page?: MenuItemPage;
@@ -151,6 +156,7 @@ export default function PageEditor({
     relatedLinks: false,
     assignment: false,
     publish: false,
+    displayOptions: false,
     seo: false,
   });
 
@@ -245,6 +251,9 @@ export default function PageEditor({
     canonicalUrl: page?.canonicalUrl ?? "",
   });
   const [relatedLinks, setRelatedLinks] = useState(initialContent.relatedLinks);
+  const [showLastUpdated, setShowLastUpdated] = useState(
+    page?.showLastUpdated ?? true,
+  );
 
   const update = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -315,6 +324,7 @@ export default function PageEditor({
         ...pageFields,
         ...(featuredImageId ? { featuredImageId } : {}),
         ...(headerImageId ? { headerImageId } : {}),
+        showLastUpdated,
         dateModified: today,
       };
 
@@ -747,6 +757,77 @@ export default function PageEditor({
                     value={formData.dateISO}
                     onChange={(e) => update("dateISO", e.target.value)}
                   />
+                </div>
+              </>
+            )}
+          </AdminFormBlock>
+
+          {/* Display Options */}
+          <AdminFormBlock
+            icon={
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="3"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+              </svg>
+            }
+            title="Display Options"
+            className={
+              collapsedSections.displayOptions
+                ? "admin-form-block--collapsed"
+                : undefined
+            }
+            headerActions={renderSectionToggle(
+              "displayOptions",
+              "Display Options",
+            )}
+          >
+            {!collapsedSections.displayOptions && (
+              <>
+                <div className="form-check mb-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="showLastUpdated"
+                    checked={showLastUpdated}
+                    onChange={(e) => setShowLastUpdated(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="showLastUpdated">
+                    Show &ldquo;Last updated&rdquo; date
+                  </label>
+                </div>
+                <div
+                  className="form-text p-2 rounded"
+                  style={{
+                    background: "var(--bs-light, #f8f9fa)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  <span style={{ opacity: showLastUpdated ? 1 : 0.35 }}>
+                    Last updated{" "}
+                    {formData.dateISO
+                      ? new Date(formData.dateISO).toLocaleDateString("en-GB", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "—"}{" "}
+                    &middot; By Simple Biz Toolkit
+                  </span>
+                  {!showLastUpdated && (
+                    <span className="ms-2 text-muted">(hidden)</span>
+                  )}
                 </div>
               </>
             )}
