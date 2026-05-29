@@ -1,0 +1,672 @@
+/* ===================================================================
+   Etsy Profit Calculator — Stylesheet
+   SimpleBizToolkit.com
+   Scoped under .profit-calculator-page so the global site styles
+   continue to win outside the tool.
+   =================================================================== */
+
+/* --- Design tokens (aligned with the CSV Profit Calculator theme) --- */
+.profit-calculator-page {
+  --bg: #f8f9fb;
+  --card: #ffffff;
+  --text: #0f1724;
+  --muted: #475569;
+  --heading: #414556;
+  --border: #e2e5ea;
+  --border-strong: rgba(65, 69, 86, 0.25);
+  --primary: #1a7f5a;
+  --primary-hover: #156b4c;
+  --primary-deep: #0d5c3f;
+  --brand-blue: #414556;
+  --accent: #f0f7f4;
+  --danger: #8a3a23;
+  --danger-bg: #fdf0ec;
+  --danger-border: #d9a89a;
+  --success: #234f2e;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 8px 30px rgba(26, 127, 90, 0.22);
+  --font-body:
+    var(--font-roboto), Roboto, ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-heading:
+    var(--font-poppins), Poppins, var(--font-roboto), Roboto, ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* --- Reset (scoped) ----------------------------------------------- */
+.profit-calculator-page,
+.profit-calculator-page *,
+.profit-calculator-page *::before,
+.profit-calculator-page *::after {
+  box-sizing: border-box;
+}
+
+/* --- Page layout -------------------------------------------------- */
+.profit-calculator-page {
+  width: min(1200px, calc(100% - 2rem));
+  margin: 0 auto;
+  font-family: var(--font-body);
+  color: var(--text);
+  line-height: 1.55;
+  padding: 1.5rem 0 4rem;
+}
+
+.profit-calculator-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      1200px 600px at 80% -10%,
+      rgba(26, 127, 90, 0.06),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at -10% 10%,
+      rgba(65, 69, 86, 0.05),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+  pointer-events: none;
+}
+
+.profit-calculator-page .skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--brand-blue);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 var(--radius-sm) 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 100;
+}
+.profit-calculator-page .skip-link:focus {
+  left: 0;
+}
+
+/* --- Breadcrumb --------------------------------------------------- */
+.profit-calculator-page .page-breadcrumb {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.profit-calculator-page .page-breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.profit-calculator-page .page-breadcrumb li + li::before {
+  content: "/";
+  margin-right: 0.4rem;
+  color: var(--border-strong);
+}
+.profit-calculator-page .page-breadcrumb a {
+  color: var(--brand-blue);
+  text-decoration: none;
+}
+.profit-calculator-page .page-breadcrumb a:hover {
+  text-decoration: underline;
+}
+.profit-calculator-page .page-breadcrumb li[aria-current="page"] {
+  color: var(--muted);
+}
+
+/* --- Hero --------------------------------------------------------- */
+.profit-calculator-page .tool-hero {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.75rem 1.5rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+.profit-calculator-page .tool-hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--accent);
+  color: var(--primary-deep);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+}
+.profit-calculator-page .tool-hero .eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: inline-block;
+}
+.profit-calculator-page .tool-hero h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  line-height: 1.15;
+  margin: 0.7rem 0 0.5rem;
+  color: var(--heading);
+}
+.profit-calculator-page .tool-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 60ch;
+}
+
+/* --- Two-column layout ------------------------------------------- */
+.profit-calculator-page .container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .profit-calculator-page .layout {
+    grid-template-columns: 3fr 2fr;
+    align-items: start;
+  }
+  .profit-calculator-page .results-card {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+/* --- Stacked sections below the calculator ----------------------- */
+.profit-calculator-page .stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+/* --- Card --------------------------------------------------------- */
+.profit-calculator-page .card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.profit-calculator-page .card h2 {
+  font-family: var(--font-heading);
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--heading);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+/* --- Fieldsets / form groups -------------------------------------- */
+.profit-calculator-page .field-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  margin: 0 0 1.1rem;
+  min-width: 0;
+}
+.profit-calculator-page .field-group legend {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--heading);
+  padding: 0 0.4rem;
+}
+.profit-calculator-page .field-group .hint {
+  margin: 0 0 0.85rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* --- Mode radios -------------------------------------------------- */
+.profit-calculator-page .radio-row {
+  display: grid;
+  gap: 0.5rem;
+}
+.profit-calculator-page .radio {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fff;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text);
+  transition: all 0.15s;
+}
+.profit-calculator-page .radio:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--accent);
+  box-shadow: 0 0 0 2px rgba(26, 127, 90, 0.12);
+  color: var(--primary-deep);
+  font-weight: 600;
+}
+.profit-calculator-page .radio input[type="radio"] {
+  accent-color: var(--primary);
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: none;
+}
+
+/* --- Field grids -------------------------------------------------- */
+.profit-calculator-page .grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+}
+@media (min-width: 520px) {
+  .profit-calculator-page .grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.profit-calculator-page .field {
+  min-width: 0;
+}
+
+.profit-calculator-page label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--heading);
+  margin-bottom: 0.25rem;
+}
+.profit-calculator-page .optional {
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profit-calculator-page input[type="number"],
+.profit-calculator-page input[type="text"],
+.profit-calculator-page select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #f8fafc;
+  color: var(--text);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background-color 0.15s;
+}
+.profit-calculator-page input::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+.profit-calculator-page input:focus,
+.profit-calculator-page select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(26, 127, 90, 0.15);
+}
+
+/* --- Privacy note ------------------------------------------------- */
+.profit-calculator-page .privacy-note {
+  font-size: 0.85rem;
+  background: #edf7ef;
+  border: 1px solid #9bb59d;
+  color: #234f2e;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  margin: 0 0 1.1rem;
+}
+
+/* --- Buttons ------------------------------------------------------ */
+.profit-calculator-page button {
+  font-family: inherit;
+  cursor: pointer;
+}
+.profit-calculator-page .actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+.profit-calculator-page .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.3rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.profit-calculator-page .btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.profit-calculator-page .btn-primary:hover {
+  background: var(--primary-hover);
+}
+.profit-calculator-page .btn-secondary {
+  background: #fff;
+  color: var(--heading);
+  border-color: var(--border-strong);
+}
+.profit-calculator-page .btn-secondary:hover {
+  background: var(--accent);
+}
+
+/* --- Validation --------------------------------------------------- */
+.profit-calculator-page .form-error {
+  color: var(--danger);
+  font-size: 0.9rem;
+  margin-top: 0.9rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: 10px;
+}
+
+/* --- Results ------------------------------------------------------ */
+.profit-calculator-page .placeholder {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  background: var(--accent);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1rem;
+}
+.profit-calculator-page .placeholder strong {
+  color: var(--primary-deep);
+}
+
+.profit-calculator-page .headline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: var(--accent);
+  border: 1px solid #c9e1d4;
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1.1rem;
+}
+.profit-calculator-page .headline-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-deep);
+}
+.profit-calculator-page .headline-value {
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: var(--heading);
+  line-height: 1.1;
+}
+
+.profit-calculator-page .breakdown {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+.profit-calculator-page .breakdown .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.profit-calculator-page .breakdown .row:last-child {
+  border-bottom: none;
+}
+.profit-calculator-page .breakdown dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.profit-calculator-page .breakdown dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+.profit-calculator-page .breakdown .row.total {
+  border-top: 1px solid var(--border-strong);
+  margin-top: 0.2rem;
+}
+.profit-calculator-page .breakdown .row.total dt,
+.profit-calculator-page .breakdown .row.total dd {
+  font-weight: 700;
+  color: var(--heading);
+}
+.profit-calculator-page .breakdown .row.strong {
+  background: var(--accent);
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
+  margin: 0.4rem 0;
+  border-bottom: none;
+}
+.profit-calculator-page .breakdown .row.strong dt,
+.profit-calculator-page .breakdown .row.strong dd {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary-deep);
+}
+.profit-calculator-page .value-negative {
+  color: var(--danger) !important;
+}
+
+/* --- Scenario table ----------------------------------------------- */
+.profit-calculator-page .table-wrap {
+  overflow-x: auto;
+}
+.profit-calculator-page .scenario-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.profit-calculator-page .scenario-table th,
+.profit-calculator-page .scenario-table td {
+  padding: 0.6rem 0.7rem;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.profit-calculator-page .scenario-table thead th {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  background: #f8fafc;
+}
+.profit-calculator-page .scenario-table th[scope="col"]:first-child,
+.profit-calculator-page .scenario-table th[scope="row"] {
+  text-align: left;
+}
+.profit-calculator-page .scenario-table th[scope="row"] {
+  font-weight: 600;
+  color: var(--text);
+}
+.profit-calculator-page .scenario-table tr.is-recommended {
+  background: var(--accent);
+}
+.profit-calculator-page .scenario-table tr.is-recommended th[scope="row"] {
+  color: var(--primary-deep);
+}
+
+/* --- SEO / educational content ----------------------------------- */
+.profit-calculator-page .seo-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--heading);
+  margin: 1.2rem 0 0.4rem;
+}
+.profit-calculator-page .seo-card h3:first-of-type {
+  margin-top: 0;
+}
+.profit-calculator-page .seo-card p,
+.profit-calculator-page .seo-card li {
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+.profit-calculator-page .seo-card ol {
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.4rem;
+}
+.profit-calculator-page .seo-card strong {
+  color: var(--heading);
+}
+
+.profit-calculator-page .link-card p {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.profit-calculator-page .link-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Disclaimers -------------------------------------------------- */
+.profit-calculator-page .disclaimers {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.profit-calculator-page .disclaimers p {
+  margin: 0 0 0.6rem;
+}
+.profit-calculator-page .disclaimers p:last-child {
+  margin-bottom: 0;
+}
+.profit-calculator-page .disclaimers strong {
+  color: var(--heading);
+}
+
+/* --- Responsive --------------------------------------------------- */
+@media (max-width: 640px) {
+  .profit-calculator-page {
+    padding: 1rem 0 3rem;
+  }
+  .profit-calculator-page .tool-hero {
+    padding: 1.25rem 1.25rem 1.1rem;
+  }
+  .profit-calculator-page .card {
+    padding: 1.1rem;
+  }
+  .profit-calculator-page .field-group {
+    padding: 0.85rem;
+  }
+  .profit-calculator-page .actions .btn {
+    flex: 1 1 auto;
+  }
+
+  /* Stack the breakdown rows so long labels + values never collide. */
+  .profit-calculator-page .breakdown .row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+  .profit-calculator-page .breakdown dd {
+    white-space: normal;
+    font-size: 1rem;
+  }
+  .profit-calculator-page .breakdown .row.strong {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  /* Turn the scenario table into stacked cards (no horizontal scroll). */
+  .profit-calculator-page .table-wrap {
+    overflow-x: visible;
+  }
+  .profit-calculator-page .scenario-table,
+  .profit-calculator-page .scenario-table tbody,
+  .profit-calculator-page .scenario-table tr,
+  .profit-calculator-page .scenario-table td,
+  .profit-calculator-page .scenario-table th {
+    display: block;
+    width: 100%;
+  }
+  .profit-calculator-page .scenario-table thead {
+    display: none;
+  }
+  .profit-calculator-page .scenario-table tr {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem 0.65rem;
+    margin-bottom: 0.75rem;
+  }
+  .profit-calculator-page .scenario-table tr:last-child {
+    margin-bottom: 0;
+  }
+  .profit-calculator-page .scenario-table tr.is-recommended {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px rgba(26, 127, 90, 0.2);
+  }
+  .profit-calculator-page .scenario-table th[scope="row"] {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    padding: 0.35rem 0 0.45rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.35rem;
+  }
+  .profit-calculator-page .scenario-table th[scope="row"]::before {
+    content: none;
+  }
+  .profit-calculator-page .scenario-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    text-align: right;
+    border-bottom: none;
+    padding: 0.25rem 0;
+    white-space: normal;
+  }
+  .profit-calculator-page .scenario-table td::before {
+    content: attr(data-label);
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 360px) {
+  .profit-calculator-page .card {
+    padding: 0.85rem;
+  }
+  .profit-calculator-page .actions .btn {
+    font-size: 0.9rem;
+    padding: 0.65rem 0.75rem;
+  }
+  .profit-calculator-page .headline-value {
+    font-size: 1.6rem;
+  }
+}
