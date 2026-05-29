@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import type { MenuCategory } from "@/lib/api";
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 import AdminFormBlock from "@/components/AdminFormBlock";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
 
@@ -30,6 +32,12 @@ export default function MenuCategoryEditor({
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  useUnsavedChangesWarning(isDirty && !saving && !deleting);
+
+  const markDirty = () => setIsDirty(true);
 
   const backHref = `/cms/menu/${menuItemId}/edit`;
 
@@ -42,19 +50,21 @@ export default function MenuCategoryEditor({
     try {
       const payload: Partial<MenuCategory> = {
         title,
-        description: description || undefined,
+        description,
         menuItemId,
         status,
       };
 
       if (isNew) {
         const created = await clientApi.createMenuCategory(payload);
+        setIsDirty(false);
         redirectAndRefresh(
           router,
           `/cms/menu/categories/${(created as MenuCategory).id}/edit`,
         );
       } else if (category?.id) {
         await clientApi.updateMenuCategory(category.id, payload);
+        setIsDirty(false);
         setMessage("Topic saved successfully!");
         refreshEditor(router);
       } else {
@@ -68,18 +78,14 @@ export default function MenuCategoryEditor({
   }
 
   async function handleDelete() {
-    if (
-      !confirm(
-        "Are you sure you want to delete this topic? All pages beneath it will also be deleted.",
-      )
-    )
-      return;
+    setConfirmDeleteOpen(false);
     setDeleting(true);
     setMessage(null);
     setError(null);
 
     try {
       await clientApi.deleteMenuCategory(category!.id);
+      setIsDirty(false);
       redirectAndRefresh(router, backHref);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -122,7 +128,10 @@ export default function MenuCategoryEditor({
             <input
               className="form-control"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setTitle(e.target.value);
+              }}
               placeholder="e.g. Small Business Tools, Templates"
               required
             />
@@ -137,7 +146,10 @@ export default function MenuCategoryEditor({
             <textarea
               className="form-control"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setDescription(e.target.value);
+              }}
               rows={3}
               placeholder="Optional description for this topic"
             />
@@ -151,7 +163,10 @@ export default function MenuCategoryEditor({
           <select
             className="form-select"
             value={status}
-            onChange={(e) => setStatus(e.target.value as "draft" | "published")}
+            onChange={(e) => {
+              markDirty();
+              setStatus(e.target.value as "draft" | "published");
+            }}
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
@@ -164,8 +179,21 @@ export default function MenuCategoryEditor({
         isCreateMode={isNew}
         entityName="Topic"
         onCancel={() => router.push(backHref)}
-        onDelete={!isNew && category ? handleDelete : undefined}
+        onDelete={
+          !isNew && category ? () => setConfirmDeleteOpen(true) : undefined
+        }
         deleting={deleting}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDeleteOpen}
+        title="Delete topic"
+        message="Are you sure you want to delete this topic? All pages beneath it will also be deleted."
+        confirmLabel="Delete topic"
+        destructive
+        busy={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
       />
     </form>
   );

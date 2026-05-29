@@ -16,27 +16,20 @@ import type {
 } from "@/lib/api";
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
-import { compactHtmlForStorage } from "@/lib/htmlFormatter";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 import {
-  extractRelatedLinksBlocksFromHtml,
-  normalizeRelatedLinksBorderWidth,
-  normalizeRelatedLinksDraftItems,
-  normalizeRelatedLinksImageSize,
-  normalizeRelatedLinksTitle,
-  RELATED_LINKS_DEFAULT_BACKGROUND,
-  RELATED_LINKS_DEFAULT_BORDER_WIDTH,
-  RELATED_LINKS_MAX_ITEMS,
-  serializeRelatedLinksBlockToHtml,
-  type RelatedLinksBlockData,
-} from "@/lib/relatedLinks";
+  buildContentWithRelatedLinks,
+  splitContentAndRelatedLinks,
+} from "@/lib/relatedLinksContent";
 import RichContentField from "@/components/RichContentField";
 import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import AdminModal from "@/components/AdminModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
 import CmsImagePicker from "@/components/CmsImagePicker";
-import { FULL_POLICY, type EditorPolicy } from "@/editor/policy";
+import { INLINE_CONTENT_POLICY } from "@/editor/policy";
 
 type SectionKey =
   | "pageContent"
@@ -64,73 +57,6 @@ type Props = {
   isNew?: boolean;
 };
 
-const PAGE_INLINE_CONTENT_POLICY: EditorPolicy = {
-  ...FULL_POLICY,
-  allowedNodes: FULL_POLICY.allowedNodes.filter(
-    (nodeName) => nodeName !== "relatedLinksSbtBlock",
-  ),
-};
-
-function normalizePageRelatedLinksBlock(
-  value?: Partial<RelatedLinksBlockData>,
-): RelatedLinksBlockData {
-  return {
-    title: normalizeRelatedLinksTitle(value?.title),
-    items: normalizeRelatedLinksDraftItems(value?.items),
-    backgroundColor:
-      typeof value?.backgroundColor === "string" && value.backgroundColor.trim()
-        ? value.backgroundColor.trim()
-        : RELATED_LINKS_DEFAULT_BACKGROUND,
-    borderWidth:
-      normalizeRelatedLinksBorderWidth(value?.borderWidth) ??
-      RELATED_LINKS_DEFAULT_BORDER_WIDTH,
-    imageSize: normalizeRelatedLinksImageSize(value?.imageSize),
-  };
-}
-
-function splitPageContent(content: string): {
-  contentHtml: string;
-  relatedLinks: RelatedLinksBlockData;
-} {
-  const { htmlWithoutRelatedLinks, blocks } =
-    extractRelatedLinksBlocksFromHtml(content);
-
-  if (blocks.length === 0) {
-    return {
-      contentHtml: content,
-      relatedLinks: normalizePageRelatedLinksBlock(),
-    };
-  }
-
-  return {
-    contentHtml: htmlWithoutRelatedLinks.trim(),
-    relatedLinks: normalizePageRelatedLinksBlock({
-      title: blocks[0]?.title,
-      backgroundColor: blocks[0]?.backgroundColor,
-      borderWidth: blocks[0]?.borderWidth,
-      imageSize: blocks[0]?.imageSize,
-      items: blocks
-        .flatMap((block) => block.items)
-        .slice(0, RELATED_LINKS_MAX_ITEMS),
-    }),
-  };
-}
-
-function buildPageContent(
-  contentHtml: string,
-  relatedLinks: RelatedLinksBlockData,
-): string {
-  const compactedContent = compactHtmlForStorage(contentHtml);
-  const baseContent =
-    extractRelatedLinksBlocksFromHtml(
-      compactedContent,
-    ).htmlWithoutRelatedLinks.trim();
-
-  return [baseContent, serializeRelatedLinksBlockToHtml(relatedLinks)]
-    .filter(Boolean)
-    .join("\n");
-}
-
 export default function PageEditor({
   page,
   menuItems,
@@ -138,7 +64,7 @@ export default function PageEditor({
   initialCategoryId,
   isNew = false,
 }: Props) {
-  const initialContent = splitPageContent(page?.content ?? "");
+  const initialContent = splitContentAndRelatedLinks(page?.content ?? "");
   const router = useRouter();
   const previewHref =
     !isNew && page?.id ? `/preview/pages/${page.id}` : undefined;
@@ -146,7 +72,9 @@ export default function PageEditor({
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
   const [contentModalOpen, setContentModalOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<
     Record<SectionKey, boolean>
   >({
@@ -184,6 +112,7 @@ export default function PageEditor({
     [],
   );
   const [loadingCats, setLoadingCats] = useState(false);
+  const [catsError, setCatsError] = useState<string | null>(null);
 
   // Categories from the selected menu item's nested data
   const inlineCats = useMemo(() => {
@@ -196,17 +125,26 @@ export default function PageEditor({
   useEffect(() => {
     if (!selectedMenuItemId) {
       setDynamicCategories([]);
+      setCatsError(null);
       return;
     }
     let cancelled = false;
     setLoadingCats(true);
+    setCatsError(null);
     clientApi
       .getMenuCategories(selectedMenuItemId)
       .then((cats) => {
         if (!cancelled) setDynamicCategories(cats);
       })
-      .catch(() => {
-        if (!cancelled) setDynamicCategories([]);
+      .catch((err) => {
+        if (!cancelled) {
+          setDynamicCategories([]);
+          setCatsError(
+            err instanceof Error
+              ? `Could not load topics: ${err.message}`
+              : "Could not load topics for this menu item.",
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoadingCats(false);
@@ -255,13 +193,25 @@ export default function PageEditor({
     page?.showLastUpdated ?? true,
   );
 
-  const update = (field: string, value: string) =>
+  const update = (field: string, value: string) => {
+    setIsDirty(true);
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const markDirty = () => setIsDirty(true);
+
+  const handleRelatedLinksChange = (value: typeof relatedLinks) => {
+    setIsDirty(true);
+    setRelatedLinks(value);
+  };
+
+  useUnsavedChangesWarning(isDirty && !saving && !deleting);
 
   function handleImageSelection(
     field: "featured" | "header",
     image: ImageAsset | null,
   ) {
+    setIsDirty(true);
     setFormData((prev) => ({
       ...prev,
       ...(field === "featured"
@@ -301,7 +251,9 @@ export default function PageEditor({
     try {
       const normalizedFormData = {
         ...formData,
-        content: buildPageContent(formData.content, relatedLinks),
+        content: buildContentWithRelatedLinks(formData.content, relatedLinks, {
+          compact: true,
+        }),
       };
       const featuredImageId = formData.featuredImageId;
       const headerImageId = formData.headerImageId;
@@ -328,6 +280,9 @@ export default function PageEditor({
         dateModified: today,
       };
 
+      // A page is attached to EITHER a topic (category) OR directly to a menu
+      // item — never both. Set the unused side to undefined so the request
+      // shape matches the existing API contract.
       if (selectedCategoryId) {
         payload.menuCategoryId = selectedCategoryId;
         payload.menuItemId = undefined;
@@ -338,15 +293,39 @@ export default function PageEditor({
 
       if (isNew) {
         await clientApi.createMenuItemPage(payload);
+        setIsDirty(false);
         redirectAndRefresh(router, "/cms/pages");
       } else if (page?.id) {
-        await clientApi.updateMenuItemPage(page.id, payload);
-        const savedContent = splitPageContent(normalizedFormData.content);
+        const saved = await clientApi.updateMenuItemPage(page.id, payload);
+        // Re-hydrate local state from the persisted entity so the editor
+        // reflects any server-side normalization (sanitized HTML, computed
+        // fields) rather than what we optimistically sent.
+        const sourceContent =
+          saved &&
+          typeof saved === "object" &&
+          typeof saved.content === "string"
+            ? saved.content
+            : normalizedFormData.content;
+        const savedContent = splitContentAndRelatedLinks(sourceContent);
         setFormData((current) => ({
           ...current,
+          ...(saved && typeof saved === "object"
+            ? {
+                title: saved.title ?? current.title,
+                subtitle: saved.subtitle ?? current.subtitle,
+                slug: saved.slug ?? current.slug,
+                description: saved.description ?? current.description,
+                status: saved.status ?? current.status,
+                seoTitle: saved.seoTitle ?? current.seoTitle,
+                seoDescription: saved.seoDescription ?? current.seoDescription,
+                ogImage: saved.ogImage ?? current.ogImage,
+                canonicalUrl: saved.canonicalUrl ?? current.canonicalUrl,
+              }
+            : {}),
           content: savedContent.contentHtml,
         }));
         setRelatedLinks(savedContent.relatedLinks);
+        setIsDirty(false);
         setMessage("Page saved successfully!");
         refreshEditor(router);
       } else {
@@ -365,13 +344,14 @@ export default function PageEditor({
   }
 
   async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this page?")) return;
+    setConfirmDeleteOpen(false);
     setDeleting(true);
     setMessage(null);
     setError(null);
 
     try {
       await clientApi.deleteMenuItemPage(page!.id);
+      setIsDirty(false);
       redirectAndRefresh(router, "/cms/pages");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -675,7 +655,10 @@ export default function PageEditor({
                   <select
                     className="form-select"
                     value={selectedMenuItemId}
-                    onChange={(e) => setSelectedMenuItemId(e.target.value)}
+                    onChange={(e) => {
+                      markDirty();
+                      setSelectedMenuItemId(e.target.value);
+                    }}
                     required
                   >
                     <option value="">— Select a menu item —</option>
@@ -696,7 +679,10 @@ export default function PageEditor({
                   <select
                     className="form-select"
                     value={selectedCategoryId}
-                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    onChange={(e) => {
+                      markDirty();
+                      setSelectedCategoryId(e.target.value);
+                    }}
                     disabled={!selectedMenuItemId || loadingCats}
                   >
                     <option value="">— No topic (direct page) —</option>
@@ -707,6 +693,11 @@ export default function PageEditor({
                       </option>
                     ))}
                   </select>
+                  {catsError && (
+                    <div className="form-text text-danger" role="alert">
+                      {catsError}
+                    </div>
+                  )}
                   <div className="form-text">
                     Optional. Assign to a topic to group related pages.
                   </div>
@@ -801,7 +792,10 @@ export default function PageEditor({
                     type="checkbox"
                     id="showLastUpdated"
                     checked={showLastUpdated}
-                    onChange={(e) => setShowLastUpdated(e.target.checked)}
+                    onChange={(e) => {
+                      markDirty();
+                      setShowLastUpdated(e.target.checked);
+                    }}
                   />
                   <label className="form-check-label" htmlFor="showLastUpdated">
                     Show &ldquo;Last updated&rdquo; date
@@ -886,7 +880,7 @@ export default function PageEditor({
                   minHeight={420}
                   onSave={savePage}
                   onPreview={previewHref ? handlePreview : undefined}
-                  policy={PAGE_INLINE_CONTENT_POLICY}
+                  policy={INLINE_CONTENT_POLICY}
                   enableHtmlFormatting
                   formatHtmlOnModeSwitch
                   htmlEditorVariant="code"
@@ -918,7 +912,7 @@ export default function PageEditor({
                 </div>
                 <RelatedLinksEditor
                   value={relatedLinks}
-                  onChange={setRelatedLinks}
+                  onChange={handleRelatedLinksChange}
                   previewVariant="content"
                   previewHint="This block is rendered inline in the public page content flow."
                 />
@@ -933,7 +927,7 @@ export default function PageEditor({
         isCreateMode={isNew}
         entityName="Page"
         onCancel={() => router.push("/cms/pages")}
-        onDelete={!isNew && page ? handleDelete : undefined}
+        onDelete={!isNew && page ? () => setConfirmDeleteOpen(true) : undefined}
         deleting={deleting}
         previewHref={previewHref}
         previewLabel="Preview"
@@ -955,13 +949,24 @@ export default function PageEditor({
           minHeight={500}
           onSave={savePage}
           onPreview={previewHref ? handlePreview : undefined}
-          policy={PAGE_INLINE_CONTENT_POLICY}
+          policy={INLINE_CONTENT_POLICY}
           enableHtmlFormatting
           formatHtmlOnModeSwitch
           htmlEditorVariant="code"
           stickyToolbar
         />
       </AdminModal>
+
+      <ConfirmDialog
+        isOpen={confirmDeleteOpen}
+        title="Delete page"
+        message="Are you sure you want to delete this page? This cannot be undone."
+        confirmLabel="Delete page"
+        destructive
+        busy={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </form>
   );
 }

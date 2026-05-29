@@ -15,7 +15,6 @@ import {
   sendHttpRequest,
   unwrapDataEnvelope,
 } from "@/lib/httpTransport";
-import { CMS_LOGIN_PATH, toCmsPath } from "@/lib/adminRoutes";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 type ApiScope = "public" | "admin";
@@ -77,16 +76,6 @@ function isExpired(expiresAtUtc?: string | null): boolean {
   const expiresMs = Date.parse(expiresAtUtc);
   if (Number.isNaN(expiresMs)) return false;
   return expiresMs <= Date.now();
-}
-
-function redirectToLogin(): void {
-  if (typeof window === "undefined") return;
-
-  const callbackUrl = toCmsPath(
-    `${window.location.pathname}${window.location.search}`,
-  );
-  const loginUrl = `${CMS_LOGIN_PATH}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-  window.location.assign(loginUrl);
 }
 
 async function resolveAdminToken(): Promise<string | null> {
@@ -184,7 +173,6 @@ async function request<T>(
 
     if (scope === "admin" && response.status === 401) {
       clearAdminAuthToken();
-      redirectToLogin();
       throw new ApiClientError(
         "Your session has expired. Please sign in again.",
         response.status,

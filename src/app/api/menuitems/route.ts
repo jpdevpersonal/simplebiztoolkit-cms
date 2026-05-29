@@ -23,10 +23,8 @@ export async function POST(request: NextRequest) {
     return authResult.response;
   }
 
-  // Read body so we can both attempt to proxy to the backend and
-  // fall back to a local mock if the backend returns 404.
   const bodyText = await request.text();
-  const backendRes = await proxyToBackend({
+  return proxyToBackend({
     // Create a regular Request with the same body so proxyToBackend can
     // forward it. Next's Request is compatible at runtime.
     request: new Request(request.url, {
@@ -38,34 +36,4 @@ export async function POST(request: NextRequest) {
     method: "POST",
     accessToken: authResult.auth.accessToken,
   });
-
-  // If backend doesn't implement this endpoint yet, return a fallback
-  // mock so the admin UI can continue to function in development.
-  if (backendRes.status === 404) {
-    try {
-      const payload = bodyText ? JSON.parse(bodyText) : {};
-      const id =
-        globalThis.crypto && typeof globalThis.crypto.randomUUID === "function"
-          ? globalThis.crypto.randomUUID()
-          : `mock-${Date.now()}`;
-      const created = {
-        id,
-        title: payload.title || "Untitled",
-        description: payload.description || null,
-        categories: [],
-      };
-
-      return new Response(JSON.stringify({ data: created }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  }
-
-  return backendRes;
 }
