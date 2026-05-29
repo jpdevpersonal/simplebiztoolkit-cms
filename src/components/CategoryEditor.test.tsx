@@ -22,6 +22,7 @@ vi.mock("next/navigation", async () => {
 
 vi.mock("@/lib/clientApi", () => ({
   clientApi: {
+    createCategory: vi.fn(),
     updateCategory: vi.fn(),
     deleteCategory: vi.fn(),
   },
@@ -91,5 +92,78 @@ describe("CategoryEditor", () => {
       expect(clientApi.deleteCategory).toHaveBeenCalledWith("cat-1");
       expect(routerPush).toHaveBeenCalledWith("/cms/categories");
     });
+  });
+
+  it("does not delete when confirmation is cancelled", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => false),
+    );
+
+    render(<CategoryEditor category={category as any} />);
+    await user.click(screen.getByRole("button", { name: "Delete Category" }));
+
+    await waitFor(() => {
+      expect(clientApi.deleteCategory).not.toHaveBeenCalled();
+    });
+  });
+
+  it("shows error message when delete fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(clientApi.deleteCategory).mockRejectedValueOnce(
+      new Error("Delete error"),
+    );
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true),
+    );
+
+    render(<CategoryEditor category={category as any} />);
+    await user.click(screen.getByRole("button", { name: "Delete Category" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Delete error")).toBeInTheDocument();
+    });
+  });
+
+  it("creates a new category and navigates to the list in isNew mode", async () => {
+    const user = userEvent.setup();
+    vi.mocked(clientApi.createCategory).mockResolvedValueOnce({
+      ...category,
+      id: "cat-new",
+    } as any);
+
+    render(<CategoryEditor isNew />);
+
+    // Fill required fields so native form validation doesn't block submit
+    const textboxes = screen.getAllByRole("textbox");
+    await user.type(textboxes[0], "Test Category"); // Name
+    await user.type(textboxes[1], "test-category"); // Slug
+
+    await user.click(screen.getByRole("button", { name: "Create Category" }));
+
+    await waitFor(() => {
+      expect(clientApi.createCategory).toHaveBeenCalled();
+      expect(routerPush).toHaveBeenCalledWith("/cms/categories");
+      expect(routerRefresh).toHaveBeenCalled();
+    });
+  });
+
+  it("navigates back when Cancel is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(<CategoryEditor category={category as any} />);
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(routerBack).toHaveBeenCalled();
+  });
+
+  it("does not show the Delete button in isNew mode", () => {
+    render(<CategoryEditor isNew />);
+
+    expect(
+      screen.queryByRole("button", { name: "Delete Category" }),
+    ).not.toBeInTheDocument();
   });
 });

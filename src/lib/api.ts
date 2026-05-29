@@ -90,6 +90,8 @@ export interface MenuItemPage {
   seoDescription?: string;
   ogImage?: string;
   canonicalUrl?: string;
+  /** When false, hide the "Last updated" date stamp on the public page. Defaults to true when omitted. */
+  showLastUpdated?: boolean;
   menuCategory?: MenuCategory;
   menuItem?: MenuItem;
 }
@@ -133,6 +135,24 @@ export interface UpdateImageInput {
   file?: File;
   altText?: string;
   caption?: string;
+}
+
+// FAQ Types (matches DB schema)
+export interface Faq {
+  id: string;
+  q: string;
+  a: string;
+  group?: string;
+  sortOrder: number;
+  status: "draft" | "published";
+}
+
+export interface FaqInput {
+  q: string;
+  a: string;
+  group?: string;
+  sortOrder?: number;
+  status?: "draft" | "published";
 }
 
 // API Service Class
@@ -701,6 +721,89 @@ class ApiService {
       {
         method: "DELETE",
       },
+      undefined,
+      true,
+    );
+  }
+
+  // ==================== FAQ ENDPOINTS ====================
+
+  /**
+   * Get all published FAQs (public)
+   */
+  async getFaqs(): Promise<ApiResponse<Faq[]>> {
+    return this.fetchApi<Faq[]>("/api/faqs", { method: "GET" }, ["faqs"]);
+  }
+
+  /**
+   * Get all FAQs including drafts (admin only)
+   */
+  async getFaqsAdmin(): Promise<ApiResponse<Faq[]>> {
+    noStore();
+    return this.fetchApi<Faq[]>(
+      "/api/admin/faqs",
+      { method: "GET" },
+      undefined,
+      true,
+    );
+  }
+
+  /**
+   * Get FAQ by ID (admin only)
+   */
+  async getFaqById(id: string): Promise<ApiResponse<Faq>> {
+    noStore();
+    return this.fetchApi<Faq>(
+      `/api/admin/faqs/${id}`,
+      { method: "GET" },
+      undefined,
+      true,
+    );
+  }
+
+  /**
+   * Create FAQ (admin only)
+   */
+  async createFaq(faq: FaqInput): Promise<ApiResponse<Faq>> {
+    noStore();
+    return this.fetchApi<Faq>(
+      "/api/admin/faqs",
+      {
+        method: "POST",
+        body: JSON.stringify(faq),
+      },
+      undefined,
+      true,
+    );
+  }
+
+  /**
+   * Update FAQ (admin only)
+   */
+  async updateFaq(
+    id: string,
+    faq: Partial<FaqInput>,
+  ): Promise<ApiResponse<Faq>> {
+    noStore();
+    return this.fetchApi<Faq>(
+      `/api/admin/faqs/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(faq),
+      },
+      undefined,
+      true,
+    );
+  }
+
+  /**
+   * Delete FAQ (admin only)
+   */
+  async deleteFaq(id: string): Promise<ApiResponse<void>> {
+    noStore();
+    return this.fetchApi<void>(
+      `/api/admin/faqs/${id}`,
+      { method: "DELETE" },
       undefined,
       true,
     );

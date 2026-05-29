@@ -3,8 +3,11 @@ import type { Metadata } from "next";
 import JsonLd from "@/components/JsonLd";
 import FaqAccordion from "@/components/FaqAccordion";
 import SupportSidebarCard from "@/components/SupportSidebarCard";
-import { faqs } from "@/data/faqs";
+import { apiService, type Faq } from "@/lib/api";
+import { stripHtml } from "@/lib/sanitize";
 import { site } from "@/config/site";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Frequently asked Questions (FAQ) | Simple Biz Toolkit",
@@ -19,7 +22,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const response = await apiService.getFaqs();
+  const faqs: Faq[] = response.data ?? [];
+
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -28,7 +34,7 @@ export default function FaqPage() {
       name: faq.q,
       acceptedAnswer: {
         "@type": "Answer",
-        text: faq.a,
+        text: stripHtml(faq.a || ""),
       },
     })),
   };
@@ -54,7 +60,7 @@ export default function FaqPage() {
 
   return (
     <>
-      <JsonLd json={faqJsonLd} />
+      {faqs.length > 0 && <JsonLd json={faqJsonLd} />}
       <JsonLd json={breadcrumbJsonLd} />
       <section className="sb-section">
         <div className="container">
@@ -64,7 +70,7 @@ export default function FaqPage() {
 
           <div className="row g-4" style={{ maxWidth: 1100, margin: "0 auto" }}>
             <main className="col-12 col-lg-8">
-              <FaqAccordion />
+              <FaqAccordion faqs={faqs} />
             </main>
 
             <aside className="col-12 col-lg-4">
@@ -72,7 +78,6 @@ export default function FaqPage() {
                 description="If the FAQ doesn't answer your question you can contact us and we'll get back to you."
                 linksHeading="Helpful links"
                 links={[
-                  { href: "/help", label: "Help & Troubleshooting" },
                   {
                     href: "https://www.etsy.com/",
                     label: "Etsy Help",

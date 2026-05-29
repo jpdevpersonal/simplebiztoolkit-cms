@@ -5,6 +5,17 @@
   padding: 48px 0.75rem 80px;
 }
 
+/* Standalone single-page menu items: match .sb-section + .pages-header spacing
+   used by FAQ / Tools / Templates so the H1 sits in the same vertical position. */
+.content-page--standalone {
+  padding: 5rem 0.75rem;
+}
+
+.content-page--standalone .content-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
+}
+
 .content-header {
   margin-bottom: 28px;
   text-align: center;
@@ -65,11 +76,29 @@
 
 .content-title {
   margin: 0 auto 12px;
-  font-size: clamp(1.25rem, 3vw, 1.75rem);
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.875rem, 4.5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
   max-width: 860px;
+  background: linear-gradient(
+    135deg,
+    var(--sb-ink) 0%,
+    var(--sb-brand-blue-light) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.content-title::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--sb-green), var(--sb-brand-blue));
+  border-radius: 999px;
+  margin: 0.875rem auto 0;
 }
 
 .content-subtitle {
