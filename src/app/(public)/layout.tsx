@@ -132,13 +132,15 @@ export default async function PublicLayout({
 
   return (
     <>
-      {/* Google tag (gtag.js) */}
+      {/* Google tag (gtag.js) — deferred to lazyOnload so it loads after the
+          page is interactive, keeping it off the critical path (lower TBT /
+          main-thread work). page_view still fires once gtag.js executes. */}
       <Script
         async
         src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
-      <Script id="gtag-init" strategy="afterInteractive">
+      <Script id="gtag-init" strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);} 

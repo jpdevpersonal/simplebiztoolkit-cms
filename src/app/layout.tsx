@@ -1,4 +1,3 @@
-import AuthProvider from "@/components/AuthProvider";
 import { Poppins, Roboto } from "next/font/google";
 
 const poppins = Poppins({
@@ -23,9 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${poppins.variable} ${roboto.variable}`}>
       <head />
-      <body>
-        <AuthProvider>{children}</AuthProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
