@@ -4,6 +4,7 @@ import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import type { Product } from "@/types/product";
 import { sanitizePublicContentHtml } from "@/lib/sanitize";
+import "@/styles/bootstrap-public-components.scss";
 import "@/styles/products.css";
 
 type Props = {

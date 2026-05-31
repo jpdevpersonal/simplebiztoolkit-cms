@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import JsonLd from "@/components/JsonLd";
 import FaqAccordion from "@/components/FaqAccordion";
 import SupportSidebarCard from "@/components/SupportSidebarCard";
+import "@/styles/bootstrap-public-components.scss";
 import "@/styles/faq.css";
 import { apiService, type Faq } from "@/lib/api";
 import { stripHtml } from "@/lib/sanitize";

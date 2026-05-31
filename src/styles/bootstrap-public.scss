@@ -1,0 +1,30 @@
+// ==========================================================================
+// Public Bootstrap core
+// --------------------------------------------------------------------------
+// Loaded by the public layout. Keep this to the Bootstrap layers/components
+// needed by every public page so the homepage does not pay render-blocking CSS
+// for route-specific components such as accordions, alerts, badges, tables, or
+// Bootstrap breadcrumbs. Those live in bootstrap-public-components.scss and are
+// imported only by routes that can render them.
+// ==========================================================================
+
+// 1. Configuration (required by everything that follows)
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// 2. Base layout & typography
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+
+// 3. Helpers + utilities API (must be imported last). Keep utilities for CMS
+// content; authored public pages can use arbitrary utility classes.
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities/api";
