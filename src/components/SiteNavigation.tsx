@@ -20,6 +20,12 @@ export default function SiteNavigation({
   navOrderIds = [],
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  // Defers building/hydrating the (off-canvas) mobile menu until it is first
+  // needed. On desktop it never opens, so its large inline-styled subtree is
+  // kept out of the DOM entirely — cutting initial DOM size and hydration /
+  // main-thread work (TBT). Stays mounted after the first open so the
+  // slide-out close animation still plays.
+  const [hasOpened, setHasOpened] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const prevPathRef = useRef(pathname);
@@ -72,6 +78,11 @@ export default function SiteNavigation({
   };
 
   const closeMenu = () => setIsOpen(false);
+
+  const openMenu = () => {
+    setHasOpened(true);
+    setIsOpen(true);
+  };
 
   const mobileMenu = (
     <>
@@ -474,9 +485,9 @@ export default function SiteNavigation({
       <button
         className="d-lg-none ms-auto"
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={openMenu}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") setIsOpen(true);
+          if (e.key === "Enter" || e.key === " ") openMenu();
         }}
         aria-expanded={isOpen}
         style={{
@@ -532,8 +543,9 @@ export default function SiteNavigation({
         </div>
       </button>
 
-      {/* Portal the mobile menu to body to avoid z-index issues */}
-      {mounted ? createPortal(mobileMenu, document.body) : null}
+      {/* Portal the mobile menu to body to avoid z-index issues. Only built
+          after the menu has been opened at least once (never on desktop). */}
+      {mounted && hasOpened ? createPortal(mobileMenu, document.body) : null}
     </>
   );
 }
