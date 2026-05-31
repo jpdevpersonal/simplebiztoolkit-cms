@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import AdminNav from "./AdminNav";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "@/styles/bootstrap-custom.scss";
 import "@/styles/admin.css";
 
 export const metadata: Metadata = {

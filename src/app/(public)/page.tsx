@@ -90,8 +90,9 @@ export default function HomePage() {
             alt=""
             fill
             priority
-            loading="eager"
+            fetchPriority="high"
             placeholder="blur"
+            quality={65}
             sizes="100vw"
             className="sb-hero-img"
           />
