@@ -9,7 +9,6 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
-import BootstrapClient from "../BootstrapClient";
 import GoogleAnalyticsPageTracker from "../GoogleAnalyticsPageTracker";
 import ScrollToTop from "../ScrollToTop";
 import {
@@ -149,7 +148,6 @@ export default async function PublicLayout({
         `}
       </Script>
 
-      <BootstrapClient />
       <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
       <ScrollToTop />
 

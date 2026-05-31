@@ -20,7 +20,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                     {p && (
                       <Image
                         src={p.image || "/images/placeholder-preview.png"}
-                        alt={p.title}
+                        alt={`${p.title} printable template preview`}
                         className="img-fluid ledger-thumb"
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

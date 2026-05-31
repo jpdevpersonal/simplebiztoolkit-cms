@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { Faq } from "@/lib/api";
 import { sanitizeHtml, stripHtml } from "@/lib/sanitize";
 
@@ -10,6 +10,13 @@ type FaqAccordionProps = {
 
 export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
   const [query, setQuery] = useState("");
+
+  // Bootstrap's collapse JS drives the accordion. Load it only where it is
+  // actually used (this component) instead of on every public page, so the
+  // homepage and other routes do not pay the cost of unused JavaScript.
+  useEffect(() => {
+    import("bootstrap/dist/js/bootstrap.bundle.min.js");
+  }, []);
 
   // Pre-compute plain-text form of each answer for searching/highlight,
   // while preserving the original HTML for rendering.
