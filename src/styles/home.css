@@ -678,3 +678,264 @@
     animation: none !important;
   }
 }
+
+/* ==============================================
+   POPULAR TEMPLATES GRID (merged from homeProductGrid.css)
+   Subset of products.css used by ProductGrid on the homepage. Kept inline
+   here to avoid a second render-blocking stylesheet request. Keep in sync
+   with the product-card block at the top of products.css.
+   ============================================== */
+
+/* Product grid card layout - ensures buttons align at bottom */
+.template-thumbnail {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Product card content wrapper */
+.template-thumbnail > div:last-child {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* Push button to bottom of card */
+.template-thumbnail ul {
+  flex-grow: 1;
+}
+
+/* Ensure image aspect ratio is maintained */
+.ledger-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--sb-soft);
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.product-thumb-wrap {
+  width: 100%;
+  background: linear-gradient(180deg, #f6f7f9 0%, #eef0f3 100%);
+}
+
+.product-thumb-link {
+  aspect-ratio: 3 / 2;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.product-thumb-picture {
+  position: relative;
+  width: 95%;
+  height: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+.product-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f6f7f8, #ffffff);
+  border-radius: 8px;
+}
+
+/* =============================================
+   Product Card - Clickable Card Design
+   ============================================= */
+
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.product-card-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-card {
+  cursor: pointer;
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.35s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--sb-radius);
+}
+
+.product-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    135deg,
+    var(--sb-green) 0%,
+    var(--sb-brand-blue) 100%
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(65, 69, 86, 0.15);
+  box-shadow:
+    0 12px 32px rgba(65, 69, 86, 0.1),
+    0 24px 64px rgba(65, 69, 86, 0.06);
+}
+
+.product-card:hover::before {
+  transform: scaleX(1);
+}
+
+.product-card:hover .ledger-thumb {
+  transform: scale(1.04) translateZ(0);
+}
+
+.product-card-content {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.product-card-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--sb-ink);
+  margin: 0 0 1.25rem 0;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.product-card-problem {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--sb-ink);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+.product-card-bullets {
+  color: var(--sb-muted);
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  padding-left: 0;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  /* make the list a fixed-width block and center it in the card
+     while left-aligning individual list items so their left edges match */
+  width: 220px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 1rem auto;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+  list-style: none;
+  text-align: left;
+}
+
+.product-card-bullets li {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sb-muted);
+}
+
+.product-card-bullets li::before {
+  /* small filled-circle checkmark badge */
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--sb-brand-blue);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-right: 0.35rem;
+}
+
+@media (max-width: 576px) {
+  .product-card-bullets {
+    gap: 0.25rem;
+    /* keep the same pill/left-aligned layout on mobile but reduce width */
+    max-width: calc(100% - 24px);
+    margin: 0 auto 1rem auto;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .product-card-bullets li {
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.product-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--sb-green);
+  transition: gap 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem 0;
+}
+
+.product-cta-icon-wrap {
+  font-size: 0.9em;
+  font-weight: 700;
+}
+
+.product-cta-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.product-card:hover .product-card-cta {
+  gap: 0.5rem;
+}
+
+.product-card-cta svg {
+  transition: transform 0.2s ease;
+}
+
+.product-card:hover .product-card-cta svg {
+  transform: translate(2px, -2px);
+}
+
+/* =============================================
+   Product Image Hover Preview
+   ============================================= */
+
+.product-thumbnail-clickable {
+  cursor: pointer;
+}
