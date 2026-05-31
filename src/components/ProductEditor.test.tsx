@@ -277,10 +277,6 @@ describe("ProductEditor", () => {
 
   it("deletes product in edit mode after confirmation", async () => {
     vi.mocked(clientApi.deleteProduct).mockResolvedValueOnce(undefined as any);
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
 
     render(
       <ProductEditor
@@ -303,6 +299,7 @@ describe("ProductEditor", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Delete Template" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete template" }));
 
     await waitFor(
       () => {

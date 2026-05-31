@@ -247,6 +247,7 @@ describe("AdminMenuManager", () => {
     await user.click(
       within(templatesRow).getByRole("button", { name: "Hide" }),
     );
+    await user.click(screen.getByRole("button", { name: "Hide link" }));
 
     await user.click(screen.getByRole("button", { name: "Save Order" }));
 
@@ -313,6 +314,7 @@ describe("AdminMenuManager", () => {
     await user.click(
       within(templatesRow).getByRole("button", { name: "Hide" }),
     );
+    await user.click(screen.getByRole("button", { name: "Hide link" }));
     await user.click(screen.getByRole("button", { name: "Save Order" }));
 
     await waitFor(

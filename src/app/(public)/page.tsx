@@ -18,12 +18,12 @@ import { createFaqJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title:
-    "Printable Small Business Templates & Toolkits | Invoices, Time Sheets, Ledgers",
+    "Printable Small Business Templates & Tools | Invoices, Time Sheets, Ledgers",
   description:
     "Printable templates for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, accounting ledgers, rent trackers and planners — instant PDF downloads via Etsy. 5.0 rated Etsy Star Seller with 3,500+ sales.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Printable Small Business Templates & Toolkits | Simple Biz Toolkit",
+    title: "Printable Small Business Templates & Tools | Simple Biz Toolkit",
     description:
       "Printable invoices, time sheets, ledgers and planners for small business owners, freelancers and online sellers. Instant downloads via Etsy.",
     url: "/",
@@ -108,7 +108,9 @@ export default function HomePage() {
             </span>
 
             <h1 className="sb-hero-title">
-              Printable small business templates
+              Small business tools
+              <br />
+              <em> and templates</em>
               <br />
               <em>that just work</em>
             </h1>

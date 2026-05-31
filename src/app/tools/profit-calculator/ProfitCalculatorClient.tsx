@@ -536,7 +536,7 @@ export default function ProfitCalculatorClient() {
             <li>
               <Link href={TOOLS_PAGES_HREF}>Tools</Link>
             </li>
-            <li aria-current="page">Etsy Profit Calculator</li>
+            <li aria-current="page">Profit Calculator for Etsy</li>
           </ol>
         </nav>
 
@@ -545,7 +545,7 @@ export default function ProfitCalculatorClient() {
             <span className="eyebrow-dot" aria-hidden="true" />
             Free tool · No sign-up · Runs in your browser
           </span>
-          <h1 id="hero-heading">Etsy Profit Calculator</h1>
+          <h1 id="hero-heading">Profit Calculator for Etsy</h1>
           <p>
             Calculate Etsy fees, product costs, profit margin, and the price you
             need to charge to make a real profit. Everything runs in your

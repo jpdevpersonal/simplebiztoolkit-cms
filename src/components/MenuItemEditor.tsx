@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import type { MenuItem } from "@/lib/api";
 import { redirectAndRefresh, refreshEditor } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 import AdminFormBlock from "@/components/AdminFormBlock";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
 import RichContentField from "@/components/RichContentField";
@@ -26,6 +28,12 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  useUnsavedChangesWarning(isDirty && !saving && !deleting);
+
+  const markDirty = () => setIsDirty(true);
 
   async function saveMenuItem() {
     setSaving(true);
@@ -33,16 +41,18 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
     setError(null);
 
     try {
-      const payload = { title, description: description || undefined, status };
+      const payload = { title, description, status };
 
       if (isNew) {
         const created = await clientApi.createMenuItem(payload);
+        setIsDirty(false);
         redirectAndRefresh(
           router,
           `/cms/menu/${(created as MenuItem).id}/edit`,
         );
       } else if (menuItem?.id) {
         await clientApi.updateMenuItem(menuItem.id, payload);
+        setIsDirty(false);
         setMessage("Menu item saved successfully!");
         refreshEditor(router);
       } else {
@@ -61,18 +71,14 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
   }
 
   async function handleDelete() {
-    if (
-      !confirm(
-        "Are you sure you want to delete this menu item? All categories and pages beneath it will also be deleted.",
-      )
-    )
-      return;
+    setConfirmDeleteOpen(false);
     setDeleting(true);
     setMessage(null);
     setError(null);
 
     try {
       await clientApi.deleteMenuItem(menuItem!.id);
+      setIsDirty(false);
       redirectAndRefresh(router, "/cms/menu");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -114,7 +120,10 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
             <input
               className="form-control"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setTitle(e.target.value);
+              }}
               placeholder="e.g. Products, Guides"
               required
             />
@@ -128,7 +137,10 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
             <RichContentField
               label="Description"
               value={description}
-              onChange={setDescription}
+              onChange={(html) => {
+                markDirty();
+                setDescription(html);
+              }}
               storageKey="menu-item-description-mode"
               htmlRows={3}
               placeholder="Optional description for this navigation item"
@@ -144,7 +156,10 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
           <select
             className="form-select"
             value={status}
-            onChange={(e) => setStatus(e.target.value as "draft" | "published")}
+            onChange={(e) => {
+              markDirty();
+              setStatus(e.target.value as "draft" | "published");
+            }}
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
@@ -161,8 +176,21 @@ export default function MenuItemEditor({ menuItem, isNew = false }: Props) {
         isCreateMode={isNew}
         entityName="Menu Item"
         onCancel={() => router.push("/cms/menu")}
-        onDelete={!isNew && menuItem ? handleDelete : undefined}
+        onDelete={
+          !isNew && menuItem ? () => setConfirmDeleteOpen(true) : undefined
+        }
         deleting={deleting}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDeleteOpen}
+        title="Delete menu item"
+        message="Are you sure you want to delete this menu item? All categories and pages beneath it will also be deleted."
+        confirmLabel="Delete menu item"
+        destructive
+        busy={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
       />
     </form>
   );

@@ -1620,6 +1620,24 @@
   color: #dc2626;
 }
 
+.admin-feedback-link {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.admin-confirm-dialog-message {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.admin-confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 /* ---- Admin Modal ---- */
 .admin-modal-backdrop {
   position: fixed;
