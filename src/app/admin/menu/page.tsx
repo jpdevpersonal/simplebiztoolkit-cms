@@ -6,17 +6,7 @@
 import Link from "next/link";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminStatCard from "@/components/AdminStatCard";
-
-function StatusBadge({ status }: { status?: string }) {
-  const published = status === "published";
-  return (
-    <span
-      className={`admin-badge ${published ? "admin-badge-published" : "admin-badge-draft"}`}
-    >
-      {status ?? "draft"}
-    </span>
-  );
-}
+import StatusBadge from "@/components/StatusBadge";
 
 export default async function MenuPage() {
   const { service } = await getAdminApiService();

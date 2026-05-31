@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import AdminSortIcon from "@/components/AdminSortIcon";
+import StatusBadge from "@/components/StatusBadge";
 import { compareSortValues } from "@/lib/sortUtils";
 
 export type AdminPageRow = {
@@ -26,17 +27,6 @@ type SortCol =
   | "categoryTitle"
   | "status"
   | "dateISO";
-
-function StatusBadge({ status }: { status?: string }) {
-  const published = status === "published";
-  return (
-    <span
-      className={`admin-badge ${published ? "admin-badge-published" : "admin-badge-draft"}`}
-    >
-      {status ?? "draft"}
-    </span>
-  );
-}
 
 export default function AdminPagesTable({ pages }: Props) {
   const [sortBy, setSortBy] = useState<SortCol>("title");

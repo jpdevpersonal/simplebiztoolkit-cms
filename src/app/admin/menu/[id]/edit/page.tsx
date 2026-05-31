@@ -8,25 +8,7 @@ import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import MenuItemEditor from "@/components/MenuItemEditor";
-
-function StatusBadge({ status }: { status?: string }) {
-  const published = status === "published";
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "0.2rem 0.55rem",
-        borderRadius: "999px",
-        fontSize: "0.75rem",
-        fontWeight: 600,
-        background: published ? "#dcfce7" : "#fef9c3",
-        color: published ? "#166534" : "#854d0e",
-      }}
-    >
-      {status ?? "draft"}
-    </span>
-  );
-}
+import StatusBadge from "@/components/StatusBadge";
 
 interface Props {
   params: Promise<{ id: string }>;

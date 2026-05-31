@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EditorFeedback from "@/components/EditorFeedback";
 
 type Props = {
@@ -24,6 +26,12 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  useUnsavedChangesWarning(isDirty && !saving && !deleting);
+
+  const markDirty = () => setIsDirty(true);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,10 +50,12 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
 
       if (isNew) {
         await clientApi.createCategory(payload);
+        setIsDirty(false);
         router.push("/cms/categories");
         router.refresh();
       } else if (category?.id) {
         await clientApi.updateCategory(category.id, payload);
+        setIsDirty(false);
         setMessage("Category saved successfully!");
         router.refresh();
       } else {
@@ -59,14 +69,14 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
   }
 
   async function handleDelete() {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    setConfirmDeleteOpen(false);
     setDeleting(true);
     setMessage(null);
     setError(null);
 
     try {
       await clientApi.deleteCategory(category!.id);
-      setMessage("Category deleted");
+      setIsDirty(false);
       router.push("/cms/categories");
       router.refresh();
     } catch (err: unknown) {
@@ -127,7 +137,10 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
               <input
                 className="form-control"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  markDirty();
+                  setName(e.target.value);
+                }}
                 required
               />
             </div>
@@ -137,7 +150,10 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
               <input
                 className="form-control"
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
+                onChange={(e) => {
+                  markDirty();
+                  setSlug(e.target.value);
+                }}
                 required
               />
             </div>
@@ -147,7 +163,10 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
               <textarea
                 className="form-control"
                 value={summary}
-                onChange={(e) => setSummary(e.target.value)}
+                onChange={(e) => {
+                  markDirty();
+                  setSummary(e.target.value);
+                }}
                 rows={3}
               />
             </div>
@@ -157,7 +176,10 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
               <textarea
                 className="form-control"
                 value={howThisHelps}
-                onChange={(e) => setHowThisHelps(e.target.value)}
+                onChange={(e) => {
+                  markDirty();
+                  setHowThisHelps(e.target.value);
+                }}
                 rows={4}
               />
             </div>
@@ -167,7 +189,10 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
               <input
                 className="form-control"
                 value={heroImage}
-                onChange={(e) => setHeroImage(e.target.value)}
+                onChange={(e) => {
+                  markDirty();
+                  setHeroImage(e.target.value);
+                }}
                 placeholder="/images/..."
               />
             </div>
@@ -196,13 +221,24 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
           <button
             type="button"
             className="admin-btn-danger"
-            onClick={handleDelete}
+            onClick={() => setConfirmDeleteOpen(true)}
             disabled={deleting}
           >
             {deleting ? "Deleting..." : "Delete Category"}
           </button>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDeleteOpen}
+        title="Delete category"
+        message="Are you sure you want to delete this category? This cannot be undone."
+        confirmLabel="Delete category"
+        destructive
+        busy={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </form>
   );
 }
