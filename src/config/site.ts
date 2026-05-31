@@ -2,7 +2,7 @@ export const site = {
   name: "Simple Biz Toolkit",
   url: "https://www.simplebiztoolkit.com",
   description:
-    "Printable templates and toolkits for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, ledgers, rent trackers and planners — instant PDF downloads via Etsy.",
+    "Printable templates and toolkit for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, ledgers, rent trackers and planners — instant PDF downloads via Etsy.",
   locale: "en_GB",
   contactEmail: "simplebiztoolkit@gmail.com",
   defaultOgImage: "/images/hero-image-desk.webp",

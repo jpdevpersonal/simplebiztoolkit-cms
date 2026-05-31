@@ -278,6 +278,11 @@ describe("menuContent", () => {
   it("includes published categories with their published pages in getPublishedMenuItemContent", async () => {
     const { getPublishedMenuItemContent } = await import("./menuContent");
 
+    apiServiceMock.getMenuItemPages.mockResolvedValueOnce({
+      statusCode: 200,
+      data: [],
+    });
+
     const result = await getPublishedMenuItemContent({
       id: "item-1",
       title: "Guides",
