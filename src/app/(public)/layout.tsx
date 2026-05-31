@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { site } from "@/config/site";
 
-import "@/styles/bootstrap-custom.scss";
+import "@/styles/bootstrap-public.scss";
 import "@/styles/theme.css";
 
 import SiteHeader from "@/components/SiteHeader";

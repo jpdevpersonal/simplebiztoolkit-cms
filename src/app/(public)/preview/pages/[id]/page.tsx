@@ -7,6 +7,7 @@ import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { normalizePublicUrl } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
+import "@/styles/bootstrap-public-components.scss";
 import "@/styles/contentPage.css";
 
 type Props = {
