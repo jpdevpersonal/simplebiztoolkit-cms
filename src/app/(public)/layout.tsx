@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { site } from "@/config/site";
 
-import "bootstrap/dist/css/bootstrap.min.css";
+import "@/styles/bootstrap-custom.scss";
 import "@/styles/theme.css";
 
 import SiteHeader from "@/components/SiteHeader";

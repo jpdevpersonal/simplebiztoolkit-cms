@@ -1,0 +1,44 @@
+// ==========================================================================
+// Trimmed Bootstrap 5.3 build
+// --------------------------------------------------------------------------
+// The full `bootstrap/dist/css/bootstrap.min.css` is render-blocking and ships
+// many components this site never uses (modal, carousel, offcanvas, dropdown,
+// navbar, toast, tooltip, popover, progress, spinner, pagination, list-group,
+// button-group, placeholders). This custom entry imports only the layers and
+// components actually referenced in the markup, cutting the critical-path CSS.
+//
+// If a new Bootstrap component is introduced in the UI, add its partial below.
+// ==========================================================================
+
+// 1. Configuration (required by everything that follows)
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// 2. Base layout & typography
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+
+// 3. Components in active use
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/close";
+
+// 4. Helpers + utilities API (must be imported last)
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities/api";
