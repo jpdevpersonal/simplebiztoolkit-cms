@@ -601,10 +601,6 @@ describe("PageEditor", () => {
   it("shows a delete error when removing an existing page fails", async () => {
     const user = userEvent.setup();
 
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
     vi.mocked(clientApi.deleteMenuItemPage).mockRejectedValueOnce(
       new Error("Delete failed"),
     );
@@ -627,6 +623,7 @@ describe("PageEditor", () => {
     await waitForMenuCategoriesLoad();
 
     await user.click(screen.getByRole("button", { name: "Delete Page" }));
+    await user.click(screen.getByRole("button", { name: "Delete page" }));
 
     await waitFor(() => {
       expect(clientApi.deleteMenuItemPage).toHaveBeenCalledWith("page-1");

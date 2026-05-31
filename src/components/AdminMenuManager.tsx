@@ -21,8 +21,11 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { MenuItem, MenuLayoutSettings } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 import AdminFormBlock from "@/components/AdminFormBlock";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EditorFeedback from "@/components/EditorFeedback";
+import StatusBadge from "@/components/StatusBadge";
 import {
   canonicalizeStaticNavOrderId,
   hiddenStaticOrderIdToStaticOrderId,
@@ -76,20 +79,9 @@ type SortableRowProps = {
   disabled: boolean;
   busy: boolean;
   onToggleStatus: (item: ManagedCmsNavItem) => Promise<void>;
-  onDelete: (item: ManagedCmsNavItem) => Promise<void>;
+  onDelete: (item: ManagedCmsNavItem) => void;
   onHideBuiltIn: (item: ManagedStaticNavItem) => void;
 };
-
-function StatusBadge({ status }: { status?: string }) {
-  const published = status === "published";
-  return (
-    <span
-      className={`admin-badge ${published ? "admin-badge-published" : "admin-badge-draft"}`}
-    >
-      {published ? "Published" : "Draft"}
-    </span>
-  );
-}
 
 function createManagedLocationState(
   menuItems: MenuItem[],
@@ -300,6 +292,11 @@ export default function AdminMenuManager({
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<
+    | { kind: "delete"; item: ManagedCmsNavItem }
+    | { kind: "hideBuiltIn"; item: ManagedStaticNavItem }
+    | null
+  >(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -345,6 +342,8 @@ export default function AdminMenuManager({
   const hasUnsavedChanges =
     orderSignature !== savedSignature ||
     hiddenSignature !== savedHiddenSignature;
+
+  useUnsavedChangesWarning(hasUnsavedChanges && !savingOrder);
   const cmsItemCount = items.filter((item) => item.kind === "cms").length;
   const visibleStaticItemCount = items.length - cmsItemCount;
   const hiddenStaticItems = useMemo(
@@ -480,14 +479,7 @@ export default function AdminMenuManager({
   }
 
   async function handleDelete(item: ManagedCmsNavItem) {
-    if (
-      !confirm(
-        `Delete \"${item.item.title}\"? This permanently removes the menu item and any nested topics/pages attached in the backend.`,
-      )
-    ) {
-      return;
-    }
-
+    setConfirmState(null);
     setBusyItemId(item.id);
     setMessage(null);
     setError(null);
@@ -508,14 +500,7 @@ export default function AdminMenuManager({
   }
 
   function handleHideBuiltIn(item: ManagedStaticNavItem) {
-    if (
-      !confirm(
-        `Hide built-in menu item \"${item.label}\"? This is a soft delete and can be restored later.`,
-      )
-    ) {
-      return;
-    }
-
+    setConfirmState(null);
     setError(null);
     updateCurrentLocationState((state) => {
       const nextSet = new Set(state.hiddenStaticNavIds);
@@ -706,8 +691,12 @@ export default function AdminMenuManager({
                           busy={busy}
                           disabled={busy || savingOrder}
                           onToggleStatus={handleToggleStatus}
-                          onDelete={handleDelete}
-                          onHideBuiltIn={handleHideBuiltIn}
+                          onDelete={(item) =>
+                            setConfirmState({ kind: "delete", item })
+                          }
+                          onHideBuiltIn={(item) =>
+                            setConfirmState({ kind: "hideBuiltIn", item })
+                          }
                         />
                       );
                     })}
@@ -814,6 +803,40 @@ export default function AdminMenuManager({
           </form>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmState !== null}
+        title={
+          confirmState?.kind === "hideBuiltIn"
+            ? "Hide built-in link"
+            : "Delete menu item"
+        }
+        message={
+          confirmState?.kind === "hideBuiltIn"
+            ? `Hide built-in menu item "${confirmState.item.label}"? This is a soft delete and can be restored later.`
+            : confirmState?.kind === "delete"
+              ? `Delete "${confirmState.item.item.title}"? This permanently removes the menu item and any nested topics/pages attached in the backend.`
+              : ""
+        }
+        confirmLabel={
+          confirmState?.kind === "hideBuiltIn"
+            ? "Hide link"
+            : "Delete menu item"
+        }
+        destructive
+        busy={
+          confirmState?.kind === "delete" && busyItemId === confirmState.item.id
+        }
+        onConfirm={() => {
+          if (!confirmState) return;
+          if (confirmState.kind === "delete") {
+            void handleDelete(confirmState.item);
+          } else {
+            handleHideBuiltIn(confirmState.item);
+          }
+        }}
+        onCancel={() => setConfirmState(null)}
+      />
     </div>
   );
 }

@@ -7,9 +7,9 @@ const PAGE_URL = "https://www.simplebiztoolkit.com/tools/profit-calculator";
 const TOOLS_PAGES_URL = "https://www.simplebiztoolkit.com/pages/tools";
 
 export const metadata: Metadata = {
-  title: "Free Etsy Profit Calculator — Etsy Fee, Pricing & Margin Tool",
+  title: "Free Profit Calculator — Etsy Fee, Pricing & Margin Tool",
   description:
-    "Free Etsy Profit Calculator to work out Etsy fees, product costs, profit margin, and the selling price you need to charge to make a real profit. No sign-up, runs in your browser.",
+    "Free Profit Calculator to work out Etsy fees, product costs, profit margin, and the selling price you need to charge to make a real profit. No sign-up, runs in your browser.",
   keywords: [
     "etsy profit calculator",
     "etsy pricing calculator",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     canonical: PAGE_URL,
   },
   openGraph: {
-    title: "Free Etsy Profit Calculator — Etsy Fee & Pricing Tool",
+    title: "Free Profit Calculator for Etsy — Fee & Pricing Tool",
     description:
       "Calculate Etsy fees, product costs, profit margin, and the price you need to charge to make a real profit. Free, private, no sign-up.",
     url: PAGE_URL,
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Etsy Profit Calculator",
+    title: "Free Profit Calculator for Etsy",
     description:
       "Calculate Etsy fees, product costs, profit margin, and the price you need to charge to make a real profit. Free, private, no sign-up.",
   },
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 const softwareApplicationLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Etsy Profit Calculator",
+  name: "Profit Calculator for Etsy",
   url: PAGE_URL,
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web Browser",
@@ -95,7 +95,7 @@ const breadcrumbLd = {
     {
       "@type": "ListItem",
       position: 3,
-      name: "Etsy Profit Calculator",
+      name: "Profit Calculator for Etsy",
       item: PAGE_URL,
     },
   ],

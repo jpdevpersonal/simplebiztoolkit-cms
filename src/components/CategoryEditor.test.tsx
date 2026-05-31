@@ -80,13 +80,10 @@ describe("CategoryEditor", () => {
   it("deletes category after confirmation", async () => {
     const user = userEvent.setup();
     vi.mocked(clientApi.deleteCategory).mockResolvedValueOnce(undefined as any);
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
 
     render(<CategoryEditor category={category as any} />);
     await user.click(screen.getByRole("button", { name: "Delete Category" }));
+    await user.click(screen.getByRole("button", { name: "Delete category" }));
 
     await waitFor(() => {
       expect(clientApi.deleteCategory).toHaveBeenCalledWith("cat-1");
@@ -114,13 +111,10 @@ describe("CategoryEditor", () => {
     vi.mocked(clientApi.deleteCategory).mockRejectedValueOnce(
       new Error("Delete error"),
     );
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
 
     render(<CategoryEditor category={category as any} />);
     await user.click(screen.getByRole("button", { name: "Delete Category" }));
+    await user.click(screen.getByRole("button", { name: "Delete category" }));
 
     await waitFor(() => {
       expect(screen.getByText("Delete error")).toBeInTheDocument();

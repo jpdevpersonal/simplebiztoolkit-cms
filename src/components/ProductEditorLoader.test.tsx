@@ -37,7 +37,7 @@ describe("ProductEditorLoader", () => {
     vi.mocked(clientApi.getProductCategories).mockResolvedValueOnce([] as any);
 
     render(<ProductEditorLoader id="p-1" />);
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
+    expect(screen.getByText("Loading template…")).toBeInTheDocument();
 
     await waitFor(() => {
       expect(clientApi.getProductById).toHaveBeenCalledWith("p-1");

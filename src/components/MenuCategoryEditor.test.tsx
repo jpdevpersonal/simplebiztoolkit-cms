@@ -115,10 +115,6 @@ describe("MenuCategoryEditor", () => {
     vi.mocked(clientApi.deleteMenuCategory).mockResolvedValueOnce(
       undefined as never,
     );
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
 
     render(
       <MenuCategoryEditor
@@ -128,6 +124,7 @@ describe("MenuCategoryEditor", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Delete Topic" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete topic" }));
 
     await waitFor(() => {
       expect(clientApi.deleteMenuCategory).toHaveBeenCalledWith("cat-1");
@@ -136,11 +133,6 @@ describe("MenuCategoryEditor", () => {
   });
 
   it("does not delete when the confirmation dialog is cancelled", async () => {
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => false),
-    );
-
     render(
       <MenuCategoryEditor
         menuItemId="menu-1"
@@ -150,19 +142,13 @@ describe("MenuCategoryEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Delete Topic" }));
 
-    await waitFor(() => {
-      expect(clientApi.deleteMenuCategory).not.toHaveBeenCalled();
-    });
+    expect(clientApi.deleteMenuCategory).not.toHaveBeenCalled();
   });
 
   it("shows an error message when delete fails", async () => {
     vi.mocked(clientApi.deleteMenuCategory).mockRejectedValueOnce(
       new Error("Delete failed"),
     );
-    vi.stubGlobal(
-      "confirm",
-      vi.fn(() => true),
-    );
 
     render(
       <MenuCategoryEditor
@@ -172,6 +158,7 @@ describe("MenuCategoryEditor", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Delete Topic" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete topic" }));
 
     await waitFor(() => {
       expect(screen.getByText("Delete failed")).toBeInTheDocument();

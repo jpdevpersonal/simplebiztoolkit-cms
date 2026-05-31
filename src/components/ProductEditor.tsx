@@ -1,31 +1,25 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { redirectAndRefresh } from "@/lib/adminNavigation";
 import { clientApi } from "@/lib/clientApi";
+import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
 import {
-  extractRelatedLinksBlocksFromHtml,
-  normalizeRelatedLinksBorderWidth,
-  normalizeRelatedLinksDraftItems,
-  normalizeRelatedLinksImageSize,
-  normalizeRelatedLinksTitle,
-  RELATED_LINKS_DEFAULT_BACKGROUND,
-  RELATED_LINKS_DEFAULT_BORDER_WIDTH,
-  RELATED_LINKS_MAX_ITEMS,
-  serializeRelatedLinksBlockToHtml,
-  type RelatedLinksBlockData,
-} from "@/lib/relatedLinks";
+  buildContentWithRelatedLinks,
+  splitContentAndRelatedLinks,
+} from "@/lib/relatedLinksContent";
 import { slugify } from "@/lib/slugify";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 import RelatedLinksEditor from "@/components/RelatedLinksEditor";
 import RichContentField from "@/components/RichContentField";
 import AdminFormBlock from "@/components/AdminFormBlock";
 import AdminModal from "@/components/AdminModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EditorActions from "@/components/EditorActions";
 import EditorFeedback from "@/components/EditorFeedback";
-import { FULL_POLICY, type EditorPolicy } from "@/editor/policy";
+import { INLINE_CONTENT_POLICY } from "@/editor/policy";
 
 type ProductEditorProps = {
   product?: ProductItem;
@@ -47,78 +41,12 @@ const EMPTY_PRODUCT: ProductItem = {
   status: "draft",
 };
 
-const PRODUCT_INLINE_CONTENT_POLICY: EditorPolicy = {
-  ...FULL_POLICY,
-  allowedNodes: FULL_POLICY.allowedNodes.filter(
-    (nodeName) => nodeName !== "relatedLinksSbtBlock",
-  ),
-};
-
-function normalizeTemplateRelatedLinksBlock(
-  value?: Partial<RelatedLinksBlockData>,
-): RelatedLinksBlockData {
-  return {
-    title: normalizeRelatedLinksTitle(value?.title),
-    items: normalizeRelatedLinksDraftItems(value?.items),
-    backgroundColor:
-      typeof value?.backgroundColor === "string" && value.backgroundColor.trim()
-        ? value.backgroundColor.trim()
-        : RELATED_LINKS_DEFAULT_BACKGROUND,
-    borderWidth:
-      normalizeRelatedLinksBorderWidth(value?.borderWidth) ??
-      RELATED_LINKS_DEFAULT_BORDER_WIDTH,
-    imageSize: normalizeRelatedLinksImageSize(value?.imageSize),
-  };
-}
-
-function splitTemplateDescription(description: string): {
-  descriptionHtml: string;
-  relatedLinks: RelatedLinksBlockData;
-} {
-  const { htmlWithoutRelatedLinks, blocks } =
-    extractRelatedLinksBlocksFromHtml(description);
-
-  if (blocks.length === 0) {
-    return {
-      descriptionHtml: description,
-      relatedLinks: normalizeTemplateRelatedLinksBlock(),
-    };
-  }
-
-  return {
-    descriptionHtml: htmlWithoutRelatedLinks.trim(),
-    relatedLinks: normalizeTemplateRelatedLinksBlock({
-      title: blocks[0]?.title,
-      backgroundColor: blocks[0]?.backgroundColor,
-      borderWidth: blocks[0]?.borderWidth,
-      imageSize: blocks[0]?.imageSize,
-      items: blocks
-        .flatMap((block) => block.items)
-        .slice(0, RELATED_LINKS_MAX_ITEMS),
-    }),
-  };
-}
-
-function buildTemplateDescription(
-  descriptionHtml: string,
-  relatedLinks: RelatedLinksBlockData,
-): string {
-  const baseDescription =
-    extractRelatedLinksBlocksFromHtml(
-      descriptionHtml,
-    ).htmlWithoutRelatedLinks.trim();
-
-  return [baseDescription, serializeRelatedLinksBlockToHtml(relatedLinks)]
-    .filter(Boolean)
-    .join("\n");
-}
-
 export default function ProductEditor({
   product,
   categories = [],
 }: ProductEditorProps) {
   const productData = product || EMPTY_PRODUCT;
-  const initialContent = splitTemplateDescription(
+  const initialContent = splitContentAndRelatedLinks(
     productData.description || "",
   );
   const isCreateMode = !productData.id;
@@ -129,9 +57,7 @@ export default function ProductEditor({
   const [title, setTitle] = useState(productData.title || "");
   const [slug, setSlug] = useState(productData.slug || "");
   const [problem, setProblem] = useState(productData.problem || "");
-  const [description, setDescription] = useState(
-    initialContent.descriptionHtml,
-  );
+  const [description, setDescription] = useState(initialContent.contentHtml);
   const [relatedLinks, setRelatedLinks] = useState(initialContent.relatedLinks);
   const [bullets, setBullets] = useState(
     (productData.bullets || []).join("\n") || "",
@@ -142,7 +68,10 @@ export default function ProductEditor({
     toTemplatesRoute(productData.productPageUrl) || "",
   );
   const [price, setPrice] = useState(productData.price || "");
-  const [categoryId, setCategoryId] = useState(productData.categoryId || "");
+  const [categoryId, setCategoryId] = useState(
+    productData.categoryId ||
+      (isCreateMode && categories.length > 0 ? categories[0].id : ""),
+  );
   const [status, setStatus] = useState<"draft" | "published">(
     productData.status || "draft",
   );
@@ -153,14 +82,15 @@ export default function ProductEditor({
   const [activeModal, setActiveModal] = useState<
     "problem" | "description" | null
   >(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
-  useEffect(() => {
-    if (isCreateMode && !categoryId && categories.length > 0) {
-      setCategoryId(categories[0].id);
-    }
-  }, [isCreateMode, categoryId, categories]);
+  useUnsavedChangesWarning(isDirty && !saving && !deleting);
+
+  const markDirty = () => setIsDirty(true);
 
   const handleTitleChange = (value: string) => {
+    markDirty();
     setTitle(value);
 
     if (isCreateMode && !slug.trim()) {
@@ -184,52 +114,27 @@ export default function ProductEditor({
       const payload = {
         title,
         slug,
-        problem: problem || undefined,
-        description:
-          buildTemplateDescription(description, relatedLinks) || undefined,
+        problem,
+        description: buildContentWithRelatedLinks(description, relatedLinks),
         bullets: bulletsArray,
-        image: image || undefined,
-        etsyUrl: etsyUrl || undefined,
-        productPageUrl: toTemplatesRoute(productPageUrl) || undefined,
-        price: price || undefined,
+        image,
+        etsyUrl,
+        productPageUrl: toTemplatesRoute(productPageUrl),
+        price,
         categoryId,
         status,
       };
 
-      const saved = isCreateMode
-        ? await clientApi.createProduct(payload)
-        : await clientApi.updateProduct(productData.id, payload);
-
       if (isCreateMode) {
-        redirectAndRefresh(router, "/cms/templates");
+        await clientApi.createProduct(payload);
       } else {
-        // Keep local form state in sync in case a user navigates back quickly.
-        if (saved && typeof saved === "object") {
-          const savedContent = splitTemplateDescription(
-            (saved.description as string) || "",
-          );
-
-          setTitle((saved.title as string) || title);
-          setSlug((saved.slug as string) || slug);
-          setProblem((saved.problem as string) || problem);
-          setDescription(savedContent.descriptionHtml);
-          setRelatedLinks(savedContent.relatedLinks);
-          setBullets(((saved.bullets as string[]) || []).join("\n") || bullets);
-          setImage((saved.image as string) || image);
-          setEtsyUrl((saved.etsyUrl as string) || etsyUrl);
-          setProductPageUrl(
-            toTemplatesRoute(saved.productPageUrl as string) || productPageUrl,
-          );
-          setPrice((saved.price as string) || price);
-          setCategoryId((saved.categoryId as string) || categoryId);
-          setStatus((saved.status as "draft" | "published") || status);
-        }
-
-        redirectAndRefresh(router, "/cms/templates");
+        await clientApi.updateProduct(productData.id, payload);
       }
+
+      setIsDirty(false);
+      redirectAndRefresh(router, "/cms/templates");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
       setSaving(false);
     }
   }
@@ -249,17 +154,14 @@ export default function ProductEditor({
       return;
     }
 
-    if (!confirm("Are you sure you want to delete this template?")) {
-      return;
-    }
-
+    setConfirmDeleteOpen(false);
     setDeleting(true);
     setMessage(null);
     setError(null);
 
     try {
       await clientApi.deleteProduct(productData.id);
-      setMessage("Template deleted!");
+      setIsDirty(false);
       redirectAndRefresh(router, "/cms/templates");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -316,7 +218,10 @@ export default function ProductEditor({
             <input
               className="form-control"
               value={slug}
-              onChange={(e) => setSlug(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setSlug(e.target.value);
+              }}
               required
             />
           </div>
@@ -327,7 +232,10 @@ export default function ProductEditor({
               <select
                 className="form-select"
                 value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
+                onChange={(e) => {
+                  markDirty();
+                  setCategoryId(e.target.value);
+                }}
                 required
               >
                 {categories.map((cat) => (
@@ -344,9 +252,10 @@ export default function ProductEditor({
             <select
               className="form-select"
               value={status}
-              onChange={(e) =>
-                setStatus(e.target.value as "draft" | "published")
-              }
+              onChange={(e) => {
+                markDirty();
+                setStatus(e.target.value as "draft" | "published");
+              }}
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
@@ -358,7 +267,10 @@ export default function ProductEditor({
             <input
               className="form-control"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setPrice(e.target.value);
+              }}
               placeholder="$9.99"
             />
           </div>
@@ -392,14 +304,17 @@ export default function ProductEditor({
             <RichContentField
               label="Problem Statement"
               value={problem}
-              onChange={setProblem}
+              onChange={(html) => {
+                markDirty();
+                setProblem(html);
+              }}
               storageKey="product-problem-editor-mode"
               htmlRows={3}
               minHeight={150}
               placeholder="Describe the problem this template solves…"
               onSave={saveProduct}
               onPreview={previewHref ? handlePreview : undefined}
-              policy={PRODUCT_INLINE_CONTENT_POLICY}
+              policy={INLINE_CONTENT_POLICY}
               onPopOut={() => setActiveModal("problem")}
             />
           </div>
@@ -408,14 +323,17 @@ export default function ProductEditor({
             <RichContentField
               label="Description"
               value={description}
-              onChange={setDescription}
+              onChange={(html) => {
+                markDirty();
+                setDescription(html);
+              }}
               storageKey="product-description-editor-mode"
               htmlRows={4}
               minHeight={200}
               placeholder="Describe the template in detail…"
               onSave={saveProduct}
               onPreview={previewHref ? handlePreview : undefined}
-              policy={PRODUCT_INLINE_CONTENT_POLICY}
+              policy={INLINE_CONTENT_POLICY}
               hint="Use the Related Links section below to manage the block that renders beneath the main template image."
               onPopOut={() => setActiveModal("description")}
             />
@@ -431,7 +349,10 @@ export default function ProductEditor({
             <textarea
               className="form-control"
               value={bullets}
-              onChange={(e) => setBullets(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setBullets(e.target.value);
+              }}
               rows={5}
               placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
               style={{ fontFamily: "monospace", fontSize: "0.875rem" }}
@@ -443,7 +364,10 @@ export default function ProductEditor({
             <input
               className="form-control"
               value={image}
-              onChange={(e) => setImage(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setImage(e.target.value);
+              }}
               placeholder="/images/..."
             />
           </div>
@@ -453,7 +377,10 @@ export default function ProductEditor({
             <input
               className="form-control"
               value={etsyUrl}
-              onChange={(e) => setEtsyUrl(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setEtsyUrl(e.target.value);
+              }}
             />
           </div>
 
@@ -462,7 +389,10 @@ export default function ProductEditor({
             <input
               className="form-control"
               value={productPageUrl}
-              onChange={(e) => setProductPageUrl(e.target.value)}
+              onChange={(e) => {
+                markDirty();
+                setProductPageUrl(e.target.value);
+              }}
             />
           </div>
         </div>
@@ -496,7 +426,10 @@ export default function ProductEditor({
         </div>
         <RelatedLinksEditor
           value={relatedLinks}
-          onChange={setRelatedLinks}
+          onChange={(value) => {
+            markDirty();
+            setRelatedLinks(value);
+          }}
           previewVariant="template"
           previewHint="This block is shown beneath the main template image on the public template page."
         />
@@ -511,7 +444,7 @@ export default function ProductEditor({
         isCreateMode={isCreateMode}
         entityName="Template"
         onCancel={() => router.back()}
-        onDelete={handleDelete}
+        onDelete={isCreateMode ? undefined : () => setConfirmDeleteOpen(true)}
         deleting={deleting}
         previewHref={previewHref}
       />
@@ -527,14 +460,17 @@ export default function ProductEditor({
           <RichContentField
             label=""
             value={problem}
-            onChange={setProblem}
+            onChange={(html) => {
+              markDirty();
+              setProblem(html);
+            }}
             storageKey="product-problem-editor-mode"
             htmlRows={3}
             minHeight={500}
             placeholder="Describe the problem this template solves\u2026"
             onSave={saveProduct}
             onPreview={previewHref ? handlePreview : undefined}
-            policy={PRODUCT_INLINE_CONTENT_POLICY}
+            policy={INLINE_CONTENT_POLICY}
             stickyToolbar
           />
         )}
@@ -542,18 +478,32 @@ export default function ProductEditor({
           <RichContentField
             label=""
             value={description}
-            onChange={setDescription}
+            onChange={(html) => {
+              markDirty();
+              setDescription(html);
+            }}
             storageKey="product-description-editor-mode"
             htmlRows={4}
             minHeight={500}
             placeholder="Describe the template in detail\u2026"
             onSave={saveProduct}
             onPreview={previewHref ? handlePreview : undefined}
-            policy={PRODUCT_INLINE_CONTENT_POLICY}
+            policy={INLINE_CONTENT_POLICY}
             stickyToolbar
           />
         )}
       </AdminModal>
+
+      <ConfirmDialog
+        isOpen={confirmDeleteOpen}
+        title="Delete template"
+        message="Are you sure you want to delete this template? This cannot be undone."
+        confirmLabel="Delete template"
+        destructive
+        busy={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </form>
   );
 }

@@ -57,6 +57,18 @@ export const FULL_POLICY: EditorPolicy = {
 };
 
 /**
+ * Inline content policy – the full policy minus the Related Links block, which
+ * is managed by a dedicated editor section rather than inline. Shared by the
+ * page and template (product) editors.
+ */
+export const INLINE_CONTENT_POLICY: EditorPolicy = {
+  ...FULL_POLICY,
+  allowedNodes: FULL_POLICY.allowedNodes.filter(
+    (nodeName) => nodeName !== "relatedLinksSbtBlock",
+  ),
+};
+
+/**
  * Basic policy – standard prose formatting only; no CMS custom blocks,
  * no code blocks / advanced marks.
  */
