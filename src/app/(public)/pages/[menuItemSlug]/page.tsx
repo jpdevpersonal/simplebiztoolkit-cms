@@ -21,6 +21,7 @@ import {
   createPageMetadata,
   normalizePublicUrl,
 } from "@/lib/seo";
+import "@/styles/bootstrap-public-components.scss";
 import "@/styles/contentCards.css";
 import "@/styles/pages.css";
 

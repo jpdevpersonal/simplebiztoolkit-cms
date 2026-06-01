@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { site } from "@/config/site";
 
-import "@/styles/bootstrap-custom.scss";
+import "@/styles/bootstrap-public.scss";
 import "@/styles/theme.css";
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
+import DeferredGoogleAnalytics from "../DeferredGoogleAnalytics";
 import GoogleAnalyticsPageTracker from "../GoogleAnalyticsPageTracker";
 import ScrollToTop from "../ScrollToTop";
 import {
@@ -132,22 +132,7 @@ export default async function PublicLayout({
 
   return (
     <>
-      {/* Google tag (gtag.js) */}
-      <Script
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-        strategy="afterInteractive"
-      />
-      <Script id="gtag-init" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);} 
-          gtag('js', new Date());
-
-          gtag('config', '${gaMeasurementId}');
-        `}
-      </Script>
-
+      <DeferredGoogleAnalytics measurementId={gaMeasurementId} />
       <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
       <ScrollToTop />
 

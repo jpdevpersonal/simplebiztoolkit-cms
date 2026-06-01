@@ -6,6 +6,7 @@ import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
+import "@/styles/bootstrap-public-components.scss";
 import { apiService } from "@/lib/api";
 import {
   getPublishedMenuItemContent,
