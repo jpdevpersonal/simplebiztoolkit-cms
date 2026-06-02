@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
@@ -103,6 +104,9 @@ export default function RelatedLinksBlock({
                         sizes={imageSizes}
                         loading="lazy"
                         quality={90}
+                        unoptimized={shouldBypassNextImageOptimization(
+                          item.imageUrl,
+                        )}
                         style={{ objectPosition: getImageObjectPosition(item) }}
                         className="related-links-block__image"
                       />
