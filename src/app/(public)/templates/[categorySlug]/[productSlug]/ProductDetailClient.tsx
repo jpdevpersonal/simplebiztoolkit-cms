@@ -2,6 +2,7 @@
 import Image from "next/image";
 import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import type { Product } from "@/types/product";
 import { sanitizePublicContentHtml } from "@/lib/sanitize";
 import "@/styles/bootstrap-public-components.scss";
@@ -169,6 +170,7 @@ export default function ProductDetailClient({ product }: Props) {
                 className="product-detail-image"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
+                unoptimized={shouldBypassNextImageOptimization(product.image)}
               />
             </div>
           </div>

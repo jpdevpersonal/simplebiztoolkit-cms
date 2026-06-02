@@ -7,6 +7,7 @@ import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import ProductGrid from "@/components/ProductGrid";
 import { apiService } from "@/lib/api";
 import { links } from "@/config/links";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
@@ -145,6 +146,9 @@ export default async function CategoryPage({ params }: Props) {
                     width={900}
                     height={630}
                     sizes="(max-width: 992px) 100vw, 420px"
+                    unoptimized={shouldBypassNextImageOptimization(
+                      category.heroImage,
+                    )}
                   />
                 </div>
               ) : null}

@@ -5,6 +5,7 @@ import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import { ContentRenderer } from "@/components/ContentRenderer";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import { normalizePublicUrl } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 import "@/styles/bootstrap-public-components.scss";
@@ -88,6 +89,7 @@ export default async function PagePreview({ params }: Props) {
               height={630}
               sizes="(max-width: 768px) 100vw, 1200px"
               loading="lazy"
+              unoptimized={shouldBypassNextImageOptimization(headerImage)}
             />
           </div>
         )}
