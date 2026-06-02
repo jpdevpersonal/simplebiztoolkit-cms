@@ -127,6 +127,56 @@ a:hover {
   color: var(--sb-green-hover);
 }
 
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.btn:disabled,
+.btn.disabled,
+fieldset:disabled .btn {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.75rem 1rem;
+  color: var(--sb-ink);
+  background-color: #fff;
+  border: 1px solid var(--sb-border);
+  border-radius: var(--sb-radius-sm);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 36, 0.03);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.form-control:focus {
+  border-color: var(--sb-brand-blue);
+  outline: 0;
+  box-shadow:
+    inset 0 1px 2px rgba(15, 23, 36, 0.03),
+    0 0 0 0.2rem rgba(65, 69, 86, 0.12);
+}
+
+.form-control::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+.nav-link {
+  display: block;
+  text-decoration: none;
+}
+
 /* Button base styles */
 button {
   border-radius: var(--sb-radius-sm);
@@ -586,26 +636,6 @@ nav.sb-breadcrumb.sb-breadcrumb--bottom {
   z-index: 9999;
 }
 
-/* Navigation styling */
-.navbar-nav .nav-link:hover {
-  background: var(--sb-gradient-soft);
-  color: var(--sb-brand-blue) !important;
-  border-radius: var(--sb-radius-sm);
-}
-
-/* Mobile navigation improvements */
-.offcanvas {
-  --bs-offcanvas-width: 85vw;
-  max-width: 350px;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
-}
-
-.offcanvas-body {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Sticky mobile CTA bar */
 .sb-sticky-cta {
   position: fixed;
@@ -811,17 +841,6 @@ nav.sb-breadcrumb.sb-breadcrumb--bottom {
   transform: scale(1.1) rotate(-3deg);
 }
 
-/* Admin layout styles (moved from server component) */
-.admin-layout {
-  min-height: 100vh;
-  background-color: var(--sb-soft);
-}
-
-.admin-content {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
 /* =============================================
    Professional Typography & Content Enhancements
    ============================================= */
@@ -908,185 +927,6 @@ ol:not([class]) li {
   background: transparent;
   border: 2px solid var(--sb-brand-blue);
   color: var(--sb-brand-blue);
-}
-
-/* Search input with icon */
-.sb-search {
-  position: relative;
-  margin-bottom: 5rem; /* add space between search and accordion */
-}
-.sb-search .sb-search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--sb-muted);
-  pointer-events: none;
-}
-.sb-search .form-control {
-  padding-left: 40px;
-  border-radius: 12px;
-  border: 2px solid rgba(16, 24, 40, 0.18); /* darker, more obvious border */
-  box-shadow: 0 6px 12px rgba(16, 24, 40, 0.05);
-  background: linear-gradient(180deg, #fff, #fbfcfd);
-  transition:
-    box-shadow 180ms ease,
-    border-color 180ms ease;
-}
-.sb-search:focus-within .form-control {
-  border-color: var(--sb-brand-blue);
-  box-shadow:
-    0 10px 30px rgba(65, 69, 115, 0.1),
-    0 0 0 6px rgba(65, 69, 115, 0.06);
-}
-.sb-search .form-control:focus {
-  outline: none;
-}
-.sb-search .sb-search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--sb-muted);
-  pointer-events: none;
-  transition: color 180ms ease;
-}
-.sb-search:focus-within .sb-search-icon {
-  color: var(--sb-brand-blue);
-}
-
-/* Highlight style for matched search terms in content */
-.sb-highlight {
-  background: #fff7c2; /* light yellow */
-  padding: 0 0.15rem;
-  border-radius: 3px;
-}
-.sb-highlight-body {
-  color: var(--sb-ink);
-  font-weight: 700;
-}
-.sb-highlight-header {
-  color: var(--sb-ink); /* header highlight uses black text on light yellow */
-  font-weight: 700;
-}
-
-/* Modern accordion styling */
-.sb-accordion {
-  --accordion-radius: var(--sb-radius-sm);
-  margin-top: 2rem;
-}
-.sb-accordion .accordion-item {
-  border: 0;
-  margin-bottom: 0.75rem;
-}
-.sb-accordion .sb-accordion-button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  width: 100%;
-  /* closed (collapsed) appearance — identical for all closed headers */
-  background: linear-gradient(
-    180deg,
-    rgba(65, 69, 86, 0.95) 0%,
-    rgba(53, 57, 63, 0.95) 100%
-  );
-  color: #fff;
-  border-radius: var(--accordion-radius);
-  padding: 1rem 1.25rem;
-  box-shadow: 0 5px 16px rgba(16, 24, 40, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  font-weight: 700;
-  transition:
-    transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
-    box-shadow 220ms ease,
-    background 180ms ease;
-}
-.sb-accordion .sb-accordion-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.1);
-}
-.sb-accordion .sb-accordion-button.collapsed {
-  /* explicit for clarity: collapsed = closed */
-  background: linear-gradient(
-    180deg,
-    rgba(65, 69, 86, 0.95) 0%,
-    rgba(53, 57, 63, 0.95) 100%
-  );
-  color: #fff;
-}
-.sb-accordion .sb-accordion-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(65, 69, 86, 0.12);
-}
-.sb-accordion .sb-accordion-button .sb-accordion-title {
-  flex: 1 1 auto;
-  text-align: left;
-}
-/* custom chevron using pseudo-element */
-.sb-accordion .sb-accordion-button::after {
-  content: "";
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-left: 12px;
-  transform: rotate(90deg);
-  background-image:
-    linear-gradient(45deg, transparent 45%, currentColor 45%),
-    linear-gradient(-45deg, transparent 45%, currentColor 45%);
-  background-size: 50% 100%;
-  background-repeat: no-repeat;
-  transition:
-    transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
-    opacity 180ms ease;
-  opacity: 0.9;
-  color: #fff;
-}
-.sb-accordion .sb-accordion-button.collapsed::after {
-  transform: rotate(0deg);
-}
-.sb-accordion .accordion-collapse {
-  transition: height 320ms cubic-bezier(0.2, 0.9, 0.2, 1);
-}
-.sb-accordion .accordion-body {
-  padding: 1rem 1.25rem;
-  background: #fff;
-  margin-top: 0; /* remove gap so radii align with header */
-  border-radius: 0 0 var(--accordion-radius) var(--accordion-radius);
-  color: var(--sb-ink);
-  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.03);
-  border-top: 1px solid rgba(16, 24, 40, 0.04);
-}
-
-/* When expanded, make the header connect seamlessly with the body */
-.sb-accordion .sb-accordion-button:not(.collapsed) {
-  /* open header: brand-blue and elevated */
-  background: linear-gradient(180deg, var(--sb-brand-blue) 0%, #35393f 100%);
-  box-shadow:
-    0 14px 32px rgba(16, 24, 40, 0.2),
-    0 0 0 1px rgba(90, 95, 115, 0.35),
-    0 0 14px rgba(90, 95, 115, 0.3);
-  position: relative;
-  z-index: 2;
-}
-/* force first/last headers to match the same closed-header shape */
-.sb-accordion .accordion-item:first-of-type .sb-accordion-button,
-.sb-accordion .accordion-item:last-of-type .sb-accordion-button,
-.sb-accordion .accordion-item:last-of-type .sb-accordion-button.collapsed {
-  border-radius: var(--accordion-radius);
-}
-/* last item's body keeps bottom rounding */
-.sb-accordion .accordion-item:last-child .accordion-body {
-  border-bottom-left-radius: var(--sb-radius-sm);
-  border-bottom-right-radius: var(--sb-radius-sm);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sb-accordion .sb-accordion-button,
-  .sb-accordion .sb-accordion-button::after,
-  .sb-accordion .accordion-collapse {
-    transition: none !important;
-  }
 }
 
 /* Responsive spacing utilities */

@@ -5,6 +5,7 @@ import Link from "next/link";
 import EmailCaptureForm from "@/components/EmailCaptureForm";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 import { featureFlags } from "@/config/featureFlags";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 
 export const metadata: Metadata = {
   title: "Free AI Guide",
@@ -115,6 +116,9 @@ export default function FreebiePage() {
                   filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.12))",
                 }}
                 sizes="(max-width: 768px) 100vw, (max-width: 992px) 80vw, 520px"
+                unoptimized={shouldBypassNextImageOptimization(
+                  "/images/products/guides/ai-for-small-business.webp",
+                )}
               />
             </div>
 

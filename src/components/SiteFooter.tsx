@@ -105,7 +105,7 @@ export default function SiteFooter({
 
             {/* Shop */}
             <div className="sb-footer-col">
-              <h4 className="sb-footer-heading">Shop</h4>
+              <h2 className="sb-footer-heading">Shop</h2>
               <nav className="sb-footer-nav">
                 {shopLinks.map((entry) => (
                   <Link key={entry.id} href={entry.href}>
@@ -124,7 +124,7 @@ export default function SiteFooter({
 
             {/* Support */}
             <div className="sb-footer-col">
-              <h4 className="sb-footer-heading">Support</h4>
+              <h2 className="sb-footer-heading">Support</h2>
               <nav className="sb-footer-nav">
                 {supportLinks.map((entry) => (
                   <Link key={entry.id} href={entry.href}>
@@ -136,7 +136,7 @@ export default function SiteFooter({
 
             {/* Company */}
             <div className="sb-footer-col">
-              <h4 className="sb-footer-heading">Company</h4>
+              <h2 className="sb-footer-heading">Company</h2>
               <nav className="sb-footer-nav">
                 {companyLinks.map((entry) => (
                   <Link key={entry.id} href={entry.href}>
@@ -148,7 +148,7 @@ export default function SiteFooter({
 
             {/* Explore */}
             <div className="sb-footer-col">
-              <h4 className="sb-footer-heading">Explore</h4>
+              <h2 className="sb-footer-heading">Explore</h2>
               <nav className="sb-footer-nav">
                 {exploreEntries.map((entry) => (
                   <Link key={entry.id} href={entry.href}>

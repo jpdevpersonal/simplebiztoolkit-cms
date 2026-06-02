@@ -47,12 +47,11 @@ export default function SiteHeader({
           >
             <Image
               src="/images/simple-biz-toolkit-logo.png"
-              alt="Simple Biz Toolkit"
+              alt=""
               width={72}
               height={72}
               className="sb-header-logo"
               style={{ borderRadius: 10, border: "1px solid var(--sb-border)" }}
-              priority
             />
             <div>
               <div className="sb-brand-title">Simple Biz Toolkit</div>

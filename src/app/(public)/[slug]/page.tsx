@@ -6,7 +6,9 @@ import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { slugify } from "@/lib/slugify";
 import Image from "next/image";
 import { ContentRenderer } from "@/components/ContentRenderer";
+import "@/styles/bootstrap-public-components.scss";
 import { apiService } from "@/lib/api";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
   getPublishedMenuItemContent,
   getPublishedMenuItems,
@@ -231,6 +233,7 @@ export default async function MenuItemPageView({ params }: Props) {
               height={630}
               sizes="(max-width: 768px) 100vw, 1200px"
               loading="lazy"
+              unoptimized={shouldBypassNextImageOptimization(headerImage)}
             />
           </div>
         )}

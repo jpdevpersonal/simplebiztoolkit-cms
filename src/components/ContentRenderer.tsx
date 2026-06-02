@@ -9,6 +9,7 @@ import Image from "next/image";
 import { Section, Callout, ContentFooter } from "@/components/ContentBlocks";
 import { ContentCta } from "@/components/ContentCta";
 import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
   decodeRelatedLinksItems,
   normalizeRelatedLinksImageSize,
@@ -701,6 +702,9 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
                       width={960}
                       height={720}
                       sizes="(max-width: 768px) 100vw, 320px"
+                      unoptimized={shouldBypassNextImageOptimization(
+                        block.ctaImageUrl,
+                      )}
                       style={{
                         width: "100%",
                         height: "auto",
@@ -717,6 +721,9 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
                     width={960}
                     height={720}
                     sizes="(max-width: 768px) 100vw, 320px"
+                    unoptimized={shouldBypassNextImageOptimization(
+                      block.ctaImageUrl,
+                    )}
                     style={{
                       width: "100%",
                       height: "auto",
@@ -821,6 +828,7 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
             width={1200}
             height={630}
             sizes="(max-width: 768px) 100vw, 800px"
+            unoptimized={shouldBypassNextImageOptimization(block.src)}
             style={{ width: "100%", height: "auto", borderRadius: 4 }}
           />
           {block.caption && (

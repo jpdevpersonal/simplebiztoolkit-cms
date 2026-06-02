@@ -11,6 +11,7 @@ import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import { sanitizeHtml, sanitizePublicContentHtml } from "@/lib/sanitize";
 import { slugify } from "@/lib/slugify";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
   getPublishedMenuItemContent,
   getPublishedMenuItems,
@@ -21,6 +22,7 @@ import {
   createPageMetadata,
   normalizePublicUrl,
 } from "@/lib/seo";
+import "@/styles/bootstrap-public-components.scss";
 import "@/styles/contentCards.css";
 import "@/styles/pages.css";
 
@@ -290,6 +292,9 @@ export default async function MenuItemLandingPage({ params }: Props) {
                                   height={450}
                                   sizes="(max-width: 768px) 100vw, 50vw"
                                   loading="lazy"
+                                  unoptimized={shouldBypassNextImageOptimization(
+                                    imageSrc,
+                                  )}
                                   style={{
                                     width: "100%",
                                     height: "auto",

@@ -11,6 +11,7 @@ import JsonLd from "@/components/JsonLd";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { apiService } from "@/lib/api";
 import { slugify } from "@/lib/slugify";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
@@ -177,6 +178,9 @@ export default async function CategoryPageListing({ params }: Props) {
                               height={450}
                               sizes="(max-width: 768px) 100vw, 50vw"
                               loading="lazy"
+                              unoptimized={shouldBypassNextImageOptimization(
+                                imageSrc,
+                              )}
                               style={{
                                 width: "100%",
                                 height: "auto",
@@ -196,7 +200,10 @@ export default async function CategoryPageListing({ params }: Props) {
                           {(() => {
                             const pageDate = formatPageDate(page.dateISO);
                             return pageDate ? (
-                              <div className="sb-muted" style={{ fontSize: 13 }}>
+                              <div
+                                className="sb-muted"
+                                style={{ fontSize: 13 }}
+                              >
                                 {pageDate}
                               </div>
                             ) : null;

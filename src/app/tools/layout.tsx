@@ -1,4 +1,4 @@
-import "bootstrap/dist/css/bootstrap.min.css";
+import "@/styles/bootstrap-custom.scss";
 import "@/styles/theme.css";
 
 import SiteHeader from "@/components/SiteHeader";

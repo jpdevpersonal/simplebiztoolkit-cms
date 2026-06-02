@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 
@@ -20,12 +21,13 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                     {p && (
                       <Image
                         src={p.image || "/images/placeholder-preview.png"}
-                        alt={p.title}
+                        alt={`${p.title} printable template preview`}
                         className="img-fluid ledger-thumb"
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         quality={75}
                         loading="lazy"
+                        unoptimized={shouldBypassNextImageOptimization(p.image)}
                         style={{ marginTop: "10px" }}
                       />
                     )}

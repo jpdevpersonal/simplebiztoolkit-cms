@@ -48,7 +48,10 @@ describe("ProductGrid", () => {
       // Should have 3 product images
       expect(images.length).toBe(3);
       expect(images[0]).toHaveAttribute("src", "/images/test-product-1.webp");
-      expect(images[0]).toHaveAttribute("alt", "Test Product 1");
+      expect(images[0]).toHaveAttribute(
+        "alt",
+        "Test Product 1 printable template preview",
+      );
     });
 
     it("should display product problems", () => {
