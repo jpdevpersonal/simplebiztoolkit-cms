@@ -90,9 +90,8 @@ export default function HomePage() {
             fill
             priority
             fetchPriority="high"
-            placeholder="blur"
+            unoptimized={true}
             quality={65}
-            sizes="100vw"
             className="sb-hero-img"
           />
         </div>
