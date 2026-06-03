@@ -50,6 +50,9 @@ if (!isProd) {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    optimizeCss: true,
+  },
   // REMOVED: output: 'export' - Now using dynamic mode with ISR
   trailingSlash: false,
 
