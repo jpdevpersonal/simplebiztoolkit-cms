@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const DEFAULT_GTAG_DELAY_MS = 6000;
+const DEFAULT_GTAG_DELAY_MS = 12000;
 
 declare global {
   interface Window {
