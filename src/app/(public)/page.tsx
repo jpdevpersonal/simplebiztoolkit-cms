@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import heroImage from "../../../public/images/hero-image-desk.webp";
 
 import JsonLd from "@/components/JsonLd";
 import TrustBar from "@/components/TrustBar";
@@ -82,18 +80,31 @@ export default function HomePage() {
         <span className="sb-hero-orb sb-hero-orb--1" aria-hidden="true" />
         <span className="sb-hero-orb sb-hero-orb--2" aria-hidden="true" />
 
-        {/* Full-bleed background image via Next.js Image for optimisation */}
+        {/* Full-bleed background image via native picture for unoptimized multi-device delivery */}
         <div className="sb-hero-bg" aria-hidden="true">
-          <Image
-            src={heroImage}
-            alt=""
-            fill
-            priority
-            fetchPriority="high"
-            unoptimized={true}
-            quality={65}
-            className="sb-hero-img"
-          />
+          <picture>
+            <source
+              media="(max-width: 768px)"
+              srcSet="/images/hero-image-mobile.webp"
+            />
+            <source
+              media="(min-width: 769px)"
+              srcSet="/images/hero-image-desk.webp"
+            />
+            <img
+              src="/images/hero-image-desk.webp"
+              alt=""
+              className="sb-hero-img"
+              fetchPriority="high"
+              style={{
+                position: "absolute",
+                height: "100%",
+                width: "100%",
+                inset: 0,
+                color: "transparent",
+              }}
+            />
+          </picture>
         </div>
         {/* Dark gradient overlay for legibility */}
         <div className="sb-hero-overlay" aria-hidden="true" />
