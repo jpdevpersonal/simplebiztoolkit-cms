@@ -1,0 +1,2 @@
+# Replace pub-4045707279186960 with your real AdSense publisher ID
+google.com, pub-4045707279186960, DIRECT, f08c47fec0942fa0

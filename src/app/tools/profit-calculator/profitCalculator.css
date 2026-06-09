@@ -164,6 +164,85 @@
   max-width: 60ch;
 }
 
+/* --- Advertisement ------------------------------------------------ */
+.profit-calculator-page .ad-card {
+  position: relative;
+  display: block;
+  min-height: 120px;
+  margin: 0 0 1.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(26, 127, 90, 0.2);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(135deg, rgba(26, 127, 90, 0.1), rgba(255, 255, 255, 0)),
+    #fff;
+  box-shadow: var(--shadow-sm);
+}
+.profit-calculator-page .ad-label {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.85rem;
+  z-index: 1;
+  color: #667085;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.profit-calculator-page .adsbygoogle {
+  min-height: 120px;
+}
+.profit-calculator-page .ad-card-demo {
+  padding: 2rem 1rem 1rem;
+}
+.profit-calculator-page .ad-demo-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  color: var(--heading);
+  text-decoration: none;
+}
+.profit-calculator-page .ad-demo-kicker {
+  color: var(--primary-deep);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.profit-calculator-page .ad-demo-link strong {
+  grid-column: 1;
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.25;
+}
+.profit-calculator-page .ad-demo-copy {
+  grid-column: 1;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.profit-calculator-page .ad-demo-cta {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px rgba(26, 127, 90, 0.18);
+}
+.profit-calculator-page .ad-demo-link:hover .ad-demo-cta,
+.profit-calculator-page .ad-demo-link:focus-visible .ad-demo-cta {
+  background: var(--primary-hover);
+}
+
 /* --- Two-column layout ------------------------------------------- */
 .profit-calculator-page .container {
   max-width: 100%;
@@ -573,6 +652,28 @@
   }
   .profit-calculator-page .tool-hero {
     padding: 1.25rem 1.25rem 1.1rem;
+  }
+  .profit-calculator-page .ad-card {
+    min-height: 180px;
+  }
+  .profit-calculator-page .ad-card-demo {
+    padding: 2rem 1rem 1rem;
+  }
+  .profit-calculator-page .adsbygoogle {
+    min-height: 180px;
+  }
+  .profit-calculator-page .ad-demo-link {
+    grid-template-columns: 1fr;
+  }
+  .profit-calculator-page .ad-demo-copy,
+  .profit-calculator-page .ad-demo-link strong,
+  .profit-calculator-page .ad-demo-cta {
+    grid-column: 1;
+  }
+  .profit-calculator-page .ad-demo-cta {
+    grid-row: auto;
+    width: 100%;
+    margin-top: 0.35rem;
   }
   .profit-calculator-page .card {
     padding: 1.1rem;
