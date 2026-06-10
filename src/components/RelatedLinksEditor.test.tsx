@@ -256,7 +256,84 @@ describe("RelatedLinksEditor", () => {
     ).toBeInTheDocument();
   });
 
-  it("trims the visible label and stores selected thumbnail metadata", async () => {
+  it("supports custom URL links entered through the add link form", async () => {
+    const { user, onChange } = renderControlledEditor({
+      items: [makeItem()],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Custom URL" }));
+
+    expect(getLastChange(onChange).items[0]).toMatchObject({
+      kind: "custom",
+      refId: "",
+      href: "",
+      destinationTitle: "",
+    });
+
+    const urlInput = screen.getByLabelText("Custom URL");
+    fireEvent.change(urlInput, {
+      target: { value: "https://example.com/resources" },
+    });
+
+    await waitFor(() => {
+      expect(getLastChange(onChange).items[0]).toMatchObject({
+        kind: "custom",
+        refId: "",
+        href: "https://example.com/resources",
+        destinationTitle: "https://example.com/resources",
+      });
+    });
+
+    expect(screen.getByText("Ready")).toBeInTheDocument();
+
+    const labelInput = screen.getByLabelText("Visible label");
+    fireEvent.change(labelInput, { target: { value: "Example resources" } });
+
+    await waitFor(() => {
+      expect(getLastChange(onChange).items[0]).toMatchObject({
+        href: "https://example.com/resources",
+        label: "Example resources",
+      });
+    });
+
+    expect(screen.getByTestId("related-links-preview")).toHaveTextContent(
+      "https://example.com/resources",
+    );
+  });
+
+  it("flags invalid custom URLs as incomplete", async () => {
+    const { onChange } = renderControlledEditor({
+      items: [makeItem({ kind: "custom" })],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    expect(screen.getByText("Enter a URL")).toBeInTheDocument();
+
+    const urlInput = screen.getByLabelText("Custom URL");
+    fireEvent.change(urlInput, { target: { value: "javascript:alert(1)" } });
+
+    await waitFor(() => {
+      expect(getLastChange(onChange).items[0]).toMatchObject({
+        href: "javascript:alert(1)",
+      });
+    });
+
+    expect(screen.getByText("Enter a URL")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Enter a URL like example.com, https://example.com, or an internal path starting with /.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the visible label blank by default and allows spaces while typing", async () => {
     const { user, onChange } = renderControlledEditor({
       items: [
         makeItem({
@@ -272,22 +349,26 @@ describe("RelatedLinksEditor", () => {
     });
 
     const labelInput = screen.getByLabelText("Visible label");
-    fireEvent.change(labelInput, { target: { value: "  Custom CTA  " } });
+    expect(labelInput).toHaveValue("");
+    expect(labelInput).not.toHaveAttribute("placeholder");
+
+    await user.type(labelInput, "Custom CTA Label");
 
     await waitFor(() => {
       expect(getLastChange(onChange).items[0]).toMatchObject({
-        label: "Custom CTA",
+        label: "Custom CTA Label",
       });
     });
 
+    expect(labelInput).toHaveValue("Custom CTA Label");
     expect(screen.getByText(/Shown as:/)).toHaveTextContent(
-      "Shown as: Custom CTA",
+      "Shown as: Custom CTA Label",
     );
 
     await user.click(screen.getByRole("button", { name: "Pick link 1 image" }));
 
     expect(getLastChange(onChange).items[0]).toMatchObject({
-      label: "Custom CTA",
+      label: "Custom CTA Label",
       imageId: "link-1-image-id",
       imageUrl: "/images/link-1-image.webp",
       imageAlt: "link 1 image alt",
