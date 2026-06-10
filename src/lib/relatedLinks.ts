@@ -6,7 +6,7 @@ export const RELATED_LINKS_DEFAULT_IMAGE_SIZE = "small";
 export const RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y = 50;
 export const RELATED_LINKS_MAX_ITEMS = 5;
 
-export type RelatedLinkKind = "page" | "template";
+export type RelatedLinkKind = "page" | "template" | "custom";
 export type RelatedLinksImageSize = "small" | "medium" | "large";
 
 export interface RelatedLinkItem {
@@ -38,12 +38,58 @@ export function createRelatedLinkUid(): string {
   return `related-link-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function isInternalRelatedLinkHref(value: unknown): value is string {
+export function isInternalRelatedLinkHref(value: unknown): boolean {
   return (
     typeof value === "string" &&
     value.startsWith("/") &&
     !value.startsWith("//")
   );
+}
+
+export function normalizeCustomRelatedLinkHref(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  if (isInternalRelatedLinkHref(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^https?:\/\/\S+$/i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      return url.protocol === "http:" || url.protocol === "https:"
+        ? trimmed
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (
+    !trimmed ||
+    trimmed.startsWith("//") ||
+    trimmed.includes(":") ||
+    /\s/.test(trimmed)
+  ) {
+    return null;
+  }
+
+  try {
+    const url = new URL(`https://${trimmed}`);
+    if (!url.hostname.includes(".")) {
+      return null;
+    }
+    return `https://${trimmed}`;
+  } catch {
+    return null;
+  }
+}
+
+export function isCustomRelatedLinkHref(value: unknown): value is string {
+  return normalizeCustomRelatedLinkHref(value) !== null;
 }
 
 export function normalizeRelatedLinksTitle(value?: string | null): string {
@@ -106,7 +152,9 @@ export function parseAttributeFromHtmlString(
 }
 
 function sanitizeRelatedLinkKind(value: unknown): RelatedLinkKind | null {
-  return value === "page" || value === "template" ? value : null;
+  return value === "page" || value === "template" || value === "custom"
+    ? value
+    : null;
 }
 
 function normalizeNullableString(value: unknown): string | null {
@@ -141,7 +189,7 @@ function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
     typeof value.destinationTitle === "string"
       ? value.destinationTitle.trim()
       : "";
-  const label = normalizeNullableString(value.label);
+  const label = typeof value.label === "string" ? value.label : null;
   const imageId = normalizeNullableString(value.imageId);
   const imageUrl = normalizeNullableString(value.imageUrl);
   const imageAlt = normalizeNullableString(value.imageAlt);
@@ -180,12 +228,18 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
       : "";
   const refId = typeof value.refId === "string" ? value.refId.trim() : "";
 
-  if (
-    !kind ||
-    !isInternalRelatedLinkHref(href) ||
-    !destinationTitle ||
-    !refId
-  ) {
+  if (!kind) {
+    return null;
+  }
+
+  const customHref =
+    kind === "custom" ? normalizeCustomRelatedLinkHref(href) : null;
+
+  if (kind === "custom") {
+    if (!customHref) {
+      return null;
+    }
+  } else if (!isInternalRelatedLinkHref(href) || !destinationTitle || !refId) {
     return null;
   }
 
@@ -218,8 +272,10 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
     uid,
     kind,
     refId,
-    href,
-    destinationTitle,
+    href: customHref ?? href,
+    destinationTitle:
+      destinationTitle ||
+      (kind === "custom" ? label || customHref || href : ""),
     label: label || null,
     imageId,
     imageUrl,
