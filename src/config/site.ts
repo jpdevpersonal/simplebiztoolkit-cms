@@ -2,7 +2,7 @@ export const site = {
   name: "Simple Biz Toolkit",
   url: "https://www.simplebiztoolkit.com",
   description:
-    "Printable templates and toolkit for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, ledgers, rent trackers and planners — instant PDF downloads via Etsy.",
+    "Printable templates and tools for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, ledgers, rent trackers and planners — instant PDF downloads via Etsy.",
   locale: "en_GB",
   contactEmail: "simplebiztoolkit@gmail.com",
   defaultOgImage: "/images/hero-image-desk.webp",
@@ -12,9 +12,9 @@ export const site = {
    * Organization JSON-LD and visible site copy so that values stay in sync.
    */
   trust: {
-    ratingValue: 5.0,
-    reviewCount: 3700,
-    salesCount: 3500,
+    ratingValue: 4.8,
+    reviewCount: 240,
+    salesCount: 3850,
     etsyShop: "simplebiztoolkit",
   },
   /** Social and external profile URLs used by JSON-LD `sameAs`. */
