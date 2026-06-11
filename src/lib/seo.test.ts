@@ -145,7 +145,7 @@ describe("seo", () => {
   it("emits an Organization node with aggregateRating and contact", () => {
     const jsonLd = createOrganizationJsonLd();
     expect(jsonLd["@type"]).toBe("Organization");
-    expect(jsonLd.aggregateRating?.ratingValue).toBe("5.0");
+    expect(jsonLd.aggregateRating?.ratingValue).toBe("4.8");
     expect(jsonLd.aggregateRating?.reviewCount).toBeGreaterThanOrEqual(1);
     expect(Array.isArray(jsonLd.sameAs)).toBe(true);
     expect(jsonLd.logo).toBeDefined();
