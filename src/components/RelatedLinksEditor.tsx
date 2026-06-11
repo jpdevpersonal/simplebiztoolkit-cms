@@ -8,6 +8,7 @@ import { type ImageAsset } from "@/lib/imageApi";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 import {
   createRelatedLinkUid,
+  isCustomRelatedLinkHref,
   normalizeRelatedLinksBorderWidth,
   normalizeRelatedLinkImagePositionY,
   normalizeRelatedLinksDraftItems,
@@ -246,11 +247,25 @@ export default function RelatedLinksEditor({
     );
   };
 
-  const handleLabelChange = (uid: string, label: string) => {
+  const handleCustomHrefChange = (uid: string, href: string) => {
+    const trimmed = href.trim();
     updateItems(
       block.items.map((item) =>
-        item.uid === uid ? { ...item, label: label.trim() || null } : item,
+        item.uid === uid
+          ? {
+              ...item,
+              refId: "",
+              href: trimmed,
+              destinationTitle: trimmed,
+            }
+          : item,
       ),
+    );
+  };
+
+  const handleLabelChange = (uid: string, label: string) => {
+    updateItems(
+      block.items.map((item) => (item.uid === uid ? { ...item, label } : item)),
     );
   };
 
@@ -357,7 +372,7 @@ export default function RelatedLinksEditor({
             </div>
           ) : (
             <div className="related-links-editor-empty-preview">
-              Choose a page or template to build the preview.
+              Choose a page, template, or custom URL to build the preview.
             </div>
           )}
         </section>
@@ -456,8 +471,8 @@ export default function RelatedLinksEditor({
               Manage destinations
             </h3>
             <p className="related-links-editor-panel-copy">
-              Add up to {RELATED_LINKS_MAX_ITEMS} internal pages or templates,
-              then optionally attach a thumbnail.
+              Add up to {RELATED_LINKS_MAX_ITEMS} internal pages, templates, or
+              custom URLs, then optionally attach a thumbnail.
             </p>
           </div>
           <button
@@ -492,9 +507,10 @@ export default function RelatedLinksEditor({
         ) : (
           <div className="related-links-editor-list">
             {block.items.map((item, index) => {
-              const isReady = Boolean(
-                item.refId && item.href && item.destinationTitle,
-              );
+              const isReady =
+                item.kind === "custom"
+                  ? isCustomRelatedLinkHref(item.href)
+                  : Boolean(item.refId && item.href && item.destinationTitle);
               const currentOptions =
                 item.kind === "template" ? templateOptions : pageOptions;
               const selectedValue = item.refId
@@ -514,7 +530,11 @@ export default function RelatedLinksEditor({
                       <span
                         className={`related-links-editor-status${isReady ? " related-links-editor-status--ready" : " related-links-editor-status--incomplete"}`}
                       >
-                        {isReady ? "Ready" : "Choose a destination"}
+                        {isReady
+                          ? "Ready"
+                          : item.kind === "custom"
+                            ? "Enter a URL"
+                            : "Choose a destination"}
                       </span>
                     </div>
 
@@ -571,47 +591,85 @@ export default function RelatedLinksEditor({
                           >
                             Template
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => handleKindChange(item.uid, "custom")}
+                            disabled={disabled}
+                            className={`related-links-editor-kind-button${item.kind === "custom" ? " is-active" : ""}`}
+                          >
+                            Custom URL
+                          </button>
                         </div>
                       </div>
 
-                      <div>
-                        <label
-                          className="related-links-editor-label"
-                          htmlFor={`${item.uid}-destination`}
-                        >
-                          {item.kind === "template"
-                            ? "Choose template"
-                            : "Choose page"}
-                        </label>
-                        <select
-                          id={`${item.uid}-destination`}
-                          value={selectedValue}
-                          onChange={(event) =>
-                            handleDestinationChange(
-                              item.uid,
-                              event.target.value,
-                            )
-                          }
-                          disabled={disabled || isLoading}
-                          className="related-links-editor-field"
-                        >
-                          <option value="">
-                            {item.kind === "template"
-                              ? "Select a template"
-                              : "Select a page"}
-                          </option>
-                          {currentOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="related-links-editor-helper">
-                          {selectedValue && optionsByValue.get(selectedValue)
-                            ? `${item.kind === "template" ? "Template" : "Page"}: ${optionsByValue.get(selectedValue)?.href}`
-                            : `Only published ${item.kind === "template" ? "templates" : "pages"} are shown here.`}
+                      {item.kind === "custom" ? (
+                        <div>
+                          <label
+                            className="related-links-editor-label"
+                            htmlFor={`${item.uid}-custom-url`}
+                          >
+                            Custom URL
+                          </label>
+                          <input
+                            id={`${item.uid}-custom-url`}
+                            type="text"
+                            value={item.href}
+                            onChange={(event) =>
+                              handleCustomHrefChange(
+                                item.uid,
+                                event.target.value,
+                              )
+                            }
+                            disabled={disabled}
+                            placeholder="https://example.com/page or /internal-path"
+                            className="related-links-editor-field"
+                          />
+                          <div className="related-links-editor-helper">
+                            {item.href && !isCustomRelatedLinkHref(item.href)
+                              ? "Enter a URL like example.com, https://example.com, or an internal path starting with /."
+                              : "Link to any URL, including external sites."}
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div>
+                          <label
+                            className="related-links-editor-label"
+                            htmlFor={`${item.uid}-destination`}
+                          >
+                            {item.kind === "template"
+                              ? "Choose template"
+                              : "Choose page"}
+                          </label>
+                          <select
+                            id={`${item.uid}-destination`}
+                            value={selectedValue}
+                            onChange={(event) =>
+                              handleDestinationChange(
+                                item.uid,
+                                event.target.value,
+                              )
+                            }
+                            disabled={disabled || isLoading}
+                            className="related-links-editor-field"
+                          >
+                            <option value="">
+                              {item.kind === "template"
+                                ? "Select a template"
+                                : "Select a page"}
+                            </option>
+                            {currentOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="related-links-editor-helper">
+                            {selectedValue && optionsByValue.get(selectedValue)
+                              ? `${item.kind === "template" ? "Template" : "Page"}: ${optionsByValue.get(selectedValue)?.href}`
+                              : `Only published ${item.kind === "template" ? "templates" : "pages"} are shown here.`}
+                          </div>
+                        </div>
+                      )}
 
                       <div>
                         <label
@@ -628,16 +686,14 @@ export default function RelatedLinksEditor({
                             handleLabelChange(item.uid, event.target.value)
                           }
                           disabled={disabled}
-                          placeholder={
-                            item.destinationTitle ||
-                            "Use the selected destination title"
-                          }
                           className="related-links-editor-field"
                         />
                         <div className="related-links-editor-helper">
                           Shown as:{" "}
                           {getDestinationLabel(item) ||
-                            "Select a destination first"}
+                            (item.kind === "custom"
+                              ? "Enter a URL first"
+                              : "Select a destination first")}
                         </div>
                       </div>
                     </div>
