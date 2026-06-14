@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const DEFAULT_GTAG_DELAY_MS = 12000;
+const DEFAULT_GTAG_DELAY_MS = 1000;
 
 declare global {
   interface Window {
@@ -57,6 +57,13 @@ export default function DeferredGoogleAnalytics({
     };
 
     const scheduleAfterDelay = () => {
+      // If caller requests no delay, inject immediately rather than
+      // wait for a timeout or `requestIdleCallback`.
+      if (delayMs === 0) {
+        injectGtagScript();
+        return;
+      }
+
       delayHandle = window.setTimeout(() => {
         if ("requestIdleCallback" in window) {
           idleHandle = window.requestIdleCallback(injectGtagScript, {

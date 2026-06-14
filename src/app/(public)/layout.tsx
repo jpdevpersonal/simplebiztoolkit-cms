@@ -25,6 +25,57 @@ import {
   orderMenuItemsByLayout,
 } from "@/lib/menuContent";
 
+const NAV_FETCH_TIMEOUT_MS = 900;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(`Timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
+const DEFAULT_GA_MEASUREMENT_ID = "G-3ZQY64S5JJ";
+const PLACEHOLDER_GA_MEASUREMENT_IDS = new Set(["G-XXXXXXXX"]);
+
+// Default delay used when injecting gtag. Keep in sync with
+// src/app/DeferredGoogleAnalytics.tsx default constant.
+// Default to 1000ms unless overridden via env.
+const DEFAULT_GTAG_DELAY_MS = 1000;
+
+function resolveGtagDelayMs(configuredDelay: string | undefined) {
+  const trimmed = configuredDelay?.trim();
+
+  if (!trimmed) return DEFAULT_GTAG_DELAY_MS;
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || Number.isNaN(parsed) || parsed < 0) {
+    return DEFAULT_GTAG_DELAY_MS;
+  }
+
+  return Math.trunc(parsed);
+}
+
+function resolveGaMeasurementId(configuredId: string | undefined) {
+  const trimmedId = configuredId?.trim();
+
+  if (!trimmedId || PLACEHOLDER_GA_MEASUREMENT_IDS.has(trimmedId)) {
+    return DEFAULT_GA_MEASUREMENT_ID;
+  }
+
+  return trimmedId;
+}
+
 export const revalidate = 300;
 
 export const metadata: Metadata = {
@@ -93,8 +144,8 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  const gaMeasurementId = gaId ?? "G-3ZQY64S5JJ";
+  const gaMeasurementId = resolveGaMeasurementId(process.env.NEXT_PUBLIC_GA_ID);
+  const gaDelayMs = resolveGtagDelayMs(process.env.NEXT_PUBLIC_GTAG_DELAY_MS);
 
   // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
@@ -102,11 +153,14 @@ export default async function PublicLayout({
   let footerOrderIds: string[] = [];
   try {
     const [publishedItemsRaw, layoutOrderIds, footerLayoutOrderIds] =
-      await Promise.all([
-        getPublishedMenuItems(),
-        getMenuLayoutOrderIds(PRIMARY_MENU_LOCATION_KEY),
-        getMenuLayoutOrderIds(FOOTER_MENU_LOCATION_KEY),
-      ]);
+      await withTimeout(
+        Promise.all([
+          getPublishedMenuItems(),
+          getMenuLayoutOrderIds(PRIMARY_MENU_LOCATION_KEY),
+          getMenuLayoutOrderIds(FOOTER_MENU_LOCATION_KEY),
+        ]),
+        NAV_FETCH_TIMEOUT_MS,
+      );
 
     navOrderIds = layoutOrderIds;
     footerOrderIds = footerLayoutOrderIds;
@@ -115,8 +169,19 @@ export default async function PublicLayout({
       layoutOrderIds,
     );
 
-    for (const item of publishedItems) {
-      const content = await getPublishedMenuItemContent(item);
+    const menuContents = await withTimeout(
+      Promise.all(
+        publishedItems.map((item) =>
+          getPublishedMenuItemContent(item).then((content) => ({
+            item,
+            content,
+          })),
+        ),
+      ),
+      NAV_FETCH_TIMEOUT_MS,
+    );
+
+    for (const { item, content } of menuContents) {
       if (content.totalPages === 0) continue;
 
       menuNavItems.push({
@@ -127,12 +192,15 @@ export default async function PublicLayout({
     }
   } catch (err) {
     // Navigation data not critical – fall back to static items only
-    console.error("[Nav] Failed to fetch menu items-tree:", err);
+    console.warn("[Nav] Falling back to static nav items:", err);
   }
 
   return (
     <>
-      <DeferredGoogleAnalytics measurementId={gaMeasurementId} />
+      <DeferredGoogleAnalytics
+        measurementId={gaMeasurementId}
+        delayMs={gaDelayMs}
+      />
       <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
       <ScrollToTop />
 

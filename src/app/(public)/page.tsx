@@ -88,7 +88,11 @@ export default function HomePage() {
               srcSet="/images/hero-image-mobile.webp"
             />
             <source
-              media="(min-width: 769px)"
+              media="(min-width: 769px) and (max-width: 1280px)"
+              srcSet="/images/hero-image-tablet.webp"
+            />
+            <source
+              media="(min-width: 1281px)"
               srcSet="/images/hero-image-desk.webp"
             />
             <img

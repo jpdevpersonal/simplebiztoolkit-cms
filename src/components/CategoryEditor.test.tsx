@@ -43,10 +43,8 @@ describe("CategoryEditor", () => {
     const user = userEvent.setup();
     vi.mocked(clientApi.updateCategory).mockResolvedValueOnce(category as any);
 
-    const { container } = render(<CategoryEditor category={category as any} />);
-    const nameInput = container.querySelectorAll(
-      "input.form-control",
-    )[0] as HTMLInputElement;
+    render(<CategoryEditor category={category as any} />);
+    const nameInput = screen.getByLabelText("Name *") as HTMLInputElement;
     await user.clear(nameInput);
     await user.type(nameInput, "Updated General");
     await user.click(screen.getByRole("button", { name: "Save Changes" }));
