@@ -128,14 +128,44 @@ async function waitForImagesToSettle(page: Page): Promise<void> {
 
     window.scrollTo(0, 0);
   });
-  await page.waitForFunction(() =>
-    Array.from(document.images)
-      .filter((img) => {
-        const src = img.currentSrc || img.src;
-        return src !== "" && !src.startsWith("data:");
-      })
-      .every((img) => img.complete),
-  );
+
+  // Force-load lazy images and wait for each to resolve (load or error)
+  // with a bounded timeout to avoid hanging on never-requested offscreen images.
+  await page.evaluate(async () => {
+    const tracked = Array.from(document.images).filter((img) => {
+      const src = img.currentSrc || img.src;
+      return src !== "" && !src.startsWith("data:");
+    });
+
+    const settleOne = (img: HTMLImageElement): Promise<void> => {
+      if (img.complete) return Promise.resolve();
+
+      if (img.loading === "lazy") {
+        img.loading = "eager";
+      }
+
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          img.removeEventListener("load", finish);
+          img.removeEventListener("error", finish);
+          resolve();
+        };
+
+        img.addEventListener("load", finish, { once: true });
+        img.addEventListener("error", finish, { once: true });
+        window.setTimeout(finish, 5_000);
+
+        // Ask the browser to decode if possible; resolves immediately for
+        // cached images and after loading for in-flight ones.
+        img.decode().then(finish).catch(finish);
+      });
+    };
+
+    await Promise.all(tracked.map((img) => settleOne(img)));
+  });
 }
 
 interface ImageInfo {

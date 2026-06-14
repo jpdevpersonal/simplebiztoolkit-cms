@@ -48,6 +48,24 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 const DEFAULT_GA_MEASUREMENT_ID = "G-3ZQY64S5JJ";
 const PLACEHOLDER_GA_MEASUREMENT_IDS = new Set(["G-XXXXXXXX"]);
 
+// Default delay used when injecting gtag. Keep in sync with
+// src/app/DeferredGoogleAnalytics.tsx default constant.
+// Default to 1000ms unless overridden via env.
+const DEFAULT_GTAG_DELAY_MS = 1000;
+
+function resolveGtagDelayMs(configuredDelay: string | undefined) {
+  const trimmed = configuredDelay?.trim();
+
+  if (!trimmed) return DEFAULT_GTAG_DELAY_MS;
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || Number.isNaN(parsed) || parsed < 0) {
+    return DEFAULT_GTAG_DELAY_MS;
+  }
+
+  return Math.trunc(parsed);
+}
+
 function resolveGaMeasurementId(configuredId: string | undefined) {
   const trimmedId = configuredId?.trim();
 
@@ -127,6 +145,7 @@ export default async function PublicLayout({
   children: React.ReactNode;
 }>) {
   const gaMeasurementId = resolveGaMeasurementId(process.env.NEXT_PUBLIC_GA_ID);
+  const gaDelayMs = resolveGtagDelayMs(process.env.NEXT_PUBLIC_GTAG_DELAY_MS);
 
   // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
@@ -178,7 +197,10 @@ export default async function PublicLayout({
 
   return (
     <>
-      <DeferredGoogleAnalytics measurementId={gaMeasurementId} />
+      <DeferredGoogleAnalytics
+        measurementId={gaMeasurementId}
+        delayMs={gaDelayMs}
+      />
       <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
       <ScrollToTop />
 
