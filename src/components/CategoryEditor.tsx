@@ -133,8 +133,11 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
         <div className="admin-form-block-body">
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Name *</label>
+              <label htmlFor="category-name" className="form-label fw-semibold">
+                Name *
+              </label>
               <input
+                id="category-name"
                 className="form-control"
                 value={name}
                 onChange={(e) => {
@@ -146,8 +149,11 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold">Slug *</label>
+              <label htmlFor="category-slug" className="form-label fw-semibold">
+                Slug *
+              </label>
               <input
+                id="category-slug"
                 className="form-control"
                 value={slug}
                 onChange={(e) => {
@@ -159,8 +165,14 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
             </div>
 
             <div className="col-12">
-              <label className="form-label fw-semibold">Summary</label>
+              <label
+                htmlFor="category-summary"
+                className="form-label fw-semibold"
+              >
+                Summary
+              </label>
               <textarea
+                id="category-summary"
                 className="form-control"
                 value={summary}
                 onChange={(e) => {
@@ -172,8 +184,14 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
             </div>
 
             <div className="col-12">
-              <label className="form-label fw-semibold">How this helps</label>
+              <label
+                htmlFor="category-how-this-helps"
+                className="form-label fw-semibold"
+              >
+                How this helps
+              </label>
               <textarea
+                id="category-how-this-helps"
                 className="form-control"
                 value={howThisHelps}
                 onChange={(e) => {
@@ -185,8 +203,14 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
             </div>
 
             <div className="col-12">
-              <label className="form-label fw-semibold">Hero Image URL</label>
+              <label
+                htmlFor="category-hero-image"
+                className="form-label fw-semibold"
+              >
+                Hero Image URL
+              </label>
               <input
+                id="category-hero-image"
                 className="form-control"
                 value={heroImage}
                 onChange={(e) => {

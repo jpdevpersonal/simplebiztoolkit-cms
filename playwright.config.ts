@@ -1,6 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
+import fs from "fs";
 
 const isCI = !!process.env.CI;
+const hasNextBuild = fs.existsSync(".next/BUILD_ID");
+
+const webServerCommand = isCI
+  ? "npm run build && npm run start -- -p 3000"
+  : hasNextBuild
+    ? "npm run start -- -p 3000"
+    : "npm run dev -- --port 3000";
 
 export default defineConfig({
   testDir: "./src/e2e",
@@ -14,9 +22,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: isCI
-      ? "npm run build && npm run start -- -p 3000"
-      : "npm run dev -- --port 3000",
+    command: webServerCommand,
     url: "http://localhost:3000",
     reuseExistingServer: !isCI,
     timeout: 120_000,
