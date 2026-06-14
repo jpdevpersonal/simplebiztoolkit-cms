@@ -25,7 +25,7 @@ import {
   orderMenuItemsByLayout,
 } from "@/lib/menuContent";
 
-const NAV_FETCH_TIMEOUT_MS = 900;
+const NAV_FETCH_TIMEOUT_MS = 3000;
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
