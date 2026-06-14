@@ -162,8 +162,6 @@ export default async function PublicLayout({
         NAV_FETCH_TIMEOUT_MS,
       );
 
-    navOrderIds = layoutOrderIds;
-    footerOrderIds = footerLayoutOrderIds;
     const publishedItems = orderMenuItemsByLayout(
       publishedItemsRaw,
       layoutOrderIds,
@@ -180,6 +178,14 @@ export default async function PublicLayout({
       ),
       NAV_FETCH_TIMEOUT_MS,
     );
+
+    // Only commit the ordering IDs once both fetches succeed so that a
+    // partial failure (layout order OK but content fetch timed out) does not
+    // leave navOrderIds set to a value that hides static items while
+    // menuNavItems stays empty – which previously caused the nav to show
+    // only Templates / Reviews / FAQ instead of the full set.
+    navOrderIds = layoutOrderIds;
+    footerOrderIds = footerLayoutOrderIds;
 
     for (const { item, content } of menuContents) {
       if (content.totalPages === 0) continue;
