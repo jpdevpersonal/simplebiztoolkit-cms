@@ -12,16 +12,19 @@ declare global {
 }
 
 type DeferredGoogleAnalyticsProps = {
-  measurementId: string;
+  measurementIds: string[];
   delayMs?: number;
 };
 
 export default function DeferredGoogleAnalytics({
-  measurementId,
+  measurementIds,
   delayMs = DEFAULT_GTAG_DELAY_MS,
 }: DeferredGoogleAnalyticsProps) {
   useEffect(() => {
-    if (!measurementId) return;
+    const validIds = measurementIds.filter(Boolean);
+    if (validIds.length === 0) return;
+
+    const primaryId = validIds[0];
 
     window.dataLayer = window.dataLayer ?? [];
     window.gtag =
@@ -31,7 +34,9 @@ export default function DeferredGoogleAnalytics({
       };
 
     window.gtag("js", new Date());
-    window.gtag("config", measurementId);
+    for (const id of validIds) {
+      window.gtag("config", id);
+    }
 
     let cancelled = false;
     let delayHandle: number | undefined;
@@ -39,8 +44,9 @@ export default function DeferredGoogleAnalytics({
     let removeLoadListener: (() => void) | undefined;
 
     const injectGtagScript = () => {
+      // Only one gtag.js script is needed; key it on the primary ID.
       const hasInjectedScript = Array.from(document.scripts).some(
-        (script) => script.dataset.deferredGtag === measurementId,
+        (script) => script.dataset.deferredGtag === primaryId,
       );
 
       if (cancelled || hasInjectedScript) {
@@ -50,9 +56,9 @@ export default function DeferredGoogleAnalytics({
       const script = document.createElement("script");
       script.async = true;
       script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(
-        measurementId,
+        primaryId,
       )}`;
-      script.dataset.deferredGtag = measurementId;
+      script.dataset.deferredGtag = primaryId;
       document.head.appendChild(script);
     };
 
@@ -93,7 +99,8 @@ export default function DeferredGoogleAnalytics({
         window.cancelIdleCallback(idleHandle);
       }
     };
-  }, [delayMs, measurementId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delayMs, measurementIds.join(",")]);
 
   return null;
 }

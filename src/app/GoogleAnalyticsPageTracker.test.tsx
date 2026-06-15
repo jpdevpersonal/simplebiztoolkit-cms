@@ -28,8 +28,10 @@ describe("GoogleAnalyticsPageTracker", () => {
     mockUsePathname.mockReturnValue("/");
     mockUseSearchParams.mockReturnValue(new URLSearchParams());
 
+    const ids = ["G-3ZQY64S5JJ", "GT-KDQ6DHFZ"];
+
     const { rerender } = render(
-      <GoogleAnalyticsPageTracker measurementId="G-3ZQY64S5JJ" />,
+      <GoogleAnalyticsPageTracker measurementIds={ids} />,
     );
 
     expect(gtag).not.toHaveBeenCalled();
@@ -37,8 +39,9 @@ describe("GoogleAnalyticsPageTracker", () => {
     mockUsePathname.mockReturnValue("/templates");
     mockUseSearchParams.mockReturnValue(new URLSearchParams("category=forms"));
 
-    rerender(<GoogleAnalyticsPageTracker measurementId="G-3ZQY64S5JJ" />);
+    rerender(<GoogleAnalyticsPageTracker measurementIds={ids} />);
 
+    expect(gtag).toHaveBeenCalledTimes(2);
     expect(gtag).toHaveBeenCalledWith(
       "event",
       "page_view",
@@ -46,6 +49,15 @@ describe("GoogleAnalyticsPageTracker", () => {
         page_path: "/templates?category=forms",
         page_title: "Simple Biz Toolkit",
         send_to: "G-3ZQY64S5JJ",
+      }),
+    );
+    expect(gtag).toHaveBeenCalledWith(
+      "event",
+      "page_view",
+      expect.objectContaining({
+        page_path: "/templates?category=forms",
+        page_title: "Simple Biz Toolkit",
+        send_to: "GT-KDQ6DHFZ",
       }),
     );
   });
