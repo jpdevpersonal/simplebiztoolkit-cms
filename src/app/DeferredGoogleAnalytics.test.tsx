@@ -19,7 +19,7 @@ afterEach(() => {
 describe("DeferredGoogleAnalytics", () => {
   it("queues the initial GA config without immediately injecting gtag.js", () => {
     const { unmount } = render(
-      <DeferredGoogleAnalytics measurementId={measurementId} delayMs={50} />,
+      <DeferredGoogleAnalytics measurementIds={[measurementId]} delayMs={50} />,
     );
 
     expect(window.gtag).toBeTypeOf("function");
@@ -34,7 +34,7 @@ describe("DeferredGoogleAnalytics", () => {
 
   it("injects gtag.js after load and the configured delay", async () => {
     render(
-      <DeferredGoogleAnalytics measurementId={measurementId} delayMs={0} />,
+      <DeferredGoogleAnalytics measurementIds={[measurementId]} delayMs={0} />,
     );
 
     window.dispatchEvent(new Event("load"));
@@ -48,5 +48,23 @@ describe("DeferredGoogleAnalytics", () => {
     expect(script.src).toBe(
       `https://www.googletagmanager.com/gtag/js?id=${measurementId}`,
     );
+  });
+
+  it("queues config for all measurement IDs", () => {
+    const secondId = "GT-TESTXYZ";
+    const { unmount } = render(
+      <DeferredGoogleAnalytics
+        measurementIds={[measurementId, secondId]}
+        delayMs={50}
+      />,
+    );
+
+    expect(window.dataLayer).toEqual([
+      ["js", expect.any(Date)],
+      ["config", measurementId],
+      ["config", secondId],
+    ]);
+
+    unmount();
   });
 });

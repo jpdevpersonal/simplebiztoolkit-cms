@@ -45,9 +45,6 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   });
 }
 
-const DEFAULT_GA_MEASUREMENT_ID = "G-3ZQY64S5JJ";
-const PLACEHOLDER_GA_MEASUREMENT_IDS = new Set(["G-XXXXXXXX"]);
-
 // Default delay used when injecting gtag. Keep in sync with
 // src/app/DeferredGoogleAnalytics.tsx default constant.
 // Default to 1000ms unless overridden via env.
@@ -66,14 +63,11 @@ function resolveGtagDelayMs(configuredDelay: string | undefined) {
   return Math.trunc(parsed);
 }
 
-function resolveGaMeasurementId(configuredId: string | undefined) {
-  const trimmedId = configuredId?.trim();
-
-  if (!trimmedId || PLACEHOLDER_GA_MEASUREMENT_IDS.has(trimmedId)) {
-    return DEFAULT_GA_MEASUREMENT_ID;
-  }
-
-  return trimmedId;
+function resolveGaMeasurementIds(configuredIds: string | undefined): string[] {
+  return (configuredIds ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
 }
 
 export const revalidate = 300;
@@ -144,7 +138,9 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaMeasurementId = resolveGaMeasurementId(process.env.NEXT_PUBLIC_GA_ID);
+  const gaMeasurementIds = resolveGaMeasurementIds(
+    process.env.NEXT_PUBLIC_GA_ID,
+  );
   const gaDelayMs = resolveGtagDelayMs(process.env.NEXT_PUBLIC_GTAG_DELAY_MS);
 
   // Build dynamic navigation items from published menu items.
@@ -204,10 +200,10 @@ export default async function PublicLayout({
   return (
     <>
       <DeferredGoogleAnalytics
-        measurementId={gaMeasurementId}
+        measurementIds={gaMeasurementIds}
         delayMs={gaDelayMs}
       />
-      <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
+      <GoogleAnalyticsPageTracker measurementIds={gaMeasurementIds} />
       <ScrollToTop />
 
       <JsonLd json={createWebsiteJsonLd()} />

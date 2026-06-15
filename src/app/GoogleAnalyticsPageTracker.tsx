@@ -10,26 +10,27 @@ declare global {
 }
 
 type GoogleAnalyticsPageTrackerProps = {
-  measurementId: string;
+  measurementIds: string[];
 };
 
 export default function GoogleAnalyticsPageTracker({
-  measurementId,
+  measurementIds,
 }: GoogleAnalyticsPageTrackerProps) {
   return (
     <Suspense fallback={null}>
-      <GoogleAnalyticsPageTrackerInner measurementId={measurementId} />
+      <GoogleAnalyticsPageTrackerInner measurementIds={measurementIds} />
     </Suspense>
   );
 }
 
 function GoogleAnalyticsPageTrackerInner({
-  measurementId,
+  measurementIds,
 }: GoogleAnalyticsPageTrackerProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const hasMounted = useRef(false);
   const search = searchParams.toString();
+  const measurementIdsKey = measurementIds.join(",");
 
   useEffect(() => {
     if (!hasMounted.current) {
@@ -37,19 +38,23 @@ function GoogleAnalyticsPageTrackerInner({
       return;
     }
 
-    if (!measurementId || typeof window.gtag !== "function") {
+    const validIds = measurementIds.filter(Boolean);
+    if (validIds.length === 0 || typeof window.gtag !== "function") {
       return;
     }
 
     const pagePath = search ? `${pathname}?${search}` : pathname;
 
-    window.gtag("event", "page_view", {
-      page_location: window.location.href,
-      page_path: pagePath,
-      page_title: document.title,
-      send_to: measurementId,
-    });
-  }, [measurementId, pathname, search]);
+    for (const id of validIds) {
+      window.gtag("event", "page_view", {
+        page_location: window.location.href,
+        page_path: pagePath,
+        page_title: document.title,
+        send_to: id,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [measurementIdsKey, pathname, search]);
 
   return null;
 }
