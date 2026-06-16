@@ -41,6 +41,7 @@ describe("EditorFeedback", () => {
   it("renders both message and error when both are provided", () => {
     render(<EditorFeedback message="Saved!" error="Also an error" />);
     expect(screen.getByText("Saved!")).toBeTruthy();
+    expect(screen.getByText("Also an error")).toBeTruthy();
     expect(screen.getByRole("alert")).toBeTruthy();
   });
 

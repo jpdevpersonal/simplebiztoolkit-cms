@@ -8,8 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
-import DeferredGoogleAnalytics from "../DeferredGoogleAnalytics";
-import GoogleAnalyticsPageTracker from "../GoogleAnalyticsPageTracker";
+import GoogleAnalytics from "../GoogleAnalytics";
 import ScrollToTop from "../ScrollToTop";
 import {
   FOOTER_MENU_LOCATION_KEY,
@@ -24,6 +23,26 @@ import {
   getPublishedMenuItemContent,
   orderMenuItemsByLayout,
 } from "@/lib/menuContent";
+
+const NAV_FETCH_TIMEOUT_MS = 3000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(`Timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
 
 export const revalidate = 300;
 
@@ -93,30 +112,47 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  const gaMeasurementId = gaId ?? "G-3ZQY64S5JJ";
-
   // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
   let navOrderIds: string[] = [];
   let footerOrderIds: string[] = [];
   try {
     const [publishedItemsRaw, layoutOrderIds, footerLayoutOrderIds] =
-      await Promise.all([
-        getPublishedMenuItems(),
-        getMenuLayoutOrderIds(PRIMARY_MENU_LOCATION_KEY),
-        getMenuLayoutOrderIds(FOOTER_MENU_LOCATION_KEY),
-      ]);
+      await withTimeout(
+        Promise.all([
+          getPublishedMenuItems(),
+          getMenuLayoutOrderIds(PRIMARY_MENU_LOCATION_KEY),
+          getMenuLayoutOrderIds(FOOTER_MENU_LOCATION_KEY),
+        ]),
+        NAV_FETCH_TIMEOUT_MS,
+      );
 
-    navOrderIds = layoutOrderIds;
-    footerOrderIds = footerLayoutOrderIds;
     const publishedItems = orderMenuItemsByLayout(
       publishedItemsRaw,
       layoutOrderIds,
     );
 
-    for (const item of publishedItems) {
-      const content = await getPublishedMenuItemContent(item);
+    const menuContents = await withTimeout(
+      Promise.all(
+        publishedItems.map((item) =>
+          getPublishedMenuItemContent(item).then((content) => ({
+            item,
+            content,
+          })),
+        ),
+      ),
+      NAV_FETCH_TIMEOUT_MS,
+    );
+
+    // Only commit the ordering IDs once both fetches succeed so that a
+    // partial failure (layout order OK but content fetch timed out) does not
+    // leave navOrderIds set to a value that hides static items while
+    // menuNavItems stays empty – which previously caused the nav to show
+    // only Templates / Reviews / FAQ instead of the full set.
+    navOrderIds = layoutOrderIds;
+    footerOrderIds = footerLayoutOrderIds;
+
+    for (const { item, content } of menuContents) {
       if (content.totalPages === 0) continue;
 
       menuNavItems.push({
@@ -127,13 +163,12 @@ export default async function PublicLayout({
     }
   } catch (err) {
     // Navigation data not critical – fall back to static items only
-    console.error("[Nav] Failed to fetch menu items-tree:", err);
+    console.warn("[Nav] Falling back to static nav items:", err);
   }
 
   return (
     <>
-      <DeferredGoogleAnalytics measurementId={gaMeasurementId} />
-      <GoogleAnalyticsPageTracker measurementId={gaMeasurementId} />
+      <GoogleAnalytics />
       <ScrollToTop />
 
       <JsonLd json={createWebsiteJsonLd()} />
