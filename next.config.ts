@@ -19,11 +19,12 @@ function normalizeConfiguredApiUrl(base?: string): string {
 // X-Frame-Options below).
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://pagead2.googlesyndication.com;
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https://www.simplebiztoolkit.com https://*.blob.core.windows.net blob: https://www.google-analytics.com https://*.google-analytics.com https://www.google.com https://www.google.co.uk;
+  img-src 'self' data: https://www.simplebiztoolkit.com https://*.blob.core.windows.net blob: https://www.google-analytics.com https://*.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net;
   font-src 'self';
-  connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"} https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net;
+  connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"} https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net;
+  frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com;
   frame-ancestors 'none';
   object-src 'none';
   base-uri 'self';

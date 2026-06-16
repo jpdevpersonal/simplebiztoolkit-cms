@@ -1,9 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import Script from "next/script";
+import { useEffect, useRef, useState } from "react";
 
 const TOOLS_PAGES_HREF = "/pages/tools";
+const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT;
+const ADSENSE_PROFIT_CALCULATOR_SLOT =
+  process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_PROFIT_CALCULATOR_SLOT;
+const HAS_ADSENSE_CONFIG = Boolean(
+  ADSENSE_CLIENT && ADSENSE_PROFIT_CALCULATOR_SLOT,
+);
+
+declare global {
+  interface Window {
+    adsbygoogle?: unknown[];
+  }
+}
 
 type CalculatorMode = "profit" | "target-profit" | "target-margin";
 
@@ -516,11 +529,55 @@ function setupProfitCalculator(root: HTMLElement) {
 
 export default function ProfitCalculatorClient() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const adSlotRef = useRef<HTMLElement | null>(null);
+  const [adScriptLoaded, setAdScriptLoaded] = useState(false);
+  const [isAdBlocked, setIsAdBlocked] = useState(false);
 
   useEffect(() => {
     if (!rootRef.current) return undefined;
     return setupProfitCalculator(rootRef.current);
   }, []);
+
+  useEffect(() => {
+    if (!HAS_ADSENSE_CONFIG || adScriptLoaded) return;
+
+    const timer = window.setTimeout(() => {
+      setIsAdBlocked(true);
+    }, 3500);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [adScriptLoaded]);
+
+  useEffect(() => {
+    if (!HAS_ADSENSE_CONFIG || !adScriptLoaded || isAdBlocked) return;
+
+    try {
+      window.adsbygoogle = window.adsbygoogle ?? [];
+      window.adsbygoogle.push({});
+
+      const timer = window.setTimeout(() => {
+        const slot = adSlotRef.current;
+        if (!slot) return;
+
+        const status = slot.getAttribute("data-ad-status");
+        const hasIframe = Boolean(slot.querySelector("iframe"));
+        if (status !== "filled" && !hasIframe) {
+          setIsAdBlocked(true);
+        }
+      }, 2500);
+
+      return () => {
+        window.clearTimeout(timer);
+      };
+    } catch {
+      // Ad blockers or script timing can prevent AdSense from hydrating.
+      window.setTimeout(() => {
+        setIsAdBlocked(true);
+      }, 0);
+    }
+  }, [adScriptLoaded, isAdBlocked]);
 
   return (
     <div ref={rootRef} className="profit-calculator-page">
@@ -552,6 +609,36 @@ export default function ProfitCalculatorClient() {
             browser — nothing is uploaded or stored.
           </p>
         </section>
+
+        {HAS_ADSENSE_CONFIG && !isAdBlocked ? (
+          <>
+            <Script
+              id="adsense-profit-calculator"
+              async
+              strategy="afterInteractive"
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(
+                ADSENSE_CLIENT ?? "",
+              )}`}
+              crossOrigin="anonymous"
+              onLoad={() => setAdScriptLoaded(true)}
+              onError={() => setIsAdBlocked(true)}
+            />
+            <aside className="ad-card" aria-label="Advertisement">
+              <span className="ad-label">Advertisement</span>
+              <ins
+                ref={(el) => {
+                  adSlotRef.current = el;
+                }}
+                className="adsbygoogle"
+                style={{ display: "block" }}
+                data-ad-client={ADSENSE_CLIENT}
+                data-ad-slot={ADSENSE_PROFIT_CALCULATOR_SLOT}
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              />
+            </aside>
+          </>
+        ) : null}
 
         <div className="container layout">
           {/* Calculator form */}
