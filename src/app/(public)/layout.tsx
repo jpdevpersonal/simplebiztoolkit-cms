@@ -8,8 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
-import DeferredGoogleAnalytics from "../DeferredGoogleAnalytics";
-import GoogleAnalyticsPageTracker from "../GoogleAnalyticsPageTracker";
+import GoogleAnalytics from "../GoogleAnalytics";
 import ScrollToTop from "../ScrollToTop";
 import {
   FOOTER_MENU_LOCATION_KEY,
@@ -43,31 +42,6 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
         reject(error);
       });
   });
-}
-
-// Default delay used when injecting gtag. Keep in sync with
-// src/app/DeferredGoogleAnalytics.tsx default constant.
-// Default to 1000ms unless overridden via env.
-const DEFAULT_GTAG_DELAY_MS = 1000;
-
-function resolveGtagDelayMs(configuredDelay: string | undefined) {
-  const trimmed = configuredDelay?.trim();
-
-  if (!trimmed) return DEFAULT_GTAG_DELAY_MS;
-
-  const parsed = Number(trimmed);
-  if (!Number.isFinite(parsed) || Number.isNaN(parsed) || parsed < 0) {
-    return DEFAULT_GTAG_DELAY_MS;
-  }
-
-  return Math.trunc(parsed);
-}
-
-function resolveGaMeasurementIds(configuredIds: string | undefined): string[] {
-  return (configuredIds ?? "")
-    .split(",")
-    .map((id) => id.trim())
-    .filter(Boolean);
 }
 
 export const revalidate = 300;
@@ -138,11 +112,6 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaMeasurementIds = resolveGaMeasurementIds(
-    process.env.NEXT_PUBLIC_GA_ID,
-  );
-  const gaDelayMs = resolveGtagDelayMs(process.env.NEXT_PUBLIC_GTAG_DELAY_MS);
-
   // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
   let navOrderIds: string[] = [];
@@ -199,11 +168,7 @@ export default async function PublicLayout({
 
   return (
     <>
-      <DeferredGoogleAnalytics
-        measurementIds={gaMeasurementIds}
-        delayMs={gaDelayMs}
-      />
-      <GoogleAnalyticsPageTracker measurementIds={gaMeasurementIds} />
+      <GoogleAnalytics />
       <ScrollToTop />
 
       <JsonLd json={createWebsiteJsonLd()} />

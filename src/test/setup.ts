@@ -70,28 +70,6 @@ vi.mock("next/link", () => ({
 // Cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
   vi.useRealTimers();
-  // Remove any deferred gtag scripts that client components may have injected
-  // during tests. Some components inject a <script data-deferred-gtag="...">
-  // which can persist across tests depending on timer state and render timing.
-  try {
-    Array.from(document.scripts)
-      .filter((s) => !!s.dataset.deferredGtag)
-      .forEach((s) => s.remove());
-  } catch {
-    // ignore if DOM not available
-  }
-
-  // Remove any global gtag/dataLayer that tests may have created.
-  try {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    delete window.gtag;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    delete window.dataLayer;
-  } catch {
-    /* ignore */
-  }
 
   cleanup();
   try {
