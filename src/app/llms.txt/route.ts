@@ -39,7 +39,7 @@ export async function GET() {
   lines.push(`> ${site.description}`);
   lines.push("");
   lines.push(
-    "Simple Biz Toolkit is a small-business template shop run on Etsy. Every template is a printable or fillable PDF delivered as an instant digital download. We are an Etsy Star Seller with a 5.0 average rating across 3,700+ reviews and 3,500+ sales.",
+    "Simple Biz Toolkit is a small-business template shop run on Etsy. Every template is a printable or fillable PDF delivered as an instant digital download. We are an Etsy Star Seller with a 4.8 average rating across 3,700+ reviews and 3,500+ sales.",
   );
   lines.push("");
   lines.push("## Key pages");

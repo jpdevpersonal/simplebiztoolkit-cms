@@ -49,7 +49,7 @@ export async function GET() {
   lines.push(`> ${site.description}`);
   lines.push("");
   lines.push(
-    "Simple Biz Toolkit sells printable and fillable PDF templates for small business owners, online sellers, freelancers and landlords. Every template is delivered as an instant digital download through Etsy. The shop holds Etsy Star Seller status with a 5.0 average rating across 3,700+ reviews and 3,500+ sales.",
+    "Simple Biz Toolkit sells printable and fillable PDF templates for small business owners, online sellers, freelancers and landlords. Every template is delivered as an instant digital download through Etsy. The shop holds Etsy Star Seller status with a 4.8 average rating across 3,700+ reviews and 3,500+ sales.",
   );
   lines.push("");
   lines.push(
