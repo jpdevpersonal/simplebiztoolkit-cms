@@ -221,7 +221,7 @@ export default function HomePage() {
               </div>
               <div className="sb-hero-stat-divider" aria-hidden="true" />
               <div className="sb-hero-stat">
-                <span className="sb-hero-stat-value">★ 5.0</span>
+                <span className="sb-hero-stat-value">★ 4.8</span>
                 <span className="sb-hero-stat-label">Average rating</span>
               </div>
               <div className="sb-hero-stat-divider" aria-hidden="true" />

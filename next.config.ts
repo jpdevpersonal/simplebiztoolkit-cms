@@ -21,9 +21,9 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com;
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https://www.simplebiztoolkit.com https://*.blob.core.windows.net blob: https://www.google-analytics.com https://*.google-analytics.com;
+  img-src 'self' data: https://www.simplebiztoolkit.com https://*.blob.core.windows.net blob: https://www.google-analytics.com https://*.google-analytics.com https://www.google.com https://www.google.co.uk;
   font-src 'self';
-  connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"} https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com;
+  connect-src 'self' ${isProd ? "https://www.simplebiztoolkit.com" : "http://localhost:5117"} https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://stats.g.doubleclick.net;
   frame-ancestors 'none';
   object-src 'none';
   base-uri 'self';
