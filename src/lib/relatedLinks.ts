@@ -34,7 +34,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-export function createRelatedLinkUid(): string {
+/**
+ * Create a related-link uid.
+ * If a seed is provided we create a stable uid derived from the seed so
+ * server and client will produce the same id for identical content.
+ * If no seed is provided, fall back to the original non-deterministic uid
+ * (used in draft/editor contexts where uniqueness is required).
+ */
+export function createRelatedLinkUid(seed?: string): string {
+  if (typeof seed === "string" && seed.trim().length > 0) {
+    // stable hash => base36 string
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < seed.length; i++) {
+      h = Math.imul(h ^ seed.charCodeAt(i), 16777619) >>> 0;
+    }
+    return `related-link-${h.toString(36)}`;
+  }
+
   return `related-link-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
@@ -175,7 +191,9 @@ function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
   const uid =
     typeof value.uid === "string" && value.uid.trim()
       ? value.uid.trim()
-      : createRelatedLinkUid();
+      : createRelatedLinkUid(
+          `${kind}|${refId}|${typeof value.href === "string" ? value.href.trim() : ""}|${typeof value.destinationTitle === "string" ? value.destinationTitle.trim() : ""}|${typeof value.imageUrl === "string" ? value.imageUrl.trim() : ""}`,
+        );
 
   const refId =
     typeof value.refId === "string" && value.refId.trim()
@@ -246,7 +264,9 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
   const uid =
     typeof value.uid === "string" && value.uid.trim()
       ? value.uid.trim()
-      : createRelatedLinkUid();
+      : createRelatedLinkUid(
+          `${kind}|${refId}|${href}|${destinationTitle}|${imageUrl ?? ""}`,
+        );
   const label = typeof value.label === "string" ? value.label.trim() : "";
   const imageUrl =
     typeof value.imageUrl === "string" && value.imageUrl.trim()
