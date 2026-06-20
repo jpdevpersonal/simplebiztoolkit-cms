@@ -188,12 +188,6 @@ function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
   }
 
   const kind = sanitizeRelatedLinkKind(value.kind) ?? "page";
-  const uid =
-    typeof value.uid === "string" && value.uid.trim()
-      ? value.uid.trim()
-      : createRelatedLinkUid(
-          `${kind}|${refId}|${typeof value.href === "string" ? value.href.trim() : ""}|${typeof value.destinationTitle === "string" ? value.destinationTitle.trim() : ""}|${typeof value.imageUrl === "string" ? value.imageUrl.trim() : ""}`,
-        );
 
   const refId =
     typeof value.refId === "string" && value.refId.trim()
@@ -218,6 +212,13 @@ function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
     typeof rawImagePositionY === "number"
       ? rawImagePositionY
       : undefined;
+
+  const uid =
+    typeof value.uid === "string" && value.uid.trim()
+      ? value.uid.trim()
+      : createRelatedLinkUid(
+          `${kind}|${refId}|${href}|${destinationTitle}|${imageUrl ?? ""}`,
+        );
 
   return {
     uid,
@@ -245,6 +246,10 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
       ? value.destinationTitle.trim()
       : "";
   const refId = typeof value.refId === "string" ? value.refId.trim() : "";
+  const imageUrl =
+    typeof value.imageUrl === "string" && value.imageUrl.trim()
+      ? value.imageUrl.trim()
+      : null;
 
   if (!kind) {
     return null;
@@ -268,10 +273,6 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
           `${kind}|${refId}|${href}|${destinationTitle}|${imageUrl ?? ""}`,
         );
   const label = typeof value.label === "string" ? value.label.trim() : "";
-  const imageUrl =
-    typeof value.imageUrl === "string" && value.imageUrl.trim()
-      ? value.imageUrl.trim()
-      : null;
   const imageId =
     typeof value.imageId === "string" && value.imageId.trim()
       ? value.imageId.trim()
