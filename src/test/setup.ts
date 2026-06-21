@@ -69,15 +69,42 @@ vi.mock("next/link", () => ({
 
 // Cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
-  vi.useRealTimers();
-
-  cleanup();
+  // Clear fake-timer queues without executing callbacks.
+  // Running pending timers can recurse indefinitely in some tests.
   try {
-    localStorage.clear();
-    sessionStorage.clear();
+    if (typeof vi.clearAllTimers === "function") vi.clearAllTimers();
+  } catch {
+    // ignore if timers cannot be cleared
+  }
+
+  try {
+    if (typeof vi.useRealTimers === "function") vi.useRealTimers();
+  } catch {
+    // ignore if timers cannot be restored
+  }
+
+  try {
+    cleanup();
+  } catch {
+    // keep going even if cleanup throws in this environment
+  }
+
+  try {
+    if (typeof localStorage !== "undefined") localStorage.clear();
+    if (typeof sessionStorage !== "undefined") sessionStorage.clear();
   } catch {
     // ignore when storage APIs are unavailable
   }
-  vi.unstubAllGlobals();
-  vi.clearAllMocks();
+
+  try {
+    if (typeof vi.unstubAllGlobals === "function") vi.unstubAllGlobals();
+  } catch {
+    // ignore if not supported
+  }
+
+  try {
+    if (typeof vi.clearAllMocks === "function") vi.clearAllMocks();
+  } catch {
+    // ignore if not supported
+  }
 });

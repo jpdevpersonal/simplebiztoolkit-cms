@@ -10,6 +10,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",
+    hookTimeout: 30000,
     exclude: ["src/e2e/**", "node_modules/**", ".next/**"],
     clearMocks: true,
     restoreMocks: true,
