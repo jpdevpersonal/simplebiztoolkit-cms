@@ -15,6 +15,14 @@ describe("shouldBypassNextImageOptimization", () => {
     ).toBe(true);
   });
 
+  it("bypasses static tool thumbnail images", () => {
+    expect(
+      shouldBypassNextImageOptimization(
+        "/images/tools/featured/profit-calculator.webp",
+      ),
+    ).toBe(true);
+  });
+
   it("bypasses CMS blob images", () => {
     expect(
       shouldBypassNextImageOptimization(
