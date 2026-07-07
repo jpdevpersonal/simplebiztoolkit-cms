@@ -67,10 +67,10 @@ describe("FeaturedToolsGrid", () => {
       expect(screen.getByText("Benefit 1")).toBeInTheDocument();
     });
 
-    it("should display a 'Free tool' badge for each tool", () => {
+    it("should display a 'Free online tool' badge for each tool", () => {
       render(<FeaturedToolsGrid tools={mockTools} />);
 
-      expect(screen.getAllByText("Free tool").length).toBe(3);
+      expect(screen.getAllByText("Free online tool").length).toBe(3);
     });
 
     it("should render CTA links for all tools", () => {

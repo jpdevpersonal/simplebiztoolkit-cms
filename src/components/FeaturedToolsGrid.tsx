@@ -10,7 +10,7 @@ export default function FeaturedToolsGrid({ tools }: { tools: Tool[] }) {
         <div className="col-md-4" key={tool.slug}>
           <article className="sb-card h-100 tool-card">
             <div className="overflow-hidden tool-thumb-wrap">
-              <span className="tool-card-badge">Free tool</span>
+              <span className="tool-card-badge">Free online tool</span>
               <Link
                 href={tool.href}
                 className="tool-thumbnail-clickable tool-thumb-link"

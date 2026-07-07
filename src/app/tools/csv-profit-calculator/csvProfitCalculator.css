@@ -401,12 +401,11 @@ html {
     0 18px 40px rgba(15, 23, 36, 0.12),
     0 4px 12px rgba(15, 23, 36, 0.05);
   overflow: hidden;
-  transform: rotate(0.5deg);
   transition: transform 0.3s ease;
 }
 
 .hero-preview-frame:hover {
-  transform: rotate(0deg) translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .hero-preview-header {
