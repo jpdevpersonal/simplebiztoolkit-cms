@@ -218,6 +218,12 @@
   height: 100%;
 }
 
+/* Keep authored tool preview/mockup images straight even if CMS content
+   includes an inline tilt transform. */
+.tool-content-card-body [style*="rotate("] {
+  transform: none !important;
+}
+
 /* Page listing card with thumbnail */
 .page-card-image {
   width: 100%;

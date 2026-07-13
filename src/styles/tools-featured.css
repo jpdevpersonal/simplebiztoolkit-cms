@@ -1,0 +1,239 @@
+/* =============================================
+   Featured Tools - Home Page Card Grid
+   Mirrors the visual language of products.css'
+   .product-card styles, scoped under .tool-card
+   so the two stay independent (free tools vs.
+   paid Etsy products).
+   ============================================= */
+
+.tool-thumb-wrap {
+  width: 100%;
+  position: relative;
+  background: linear-gradient(180deg, #f6f7f9 0%, #eef0f3 100%);
+}
+
+.tool-thumb-link {
+  /* 4:3 suits these cropped UI captures (results panels / document
+     previews / report mockups) better than the product grid's 3:2. */
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.tool-thumb-picture {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tool-thumb-img {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  /* Each capture is a different shape (results card, document preview,
+     report mockup) - "contain" guarantees the content is never cropped,
+     letterboxing onto the wrap's soft gradient background instead. */
+  object-fit: contain;
+  object-position: center;
+  padding: 0.85rem;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: transparent;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.tool-card:hover .tool-thumb-img {
+  transform: scale(1.035) translateZ(0);
+}
+
+.tool-thumbnail-clickable {
+  cursor: pointer;
+}
+
+.tool-card-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+  pointer-events: none;
+  background: var(--sb-green);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(15, 23, 36, 0.18);
+}
+
+/* =============================================
+   Tool Card - Clickable Card Design
+   ============================================= */
+
+.tool-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.tool-card-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.tool-card {
+  cursor: pointer;
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.35s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--sb-radius);
+}
+
+.tool-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    135deg,
+    var(--sb-green) 0%,
+    var(--sb-brand-blue) 100%
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.tool-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(65, 69, 86, 0.15);
+  box-shadow:
+    0 12px 32px rgba(65, 69, 86, 0.1),
+    0 24px 64px rgba(65, 69, 86, 0.06);
+}
+
+.tool-card:hover::before {
+  transform: scaleX(1);
+}
+
+.tool-card-content {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.tool-card-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--sb-ink);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.tool-card-tagline {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--sb-muted);
+  text-align: center;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.45;
+}
+
+.tool-card-bullets {
+  color: var(--sb-muted);
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  padding-left: 0;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  max-width: calc(100% - 32px);
+  margin: 0 auto 1rem auto;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+  list-style: none;
+  text-align: left;
+}
+
+.tool-card-bullets li {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sb-muted);
+}
+
+.tool-card-bullets li::before {
+  content: "\2713";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--sb-brand-blue);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-right: 0.35rem;
+}
+
+@media (max-width: 576px) {
+  .tool-card-bullets {
+    gap: 0.25rem;
+    max-width: calc(100% - 24px);
+    margin: 0 auto 1rem auto;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .tool-card-bullets li {
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.tool-card-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--sb-green);
+  transition: gap 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem 0 0;
+}
+
+.tool-card:hover .tool-card-cta {
+  gap: 0.5rem;
+}
+
+.tool-card-cta svg {
+  transition: transform 0.2s ease;
+}
+
+.tool-card:hover .tool-card-cta svg {
+  transform: translate(2px, -2px);
+}

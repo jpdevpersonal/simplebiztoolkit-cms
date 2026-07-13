@@ -128,11 +128,12 @@ describe("ProductGrid", () => {
     it("should render in a responsive grid", () => {
       const { container } = render(<ProductGrid products={mockProducts} />);
 
-      const gridRow = container.querySelector(".row.g-3");
-      expect(gridRow).toBeInTheDocument();
+      // Every product renders a grid column using the responsive bootstrap class.
+      const gridCols = Array.from(container.querySelectorAll(".col-md-4"));
+      expect(gridCols).toHaveLength(mockProducts.length);
 
-      const gridCols = container.querySelectorAll(".col-md-4");
-      expect(gridCols.length).toBe(3);
+      const gridRow = gridCols[0]?.closest(".row.g-3");
+      expect(gridRow).toBeInTheDocument();
     });
   });
 
