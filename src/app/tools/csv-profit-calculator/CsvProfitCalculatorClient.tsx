@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 import { CSV_CALCULATOR_FAQS } from "./faqContent";
 
@@ -2415,7 +2415,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 export default function CsvProfitCalculatorClient() {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!rootRef.current) {
       return undefined;
     }

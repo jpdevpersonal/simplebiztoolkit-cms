@@ -16,6 +16,12 @@ type PreservedStyleBlock = {
   css: string;
 };
 
+declare global {
+  // Shared one-time guard for DOMPurify hook registration across module reloads.
+  // eslint-disable-next-line no-var
+  var __sbtDomPurifyHooksInstalled: boolean | undefined;
+}
+
 // DOMPurify (v3) leaves dangerous CSS values such as `url(javascript:…)`,
 // `expression(…)` and `behavior:` inside `style` attributes intact when
 // running through jsdom. We allow `style` for layout markup, so we install
@@ -60,17 +66,21 @@ function restoreStyleBlocks(html: string, styleBlocks: PreservedStyleBlock[]) {
   );
 }
 
-DOMPurify.addHook("uponSanitizeAttribute", (_node, data) => {
-  if (data.attrName === "style" && typeof data.attrValue === "string") {
-    data.attrValue = scrubStyleValue(data.attrValue);
-  }
-});
+if (!globalThis.__sbtDomPurifyHooksInstalled) {
+  DOMPurify.addHook("uponSanitizeAttribute", (_node, data) => {
+    if (data.attrName === "style" && typeof data.attrValue === "string") {
+      data.attrValue = scrubStyleValue(data.attrValue);
+    }
+  });
 
-DOMPurify.addHook("uponSanitizeElement", (node) => {
-  if (node.nodeName.toLowerCase() === "style") {
-    node.textContent = scrubStyleValue(node.textContent || "");
-  }
-});
+  DOMPurify.addHook("uponSanitizeElement", (node) => {
+    if (node.nodeName.toLowerCase() === "style") {
+      node.textContent = scrubStyleValue(node.textContent || "");
+    }
+  });
+
+  globalThis.__sbtDomPurifyHooksInstalled = true;
+}
 
 /**
  * Sanitize an HTML string, removing all XSS vectors.

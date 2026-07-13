@@ -32,6 +32,8 @@ vi.mock("@/lib/clientApi", () => ({
 
 describe("MenuItemEditor", () => {
   beforeEach(() => {
+    // Guard against fake timers leaked by other suites when running full CI.
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
