@@ -1,5 +1,5 @@
 import React from "react";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
@@ -67,18 +67,36 @@ vi.mock("next/link", () => ({
   },
 }));
 
-// Cleanup after each test case (e.g. clearing jsdom)
-afterEach(() => {
-  // Clear fake-timer queues without executing callbacks.
-  // Running pending timers can recurse indefinitely in some tests.
-  try {
-    if (typeof vi.clearAllTimers === "function") vi.clearAllTimers();
-  } catch {
-    // ignore if timers cannot be cleared
-  }
+// Mock Next's Script component to a plain <script> so it does not attempt to
+// schedule browser-specific loading strategies during unit tests.
+vi.mock("next/script", () => ({
+  __esModule: true,
+  default: ({ children, id, src, strategy }: any) =>
+    React.createElement(
+      "script",
+      {
+        "data-testid": id ?? "next-script",
+        "data-strategy": strategy,
+        src,
+      },
+      children,
+    ),
+}));
 
+beforeEach(() => {
+  // Force real timers for each test to avoid cross-suite fake timer leaks.
   try {
     if (typeof vi.useRealTimers === "function") vi.useRealTimers();
+  } catch {
+    // ignore if timers cannot be restored in this environment
+  }
+});
+
+// Cleanup after each test case (e.g. clearing jsdom)
+afterEach(() => {
+  try {
+    if (typeof vi.useRealTimers === "function") vi.useRealTimers();
+    if (typeof vi.clearAllTimers === "function") vi.clearAllTimers();
   } catch {
     // ignore if timers cannot be restored
   }
@@ -98,6 +116,12 @@ afterEach(() => {
 
   try {
     if (typeof vi.unstubAllGlobals === "function") vi.unstubAllGlobals();
+  } catch {
+    // ignore if not supported
+  }
+
+  try {
+    if (typeof vi.restoreAllMocks === "function") vi.restoreAllMocks();
   } catch {
     // ignore if not supported
   }
