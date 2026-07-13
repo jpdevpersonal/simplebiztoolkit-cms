@@ -5,10 +5,13 @@ import JsonLd from "@/components/JsonLd";
 import TrustBar from "@/components/TrustBar";
 import EmailCaptureForm from "@/components/EmailCaptureForm";
 import "@/styles/home.css";
+import "@/styles/tools-featured.css";
 import TestimonialGrid from "@/components/TestimonialGrid";
 import ProductGrid from "@/components/ProductGrid";
+import FeaturedToolsGrid from "@/components/FeaturedToolsGrid";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 import { featuredProducts } from "@/data/featured";
+import { featuredTools } from "@/data/featuredTools";
 import { links } from "@/config/links";
 import { featureFlags } from "@/config/featureFlags";
 import { createFaqJsonLd } from "@/lib/seo";
@@ -503,6 +506,31 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====== FEATURED TOOLS ====== */}
+      <section className="sb-section sb-tools-section">
+        <div className="container">
+          <div className="text-center sb-products-head">
+            <span className="sb-section-eyebrow">Free Tools</span>
+            <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
+              Free Business Tools
+            </h2>
+            <p
+              className="sb-muted"
+              style={{ maxWidth: 480, margin: "0 auto 2rem" }}
+            >
+              Free browser-based calculators and generators to help you price,
+              quote and track your business. No sign-up, nothing stored.
+            </p>
+          </div>
+          <FeaturedToolsGrid tools={featuredTools} />
+          <div className="text-center mt-4">
+            <Link href="/pages/tools" className="btn sb-btn-ghost">
+              See all tools
+            </Link>
           </div>
         </div>
       </section>

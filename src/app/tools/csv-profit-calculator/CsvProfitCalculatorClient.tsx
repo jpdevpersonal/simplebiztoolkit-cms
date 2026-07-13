@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 import { CSV_CALCULATOR_FAQS } from "./faqContent";
 
@@ -98,6 +98,95 @@ type PrimarySource = "amount" | "fee" | "net" | "none" | "derived";
 
 const MAX_FILE_COUNT = 15;
 const COMPANY_NAME_MAX_LENGTH = 100;
+
+type XlsxStyleId =
+  | "classic"
+  | "modern"
+  | "minimal"
+  | "bold"
+  | "elegant"
+  | "corporate";
+
+type XlsxStyleColors = {
+  headerFill: string;
+  titleFont: string;
+  titleFill: string;
+  accentFont: string;
+  totalFill: string;
+  altRowFill: string;
+  borderNormal: string;
+  borderTotalTop: string;
+  borderTotalSide: string;
+};
+
+const XLSX_STYLE_COLORS: Record<XlsxStyleId, XlsxStyleColors> = {
+  classic: {
+    headerFill: "FF414556",
+    titleFont: "FF1A4B3E",
+    titleFill: "FFF1F3F6",
+    accentFont: "FF0D5C3F",
+    totalFill: "FFE8F2EF",
+    altRowFill: "FFF8F9FB",
+    borderNormal: "FFE2E5EA",
+    borderTotalTop: "FF1A7F5A",
+    borderTotalSide: "FFC8D8D0",
+  },
+  modern: {
+    headerFill: "FF065F46",
+    titleFont: "FF064E3B",
+    titleFill: "FFECFDF5",
+    accentFont: "FF047857",
+    totalFill: "FFD1FAE5",
+    altRowFill: "FFF0FDF4",
+    borderNormal: "FFD1FAE5",
+    borderTotalTop: "FF10B981",
+    borderTotalSide: "FFA7F3D0",
+  },
+  minimal: {
+    headerFill: "FF374151",
+    titleFont: "FF111827",
+    titleFill: "FFF9FAFB",
+    accentFont: "FF374151",
+    totalFill: "FFF3F4F6",
+    altRowFill: "FFF9FAFB",
+    borderNormal: "FFE5E7EB",
+    borderTotalTop: "FF9CA3AF",
+    borderTotalSide: "FFD1D5DB",
+  },
+  bold: {
+    headerFill: "FF4C1D95",
+    titleFont: "FF4C1D95",
+    titleFill: "FFF5F3FF",
+    accentFont: "FF5B21B6",
+    totalFill: "FFEDE9FE",
+    altRowFill: "FFFAF5FF",
+    borderNormal: "FFE9D5FF",
+    borderTotalTop: "FF8B5CF6",
+    borderTotalSide: "FFBBA3E5",
+  },
+  elegant: {
+    headerFill: "FF7F1D1D",
+    titleFont: "FF7F1D1D",
+    titleFill: "FFFFF1F2",
+    accentFont: "FF9F1239",
+    totalFill: "FFFFE4E6",
+    altRowFill: "FFFFF5F6",
+    borderNormal: "FFFECDD3",
+    borderTotalTop: "FFE11D48",
+    borderTotalSide: "FFFDA4AF",
+  },
+  corporate: {
+    headerFill: "FF1E3A8A",
+    titleFont: "FF1E3A8A",
+    titleFill: "FFEFF6FF",
+    accentFont: "FF1D4ED8",
+    totalFill: "FFDBEAFE",
+    altRowFill: "FFF0F7FF",
+    borderNormal: "FFBFDBFE",
+    borderTotalTop: "FF3B82F6",
+    borderTotalSide: "FF93C5FD",
+  },
+};
 
 const EMPTY_MAPPINGS: Record<MappingKey, string> = {
   date: "",
@@ -300,6 +389,8 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 
   const summarySection = query<HTMLElement>("#summarySection");
   const summarySectionStatus = query<HTMLElement>("#summarySectionStatus");
+  const summaryTableWrap = query<HTMLElement>("#summaryTableWrap");
+  const stylePreviewBadge = query<HTMLElement>("#stylePreviewBadge");
   const extraCostsPanel = query<HTMLElement>("#extraCostsPanel");
   const extraCostsToggle = query<HTMLElement>("#extraCostsToggle");
   const costTableBody = query<HTMLTableSectionElement>("#costTableBody");
@@ -1736,7 +1827,16 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     return cellType === "profit" ? 10 : cellType === "currency" ? 1 : 0;
   }
 
-  function createXlsxWorkbook(rows: SummaryRowWithCosts[]) {
+  function getReportStyle(): XlsxStyleColors {
+    const id = (root.querySelector<HTMLSelectElement>("#reportStyle")?.value ||
+      "classic") as XlsxStyleId;
+    return XLSX_STYLE_COLORS[id] ?? XLSX_STYLE_COLORS.classic;
+  }
+
+  function createXlsxWorkbook(
+    rows: SummaryRowWithCosts[],
+    colors: XlsxStyleColors,
+  ) {
     return createZipBlob([
       { name: "[Content_Types].xml", content: createXlsxContentTypesXml() },
       { name: "_rels/.rels", content: createXlsxRootRelsXml() },
@@ -1747,7 +1847,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
         name: "xl/_rels/workbook.xml.rels",
         content: createXlsxWorkbookRelsXml(),
       },
-      { name: "xl/styles.xml", content: createXlsxStylesXml() },
+      { name: "xl/styles.xml", content: createXlsxStylesXml(colors) },
       { name: "xl/worksheets/sheet1.xml", content: createXlsxSheetXml(rows) },
     ]);
   }
@@ -1820,7 +1920,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 </Relationships>`;
   }
 
-  function createXlsxStylesXml() {
+  function createXlsxStylesXml(colors: XlsxStyleColors) {
     const formatCode = xmlEscape(
       `${state.displaySymbol || ""}#,##0.00;[Red](${state.displaySymbol || ""}#,##0.00)`,
     );
@@ -1831,27 +1931,27 @@ function setupCsvProfitCalculator(root: HTMLElement) {
   <fonts count="5">
     <font><sz val="11"/><color rgb="FF2B2A28"/><name val="Calibri"/><family val="2"/></font>
     <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font>
-    <font><b/><sz val="15"/><color rgb="FF1A4B3E"/><name val="Calibri"/><family val="2"/></font>
+    <font><b/><sz val="15"/><color rgb="${colors.titleFont}"/><name val="Calibri"/><family val="2"/></font>
     <font><i/><sz val="10"/><color rgb="FF6D665E"/><name val="Calibri"/><family val="2"/></font>
-    <font><b/><sz val="11"/><color rgb="FF0D5C3F"/><name val="Calibri"/><family val="2"/></font>
+    <font><b/><sz val="11"/><color rgb="${colors.accentFont}"/><name val="Calibri"/><family val="2"/></font>
   </fonts>
   <fills count="6">
     <fill><patternFill patternType="none"/></fill>
     <fill><patternFill patternType="gray125"/></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FF414556"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFF8F9FB"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFE8F2EF"/><bgColor indexed="64"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFF1F3F6"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="${colors.headerFill}"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="${colors.altRowFill}"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="${colors.totalFill}"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="${colors.titleFill}"/><bgColor indexed="64"/></patternFill></fill>
   </fills>
   <borders count="3">
     <border><left/><right/><top/><bottom/><diagonal/></border>
     <border>
-      <left style="thin"><color rgb="FFE2E5EA"/></left><right style="thin"><color rgb="FFE2E5EA"/></right>
-      <top style="thin"><color rgb="FFE2E5EA"/></top><bottom style="thin"><color rgb="FFE2E5EA"/></bottom><diagonal/>
+      <left style="thin"><color rgb="${colors.borderNormal}"/></left><right style="thin"><color rgb="${colors.borderNormal}"/></right>
+      <top style="thin"><color rgb="${colors.borderNormal}"/></top><bottom style="thin"><color rgb="${colors.borderNormal}"/></bottom><diagonal/>
     </border>
     <border>
-      <left style="thin"><color rgb="FFC8D8D0"/></left><right style="thin"><color rgb="FFC8D8D0"/></right>
-      <top style="medium"><color rgb="FF1A7F5A"/></top><bottom style="thin"><color rgb="FFC8D8D0"/></bottom><diagonal/>
+      <left style="thin"><color rgb="${colors.borderTotalSide}"/></left><right style="thin"><color rgb="${colors.borderTotalSide}"/></right>
+      <top style="medium"><color rgb="${colors.borderTotalTop}"/></top><bottom style="thin"><color rgb="${colors.borderTotalSide}"/></bottom><diagonal/>
     </border>
   </borders>
   <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
@@ -2224,7 +2324,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
     }
 
     downloadFile(
-      createXlsxWorkbook(getExportRows()),
+      createXlsxWorkbook(getExportRows(), getReportStyle()),
       buildDownloadName("xlsx"),
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
@@ -2245,6 +2345,13 @@ function setupCsvProfitCalculator(root: HTMLElement) {
         "info",
       );
     }
+  }
+
+  function updateTableStyle() {
+    const id =
+      root.querySelector<HTMLSelectElement>("#reportStyle")?.value || "classic";
+    summaryTableWrap.dataset.reportStyle = id;
+    stylePreviewBadge.textContent = id.charAt(0).toUpperCase() + id.slice(1);
   }
 
   on(uploadButton, "click", handleUploadButtonClick);
@@ -2286,6 +2393,11 @@ function setupCsvProfitCalculator(root: HTMLElement) {
   on(processButton, "click", handleProcessClick);
   on(downloadCsvButton, "click", handleDownloadCsvClick);
   on(downloadXlsxButton, "click", handleDownloadXlsxClick);
+  on(
+    root.querySelector<HTMLSelectElement>("#reportStyle"),
+    "change",
+    updateTableStyle,
+  );
   on(windowRef, "pagehide", clearInMemoryCsvData);
   on(documentRef, "visibilitychange", handleVisibilityChange);
 
@@ -2303,7 +2415,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
 export default function CsvProfitCalculatorClient() {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!rootRef.current) {
       return undefined;
     }
@@ -2410,6 +2522,12 @@ export default function CsvProfitCalculatorClient() {
                   monthly-profit-report.xlsx
                 </span>
               </div>
+              <div className="hero-preview-title-bar">
+                <span className="hero-preview-company">My Etsy Shop</span>
+                <span className="hero-preview-doc-label">
+                  Etsy Monthly Accounts
+                </span>
+              </div>
               <div className="hero-preview-body">
                 <div className="hero-preview-row hero-preview-head">
                   <span>Month</span>
@@ -2442,9 +2560,47 @@ export default function CsvProfitCalculatorClient() {
                   <span className="hero-preview-profit">$7,159</span>
                 </div>
               </div>
+              <div className="hero-preview-styles" aria-hidden="true">
+                <span
+                  className="hero-style-chip"
+                  style={{ background: "#414556" }}
+                >
+                  Classic
+                </span>
+                <span
+                  className="hero-style-chip"
+                  style={{ background: "#065F46" }}
+                >
+                  Modern
+                </span>
+                <span
+                  className="hero-style-chip"
+                  style={{ background: "#374151" }}
+                >
+                  Minimal
+                </span>
+                <span
+                  className="hero-style-chip"
+                  style={{ background: "#4C1D95" }}
+                >
+                  Bold
+                </span>
+                <span
+                  className="hero-style-chip"
+                  style={{ background: "#7F1D1D" }}
+                >
+                  Elegant
+                </span>
+                <span
+                  className="hero-style-chip"
+                  style={{ background: "#1E3A8A" }}
+                >
+                  Corporate
+                </span>
+              </div>
             </div>
             <p className="hero-preview-caption">
-              Example output — your real numbers, cleanly grouped
+              6 style options — download as Excel or CSV
             </p>
           </aside>
         </section>
@@ -2923,9 +3079,12 @@ export default function CsvProfitCalculatorClient() {
                 </div>
               </div>
 
-              <div>
+              <div id="summaryTableWrap" data-report-style="classic">
                 <div className="summary-table-header">
                   <h3>Your monthly profit breakdown</h3>
+                  <span id="stylePreviewBadge" className="style-preview-badge">
+                    Classic
+                  </span>
                 </div>
                 <div className="table-wrap">
                   <table>
@@ -2967,9 +3126,52 @@ export default function CsvProfitCalculatorClient() {
                 </svg>
                 Save your report
               </div>
+              <div className="report-style-row">
+                <label className="report-style-label" htmlFor="reportStyle">
+                  Excel style
+                </label>
+                <select
+                  id="reportStyle"
+                  defaultValue="classic"
+                  className="report-style-select"
+                >
+                  <option value="classic">Classic</option>
+                  <option value="modern">Modern</option>
+                  <option value="minimal">Minimal</option>
+                  <option value="bold">Bold</option>
+                  <option value="elegant">Elegant</option>
+                  <option value="corporate">Corporate</option>
+                </select>
+                <div className="report-style-swatches" aria-hidden="true">
+                  <span
+                    className="rss-chip"
+                    style={{ background: "#414556" }}
+                  />
+                  <span
+                    className="rss-chip"
+                    style={{ background: "#065F46" }}
+                  />
+                  <span
+                    className="rss-chip"
+                    style={{ background: "#374151" }}
+                  />
+                  <span
+                    className="rss-chip"
+                    style={{ background: "#4C1D95" }}
+                  />
+                  <span
+                    className="rss-chip"
+                    style={{ background: "#7F1D1D" }}
+                  />
+                  <span
+                    className="rss-chip"
+                    style={{ background: "#1E3A8A" }}
+                  />
+                </div>
+              </div>
               <p className="download-hint">
-                Choose your preferred format. The Excel download includes your
-                company name and styling.
+                Choose your preferred format. The Excel download uses your
+                selected style and company name.
               </p>
               <div className="download-formats">
                 <button

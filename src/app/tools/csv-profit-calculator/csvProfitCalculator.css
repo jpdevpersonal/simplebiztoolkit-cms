@@ -401,12 +401,11 @@ html {
     0 18px 40px rgba(15, 23, 36, 0.12),
     0 4px 12px rgba(15, 23, 36, 0.05);
   overflow: hidden;
-  transform: rotate(0.5deg);
   transition: transform 0.3s ease;
 }
 
 .hero-preview-frame:hover {
-  transform: rotate(0deg) translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .hero-preview-header {
@@ -494,6 +493,55 @@ html {
   color: var(--muted);
   text-align: center;
   font-style: italic;
+}
+
+/* --- Hero preview: title bar ------------------------------------ */
+.hero-preview-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+.hero-preview-company {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--heading);
+  letter-spacing: -0.01em;
+}
+
+.hero-preview-doc-label {
+  font-size: 0.67rem;
+  color: var(--muted);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* --- Hero preview: style chips ---------------------------------- */
+.hero-preview-styles {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.55rem 0.65rem;
+  border-top: 1px solid var(--border);
+  background: #f8f9fb;
+  border-radius: 0 0 13px 13px;
+}
+
+.hero-style-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* --- Trust strip -------------------------------------------------- */
@@ -1439,6 +1487,247 @@ tfoot td {
   font-weight: 700;
 }
 
+/* --- Summary table style preview ---------------------------------- */
+/*
+ * Each style sets its own CSS custom properties AND layout overrides so that
+ * the breakdown table genuinely looks different — not just a colour swap.
+ * Only #summaryTableWrap is targeted; the extra-costs input table is unaffected.
+ *
+ * Layouts at a glance:
+ *  classic   – filled header, subtle zebra rows, green-tinted total row
+ *  modern    – filled header, clean white rows, solid-fill total matching header
+ *  minimal   – borderline-only header (no fill), hairlines, no zebra, double rule total
+ *  bold      – full column-grid borders, solid header + total, all-caps condensed
+ *  elegant   – pale-tint header with italic text, very subtle zebra, double-rule total
+ *  corporate – filled header, left accent stripe on every data row
+ */
+
+/* --- Classic (default) ------------------------------------------- */
+#summaryTableWrap {
+  --sth-bg: #414556;
+  --sth-color: #ffffff;
+  --sbadge-bg: #414556;
+  --srow-alt: rgba(248, 249, 251, 0.7);
+  --stfoot-bg: rgba(240, 247, 244, 0.92);
+  --stfoot-border: rgba(26, 127, 90, 0.22);
+  --stfoot-color: var(--heading);
+  --sprofit-color: #0d5c3f;
+  --sprofit-bg: transparent;
+}
+
+/* --- Modern: clean rows, solid emerald total row ----------------- */
+#summaryTableWrap[data-report-style="modern"] {
+  --sth-bg: #065f46;
+  --sth-color: #ffffff;
+  --sbadge-bg: #065f46;
+  --srow-alt: transparent;
+  --stfoot-bg: #065f46;
+  --stfoot-border: #065f46;
+  --stfoot-color: #ffffff;
+  --sprofit-color: #ffffff;
+  --sprofit-bg: #047857;
+}
+
+/* --- Minimal: hairlines only, text-based header ------------------ */
+#summaryTableWrap[data-report-style="minimal"] {
+  --sth-bg: transparent;
+  --sth-color: #374151;
+  --sbadge-bg: #374151;
+  --srow-alt: transparent;
+  --stfoot-bg: transparent;
+  --stfoot-border: #9ca3af;
+  --stfoot-color: #374151;
+  --sprofit-color: #374151;
+  --sprofit-bg: transparent;
+}
+
+/* --- Bold: full column grid, solid header and total row ---------- */
+#summaryTableWrap[data-report-style="bold"] {
+  --sth-bg: #4c1d95;
+  --sth-color: #ffffff;
+  --sbadge-bg: #4c1d95;
+  --srow-alt: rgba(245, 243, 255, 0.55);
+  --stfoot-bg: #4c1d95;
+  --stfoot-border: #4c1d95;
+  --stfoot-color: #ffffff;
+  --sprofit-color: #ffffff;
+  --sprofit-bg: #5b21b6;
+}
+
+/* --- Elegant: pale-tinted header, italic, double-rule total ------ */
+#summaryTableWrap[data-report-style="elegant"] {
+  --sth-bg: #fff1f2;
+  --sth-color: #7f1d1d;
+  --sbadge-bg: #7f1d1d;
+  --srow-alt: rgba(255, 241, 242, 0.45);
+  --stfoot-bg: transparent;
+  --stfoot-border: #9f1239;
+  --stfoot-color: #9f1239;
+  --sprofit-color: #9f1239;
+  --sprofit-bg: transparent;
+}
+
+/* --- Corporate: navy header, accent stripe on every data row ----- */
+#summaryTableWrap[data-report-style="corporate"] {
+  --sth-bg: #1e3a8a;
+  --sth-color: #ffffff;
+  --sbadge-bg: #1e3a8a;
+  --srow-alt: rgba(240, 247, 255, 0.75);
+  --stfoot-bg: rgba(219, 234, 254, 0.9);
+  --stfoot-border: rgba(59, 130, 246, 0.5);
+  --stfoot-color: #1e3a8a;
+  --sprofit-color: #1d4ed8;
+  --sprofit-bg: transparent;
+}
+
+/* === Base scoped overrides (all styles inherit these) ============= */
+#summaryTableWrap th {
+  background: var(--sth-bg);
+  color: var(--sth-color);
+  transition:
+    background 0.22s ease,
+    color 0.22s ease;
+}
+
+#summaryTableWrap tbody tr:nth-child(even) {
+  background: var(--srow-alt);
+  transition: background 0.22s ease;
+}
+
+#summaryTableWrap tfoot td {
+  background: var(--stfoot-bg);
+  border-top-color: var(--stfoot-border);
+  color: var(--stfoot-color);
+  transition:
+    background 0.22s ease,
+    border-top-color 0.22s ease,
+    color 0.22s ease;
+}
+
+#summaryTableWrap td.profit-cell {
+  background: var(--sprofit-bg);
+  color: var(--sprofit-color);
+  transition:
+    background 0.22s ease,
+    color 0.22s ease;
+}
+
+/* === Per-style layout overrides ================================== */
+
+/* -- Modern: no top border on footer (solid fill spans full width) */
+#summaryTableWrap[data-report-style="modern"] tfoot td {
+  border-top-width: 0;
+  font-weight: 800;
+}
+
+#summaryTableWrap[data-report-style="modern"] td.profit-cell {
+  font-weight: 800;
+}
+
+/* -- Minimal: text-only header row (no fill, thicker bottom rule)  */
+#summaryTableWrap[data-report-style="minimal"] thead th {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 2px solid rgba(107, 114, 128, 0.5);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+#summaryTableWrap[data-report-style="minimal"] td {
+  border-left: none;
+  border-right: none;
+}
+
+#summaryTableWrap[data-report-style="minimal"] tfoot td {
+  border-top: 2px solid var(--stfoot-border);
+  border-left: none;
+  border-right: none;
+  font-weight: 800;
+}
+
+#summaryTableWrap[data-report-style="minimal"] td.profit-cell {
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+/* -- Bold: full column grid, condensed header text             */
+#summaryTableWrap[data-report-style="bold"] th,
+#summaryTableWrap[data-report-style="bold"] td {
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+#summaryTableWrap[data-report-style="bold"] th {
+  border-color: rgba(76, 29, 149, 0.4);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+#summaryTableWrap[data-report-style="bold"] tfoot td {
+  border-color: rgba(76, 29, 149, 0.5);
+  border-top-width: 2px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+#summaryTableWrap[data-report-style="bold"] td.profit-cell {
+  font-weight: 900;
+}
+
+/* -- Elegant: italic header, double-rule total, italic profit     */
+#summaryTableWrap[data-report-style="elegant"] thead th {
+  font-style: italic;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.03em;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(159, 18, 57, 0.25);
+}
+
+#summaryTableWrap[data-report-style="elegant"] td {
+  border-bottom-color: rgba(159, 18, 57, 0.1);
+}
+
+#summaryTableWrap[data-report-style="elegant"] tfoot td {
+  border-top: 3px double var(--stfoot-border);
+  font-style: italic;
+}
+
+#summaryTableWrap[data-report-style="elegant"] td.profit-cell {
+  font-style: italic;
+  font-size: 0.96rem;
+}
+
+/* -- Corporate: left accent stripe on every data + total row      */
+#summaryTableWrap[data-report-style="corporate"] tbody td:first-child,
+#summaryTableWrap[data-report-style="corporate"] tfoot td:first-child {
+  border-left: 4px solid var(--sth-bg);
+  padding-left: 0.75rem;
+}
+
+#summaryTableWrap[data-report-style="corporate"] tfoot td {
+  font-weight: 800;
+}
+
+/* Style badge shown in the breakdown section heading */
+.style-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  background: var(--sbadge-bg, #414556);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 0.22s ease;
+  flex-shrink: 0;
+}
+
 .cost-table {
   margin-top: 0;
 }
@@ -1469,6 +1758,48 @@ tfoot td {
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--success-text);
+}
+
+/* --- Report style selector in download panel ------------------ */
+.report-style-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0.65rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(26, 127, 90, 0.14);
+}
+
+.report-style-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--heading);
+  white-space: nowrap;
+}
+
+.report-style-select {
+  max-width: 170px;
+  min-height: 40px !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.9rem !important;
+}
+
+.report-style-swatches {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.rss-chip {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .download-hint {

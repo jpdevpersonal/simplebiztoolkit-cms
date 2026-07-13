@@ -1,9 +1,14 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import HtmlCodeEditor from "./HtmlCodeEditor";
 
 describe("HtmlCodeEditor", () => {
+  beforeEach(() => {
+    // Guard against fake timers leaked by other suites when running full CI.
+    vi.useRealTimers();
+  });
+
   it("renders without internal scrollbars and exposes a bottom scrollbar", () => {
     render(
       <HtmlCodeEditor
@@ -175,8 +180,7 @@ describe("HtmlCodeEditor", () => {
     expect(statusbar).toHaveTextContent(/3 lines/);
   });
 
-  it("toggles word wrap when the Wrap button is pressed", async () => {
-    const user = userEvent.setup();
+  it("toggles word wrap when the Wrap button is pressed", () => {
     render(
       <HtmlCodeEditor
         value={"<p>Some long text</p>"}
@@ -187,7 +191,7 @@ describe("HtmlCodeEditor", () => {
 
     const wrapButton = screen.getByRole("button", { name: /wrap/i });
     expect(wrapButton).toHaveAttribute("aria-pressed", "false");
-    await user.click(wrapButton);
+    fireEvent.click(wrapButton);
     expect(wrapButton).toHaveAttribute("aria-pressed", "true");
   });
 

@@ -1,10 +1,15 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import AdminModal from "./AdminModal";
 
 describe("AdminModal", () => {
+  beforeEach(() => {
+    // Guard against fake timers leaked by other suites in full CI runs.
+    vi.useRealTimers();
+  });
+
   it("renders children when open", () => {
     render(
       <AdminModal isOpen={true} onCloseAction={vi.fn()} title="Test modal">

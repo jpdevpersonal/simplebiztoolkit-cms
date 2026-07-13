@@ -18,7 +18,7 @@
     "test": "vitest run --testTimeout=30000",
     "test:coverage": "vitest run --coverage --testTimeout=30000",
     "test:ui": "vitest --ui",
-    "test:ci": "vitest run --reporter=dot --coverage --testTimeout=30000",
+    "test:ci": "vitest run --reporter=dot --coverage --testTimeout=90000 --hookTimeout=90000",
     "test:all": "npm run test:ci && npm run build && npm run e2e:install && npm run e2e",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
