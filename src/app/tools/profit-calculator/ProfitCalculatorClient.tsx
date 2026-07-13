@@ -598,16 +598,95 @@ export default function ProfitCalculatorClient() {
         </nav>
 
         <section className="tool-hero" aria-labelledby="hero-heading">
-          <span className="eyebrow">
-            <span className="eyebrow-dot" aria-hidden="true" />
-            Free tool · No sign-up · Runs in your browser
-          </span>
-          <h1 id="hero-heading">Profit Calculator for Etsy</h1>
-          <p>
-            Calculate Etsy fees, product costs, profit margin, and the price you
-            need to charge to make a real profit. Everything runs in your
-            browser — nothing is uploaded or stored.
-          </p>
+          <div className="tool-hero-copy">
+            <span className="eyebrow">
+              <span className="eyebrow-dot" aria-hidden="true" />
+              Free tool · No sign-up · Runs in your browser
+            </span>
+            <h1 id="hero-heading">Profit Calculator for Etsy</h1>
+            <p>
+              Calculate Etsy fees, product costs, profit margin, and the price
+              you need to charge to make a real profit. Everything runs in your
+              browser — nothing is uploaded or stored.
+            </p>
+          </div>
+
+          <aside
+            className="tool-hero-preview"
+            aria-label="Example profit summary"
+          >
+            <div className="profit-hero-frame" aria-hidden="true">
+              <div className="profit-hero-header">
+                <span className="profit-hero-dot dot-red" />
+                <span className="profit-hero-dot dot-amber" />
+                <span className="profit-hero-dot dot-green" />
+                <span className="profit-hero-filename">
+                  etsy-profit-summary
+                </span>
+              </div>
+              <div className="profit-hero-body">
+                <div className="phb-summary">
+                  <div className="phb-summary-left">
+                    <div className="phb-summary-title">Profit summary</div>
+                    <div className="phb-summary-meta">Selling price £24.00</div>
+                    <div className="phb-summary-meta">
+                      Materials £4.50 · Shipping £3.20
+                    </div>
+                    <div className="phb-summary-meta">
+                      Mode: Profit from price
+                    </div>
+                  </div>
+                  <div className="phb-summary-right">
+                    <div className="phb-net-label">Net Profit</div>
+                    <div className="phb-net-value">£8.42</div>
+                    <div className="phb-net-margin">Margin 35.1%</div>
+                  </div>
+                </div>
+
+                <div className="phb-breakdown-label">Etsy Fee Breakdown</div>
+                <div className="phb-breakdown-head">
+                  <span>Item</span>
+                  <span>Amount</span>
+                </div>
+                <div className="phb-breakdown">
+                  <div className="phb-row">
+                    <span>Transaction fee (6.5%)</span>
+                    <span>£1.56</span>
+                  </div>
+                  <div className="phb-row">
+                    <span>Payment processing</span>
+                    <span>£1.20</span>
+                  </div>
+                  <div className="phb-row">
+                    <span>Listing fee</span>
+                    <span>£0.16</span>
+                  </div>
+                  <div className="phb-row">
+                    <span>Offsite ads (est.)</span>
+                    <span>£0.96</span>
+                  </div>
+                </div>
+
+                <div className="phb-totals">
+                  <div className="phb-total-row">
+                    <span>Revenue</span>
+                    <span>£24.00</span>
+                  </div>
+                  <div className="phb-total-row">
+                    <span>Costs + fees</span>
+                    <span>£15.58</span>
+                  </div>
+                  <div className="phb-total-row phb-total-profit">
+                    <span>Profit</span>
+                    <span>£8.42</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="profit-hero-caption">
+              Example output — your real numbers, instantly calculated
+            </p>
+          </aside>
         </section>
 
         {HAS_ADSENSE_CONFIG && !isAdBlocked ? (

@@ -72,8 +72,8 @@ async function clipToInclude(page, containerSelector, anchorSelector, paddingBot
   };
 }
 
-// Profit Calculator - fill in a realistic example, calculate, then capture
-// just the Results card (recommended price + fee/profit breakdown).
+// Profit Calculator - the hero has a static "example profit summary" mockup,
+// so capture that directly (no form filling needed).
 async function captureProfitCalculator(browser) {
   const page = await newPage(browser);
   await page.goto(`${BASE_URL}/tools/profit-calculator`, {
@@ -81,21 +81,19 @@ async function captureProfitCalculator(browser) {
   });
   await hidePageChrome(page);
 
-  await page.fill("#sellingPrice", "24.99");
-  await page.fill("#materials", "4.00");
-  await page.fill("#packaging", "1.20");
-  await page.fill("#labour", "5.00");
-  await page.fill("#postage", "3.50");
-  await page.fill("#other", "0.50");
-  await page.click('#calc-form button[type="submit"]');
-  await page.locator("#results-content").waitFor({ state: "visible" });
+  await page.locator(".profit-hero-frame").waitFor({ state: "visible" });
+
+  // Wait for CSS to apply (header bar gets a background colour)
+  await page.waitForFunction(() => {
+    const el = document.querySelector(".profit-hero-header");
+    if (!el) return false;
+    const bg = getComputedStyle(el).backgroundColor;
+    return bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent" && bg !== "";
+  }, { timeout: 15000 });
+
   await page.waitForTimeout(300);
 
-  // Stop after the headline + a couple of fee rows - showing all 11 rows
-  // would be illegible at thumbnail size and makes the source image far
-  // too tall (object-fit: contain would letterbox it down to a sliver).
-  const clip = await clipToInclude(page, ".results-card", "#r-payment", 10);
-  const buffer = await page.screenshot({ clip });
+  const buffer = await page.locator(".profit-hero-frame").screenshot();
   await page.close();
   return buffer;
 }
