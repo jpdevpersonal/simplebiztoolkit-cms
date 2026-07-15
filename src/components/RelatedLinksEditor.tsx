@@ -44,6 +44,7 @@ type DestinationOption = {
   refId: string;
   href: string;
   label: string;
+  thumbnailUrl?: string;
 };
 
 type RelatedLinksEditorProps = {
@@ -151,6 +152,7 @@ export default function RelatedLinksEditor({
                   toTemplatesRoute(item.productPageUrl) ||
                   `/templates/${category.slug}/${item.slug}`,
                 label: item.title,
+                thumbnailUrl: item.image || undefined,
               })),
           )
           .sort((left, right) => left.label.localeCompare(right.label));
@@ -236,12 +238,28 @@ export default function RelatedLinksEditor({
           };
         }
 
+        // When a template is selected, auto-populate the thumbnail from the
+        // template's own image — unless the user manually picked an image via
+        // the CMS picker (indicated by a non-null imageId).
+        // Default to top-aligned (0%) so the top portion of the template page
+        // is visible in the square crop rather than the centre.
+        const autoImageFields =
+          option.kind === "template" && option.thumbnailUrl && !item.imageId
+            ? {
+                imageId: null,
+                imageUrl: option.thumbnailUrl,
+                imageAlt: null,
+                imagePositionY: 0,
+              }
+            : {};
+
         return {
           ...item,
           kind: option.kind,
           refId: option.refId,
           href: option.href,
           destinationTitle: option.label,
+          ...autoImageFields,
         };
       }),
     );

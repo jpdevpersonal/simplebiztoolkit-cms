@@ -165,48 +165,42 @@ export const RelatedLinks = Node.create({
     const title = normalizeRelatedLinksTitle(node.attrs.title);
     const items = sanitizeRelatedLinksItems(node.attrs.items);
     const imageSize = normalizeRelatedLinksImageSize(node.attrs.imageSize);
-    const hasAnyImages = items.some((item) => Boolean(item.imageUrl));
     const children: unknown[] = [
       ["h3", {}, title],
       [
         "ul",
         { class: "related-links-block__list" },
         ...items.map((item) => {
-          const imageChild = hasAnyImages
-            ? item.imageUrl
-              ? [
-                  "span",
+          const hasImage = Boolean(item.imageUrl);
+          const imageChild = hasImage
+            ? [
+                "span",
+                {
+                  class: "related-links-block__media",
+                  "aria-hidden": "true",
+                },
+                [
+                  "img",
                   {
-                    class: "related-links-block__media",
-                    "aria-hidden": "true",
+                    src: item.imageUrl,
+                    alt: item.imageAlt || "",
+                    style: `object-position: center ${normalizeRelatedLinkImagePositionY(item.imagePositionY)}%;`,
+                    class: "related-links-block__image",
                   },
-                  [
-                    "img",
-                    {
-                      src: item.imageUrl,
-                      alt: item.imageAlt || "",
-                      style: `object-position: center ${normalizeRelatedLinkImagePositionY(item.imagePositionY)}%;`,
-                      class: "related-links-block__image",
-                    },
-                  ],
-                ]
-              : [
-                  "span",
-                  {
-                    class: "related-links-block__media-placeholder",
-                    "aria-hidden": "true",
-                  },
-                ]
+                ],
+              ]
             : null;
 
           return [
             "li",
-            { class: "related-links-block__item" },
+            {
+              class: `related-links-block__item${hasImage ? " related-links-block__item--has-image" : " related-links-block__item--no-image"}`,
+            },
             [
               "a",
               {
                 href: item.href,
-                class: `related-links-block__link${hasAnyImages ? "" : " related-links-block__link--text-only"}`,
+                class: `related-links-block__link${hasImage ? " related-links-block__link--has-image" : " related-links-block__link--no-image"}`,
                 "data-link-kind": item.kind,
                 "data-link-id": item.refId,
               },

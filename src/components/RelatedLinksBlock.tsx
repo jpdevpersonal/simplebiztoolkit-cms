@@ -66,7 +66,6 @@ export default function RelatedLinksBlock({
     return null;
   }
 
-  const hasAnyImages = items.some((item) => Boolean(item.imageUrl));
   const imageSizes = getImageSizes(imageSize);
 
   return (
@@ -86,37 +85,33 @@ export default function RelatedLinksBlock({
           const hasImage = Boolean(item.imageUrl);
 
           return (
-            <li key={item.uid} className="related-links-block__item">
+            <li
+              key={item.uid}
+              className={`related-links-block__item${hasImage ? " related-links-block__item--has-image" : " related-links-block__item--no-image"}`}
+            >
               <a
                 href={item.href}
-                className={`related-links-block__link${hasAnyImages ? "" : " related-links-block__link--text-only"}`}
+                className={`related-links-block__link${hasImage ? " related-links-block__link--has-image" : " related-links-block__link--no-image"}`}
               >
-                {hasAnyImages ? (
-                  hasImage ? (
-                    <span
-                      className="related-links-block__media"
-                      aria-hidden="true"
-                    >
-                      <Image
-                        src={item.imageUrl || ""}
-                        alt={item.imageAlt || ""}
-                        fill
-                        sizes={imageSizes}
-                        loading="lazy"
-                        quality={90}
-                        unoptimized={shouldBypassNextImageOptimization(
-                          item.imageUrl,
-                        )}
-                        style={{ objectPosition: getImageObjectPosition(item) }}
-                        className="related-links-block__image"
-                      />
-                    </span>
-                  ) : (
-                    <span
-                      className="related-links-block__media-placeholder"
-                      aria-hidden="true"
+                {hasImage ? (
+                  <span
+                    className="related-links-block__media"
+                    aria-hidden="true"
+                  >
+                    <Image
+                      src={item.imageUrl || ""}
+                      alt={item.imageAlt || ""}
+                      fill
+                      sizes={imageSizes}
+                      loading="lazy"
+                      quality={90}
+                      unoptimized={shouldBypassNextImageOptimization(
+                        item.imageUrl,
+                      )}
+                      style={{ objectPosition: getImageObjectPosition(item) }}
+                      className="related-links-block__image"
                     />
-                  )
+                  </span>
                 ) : null}
                 <span className="related-links-block__text">
                   {getItemLabel(item)}

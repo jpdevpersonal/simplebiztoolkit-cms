@@ -94,9 +94,14 @@ describe("ProductDetailClient", () => {
     expect(relatedLink).not.toHaveAttribute("target");
     expect(
       container.querySelector(
-        ".product-detail-media-column .related-links-block--template",
+        ".product-detail-related-links-stack .related-links-block--template",
       ),
     ).not.toBeNull();
+    expect(
+      container.querySelector(
+        ".product-detail-media-column .related-links-block--template",
+      ),
+    ).toBeNull();
     expect(
       container.querySelector(
         ".product-description-content a[href='/tax-guide']",
