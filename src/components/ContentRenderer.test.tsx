@@ -294,13 +294,13 @@ describe("ContentRenderer", () => {
     expect(renderedImage).toHaveStyle({ objectPosition: "center 0%" });
     expect(
       container.querySelectorAll(".related-links-block__media-placeholder"),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     expect(container.querySelector(".related-links-block")).toHaveClass(
       "related-links-block--image-size-large",
     );
     expect(
       screen.getByRole("link", { name: "Payroll checklist template" }),
-    ).not.toHaveClass("related-links-block__link--text-only");
+    ).toHaveClass("related-links-block__link--no-image");
   });
 
   it("removes the image column entirely when a block has no thumbnails", () => {
@@ -338,7 +338,7 @@ describe("ContentRenderer", () => {
       container.querySelector(".related-links-block__media-placeholder"),
     ).toBeNull();
     expect(
-      container.querySelectorAll(".related-links-block__link--text-only"),
+      container.querySelectorAll(".related-links-block__link--no-image"),
     ).toHaveLength(2);
   });
 
