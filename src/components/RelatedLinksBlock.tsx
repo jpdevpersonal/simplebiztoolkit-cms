@@ -39,6 +39,10 @@ const IMAGE_RENDER_SPECS: Record<
     desktopWidth: 144,
     mobileWidth: 128,
   },
+  "extra-large": {
+    desktopWidth: 216,
+    mobileWidth: 192,
+  },
 };
 
 function getImageSizes(imageSize: RelatedLinksImageSize): string {

@@ -1025,6 +1025,11 @@
   --related-links-image-scale: 2;
 }
 
+.related-links-editor-preview-frame
+  .related-links-block--image-size-extra-large {
+  --related-links-image-scale: 3;
+}
+
 .related-links-editor-preview-frame .related-links-block__title {
   margin: 0 0 0.75rem;
   font-size: 0.9375rem !important;

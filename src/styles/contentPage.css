@@ -288,6 +288,10 @@
   --related-links-image-scale: 2;
 }
 
+.related-links-block--image-size-extra-large {
+  --related-links-image-scale: 3;
+}
+
 .related-links-block__title {
   margin: 0 0 0.875rem;
   font-size: 1.125rem;

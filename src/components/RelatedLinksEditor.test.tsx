@@ -8,6 +8,7 @@ import {
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
   RELATED_LINKS_DEFAULT_TITLE,
+  RELATED_LINKS_MAX_ITEMS,
   type RelatedLinkItem,
   type RelatedLinksBlockData,
 } from "@/lib/relatedLinks";
@@ -482,5 +483,47 @@ describe("RelatedLinksEditor", () => {
     expect(getLastChange(onChange).items[0]).toMatchObject({
       imagePositionY: 0,
     });
+  });
+
+  it("adds a new link when Add link is clicked", async () => {
+    const { user, onChange } = renderControlledEditor({
+      items: [makeItem({ uid: "item-1" })],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Add link" }));
+
+    expect(getLastChange(onChange).items).toHaveLength(2);
+    expect(getLastChange(onChange).items[1]).toMatchObject({
+      kind: "page",
+      refId: "",
+      href: "",
+      destinationTitle: "",
+    });
+    expect(screen.getByText("Link 2")).toBeInTheDocument();
+  });
+
+  it("does not allow adding links beyond the maximum", async () => {
+    const initial = Array.from({ length: RELATED_LINKS_MAX_ITEMS }).map(
+      (_, i) =>
+        makeItem({
+          uid: `item-${i + 1}`,
+        }),
+    );
+
+    const { user, onChange } = renderControlledEditor({ items: initial });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    const addBtn = screen.getByRole("button", { name: "Add link" });
+    expect(addBtn).toBeDisabled();
+
+    await user.click(addBtn);
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

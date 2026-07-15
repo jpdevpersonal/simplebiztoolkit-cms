@@ -29,6 +29,7 @@ const IMAGE_SIZE_OPTIONS = [
   { value: "small", label: "Small" },
   { value: "medium", label: "Medium (1.5x)" },
   { value: "large", label: "Large (2x)" },
+  { value: "extra-large", label: "Extra large (3x)" },
 ] as const;
 
 const RELATED_LINKS_MIN_IMAGE_DIMENSION = 288;
