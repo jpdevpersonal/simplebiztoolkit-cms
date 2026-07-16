@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import ProductDetailClient from "./ProductDetailClient";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import { apiService } from "@/lib/api";
 import {
   createBreadcrumbJsonLd,
@@ -191,6 +193,13 @@ export default async function ProductDetailPage({ params }: Props) {
     steps: howToSteps,
   });
 
+  // Extract related links from the product content so we can render
+  // them after the How-to section (templates should show them at page bottom).
+  const contentSource = product.description || product.problem;
+  const { blocks: relatedLinksBlocks } = extractRelatedLinksBlocksFromHtml(
+    contentSource || "",
+  );
+
   return (
     <>
       <JsonLd json={jsonLd} />
@@ -240,6 +249,22 @@ export default async function ProductDetailPage({ params }: Props) {
               ))}
             </ol>
           </section>
+
+          {relatedLinksBlocks.length > 0 ? (
+            <div style={{ paddingTop: "1.5rem" }}>
+              {relatedLinksBlocks.map((block, index) => (
+                <RelatedLinksBlock
+                  key={`${block.title}-${index}`}
+                  title={block.title}
+                  items={block.items}
+                  backgroundColor={block.backgroundColor}
+                  borderWidth={block.borderWidth}
+                  imageSize={block.imageSize}
+                  variant="template"
+                />
+              ))}
+            </div>
+          ) : null}
 
           <SiteBreadcrumb
             items={[

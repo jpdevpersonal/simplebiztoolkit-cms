@@ -24,7 +24,11 @@ export default defineConfig({
   webServer: {
     command: webServerCommand,
     url: "http://localhost:3000",
-    reuseExistingServer: !isCI,
+    // Always start a fresh server for Playwright tests to avoid reusing a
+    // potentially stale or crashed dev server (which can surface Next.js
+    // overlay runtime errors and cause flaky failures). Developers running
+    // the dev server locally should stop it before running the test suite.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [
