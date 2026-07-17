@@ -86,17 +86,17 @@ describe("ProductDetailClient", () => {
       />,
     );
 
-    const relatedLink = screen.getByRole("link", {
-      name: "Tax planning guide",
-    });
-
-    expect(relatedLink).toHaveAttribute("href", "/tax-guide");
-    expect(relatedLink).not.toHaveAttribute("target");
+    // Related links are no longer rendered inside the client component;
+    // the description should have the related-links removed and no link
+    // should be present in this component's output.
+    expect(
+      screen.queryByRole("link", { name: "Tax planning guide" }),
+    ).toBeNull();
     expect(
       container.querySelector(
-        ".product-detail-media-column .related-links-block--template",
+        ".product-detail-related-links-stack .related-links-block--template",
       ),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       container.querySelector(
         ".product-description-content a[href='/tax-guide']",
