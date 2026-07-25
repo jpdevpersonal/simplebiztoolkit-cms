@@ -4,7 +4,6 @@ import {
   createArticleJsonLd,
   createBreadcrumbJsonLd,
   createFaqJsonLd,
-  createHowToJsonLd,
   createItemListJsonLd,
   createOrganizationJsonLd,
   createPageMetadata,
@@ -164,23 +163,6 @@ describe("seo", () => {
       name: "What is X?",
     });
     expect(jsonLd.mainEntity[0].acceptedAnswer["@type"]).toBe("Answer");
-  });
-
-  it("emits HowTo with numbered steps", () => {
-    const jsonLd = createHowToJsonLd({
-      name: "Print a template",
-      description: "Open and print",
-      steps: [
-        { name: "Open", text: "Open the PDF" },
-        { name: "Size", text: "Choose A4 or US Letter" },
-        { name: "Print", text: "Print the page" },
-      ],
-      totalTimeMinutes: 5,
-    });
-    expect(jsonLd["@type"]).toBe("HowTo");
-    expect(jsonLd.step).toHaveLength(3);
-    expect(jsonLd.step[0]["@type"]).toBe("HowToStep");
-    expect(jsonLd.totalTime).toBe("PT5M");
   });
 
   it("emits ItemList with positional list items", () => {
