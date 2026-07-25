@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import ProductDetailClient from "./ProductDetailClient";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import { apiService } from "@/lib/api";
 import {
   createBreadcrumbJsonLd,
-  createHowToJsonLd,
   createPageMetadata,
   createProductJsonLd,
 } from "@/lib/seo";
@@ -25,42 +26,42 @@ export const revalidate = 300;
  * template so we never tell a customer to "type into the fields" on a
  * template that doesn't have any.
  */
-type TemplateFormat = "fillable" | "printable";
+// type TemplateFormat = "fillable" | "printable";
 
-function detectTemplateFormat(title?: string | null): TemplateFormat {
-  return /\bfillable\b/i.test(title ?? "") ? "fillable" : "printable";
-}
+// function detectTemplateFormat(title?: string | null): TemplateFormat {
+//   return /\bfillable\b/i.test(title ?? "") ? "fillable" : "printable";
+// }
 
-function buildHowToSteps(format: TemplateFormat) {
-  const steps = [
-    {
-      name: "Buy on Etsy",
-      text: "Click 'Get It Now' to open the listing on Etsy and complete a secure checkout. No account is required to use the files after purchase.",
-    },
-    {
-      name: "Download your files",
-      text: "On your Etsy Purchases and Reviews page, click Download Files. Your PDFs are delivered instantly.",
-    },
-    {
-      name: "Choose your paper size",
-      text: "Open the PDF in any free reader (Adobe Acrobat Reader, Chrome, Edge, Safari or Apple Preview). Select A4 or US Letter to match your printer.",
-    },
-  ];
+// function buildHowToSteps(format: TemplateFormat) {
+//   const steps = [
+//     {
+//       name: "Buy on Etsy",
+//       text: "Click 'Get It Now' to open the listing on Etsy and complete a secure checkout. No account is required to use the files after purchase.",
+//     },
+//     {
+//       name: "Download your files",
+//       text: "On your Etsy Purchases and Reviews page, click Download Files. Your PDFs are delivered instantly.",
+//     },
+//     {
+//       name: "Choose your paper size",
+//       text: "Open the PDF in any free reader (Adobe Acrobat Reader, Chrome, Edge, Safari or Apple Preview). Select A4 or US Letter to match your printer.",
+//     },
+//   ];
 
-  if (format === "fillable") {
-    steps.push({
-      name: "Fill it in on screen",
-      text: "Open the PDF in Adobe Acrobat Reader, your web browser (Chrome, Edge, Safari or Firefox) or Apple Preview, then type directly into the fillable fields. Save your filled copy, or print it once you're done.",
-    });
-  }
+//   if (format === "fillable") {
+//     steps.push({
+//       name: "Fill it in on screen",
+//       text: "Open the PDF in Adobe Acrobat Reader, your web browser (Chrome, Edge, Safari or Firefox) or Apple Preview, then type directly into the fillable fields. Save your filled copy, or print it once you're done.",
+//     });
+//   }
 
-  steps.push({
-    name: "Print and reuse",
-    text: "Print the PDF on A4 or US Letter paper and complete it by hand. Re-print whenever you need a fresh copy — your purchase covers personal and single-business use.",
-  });
+//   steps.push({
+//     name: "Print and reuse",
+//     text: "Print the PDF on A4 or US Letter paper and complete it by hand. Re-print whenever you need a fresh copy — your purchase covers personal and single-business use.",
+//   });
 
-  return steps;
-}
+//   return steps;
+// }
 
 /**
  * Generate static params for ISR
@@ -177,25 +178,32 @@ export default async function ProductDetailPage({ params }: Props) {
     { name: product.title, href: `/templates/${categorySlug}/${productSlug}` },
   ]);
 
-  const templateFormat = detectTemplateFormat(product.title);
-  const howToSteps = buildHowToSteps(templateFormat);
-  const howToIntro =
-    templateFormat === "fillable"
-      ? `Download and start using the ${product.title} — a fillable PDF from Simple Biz Toolkit — in minutes.`
-      : `Download, print and start using the ${product.title} — a printable PDF from Simple Biz Toolkit — in minutes.`;
+  // const templateFormat = detectTemplateFormat(product.title);
+  // const howToSteps = buildHowToSteps(templateFormat);
+  // const howToIntro =
+  //   templateFormat === "fillable"
+  //     ? `Download and start using the ${product.title} — a fillable PDF from Simple Biz Toolkit — in minutes.`
+  //     : `Download, print and start using the ${product.title} — a printable PDF from Simple Biz Toolkit — in minutes.`;
 
-  const howToJsonLd = createHowToJsonLd({
-    name: `How to use the ${product.title}`,
-    description: howToIntro,
-    totalTimeMinutes: 5,
-    steps: howToSteps,
-  });
+  // const howToJsonLd = createHowToJsonLd({
+  //   name: `How to use the ${product.title}`,
+  //   description: howToIntro,
+  //   totalTimeMinutes: 5,
+  //    steps: howToSteps,
+  // });
+
+  // Extract related links from the product content so we can render
+  // them after the How-to section (templates should show them at page bottom).
+  const contentSource = product.description || product.problem;
+  const { blocks: relatedLinksBlocks } = extractRelatedLinksBlocksFromHtml(
+    contentSource || "",
+  );
 
   return (
     <>
       <JsonLd json={jsonLd} />
       <JsonLd json={breadcrumbJsonLd} />
-      <JsonLd json={howToJsonLd} />
+      {/* <JsonLd json={howToJsonLd} /> */}
 
       <section className="sb-section">
         <div className="container">
@@ -214,7 +222,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <ProductDetailClient product={product} />
 
           {/* How-to block (HowTo JSON-LD already emitted above) */}
-          <section
+          {/* <section
             className="sb-section"
             aria-labelledby="sb-howto-heading"
             style={{ paddingTop: "1.5rem" }}
@@ -239,7 +247,23 @@ export default async function ProductDetailPage({ params }: Props) {
                 </li>
               ))}
             </ol>
-          </section>
+          </section> */}
+
+          {relatedLinksBlocks.length > 0 ? (
+            <div style={{ paddingTop: "1.5rem" }}>
+              {relatedLinksBlocks.map((block, index) => (
+                <RelatedLinksBlock
+                  key={`${block.title}-${index}`}
+                  title={block.title}
+                  items={block.items}
+                  backgroundColor={block.backgroundColor}
+                  borderWidth={block.borderWidth}
+                  imageSize={block.imageSize}
+                  variant="template"
+                />
+              ))}
+            </div>
+          ) : null}
 
           <SiteBreadcrumb
             items={[

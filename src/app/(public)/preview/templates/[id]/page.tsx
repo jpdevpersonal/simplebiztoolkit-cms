@@ -4,6 +4,8 @@ import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import ProductDetailClient from "@/app/(public)/templates/[categorySlug]/[productSlug]/ProductDetailClient";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
+import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -36,6 +38,11 @@ export default async function ProductPreviewPage({ params }: Props) {
     (candidate) => candidate.id === product.categoryId,
   );
 
+  const contentSource = product.description || product.problem;
+  const { blocks: relatedLinksBlocks } = extractRelatedLinksBlocksFromHtml(
+    contentSource || "",
+  );
+
   return (
     <>
       <section className="container pt-4">
@@ -61,6 +68,21 @@ export default async function ProductPreviewPage({ params }: Props) {
           ) : null}
 
           <ProductDetailClient product={product} />
+          {relatedLinksBlocks.length > 0 ? (
+            <div style={{ paddingTop: "1rem" }}>
+              {relatedLinksBlocks.map((block, index) => (
+                <RelatedLinksBlock
+                  key={`${block.title}-${index}`}
+                  title={block.title}
+                  items={block.items}
+                  backgroundColor={block.backgroundColor}
+                  borderWidth={block.borderWidth}
+                  imageSize={block.imageSize}
+                  variant="template"
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
     </>

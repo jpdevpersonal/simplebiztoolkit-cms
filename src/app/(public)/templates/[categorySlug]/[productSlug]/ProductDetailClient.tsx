@@ -174,22 +174,6 @@ export default function ProductDetailClient({ product }: Props) {
               />
             </div>
           </div>
-
-          {relatedLinksBlocks.length > 0 ? (
-            <div className="product-detail-related-links-stack">
-              {relatedLinksBlocks.map((block, index) => (
-                <RelatedLinksBlock
-                  key={`${block.title}-${index}`}
-                  title={block.title}
-                  items={block.items}
-                  backgroundColor={block.backgroundColor}
-                  borderWidth={block.borderWidth}
-                  imageSize={block.imageSize}
-                  variant="template"
-                />
-              ))}
-            </div>
-          ) : null}
         </div>
 
         <div className="product-detail-right-column">
@@ -358,6 +342,8 @@ export default function ProductDetailClient({ product }: Props) {
             <ProductDescription description={descriptionContent} />
           </div>
         ) : null}
+
+        {/* Related links are rendered at the page level for templates */}
       </div>
 
       {/* Sticky Mobile CTA */}

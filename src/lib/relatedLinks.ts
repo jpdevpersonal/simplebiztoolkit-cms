@@ -7,7 +7,11 @@ export const RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y = 50;
 export const RELATED_LINKS_MAX_ITEMS = 5;
 
 export type RelatedLinkKind = "page" | "template" | "custom";
-export type RelatedLinksImageSize = "small" | "medium" | "large";
+export type RelatedLinksImageSize =
+  | "small"
+  | "medium"
+  | "large"
+  | "extra-large";
 
 export interface RelatedLinkItem {
   uid: string;
@@ -126,8 +130,8 @@ export function normalizeRelatedLinksBorderWidth(
 export function normalizeRelatedLinksImageSize(
   value?: string | null,
 ): RelatedLinksImageSize {
-  return value === "medium" || value === "large"
-    ? value
+  return value === "medium" || value === "large" || value === "extra-large"
+    ? (value as RelatedLinksImageSize)
     : RELATED_LINKS_DEFAULT_IMAGE_SIZE;
 }
 
