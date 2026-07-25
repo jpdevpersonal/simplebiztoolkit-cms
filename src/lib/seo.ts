@@ -200,29 +200,29 @@ export function createFaqJsonLd(
   };
 }
 
-export function createHowToJsonLd(input: {
-  name: string;
-  description?: string;
-  steps: ReadonlyArray<{ name: string; text: string; url?: string }>;
-  totalTimeMinutes?: number;
-}): JsonLd {
-  return {
-    "@context": "https://schema.org",
-    "@type": "HowTo",
-    name: input.name,
-    description: input.description,
-    totalTime: input.totalTimeMinutes
-      ? `PT${input.totalTimeMinutes}M`
-      : undefined,
-    step: input.steps.map((step, index) => ({
-      "@type": "HowToStep",
-      position: index + 1,
-      name: step.name,
-      text: step.text,
-      url: step.url,
-    })),
-  };
-}
+// export function createHowToJsonLd(input: {
+//   name: string;
+//   description?: string;
+//   steps: ReadonlyArray<{ name: string; text: string; url?: string }>;
+//   totalTimeMinutes?: number;
+// }): JsonLd {
+//   return {
+//     "@context": "https://schema.org",
+//     "@type": "HowTo",
+//     name: input.name,
+//     description: input.description,
+//     totalTime: input.totalTimeMinutes
+//       ? `PT${input.totalTimeMinutes}M`
+//       : undefined,
+//     step: input.steps.map((step, index) => ({
+//       "@type": "HowToStep",
+//       position: index + 1,
+//       name: step.name,
+//       text: step.text,
+//       url: step.url,
+//     })),
+//   };
+// }
 
 export function createItemListJsonLd(input: {
   name?: string;
