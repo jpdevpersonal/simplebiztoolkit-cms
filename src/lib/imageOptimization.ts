@@ -8,6 +8,7 @@ export function shouldBypassNextImageOptimization(
 
   if (trimmed.startsWith("/images/products/")) return true;
   if (trimmed.startsWith("/images/tools/")) return true;
+  if (trimmed.startsWith("/images/link-icons/")) return true;
   if (
     trimmed.startsWith("https://") &&
     trimmed.includes(".blob.core.windows.net/")

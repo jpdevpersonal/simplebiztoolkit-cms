@@ -111,6 +111,16 @@
   line-height: 1.7;
 }
 
+/* Content column: constrain article to a readable prose width.  This keeps
+   the related-links block, CTAs, and other inline blocks inside the same
+   column as the text, matching the .content-subtitle max-width (720px). */
+.content-page article {
+  max-width: 1024px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
 /* Scoped heading scale for article body — always subordinate to .content-title */
 .content-page article h1,
 .content-page article h2 {
@@ -381,7 +391,7 @@
 }
 
 .content-page .related-links-block--content {
-  margin: 24px 0;
+  margin: 32px 0;
 }
 
 .content-footer p {
