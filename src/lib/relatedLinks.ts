@@ -13,6 +13,42 @@ export type RelatedLinksImageSize =
   | "large"
   | "extra-large";
 
+// Built-in link icons available as an alternative to an uploaded thumbnail.
+// Files live in `public/images/link-icons/` and are served as static SVGs.
+export const RELATED_LINKS_ICON_BASE_PATH = "/images/link-icons/";
+
+export interface RelatedLinkIconOption {
+  key: string;
+  label: string;
+  src: string;
+}
+
+export const RELATED_LINK_ICON_OPTIONS: RelatedLinkIconOption[] = [
+  { key: "home", label: "Home" },
+  { key: "about", label: "About" },
+  { key: "blog", label: "Blog" },
+  { key: "contact", label: "Contact" },
+  { key: "downloads", label: "Downloads" },
+  { key: "faq", label: "FAQ" },
+  { key: "guides", label: "Guides" },
+  { key: "help", label: "Help" },
+  { key: "pricing", label: "Pricing" },
+  { key: "privacy", label: "Privacy" },
+  { key: "resources", label: "Resources" },
+  { key: "templates", label: "Templates" },
+  { key: "terms", label: "Terms" },
+  { key: "tools", label: "Tools" },
+].map((icon) => ({
+  ...icon,
+  src: `${RELATED_LINKS_ICON_BASE_PATH}${icon.key}.svg`,
+}));
+
+export function isRelatedLinkIconUrl(value?: string | null): boolean {
+  return (
+    typeof value === "string" && value.startsWith(RELATED_LINKS_ICON_BASE_PATH)
+  );
+}
+
 export interface RelatedLinkItem {
   uid: string;
   kind: RelatedLinkKind;

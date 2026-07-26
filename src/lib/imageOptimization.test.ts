@@ -23,6 +23,12 @@ describe("shouldBypassNextImageOptimization", () => {
     ).toBe(true);
   });
 
+  it("bypasses static link icon images", () => {
+    expect(
+      shouldBypassNextImageOptimization("/images/link-icons/home.svg"),
+    ).toBe(true);
+  });
+
   it("bypasses CMS blob images", () => {
     expect(
       shouldBypassNextImageOptimization(

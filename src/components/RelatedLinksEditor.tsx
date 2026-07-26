@@ -9,17 +9,20 @@ import { toTemplatesRoute } from "@/lib/templatesRoute";
 import {
   createRelatedLinkUid,
   isCustomRelatedLinkHref,
+  isRelatedLinkIconUrl,
   normalizeRelatedLinksBorderWidth,
   normalizeRelatedLinkImagePositionY,
   normalizeRelatedLinksDraftItems,
   normalizeRelatedLinksImageSize,
   normalizeRelatedLinksTitle,
+  RELATED_LINK_ICON_OPTIONS,
   RELATED_LINKS_DEFAULT_BACKGROUND,
   RELATED_LINKS_DEFAULT_BORDER_WIDTH,
   RELATED_LINKS_DEFAULT_IMAGE_SIZE,
   RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y,
   RELATED_LINKS_MAX_ITEMS,
   sanitizeRelatedLinksItems,
+  type RelatedLinkIconOption,
   type RelatedLinkItem,
   type RelatedLinkKind,
   type RelatedLinksBlockData,
@@ -307,6 +310,22 @@ export default function RelatedLinksEditor({
     );
   };
 
+  const handleIconSelect = (uid: string, icon: RelatedLinkIconOption) => {
+    updateItems(
+      block.items.map((item) =>
+        item.uid === uid
+          ? {
+              ...item,
+              imageId: null,
+              imageUrl: icon.src,
+              imageAlt: `${icon.label} icon`,
+              imagePositionY: RELATED_LINKS_DEFAULT_IMAGE_POSITION_Y,
+            }
+          : item,
+      ),
+    );
+  };
+
   const handleImagePositionChange = (uid: string, imagePositionY: number) => {
     updateItems(
       block.items.map((item) =>
@@ -538,6 +557,12 @@ export default function RelatedLinksEditor({
               const thumbnailPositionY = normalizeRelatedLinkImagePositionY(
                 item.imagePositionY,
               );
+              const isIconSelected = isRelatedLinkIconUrl(item.imageUrl);
+              const activeIcon = isIconSelected
+                ? RELATED_LINK_ICON_OPTIONS.find(
+                    (icon) => icon.src === item.imageUrl,
+                  )
+                : undefined;
 
               return (
                 <article key={item.uid} className="related-links-editor-item">
@@ -723,10 +748,12 @@ export default function RelatedLinksEditor({
                           Thumbnail
                         </div>
                         <div className="related-links-editor-helper">
-                          Optional square image displayed beside the link. Use
-                          at least {RELATED_LINKS_MIN_IMAGE_DIMENSION}x
+                          Optional square image or link icon displayed beside
+                          the link. Uploaded images should be at least{" "}
+                          {RELATED_LINKS_MIN_IMAGE_DIMENSION}x
                           {RELATED_LINKS_MIN_IMAGE_DIMENSION} for sharper
-                          thumbnails.
+                          thumbnails. Icon size follows the Image size setting
+                          above.
                         </div>
                       </div>
                       <CmsImagePicker
@@ -739,88 +766,140 @@ export default function RelatedLinksEditor({
                           label: "Related link thumbnails",
                         }}
                         modalAdditionalContent={
-                          <section className="cms-image-picker-section">
-                            <div className="cms-image-picker-section-header">
-                              <h3>Thumbnail framing</h3>
-                              <span className="cms-image-picker-meta-pill">
-                                {getThumbnailPositionLabel(thumbnailPositionY)}
-                              </span>
-                            </div>
-
-                            {item.imageUrl ? (
-                              <div className="related-links-editor-frame-section">
-                                <div className="related-links-editor-frame-preview">
-                                  <img
-                                    src={item.imageUrl}
-                                    alt=""
-                                    className="related-links-editor-frame-preview-image"
-                                    style={{
-                                      objectPosition: `center ${thumbnailPositionY}%`,
-                                    }}
-                                  />
-                                </div>
-
-                                <div className="related-links-editor-frame-controls">
-                                  <label
-                                    className="related-links-editor-label"
-                                    htmlFor={`${item.uid}-thumbnail-position`}
-                                  >
-                                    Vertical position
-                                  </label>
-                                  <input
-                                    id={`${item.uid}-thumbnail-position`}
-                                    type="range"
-                                    min={0}
-                                    max={100}
-                                    step={1}
-                                    value={thumbnailPositionY}
-                                    onChange={(event) =>
-                                      handleImagePositionChange(
-                                        item.uid,
-                                        Number(event.target.value),
-                                      )
-                                    }
-                                    disabled={disabled}
-                                    className="related-links-editor-frame-slider"
-                                  />
-                                  <div className="related-links-editor-frame-scale">
-                                    <span>Top</span>
-                                    <span>{thumbnailPositionY}%</span>
-                                    <span>Bottom</span>
-                                  </div>
-                                  <div className="related-links-editor-frame-presets">
-                                    {THUMBNAIL_POSITION_PRESETS.map(
-                                      (preset) => (
-                                        <button
-                                          key={preset.label}
-                                          type="button"
-                                          onClick={() =>
-                                            handleImagePositionChange(
-                                              item.uid,
-                                              preset.value,
-                                            )
-                                          }
-                                          disabled={disabled}
-                                          className={`admin-btn-action${thumbnailPositionY === preset.value ? " is-active" : ""}`}
-                                        >
-                                          {preset.label}
-                                        </button>
-                                      ),
-                                    )}
-                                  </div>
-                                  <div className="related-links-editor-helper">
-                                    Move the crop upward to keep the top of the
-                                    image visible inside the square thumbnail.
-                                  </div>
-                                </div>
+                          <>
+                            <section className="cms-image-picker-section">
+                              <div className="cms-image-picker-section-header">
+                                <h3>Link icon</h3>
+                                {activeIcon ? (
+                                  <span className="cms-image-picker-meta-pill">
+                                    {activeIcon.label}
+                                  </span>
+                                ) : null}
                               </div>
-                            ) : (
-                              <p className="cms-image-picker-empty">
-                                Choose an image first, then adjust how the
-                                thumbnail is framed.
+                              <p className="related-links-editor-helper">
+                                Choose a built-in icon instead of uploading an
+                                image. Icons scale with the Image size setting
+                                above.
                               </p>
-                            )}
-                          </section>
+                              <div className="related-links-editor-icon-grid">
+                                {RELATED_LINK_ICON_OPTIONS.map((icon) => {
+                                  const isActive = item.imageUrl === icon.src;
+                                  return (
+                                    <button
+                                      key={icon.key}
+                                      type="button"
+                                      onClick={() =>
+                                        handleIconSelect(item.uid, icon)
+                                      }
+                                      disabled={disabled}
+                                      className={`related-links-editor-icon-option${isActive ? " is-active" : ""}`}
+                                      title={icon.label}
+                                    >
+                                      <img
+                                        src={icon.src}
+                                        alt=""
+                                        className="related-links-editor-icon-option-image"
+                                      />
+                                      <span className="related-links-editor-icon-option-label">
+                                        {icon.label}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </section>
+
+                            <section className="cms-image-picker-section">
+                              <div className="cms-image-picker-section-header">
+                                <h3>Thumbnail framing</h3>
+                                <span className="cms-image-picker-meta-pill">
+                                  {getThumbnailPositionLabel(
+                                    thumbnailPositionY,
+                                  )}
+                                </span>
+                              </div>
+
+                              {isIconSelected ? (
+                                <p className="cms-image-picker-empty">
+                                  Link icons are centered automatically and
+                                  don&apos;t need framing.
+                                </p>
+                              ) : item.imageUrl ? (
+                                <div className="related-links-editor-frame-section">
+                                  <div className="related-links-editor-frame-preview">
+                                    <img
+                                      src={item.imageUrl}
+                                      alt=""
+                                      className="related-links-editor-frame-preview-image"
+                                      style={{
+                                        objectPosition: `center ${thumbnailPositionY}%`,
+                                      }}
+                                    />
+                                  </div>
+
+                                  <div className="related-links-editor-frame-controls">
+                                    <label
+                                      className="related-links-editor-label"
+                                      htmlFor={`${item.uid}-thumbnail-position`}
+                                    >
+                                      Vertical position
+                                    </label>
+                                    <input
+                                      id={`${item.uid}-thumbnail-position`}
+                                      type="range"
+                                      min={0}
+                                      max={100}
+                                      step={1}
+                                      value={thumbnailPositionY}
+                                      onChange={(event) =>
+                                        handleImagePositionChange(
+                                          item.uid,
+                                          Number(event.target.value),
+                                        )
+                                      }
+                                      disabled={disabled}
+                                      className="related-links-editor-frame-slider"
+                                    />
+                                    <div className="related-links-editor-frame-scale">
+                                      <span>Top</span>
+                                      <span>{thumbnailPositionY}%</span>
+                                      <span>Bottom</span>
+                                    </div>
+                                    <div className="related-links-editor-frame-presets">
+                                      {THUMBNAIL_POSITION_PRESETS.map(
+                                        (preset) => (
+                                          <button
+                                            key={preset.label}
+                                            type="button"
+                                            onClick={() =>
+                                              handleImagePositionChange(
+                                                item.uid,
+                                                preset.value,
+                                              )
+                                            }
+                                            disabled={disabled}
+                                            className={`admin-btn-action${thumbnailPositionY === preset.value ? " is-active" : ""}`}
+                                          >
+                                            {preset.label}
+                                          </button>
+                                        ),
+                                      )}
+                                    </div>
+                                    <div className="related-links-editor-helper">
+                                      Move the crop upward to keep the top of
+                                      the image visible inside the square
+                                      thumbnail.
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="cms-image-picker-empty">
+                                  Choose an image first, then adjust how the
+                                  thumbnail is framed.
+                                </p>
+                              )}
+                            </section>
+                          </>
                         }
                         onChangeAction={(image) =>
                           handleImageChange(item.uid, image)
