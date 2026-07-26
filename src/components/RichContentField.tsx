@@ -190,7 +190,6 @@ export default function RichContentField({
     try {
       const saved = localStorage.getItem(storageKey) as EditorMode | null;
       if (saved === "html" || saved === "tiptap") {
-         
         setMode(saved);
       }
     } catch {
@@ -391,6 +390,51 @@ export default function RichContentField({
         </>
       ) : (
         <>
+          {hasRawHtmlBlocks && (
+            <div
+              role="alert"
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.5rem",
+                padding: "0.625rem 0.875rem",
+                marginBottom: "0.5rem",
+                borderRadius: 6,
+                background: "rgba(255, 193, 7, 0.12)",
+                border: "1px solid rgba(255, 193, 7, 0.45)",
+                color: "#664d03",
+                fontSize: "0.8125rem",
+                lineHeight: 1.5,
+              }}
+            >
+              <span aria-hidden="true" style={{ flexShrink: 0, marginTop: 1 }}>
+                ⚠️
+              </span>
+              <span>
+                This content contains raw HTML (e.g.{" "}
+                <code style={{ fontSize: "0.75rem" }}>&lt;section&gt;</code>,{" "}
+                <code style={{ fontSize: "0.75rem" }}>styled &lt;div&gt;</code>)
+                that cannot be edited in Tiptap mode.{" "}
+                <button
+                  type="button"
+                  onClick={() => handleModeChange("html")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    fontWeight: 600,
+                    color: "#664d03",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontSize: "inherit",
+                  }}
+                >
+                  Switch to HTML mode
+                </button>{" "}
+                to make changes.
+              </span>
+            </div>
+          )}
           <TiptapEditor
             value={value}
             onChange={handleTiptapChange}
@@ -400,19 +444,22 @@ export default function RichContentField({
             onPreview={onPreview}
             policy={policy}
             stickyToolbar={stickyToolbar}
+            readOnly={hasRawHtmlBlocks}
           />
           {/* Hidden input keeps native form "required" validation working */}
           {required && <input type="hidden" required value={value} />}
-          <small
-            style={{
-              color: "var(--sb-muted)",
-              fontSize: "0.8125rem",
-              marginTop: "0.25rem",
-              display: "block",
-            }}
-          >
-            Rich-text editor — content is saved as HTML.
-          </small>
+          {!hasRawHtmlBlocks && (
+            <small
+              style={{
+                color: "var(--sb-muted)",
+                fontSize: "0.8125rem",
+                marginTop: "0.25rem",
+                display: "block",
+              }}
+            >
+              Rich-text editor — content is saved as HTML.
+            </small>
+          )}
         </>
       )}
     </div>

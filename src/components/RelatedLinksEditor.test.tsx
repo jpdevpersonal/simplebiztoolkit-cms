@@ -485,6 +485,31 @@ describe("RelatedLinksEditor", () => {
     });
   });
 
+  it("selects a built-in link icon as the thumbnail", async () => {
+    const { user, onChange } = renderControlledEditor({
+      items: [
+        makeItem({
+          refId: "page-1",
+          href: "/guide-a",
+          destinationTitle: "Guide A",
+        }),
+      ],
+    });
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Home" }));
+
+    expect(getLastChange(onChange).items[0]).toMatchObject({
+      imageId: null,
+      imageUrl: "/images/link-icons/home.svg",
+      imageAlt: "Home icon",
+      imagePositionY: 50,
+    });
+  });
+
   it("adds a new link when Add link is clicked", async () => {
     const { user, onChange } = renderControlledEditor({
       items: [makeItem({ uid: "item-1" })],

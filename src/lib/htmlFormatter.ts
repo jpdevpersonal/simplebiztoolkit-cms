@@ -56,6 +56,9 @@ const VOID_TAGS = new Set([
 
 const PRESERVE_WHITESPACE_TAGS = new Set(["pre", "code"]);
 
+/** Maximum line length before text is word-wrapped. */
+const WRAP_WIDTH = 150;
+
 type FormatOptions = {
   indent?: string;
 };
@@ -138,6 +141,31 @@ function collapseInlineWhitespace(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Wrap `text` at word boundaries so no output line exceeds WRAP_WIDTH
+ * characters (including the `indentPrefix` on each line).
+ */
+function wrapText(text: string, indentPrefix: string): string {
+  const maxContent = Math.max(WRAP_WIDTH - indentPrefix.length, 40);
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    if (!current) {
+      current = word;
+    } else if (current.length + 1 + word.length <= maxContent) {
+      current += " " + word;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+  if (current) lines.push(current);
+
+  return lines.map((line) => `${indentPrefix}${line}`).join("\n");
+}
+
 function normalizeInlineHtml(value: string) {
   return value.trim().replace(/>\s+</g, "><");
 }
@@ -184,7 +212,12 @@ function serializeTextNode(node: Text, depth: number, indent: string) {
       .join("\n");
   }
 
-  return `${indent.repeat(depth)}${collapseInlineWhitespace(rawText)}`;
+  const collapsed = collapseInlineWhitespace(rawText);
+  const prefix = indent.repeat(depth);
+  if (`${prefix}${collapsed}`.length <= WRAP_WIDTH) {
+    return `${prefix}${collapsed}`;
+  }
+  return wrapText(collapsed, prefix);
 }
 
 function serializeNode(node: ChildNode, depth: number, indent: string): string {
@@ -211,7 +244,12 @@ function serializeNode(node: ChildNode, depth: number, indent: string): string {
 
   if (shouldInlineElement(element)) {
     const inlineHtml = normalizeInlineHtml(element.innerHTML);
-    return `${indent.repeat(depth)}${openTag}${inlineHtml}</${tag}>`;
+    const inlinedLine = `${indent.repeat(depth)}${openTag}${inlineHtml}</${tag}>`;
+    if (inlinedLine.length <= WRAP_WIDTH) {
+      return inlinedLine;
+    }
+    // Line exceeds WRAP_WIDTH — fall through to block layout so text children
+    // are indented and word-wrapped individually.
   }
 
   const childLines = Array.from(element.childNodes)
