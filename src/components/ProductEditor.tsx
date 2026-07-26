@@ -329,13 +329,16 @@ export default function ProductEditor({
               }}
               storageKey="product-description-editor-mode"
               htmlRows={4}
-              minHeight={200}
+              minHeight={420}
               placeholder="Describe the template in detail…"
               onSave={saveProduct}
               onPreview={previewHref ? handlePreview : undefined}
               policy={INLINE_CONTENT_POLICY}
               hint="Use the Related Links section below to manage the block that renders beneath the main template image."
               onPopOut={() => setActiveModal("description")}
+              htmlEditorVariant="code"
+              enableHtmlFormatting
+              formatHtmlOnModeSwitch
             />
           </div>
 
@@ -490,6 +493,9 @@ export default function ProductEditor({
             onPreview={previewHref ? handlePreview : undefined}
             policy={INLINE_CONTENT_POLICY}
             stickyToolbar
+            htmlEditorVariant="code"
+            enableHtmlFormatting
+            formatHtmlOnModeSwitch
           />
         )}
       </AdminModal>
