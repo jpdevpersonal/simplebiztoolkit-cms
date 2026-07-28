@@ -32,6 +32,9 @@ describe("SiteFooter", () => {
     expect(
       screen.getByText(new RegExp(`© ${currentYear}`)),
     ).toBeInTheDocument();
+    expect(screen.getByText(/4\.8 average rating/i)).toBeInTheDocument();
+    expect(screen.getByText(/240 Etsy reviews/i)).toBeInTheDocument();
+    expect(screen.getByText(/3,850 sales/i)).toBeInTheDocument();
   });
 
   it("renders custom CMS links in Explore while keeping static links in their original sections", () => {

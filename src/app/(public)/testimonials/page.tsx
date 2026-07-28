@@ -79,38 +79,10 @@ export default function TestimonialsPage() {
       <JsonLd json={reviewListJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <h1
-              style={{
-                fontWeight: 800,
-                fontSize: "clamp(1.875rem, 4.5vw, 3rem)",
-                letterSpacing: "-0.035em",
-                lineHeight: 1.15,
-                background:
-                  "linear-gradient(135deg, var(--sb-ink) 0%, var(--sb-brand-blue-light) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                marginBottom: 0,
-              }}
-            >
-              Customer Reviews
-            </h1>
-            <div
-              aria-hidden="true"
-              style={{
-                width: 48,
-                height: 3,
-                background:
-                  "linear-gradient(90deg, var(--sb-green), var(--sb-brand-blue))",
-                borderRadius: 999,
-                margin: "0.875rem auto 1rem",
-              }}
-            />
-            <p
-              className="sb-muted sb-speakable"
-              style={{ maxWidth: 640, margin: "0 auto" }}
-            >
+          <div className="sb-page-header">
+            <span className="sb-section-eyebrow">Etsy feedback</span>
+            <h1>Customer reviews</h1>
+            <p className="sb-speakable">
               Real feedback from people using Simple Biz Toolkit printable
               business templates — including small business owners, online
               sellers, freelancers and landlords. Combined with our Etsy shop we

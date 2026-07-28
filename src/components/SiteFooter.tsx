@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { links } from "@/config/links";
+import { formatTrustCount, formatTrustRating, site } from "@/config/site";
 import {
   composeOrderedMenuEntries,
   getOrderedMenuEntryHref,
@@ -22,6 +23,9 @@ export default function SiteFooter({
   navOrderIds = [],
 }: Props) {
   const year = new Date().getFullYear();
+  const rating = formatTrustRating(site.trust.ratingValue);
+  const reviews = formatTrustCount(site.trust.reviewCount);
+  const sales = formatTrustCount(site.trust.salesCount);
   const managedFooterEntries = composeOrderedMenuEntries(
     menuNavItems,
     navOrderIds,
@@ -69,13 +73,21 @@ export default function SiteFooter({
       <div className="sb-footer-trust-bar">
         <div className="container">
           <div className="sb-footer-trust-inner">
-            <span className="sb-footer-trust-item">⭐ 5.0 Star Rating</span>
+            <span className="sb-footer-trust-item">
+              <span aria-hidden="true">✓</span> {rating} average rating
+            </span>
             <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">🏆 Etsy Star Seller</span>
+            <span className="sb-footer-trust-item">
+              <span aria-hidden="true">✓</span> {reviews} Etsy reviews
+            </span>
             <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">🔒 Secure Checkout</span>
+            <span className="sb-footer-trust-item">
+              <span aria-hidden="true">✓</span> {sales} sales
+            </span>
             <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">⚡ Instant Download</span>
+            <span className="sb-footer-trust-item">
+              <span aria-hidden="true">✓</span> Etsy Star Seller
+            </span>
           </div>
         </div>
       </div>
@@ -99,7 +111,7 @@ export default function SiteFooter({
                 >
                   Etsy messages
                 </a>{" "}
-                · simplebiztoolkit@gmail.com
+                · {site.contactEmail}
               </p>
             </div>
 

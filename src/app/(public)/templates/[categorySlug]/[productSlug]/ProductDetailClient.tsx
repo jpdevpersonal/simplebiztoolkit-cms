@@ -298,32 +298,8 @@ export default function ProductDetailClient({ product }: Props) {
                 ))}
               </ul>
             </div>
-
-            {/* Secondary CTA - Desktop only, less prominent */}
-            <div className="product-detail-cta product-detail-cta--primary">
-              <a
-                href={product.etsyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
-              >
-                <span>Get It Now</span>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M4 12L12 4M12 4H5M12 4v7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </a>
+            {/* Notes about checkout and pricing placed under "What's Included" */}
+            <div className="product-detail-cta-notes">
               <p className="product-detail-cta-note">
                 ✓ Secure payment via Etsy • Digital download available
                 immediately
@@ -340,6 +316,35 @@ export default function ProductDetailClient({ product }: Props) {
           <div className="product-detail-problem product-detail-problem--under-image">
             <h2 className="product-detail-problem-title">Description</h2>
             <ProductDescription description={descriptionContent} />
+
+            {/* Secondary CTA placed under the description for clear next step */}
+            <div className="product-detail-cta--secondary">
+              <div className="product-detail-cta">
+                <a
+                  href={product.etsyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
+                >
+                  <span>Get It Now</span>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 12L12 4M12 4H5M12 4v7"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              </div>
+            </div>
           </div>
         ) : null}
 

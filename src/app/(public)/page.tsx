@@ -14,13 +14,17 @@ import { featuredProducts } from "@/data/featured";
 import { featuredTools } from "@/data/featuredTools";
 import { links } from "@/config/links";
 import { featureFlags } from "@/config/featureFlags";
+import { formatTrustCount, formatTrustRating, site } from "@/config/site";
 import { createFaqJsonLd } from "@/lib/seo";
+
+const rating = formatTrustRating(site.trust.ratingValue);
+const reviews = formatTrustCount(site.trust.reviewCount);
+const sales = formatTrustCount(site.trust.salesCount);
 
 export const metadata: Metadata = {
   title:
     "Printable Small Business Templates & Tools | Invoices, Time Sheets, Ledgers",
-  description:
-    "Printable templates for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, accounting ledgers, rent trackers and planners — instant PDF downloads via Etsy. 5.0 rated Etsy Star Seller with 3,500+ sales.",
+  description: `Printable templates for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, accounting ledgers, rent trackers and planners — instant PDF downloads via Etsy. ${rating} rated Etsy Star Seller with ${sales} sales.`,
   alternates: { canonical: "/" },
   openGraph: {
     title: "Printable Small Business Templates & Tools | Simple Biz Toolkit",
@@ -65,11 +69,11 @@ const homeFaqItems = [
 
 export default function HomePage() {
   const trust = [
-    "Five Star Etsy rating",
-    "Etsy Star Seller!",
-    "Over 3800 sales",
+    `${rating} average Etsy rating`,
+    `${reviews} customer reviews`,
+    `${sales} sales`,
+    "Etsy Star Seller",
     "Secure checkout via Etsy",
-    "Excellent service & support",
   ];
 
   const homeFaqJsonLd = createFaqJsonLd(homeFaqItems);
@@ -78,9 +82,7 @@ export default function HomePage() {
     <>
       <JsonLd json={homeFaqJsonLd} />
 
-      {/* ====== HERO ====== */}
       <section className="sb-hero">
-        {/* Full-bleed background image via native picture for unoptimized multi-device delivery */}
         <div className="sb-hero-bg" aria-hidden="true">
           <picture>
             <source
@@ -100,33 +102,19 @@ export default function HomePage() {
               alt=""
               className="sb-hero-img"
               fetchPriority="high"
-              style={{
-                position: "absolute",
-                height: "100%",
-                width: "100%",
-                inset: 0,
-                color: "transparent",
-              }}
             />
           </picture>
         </div>
-        {/* Dark gradient overlay for legibility */}
         <div className="sb-hero-overlay" aria-hidden="true" />
 
         <div className="container">
           <div className="sb-hero-inner">
-            {/* Eyebrow trust pill */}
             <span className="sb-hero-eyebrow">
-              <span className="sb-hero-eyebrow-dot" aria-hidden="true" />
-              Trusted by 3,800+ small business owners
+              Practical tools for independent businesses
             </span>
 
             <h1 className="sb-hero-title">
-              Small business tools
-              <br />
-              <em> and templates</em>
-              <br />
-              <em>that just work</em>
+              Simple business templates that keep work moving
             </h1>
 
             <p className="sb-hero-subtitle sb-speakable">
@@ -135,15 +123,6 @@ export default function HomePage() {
               freelancers and landlords. Print on A4 or US Letter, or fill in
               digitally — no software subscription needed.
             </p>
-
-            <div className="sb-hero-stars" aria-label="Five star rated on Etsy">
-              <span className="sb-hero-stars-icons" aria-hidden="true">
-                ★★★★★
-              </span>
-              <span className="sb-hero-stars-label">
-                <strong>5.0</strong> &middot; 3,800+ five-star reviews on Etsy
-              </span>
-            </div>
 
             <div className="sb-hero-actions">
               <Link href="/templates" className="btn sb-btn-primary sb-btn-lg">
@@ -173,12 +152,12 @@ export default function HomePage() {
               >
                 View on Etsy
                 <svg
+                  className="sb-external-link-icon"
                   width="14"
                   height="14"
                   viewBox="0 0 14 14"
                   fill="none"
                   aria-hidden="true"
-                  style={{ opacity: 0.8 }}
                 >
                   <path
                     d="M2.5 2.5h9M11.5 2.5v9M11.5 2.5 2.5 11.5"
@@ -210,50 +189,8 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-
-        {/* Social proof stats strip — anchors trust at the hero bottom */}
-        <div className="sb-hero-stats-strip">
-          <div className="container">
-            <div className="sb-hero-stats-grid">
-              <div className="sb-hero-stat">
-                <span className="sb-hero-stat-value">3,800+</span>
-                <span className="sb-hero-stat-label">Happy customers</span>
-              </div>
-              <div className="sb-hero-stat-divider" aria-hidden="true" />
-              <div className="sb-hero-stat">
-                <span className="sb-hero-stat-value">★ 4.8</span>
-                <span className="sb-hero-stat-label">Average rating</span>
-              </div>
-              <div className="sb-hero-stat-divider" aria-hidden="true" />
-              <div className="sb-hero-stat">
-                <span className="sb-hero-stat-value">Instant</span>
-                <span className="sb-hero-stat-label">Digital download</span>
-              </div>
-              <div className="sb-hero-stat-divider" aria-hidden="true" />
-              <div className="sb-hero-stat">
-                <span className="sb-hero-stat-value">⭐ Star Seller</span>
-                <span className="sb-hero-stat-label">Etsy badge</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Wave transition to white below */}
-        <div className="sb-hero-wave" aria-hidden="true">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1440 56"
-            preserveAspectRatio="none"
-          >
-            <path
-              fill="#ffffff"
-              d="M0,28 C240,56 480,0 720,28 C960,56 1200,0 1440,28 L1440,56 L0,56 Z"
-            />
-          </svg>
-        </div>
       </section>
 
-      {/* Trust pills moved below the hero so they span full width */}
       <div className="sb-hero-trust-section">
         <div className="container">
           <div className="sb-hero-trust-inline">
@@ -265,12 +202,12 @@ export default function HomePage() {
       {/* ====== HOW IT WORKS ====== */}
       <section className="sb-section sb-how-it-works">
         <div className="container">
-          <div className="text-center mb-5">
+          <div className="sb-section-header">
             <span className="sb-section-eyebrow">
               Simple, convenient and affordable
             </span>
             <h2>Download. Print. Done.</h2>
-            <p className="sb-muted" style={{ maxWidth: 460, margin: "0 auto" }}>
+            <p>
               Three steps stand between you and a better-organised business.
             </p>
           </div>
@@ -348,34 +285,25 @@ export default function HomePage() {
             <div className="sb-lead-magnet-card sb-card p-4">
               <div className="row align-items-center g-4">
                 <div className="col-lg-6">
-                  <h2 style={{ fontWeight: 700 }}>Get your free guide</h2>
+                  <h2>Get your free guide</h2>
                   <p className="sb-muted mb-3">
                     AI for Small Business, Learn to Save Time, Cut Costs and
                     Grow Your Business Smarter.
                   </p>
-                  <ul
-                    className="sb-muted mb-0"
-                    style={{ paddingLeft: 0, listStyle: "none" }}
-                  >
-                    <li style={{ marginBottom: "0.35rem" }}>
-                      ✓ Instant download link
-                    </li>
-                    <li style={{ marginBottom: "0.35rem" }}>
-                      ✓ How to use AI tools like Chat GPT
-                    </li>
-                    <li style={{ marginBottom: "0.35rem" }}>
+                  <ul className="sb-check-list">
+                    <li>✓ Instant download link</li>
+                    <li>✓ How to use AI tools like Chat GPT</li>
+                    <li>
                       ✓ Simple, step-by-step setups that could save hours every
                       week
                     </li>
-                    <li style={{ marginBottom: "0.5rem" }}>
-                      ✓ No spam — just helpful tips & new releases
-                    </li>
+                    <li>✓ No spam — just helpful tips & new releases</li>
                     <li>✓ Occasional subscriber-only discounts</li>
                   </ul>
                 </div>
                 <div className="col-lg-6">
                   <EmailCaptureForm source="home-lead-magnet" />
-                  <div className="sb-muted mt-2" style={{ fontSize: 13 }}>
+                  <div className="sb-form-disclaimer">
                     By subscribing you agree to receive emails. Unsubscribe
                     anytime.
                   </div>
@@ -389,18 +317,16 @@ export default function HomePage() {
       {/* ====== WHAT IS SIMPLE BIZ TOOLKIT ====== */}
       <section className="sb-section" aria-labelledby="sb-about-heading">
         <div className="container">
-          <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <div className="sb-text-column">
             <span className="sb-section-eyebrow">About</span>
-            <h2 id="sb-about-heading" style={{ fontWeight: 700 }}>
-              What is Simple Biz Toolkit?
-            </h2>
+            <h2 id="sb-about-heading">What is Simple Biz Toolkit?</h2>
             <p className="sb-muted">
               Simple Biz Toolkit provides practical business tools and
               ready-to-use templates designed to help small business owners and
-              online sellers stay organised and save time. Trusted by over 3,500
-              customers worldwide, with a 5.0 average rating and Etsy Star
-              Seller status, we focus on creating simple solutions that make
-              everyday business tasks easier.
+              online sellers stay organised and save time. With {sales} sales, a{" "}
+              {rating} average rating and Etsy Star Seller status, we focus on
+              creating simple solutions that make everyday business tasks
+              easier.
             </p>
             <p className="sb-muted mb-0">
               Our collection includes printable PDFs, fillable PDFs, and
@@ -422,12 +348,12 @@ export default function HomePage() {
         aria-labelledby="sb-personas-heading"
       >
         <div className="container">
-          <div className="text-center mb-4">
+          <div className="sb-section-header">
             <span className="sb-section-eyebrow">Who it&apos;s for</span>
-            <h2 id="sb-personas-heading" style={{ fontWeight: 700 }}>
+            <h2 id="sb-personas-heading">
               Built for the people running the business
             </h2>
-            <p className="sb-muted" style={{ maxWidth: 600, margin: "0 auto" }}>
+            <p>
               Our customers tell us they reach for a printable template when
               software feels like overkill. Here&apos;s who that usually is.
             </p>
@@ -436,16 +362,8 @@ export default function HomePage() {
           <div className="row g-3">
             <div className="col-md-6 col-lg-3">
               <div className="sb-info-tile h-100">
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Small business owners
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                <h3 className="sb-tile-title">Small business owners</h3>
+                <p className="sb-muted sb-small-copy mb-0">
                   Track income, expenses and invoices on paper or PDF — without
                   paying for accounting software you only half-use.
                 </p>
@@ -453,16 +371,8 @@ export default function HomePage() {
             </div>
             <div className="col-md-6 col-lg-3">
               <div className="sb-info-tile h-100">
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Online sellers
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                <h3 className="sb-tile-title">Online sellers</h3>
+                <p className="sb-muted sb-small-copy mb-0">
                   Etsy, eBay and Shopify sellers use our order forms, profit
                   trackers and ledgers to stay on top of fees, shipping costs
                   and monthly margins.
@@ -471,16 +381,10 @@ export default function HomePage() {
             </div>
             <div className="col-md-6 col-lg-3">
               <div className="sb-info-tile h-100">
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
+                <h3 className="sb-tile-title">
                   Freelancers &amp; solopreneurs
                 </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                <p className="sb-muted sb-small-copy mb-0">
                   Send estimates, log time sheets and produce simple invoices
                   without rebuilding a document for every client.
                 </p>
@@ -488,16 +392,8 @@ export default function HomePage() {
             </div>
             <div className="col-md-6 col-lg-3">
               <div className="sb-info-tile h-100">
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Landlords &amp; managers
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                <h3 className="sb-tile-title">Landlords &amp; managers</h3>
+                <p className="sb-muted sb-small-copy mb-0">
                   Rent payment ledgers, attendance records and sign-in sheets
                   for properties, clubs, schools, salons and small teams.
                 </p>
@@ -510,15 +406,10 @@ export default function HomePage() {
       {/* ====== FEATURED TOOLS ====== */}
       <section className="sb-section sb-tools-section">
         <div className="container">
-          <div className="text-center sb-products-head">
+          <div className="sb-section-header sb-products-head">
             <span className="sb-section-eyebrow">Free Tools</span>
-            <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Free Business Tools
-            </h2>
-            <p
-              className="sb-muted"
-              style={{ maxWidth: 480, margin: "0 auto 2rem" }}
-            >
+            <h2>Free Business Tools</h2>
+            <p>
               Free browser-based calculators and generators to help you price,
               quote and track your business. No sign-up, nothing stored.
             </p>
@@ -535,15 +426,10 @@ export default function HomePage() {
       {/* ====== POPULAR PRODUCTS ====== */}
       <section className="sb-section sb-products-section">
         <div className="container">
-          <div className="text-center sb-products-head">
+          <div className="sb-section-header sb-products-head">
             <span className="sb-section-eyebrow">Best Sellers</span>
-            <h2 style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
-              Our Popular Templates
-            </h2>
-            <p
-              className="sb-muted"
-              style={{ maxWidth: 480, margin: "0 auto 2rem" }}
-            >
+            <h2>Our Popular Templates</h2>
+            <p>
               Our best selling and most popular templates. Ready to download,
               print and use.
             </p>
@@ -555,17 +441,17 @@ export default function HomePage() {
       {/* ====== VALUE PROPS ====== */}
       <section className="sb-section sb-section-alt">
         <div className="container">
-          <div className="text-center mb-4">
+          <div className="sb-section-header">
             <span className="sb-section-eyebrow">Why Simple Biz Toolkit?</span>
-            <h2 style={{ fontWeight: 700 }}>Designed to be simple</h2>
-            <p className="sb-muted" style={{ maxWidth: 520, margin: "0 auto" }}>
+            <h2>Designed to be simple</h2>
+            <p>
               Clear layouts, printable formats, and essential categories,
               everything a small business needs.
             </p>
           </div>
 
           <div className="row g-4">
-            <div className="col-md-4 sb-animate-fade-in-delay-1">
+            <div className="col-md-4">
               <div className="sb-value-card">
                 <div className="sb-value-icon" aria-hidden="true">
                   <svg
@@ -585,21 +471,13 @@ export default function HomePage() {
                     <polyline points="10 9 9 9 8 9" />
                   </svg>
                 </div>
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Essential templates
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                <h3 className="sb-tile-title">Essential templates</h3>
+                <p className="sb-muted sb-small-copy mb-0">
                   Tracking, planning, and admin, without overcomplication.
                 </p>
               </div>
             </div>
-            <div className="col-md-4 sb-animate-fade-in-delay-2">
+            <div className="col-md-4">
               <div className="sb-value-card">
                 <div className="sb-value-icon" aria-hidden="true">
                   <svg
@@ -616,21 +494,13 @@ export default function HomePage() {
                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                   </svg>
                 </div>
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Simple systems
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                <h3 className="sb-tile-title">Simple systems</h3>
+                <p className="sb-muted sb-small-copy mb-0">
                   Repeatable formats that keep you consistent and efficient.
                 </p>
               </div>
             </div>
-            <div className="col-md-4 sb-animate-fade-in-delay-3">
+            <div className="col-md-4">
               <div className="sb-value-card">
                 <div className="sb-value-icon" aria-hidden="true">
                   <svg
@@ -649,16 +519,8 @@ export default function HomePage() {
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
                 </div>
-                <h3
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.0625rem",
-                    marginBottom: "0.35rem",
-                  }}
-                >
-                  Real-world use
-                </h3>
-                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                <h3 className="sb-tile-title">Real-world use</h3>
+                <p className="sb-muted sb-small-copy mb-0">
                   Made for small business owners, solopreneurs, and online
                   sellers.
                 </p>
@@ -674,7 +536,7 @@ export default function HomePage() {
           <div className="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3 sb-testimonial-header">
             <div>
               <span className="sb-section-eyebrow">Testimonials</span>
-              <h2 style={{ fontWeight: 700 }}>What customers say</h2>
+              <h2>What customers say</h2>
               <p className="sb-muted mb-0">Real feedback from Etsy buyers.</p>
             </div>
             <Link
@@ -703,12 +565,10 @@ export default function HomePage() {
         aria-labelledby="sb-categories-heading"
       >
         <div className="container">
-          <div className="text-center mb-4">
+          <div className="sb-section-header">
             <span className="sb-section-eyebrow">Browse by need</span>
-            <h2 id="sb-categories-heading" style={{ fontWeight: 700 }}>
-              Popular template categories
-            </h2>
-            <p className="sb-muted" style={{ maxWidth: 600, margin: "0 auto" }}>
+            <h2 id="sb-categories-heading">Popular template categories</h2>
+            <p>
               Jump straight to the workflow you need. Every category includes
               both A4 and US Letter formats.
             </p>
@@ -729,7 +589,7 @@ export default function HomePage() {
               },
               {
                 href: "/templates/estimates",
-                title: "Estimate &amp; quote templates",
+                title: "Estimate & quote templates",
                 blurb:
                   "Quick fillable PDF quotes for service businesses, freelancers and contractors.",
               },
@@ -747,7 +607,7 @@ export default function HomePage() {
               },
               {
                 href: "/templates/expense-and-spending",
-                title: "Expense &amp; spending trackers",
+                title: "Expense & spending trackers",
                 blurb:
                   "Simple expense logs for budgeting, tax prep and household or business spending.",
               },
@@ -759,7 +619,7 @@ export default function HomePage() {
               },
               {
                 href: "/templates/order-forms-and-trackers",
-                title: "Order forms &amp; trackers",
+                title: "Order forms & trackers",
                 blurb:
                   "Take, fulfil and track orders for handmade, print-on-demand and small e-commerce shops.",
               },
@@ -770,20 +630,8 @@ export default function HomePage() {
                   className="sb-content-link d-block h-100 text-reset text-decoration-none"
                 >
                   <article className="sb-info-tile h-100">
-                    <h3
-                      style={{
-                        fontWeight: 700,
-                        fontSize: "1.0625rem",
-                        marginBottom: "0.35rem",
-                      }}
-                      dangerouslySetInnerHTML={{ __html: cat.title }}
-                    />
-                    <p
-                      className="sb-muted mb-0"
-                      style={{ fontSize: "0.9375rem" }}
-                    >
-                      {cat.blurb}
-                    </p>
+                    <h3 className="sb-tile-title">{cat.title}</h3>
+                    <p className="sb-muted sb-small-copy mb-0">{cat.blurb}</p>
                   </article>
                 </Link>
               </div>
@@ -800,22 +648,14 @@ export default function HomePage() {
       {/* ====== FAQ (Schema-rich) ====== */}
       <section className="sb-section" aria-labelledby="sb-home-faq-heading">
         <div className="container">
-          <div className="text-center mb-4">
+          <div className="sb-section-header">
             <span className="sb-section-eyebrow">Common questions</span>
-            <h2 id="sb-home-faq-heading" style={{ fontWeight: 700 }}>
-              Frequently asked questions
-            </h2>
+            <h2 id="sb-home-faq-heading">Frequently asked questions</h2>
           </div>
-          <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <div className="sb-home-faq-list">
             {homeFaqItems.map((item) => (
-              <details key={item.question} className="sb-card p-3 mb-2">
-                <summary
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                  }}
-                >
+              <details key={item.question} className="sb-home-faq-item">
+                <summary className="sb-home-faq-summary">
                   {item.question}
                 </summary>
                 <p className="sb-muted mb-0 mt-2">{item.answer}</p>
@@ -831,13 +671,10 @@ export default function HomePage() {
       </section>
 
       {/* ====== FINAL CTA ====== */}
-      <section className="sb-section sb-section-alt">
+      <section className="sb-section sb-final-cta">
         <div className="container text-center">
-          <h2 style={{ fontWeight: 700 }}>Ready to get organised?</h2>
-          <p
-            className="sb-muted"
-            style={{ maxWidth: 480, margin: "0 auto 1.75rem" }}
-          >
+          <h2>Ready to get organised?</h2>
+          <p className="sb-section-intro sb-final-cta-copy">
             Browse the full collection of printable templates and find the right
             fit for your business in minutes.
           </p>
