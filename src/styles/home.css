@@ -36,37 +36,6 @@
   z-index: 1;
 }
 
-/* Decorative gradient orbs — adds depth like Linear/Stripe */
-.sb-hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-  z-index: 0;
-}
-.sb-hero-orb--1 {
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(
-    circle,
-    rgba(26, 127, 90, 0.22) 0%,
-    transparent 70%
-  );
-  top: -250px;
-  right: -150px;
-}
-.sb-hero-orb--2 {
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(
-    circle,
-    rgba(26, 90, 180, 0.14) 0%,
-    transparent 70%
-  );
-  bottom: -200px;
-  left: -150px;
-}
-
 /* ——— HERO BACKGROUND IMAGE ——— */
 .sb-hero-bg {
   position: absolute;
@@ -85,9 +54,9 @@
   z-index: 2;
   background: linear-gradient(
     175deg,
-    rgba(14, 16, 24, 0.62) 0%,
-    rgba(26, 29, 44, 0.55) 45%,
-    rgba(20, 22, 36, 0.65) 100%
+    rgba(10, 12, 20, 0.72) 0%,
+    rgba(20, 22, 34, 0.66) 45%,
+    rgba(14, 16, 26, 0.74) 100%
   );
   pointer-events: none;
 }
@@ -140,8 +109,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #1a7f5a;
-  box-shadow: 0 0 8px rgba(26, 127, 90, 0.6);
+  background: #198754;
+  box-shadow: 0 0 8px rgba(25, 135, 84, 0.6);
   animation: pulse-dot 2.5s ease-in-out infinite;
 }
 @keyframes pulse-dot {
@@ -171,6 +140,7 @@
   line-height: 1.08;
   font-size: clamp(2.25rem, 5.5vw, 3.5rem);
   color: #fff !important;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
   margin: 0;
   animation: fadeInUp 0.6s ease-out forwards;
 }
@@ -190,11 +160,12 @@
 
 /* ——— HERO SUBTITLE ——— */
 .sb-hero-subtitle {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: rgba(255, 255, 255, 0.82) !important;
   font-size: 1.1875rem;
   line-height: 1.7;
   margin: 0;
   max-width: 560px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
   animation: fadeInUp 0.6s ease-out 0.1s forwards;
   opacity: 0;
 }
@@ -376,7 +347,7 @@
   left: 0;
   bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, #1a7f5a, #414556);
+  background: linear-gradient(180deg, #198754, #414556);
   border-radius: var(--sb-radius) 0 0 var(--sb-radius);
 }
 .sb-proof-quote:hover {
@@ -578,7 +549,7 @@
 }
 .sb-hero-reassurance svg {
   flex-shrink: 0;
-  color: rgba(26, 127, 90, 0.75);
+  color: rgba(25, 135, 84, 0.75);
 }
 
 /* ——— HOW IT WORKS SECTION ——— */

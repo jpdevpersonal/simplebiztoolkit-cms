@@ -80,9 +80,6 @@ export default function HomePage() {
 
       {/* ====== HERO ====== */}
       <section className="sb-hero">
-        <span className="sb-hero-orb sb-hero-orb--1" aria-hidden="true" />
-        <span className="sb-hero-orb sb-hero-orb--2" aria-hidden="true" />
-
         {/* Full-bleed background image via native picture for unoptimized multi-device delivery */}
         <div className="sb-hero-bg" aria-hidden="true">
           <picture>
@@ -438,7 +435,7 @@ export default function HomePage() {
 
           <div className="row g-3">
             <div className="col-md-6 col-lg-3">
-              <div className="sb-card p-3 h-100">
+              <div className="sb-info-tile h-100">
                 <h3
                   style={{
                     fontWeight: 700,
@@ -455,7 +452,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="col-md-6 col-lg-3">
-              <div className="sb-card p-3 h-100">
+              <div className="sb-info-tile h-100">
                 <h3
                   style={{
                     fontWeight: 700,
@@ -473,7 +470,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="col-md-6 col-lg-3">
-              <div className="sb-card p-3 h-100">
+              <div className="sb-info-tile h-100">
                 <h3
                   style={{
                     fontWeight: 700,
@@ -490,7 +487,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="col-md-6 col-lg-3">
-              <div className="sb-card p-3 h-100">
+              <div className="sb-info-tile h-100">
                 <h3
                   style={{
                     fontWeight: 700,
@@ -567,115 +564,104 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="sb-card p-4">
-            <div className="row g-4">
-              <div className="col-md-4 sb-animate-fade-in-delay-1">
-                <div className="sb-value-card">
-                  <div className="sb-value-icon" aria-hidden="true">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                      <polyline points="10 9 9 9 8 9" />
-                    </svg>
-                  </div>
-                  <h3
-                    style={{
-                      fontWeight: 700,
-                      fontSize: "1.0625rem",
-                      marginBottom: "0.35rem",
-                    }}
+          <div className="row g-4">
+            <div className="col-md-4 sb-animate-fade-in-delay-1">
+              <div className="sb-value-card">
+                <div className="sb-value-icon" aria-hidden="true">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    Essential templates
-                  </h3>
-                  <p
-                    className="sb-muted mb-0"
-                    style={{ fontSize: "0.9375rem" }}
-                  >
-                    Tracking, planning, and admin, without overcomplication.
-                  </p>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
                 </div>
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.0625rem",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  Essential templates
+                </h3>
+                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                  Tracking, planning, and admin, without overcomplication.
+                </p>
               </div>
-              <div className="col-md-4 sb-animate-fade-in-delay-2">
-                <div className="sb-value-card">
-                  <div className="sb-value-icon" aria-hidden="true">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="9 11 12 14 22 4" />
-                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                    </svg>
-                  </div>
-                  <h3
-                    style={{
-                      fontWeight: 700,
-                      fontSize: "1.0625rem",
-                      marginBottom: "0.35rem",
-                    }}
+            </div>
+            <div className="col-md-4 sb-animate-fade-in-delay-2">
+              <div className="sb-value-card">
+                <div className="sb-value-icon" aria-hidden="true">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    Simple systems
-                  </h3>
-                  <p
-                    className="sb-muted mb-0"
-                    style={{ fontSize: "0.9375rem" }}
-                  >
-                    Repeatable formats that keep you consistent and efficient.
-                  </p>
+                    <polyline points="9 11 12 14 22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                  </svg>
                 </div>
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.0625rem",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  Simple systems
+                </h3>
+                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                  Repeatable formats that keep you consistent and efficient.
+                </p>
               </div>
-              <div className="col-md-4 sb-animate-fade-in-delay-3">
-                <div className="sb-value-card">
-                  <div className="sb-value-icon" aria-hidden="true">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  </div>
-                  <h3
-                    style={{
-                      fontWeight: 700,
-                      fontSize: "1.0625rem",
-                      marginBottom: "0.35rem",
-                    }}
+            </div>
+            <div className="col-md-4 sb-animate-fade-in-delay-3">
+              <div className="sb-value-card">
+                <div className="sb-value-icon" aria-hidden="true">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    Real-world use
-                  </h3>
-                  <p
-                    className="sb-muted mb-0"
-                    style={{ fontSize: "0.9375rem" }}
-                  >
-                    Made for small business owners, solopreneurs, and online
-                    sellers.
-                  </p>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
                 </div>
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.0625rem",
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  Real-world use
+                </h3>
+                <p className="sb-muted mb-0" style={{ fontSize: "0.9375rem" }}>
+                  Made for small business owners, solopreneurs, and online
+                  sellers.
+                </p>
               </div>
             </div>
           </div>
@@ -783,7 +769,7 @@ export default function HomePage() {
                   href={cat.href}
                   className="sb-content-link d-block h-100 text-reset text-decoration-none"
                 >
-                  <article className="sb-card p-3 h-100">
+                  <article className="sb-info-tile h-100">
                     <h3
                       style={{
                         fontWeight: 700,
@@ -840,6 +826,28 @@ export default function HomePage() {
                 See all FAQs
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====== FINAL CTA ====== */}
+      <section className="sb-section sb-section-alt">
+        <div className="container text-center">
+          <h2 style={{ fontWeight: 700 }}>Ready to get organised?</h2>
+          <p
+            className="sb-muted"
+            style={{ maxWidth: 480, margin: "0 auto 1.75rem" }}
+          >
+            Browse the full collection of printable templates and find the right
+            fit for your business in minutes.
+          </p>
+          <div className="d-flex justify-content-center flex-wrap gap-3">
+            <Link href="/templates" className="btn sb-btn-primary sb-btn-lg">
+              Browse All Templates
+            </Link>
+            <Link href="/faq" className="btn sb-btn-ghost">
+              Read the FAQ
+            </Link>
           </div>
         </div>
       </section>

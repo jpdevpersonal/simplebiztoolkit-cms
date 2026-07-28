@@ -222,7 +222,7 @@
   height: 3px;
   background: linear-gradient(
     135deg,
-    var(--sb-green, #1a7f5a),
+    var(--sb-green, #198754),
     var(--sb-brand-blue, #414556)
   );
 }

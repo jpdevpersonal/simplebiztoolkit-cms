@@ -367,11 +367,11 @@
   justify-content: center;
   background: linear-gradient(
     135deg,
-    rgba(26, 127, 90, 0.12) 0%,
+    rgba(25, 135, 84, 0.12) 0%,
     rgba(65, 69, 86, 0.08) 100%
   );
   color: var(--sb-brand-blue);
-  border: 1px solid rgba(26, 127, 90, 0.18);
+  border: 1px solid rgba(25, 135, 84, 0.18);
   border-radius: 12px;
   margin-bottom: 1rem;
   flex-shrink: 0;
@@ -394,10 +394,10 @@
   transform: scale(1.05);
   background: linear-gradient(
     135deg,
-    rgba(26, 127, 90, 0.18) 0%,
+    rgba(25, 135, 84, 0.18) 0%,
     rgba(65, 69, 86, 0.1) 100%
   );
-  border-color: rgba(26, 127, 90, 0.32);
+  border-color: rgba(25, 135, 84, 0.32);
 }
 
 .category-card-title {
@@ -424,7 +424,7 @@
   font-weight: 700;
   color: var(--sb-green);
   padding: 0.375rem 0.875rem;
-  border: 1.5px solid rgba(26, 127, 90, 0.3);
+  border: 1.5px solid rgba(25, 135, 84, 0.3);
   border-radius: 999px;
   align-self: flex-start;
   transition:
@@ -434,8 +434,8 @@
 }
 
 .category-card:hover .category-card-cta {
-  background: rgba(26, 127, 90, 0.07);
-  border-color: rgba(26, 127, 90, 0.55);
+  background: rgba(25, 135, 84, 0.07);
+  border-color: rgba(25, 135, 84, 0.55);
   gap: 0.5rem;
 }
 
@@ -643,7 +643,7 @@
   font-weight: 700;
   padding: 1rem 1.75rem;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(26, 127, 90, 0.25);
+  box-shadow: 0 4px 14px rgba(25, 135, 84, 0.25);
   transition:
     gap 0.2s ease,
     transform 0.2s ease,
@@ -651,7 +651,7 @@
 }
 
 .product-detail-cta-btn--primary:hover {
-  box-shadow: 0 6px 20px rgba(26, 127, 90, 0.35);
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.35);
   transform: translateY(-2px);
 }
 
@@ -773,7 +773,7 @@
     display: inline-flex;
     justify-content: center;
     padding: 1rem 1.25rem;
-    box-shadow: 0 4px 12px rgba(26, 127, 90, 0.25);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
   }
 
   .product-detail-cta--secondary .product-detail-cta-note {
@@ -800,7 +800,7 @@
     width: auto;
     font-size: 1.125rem;
     padding: 1.125rem 2rem;
-    box-shadow: 0 4px 14px rgba(26, 127, 90, 0.25);
+    box-shadow: 0 4px 14px rgba(25, 135, 84, 0.25);
   }
 }
 
@@ -896,11 +896,11 @@
   font-weight: 700;
   padding: 0.875rem 1.5rem;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(26, 127, 90, 0.25);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
 }
 
 .product-detail-sticky-cta-btn:hover {
-  box-shadow: 0 6px 16px rgba(26, 127, 90, 0.35);
+  box-shadow: 0 6px 16px rgba(25, 135, 84, 0.35);
   transform: translateY(-1px);
 }
 
