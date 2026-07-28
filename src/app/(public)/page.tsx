@@ -114,7 +114,7 @@ export default function HomePage() {
             </span>
 
             <h1 className="sb-hero-title">
-              Simple business templates that keep work moving
+              Simple business templates & tools that keep work moving
             </h1>
 
             <p className="sb-hero-subtitle sb-speakable">

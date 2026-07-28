@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import type { Product } from "@/types/product";
@@ -120,8 +119,7 @@ function ProductDescription({ description }: { description: string }) {
 
 export default function ProductDetailClient({ product }: Props) {
   const contentSource = product.description || product.problem;
-  const { html: descriptionContent, relatedLinksBlocks } =
-    splitDescriptionContent(contentSource);
+  const { html: descriptionContent } = splitDescriptionContent(contentSource);
 
   // Compute medium (resized) image path
   const mediumSrc = (src: string) => {
