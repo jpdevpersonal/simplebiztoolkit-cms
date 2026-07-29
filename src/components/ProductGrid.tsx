@@ -28,7 +28,6 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                         quality={75}
                         loading="lazy"
                         unoptimized={shouldBypassNextImageOptimization(p.image)}
-                        style={{ marginTop: "10px" }}
                       />
                     )}
                   </picture>
@@ -46,7 +45,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                         }}
                       />
                     ) : (
-                      <h3 className="product-card-problem">{p.problem}</h3>
+                      <p className="product-card-problem">{p.problem}</p>
                     )}
                     <ul className="product-card-bullets">
                       {p.bullets.map((b) => (
@@ -65,6 +64,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           className="product-cta-icon"
+                          aria-hidden="true"
                         >
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>

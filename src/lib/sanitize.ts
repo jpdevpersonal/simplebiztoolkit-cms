@@ -18,7 +18,7 @@ type PreservedStyleBlock = {
 
 declare global {
   // Shared one-time guard for DOMPurify hook registration across module reloads.
-  // eslint-disable-next-line no-var
+   
   var __sbtDomPurifyHooksInstalled: boolean | undefined;
 }
 

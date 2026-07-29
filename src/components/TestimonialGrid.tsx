@@ -9,17 +9,13 @@ type TestimonialGridProps = {
 function StarRating({ stars }: { stars: string }) {
   return (
     <div
-      style={{
-        display: "flex",
-        gap: "2px",
-        marginBottom: "0.75rem",
-        color: "#f59e0b",
-        fontSize: "0.875rem",
-      }}
+      className="sb-testimonial-rating"
       aria-label={`${stars.length} star rating`}
     >
       {stars.split("").map((star, i) => (
-        <span key={i}>{star}</span>
+        <span key={i} aria-hidden="true">
+          {star}
+        </span>
       ))}
     </div>
   );
@@ -28,21 +24,7 @@ function StarRating({ stars }: { stars: string }) {
 function AuthorInitial({ name }: { name: string }) {
   const initial = name.charAt(0).toUpperCase();
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "36px",
-        height: "36px",
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #414556, #2d3039)",
-        color: "#fff",
-        fontSize: "0.8125rem",
-        fontWeight: 700,
-        flexShrink: 0,
-      }}
-    >
+    <span className="sb-testimonial-avatar" aria-hidden="true">
       {initial}
     </span>
   );
@@ -53,72 +35,16 @@ export default function TestimonialGrid({ count }: TestimonialGridProps) {
     typeof count === "number" ? testimonials.slice(0, count) : testimonials;
 
   const card = (t: (typeof testimonials)[0]) => (
-    <blockquote
-      className="sb-card p-4 h-100"
-      style={{
-        margin: 0,
-        display: "flex",
-        flexDirection: "column",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "3px",
-          background:
-            "linear-gradient(135deg, var(--sb-green), var(--sb-brand-blue))",
-        }}
-        aria-hidden="true"
-      />
+    <blockquote className="sb-card sb-testimonial-card h-100">
       <StarRating stars={t.quote.match(/^[⭐★]+/)?.[0] ?? "⭐⭐⭐⭐⭐"} />
-      <p
-        style={{
-          fontWeight: 500,
-          fontStyle: "italic",
-          marginBottom: "auto",
-          paddingBottom: "1rem",
-          fontSize: "0.9375rem",
-          lineHeight: 1.65,
-          color: "var(--sb-ink)",
-        }}
-      >
+      <p className="sb-testimonial-quote">
         &ldquo;{t.quote.replace(/^[⭐★\s]+/, "")}&rdquo;
       </p>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
-          paddingTop: "0.75rem",
-          borderTop: "1px solid var(--sb-border)",
-        }}
-      >
+      <div className="sb-testimonial-author">
         <AuthorInitial name={t.name} />
         <div>
-          <cite
-            style={{
-              fontStyle: "normal",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              color: "var(--sb-ink)",
-              display: "block",
-            }}
-          >
-            {t.name}
-          </cite>
-          <span
-            style={{
-              fontSize: "0.75rem",
-              color: "var(--sb-muted)",
-            }}
-          >
-            {t.role}
-          </span>
+          <cite className="sb-testimonial-name">{t.name}</cite>
+          <span className="sb-testimonial-role">{t.role}</span>
         </div>
       </div>
     </blockquote>

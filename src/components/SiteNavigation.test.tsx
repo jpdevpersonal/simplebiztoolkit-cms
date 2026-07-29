@@ -43,7 +43,9 @@ describe("SiteNavigation", () => {
     const reviewsLink = screen.getByRole("link", { name: "Reviews" });
 
     expect(productsLink).toHaveClass("is-active");
+    expect(productsLink).toHaveAttribute("aria-current", "page");
     expect(reviewsLink).not.toHaveClass("is-active");
+    expect(reviewsLink).not.toHaveAttribute("aria-current");
   });
 
   it("marks a CMS dropdown trigger active when one of its pages matches the route", () => {
@@ -99,6 +101,40 @@ describe("SiteNavigation", () => {
       );
       expect(document.body.style.overflow).toBe("");
     });
+  });
+
+  it("closes the mobile menu with Escape and restores trigger focus", async () => {
+    const user = userEvent.setup();
+    mockUsePathname.mockReturnValue("/");
+    render(<SiteNavigation />);
+
+    const openButton = screen.getByRole("button", { name: "Open menu" });
+    await user.click(openButton);
+
+    const closeButton = screen.getByRole("button", { name: "Close menu" });
+    await waitFor(() => expect(closeButton).toHaveFocus());
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Site navigation" }),
+      ).not.toBeInTheDocument();
+      expect(openButton).toHaveFocus();
+    });
+  });
+
+  it("keeps keyboard focus inside the open mobile dialog", async () => {
+    const user = userEvent.setup();
+    mockUsePathname.mockReturnValue("/");
+    render(<SiteNavigation />);
+
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const closeButton = screen.getByRole("button", { name: "Close menu" });
+    await waitFor(() => expect(closeButton).toHaveFocus());
+
+    screen.getByRole("link", { name: "Simple Biz Toolkit" }).focus();
+    await user.keyboard("{Shift>}{Tab}{/Shift}");
+    expect(screen.getByRole("link", { name: "Etsy CTA" })).toHaveFocus();
   });
 
   it("interleaves CMS links with static nav when static order tokens are present", () => {

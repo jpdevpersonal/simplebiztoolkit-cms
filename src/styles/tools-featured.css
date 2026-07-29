@@ -39,14 +39,14 @@
   object-fit: contain;
   object-position: center;
   padding: 0.85rem;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--sb-transition);
   background-color: transparent;
   backface-visibility: hidden;
   transform: translateZ(0);
 }
 
 .tool-card:hover .tool-thumb-img {
-  transform: scale(1.035) translateZ(0);
+  transform: scale(1.015) translateZ(0);
 }
 
 .tool-thumbnail-clickable {
@@ -63,11 +63,10 @@
   color: #fff;
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 0.3rem 0.65rem;
-  border-radius: 999px;
-  box-shadow: 0 2px 6px rgba(15, 23, 36, 0.18);
+  border-radius: var(--sb-radius-sm);
 }
 
 /* =============================================
@@ -87,9 +86,9 @@
 .tool-card {
   cursor: pointer;
   transition:
-    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.35s ease;
+    transform var(--sb-transition),
+    box-shadow var(--sb-transition),
+    border-color var(--sb-transition);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -98,34 +97,10 @@
   border-radius: var(--sb-radius);
 }
 
-.tool-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    135deg,
-    var(--sb-green) 0%,
-    var(--sb-brand-blue) 100%
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
-}
-
 .tool-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(65, 69, 86, 0.15);
-  box-shadow:
-    0 12px 32px rgba(65, 69, 86, 0.1),
-    0 24px 64px rgba(65, 69, 86, 0.06);
-}
-
-.tool-card:hover::before {
-  transform: scaleX(1);
+  transform: translateY(-2px);
+  border-color: var(--sb-border-strong);
+  box-shadow: var(--sb-shadow-hover);
 }
 
 .tool-card-content {
@@ -139,18 +114,18 @@
 .tool-card-title {
   font-size: 1.0625rem;
   font-weight: 700;
-  text-align: center;
+  text-align: left;
   color: var(--sb-ink);
   margin: 0 0 0.5rem 0;
   line-height: 1.35;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
 }
 
 .tool-card-tagline {
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--sb-muted);
-  text-align: center;
+  text-align: left;
   margin: 0 0 0.75rem 0;
   line-height: 1.45;
 }
@@ -163,9 +138,8 @@
   line-height: 1.5;
   display: flex;
   flex-direction: column;
-  width: 240px;
-  max-width: calc(100% - 32px);
-  margin: 0 auto 1rem auto;
+  width: 100%;
+  margin: 0 0 1rem;
   align-items: flex-start;
   justify-content: center;
   gap: 0.35rem;
@@ -178,8 +152,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
+  padding: 0.25rem 0;
   background: transparent;
   color: var(--sb-muted);
 }
@@ -198,7 +171,6 @@
   font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
-  margin-right: 0.35rem;
 }
 
 @media (max-width: 576px) {
@@ -217,17 +189,12 @@
 .tool-card-cta {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.4rem;
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--sb-green);
-  transition: gap 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0.5rem 0 0;
-}
-
-.tool-card:hover .tool-card-cta {
-  gap: 0.5rem;
 }
 
 .tool-card-cta svg {

@@ -100,8 +100,8 @@ export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
   };
 
   return (
-    <div className="card" style={{ border: "1px solid var(--sb-border)" }}>
-      <div className="card-body">
+    <div className="sb-faq-panel">
+      <div className="sb-faq-panel-body">
         <div className="d-flex align-items-start justify-content-between mb-3">
           <div>
             <p className="sb-muted mb-0">
@@ -137,13 +137,16 @@ export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
               fill="none"
             />
           </svg>
+          <label className="visually-hidden" htmlFor="faq-search">
+            Search FAQs
+          </label>
           <input
+            id="faq-search"
             type="search"
             className="form-control"
             placeholder="Search questions and answers..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search FAQs"
           />
         </div>
 

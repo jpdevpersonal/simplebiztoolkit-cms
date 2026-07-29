@@ -89,33 +89,13 @@
 }
 
 .product-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    135deg,
-    var(--sb-green) 0%,
-    var(--sb-brand-blue) 100%
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
+  display: none;
 }
 
 .product-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(65, 69, 86, 0.15);
-  box-shadow:
-    0 12px 32px rgba(65, 69, 86, 0.1),
-    0 24px 64px rgba(65, 69, 86, 0.06);
-}
-
-.product-card:hover::before {
-  transform: scaleX(1);
+  transform: translateY(-2px);
+  border-color: var(--sb-border-strong);
+  box-shadow: var(--sb-shadow-hover);
 }
 
 .product-card:hover .ledger-thumb {
@@ -133,11 +113,11 @@
 .product-card-title {
   font-size: 1.0625rem;
   font-weight: 700;
-  text-align: center;
+  text-align: left;
   color: var(--sb-ink);
   margin: 0 0 1.25rem 0;
   line-height: 1.35;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
 }
 
 .product-card-problem {
@@ -158,9 +138,8 @@
   flex-direction: column;
   /* make the list a fixed-width block and center it in the card
      while left-aligning individual list items so their left edges match */
-  width: 220px;
-  max-width: calc(100% - 32px);
-  margin: 0 auto 1rem auto;
+  width: 100%;
+  margin: 0 0 1rem;
   align-items: flex-start;
   justify-content: center;
   gap: 0.35rem;
@@ -173,8 +152,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
+  padding: 0.25rem 0;
   background: transparent;
   color: var(--sb-muted);
 }
@@ -194,7 +172,6 @@
   font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
-  margin-right: 0.35rem;
 }
 
 @media (max-width: 576px) {
@@ -260,35 +237,23 @@
 
 .products-header {
   text-align: center;
-  margin-bottom: 3.5rem;
+  max-width: 780px;
+  margin: 0 auto 3rem;
   padding-bottom: 0.25rem;
 }
 
 .products-header h1 {
-  font-weight: 800;
+  color: var(--sb-ink);
+  font-weight: 700;
   font-size: clamp(1.875rem, 4.5vw, 3rem);
   margin-bottom: 0;
-  letter-spacing: -0.035em;
+  letter-spacing: 0;
   line-height: 1.15;
-  background: linear-gradient(
-    135deg,
-    var(--sb-ink) 0%,
-    var(--sb-brand-blue-light) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* Decorative accent bar beneath the h1 */
 .products-header h1::after {
-  content: "";
-  display: block;
-  width: 48px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--sb-green), var(--sb-brand-blue));
-  border-radius: 999px;
-  margin: 0.875rem auto 0;
+  display: none;
 }
 
 .products-header p {
@@ -328,7 +293,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--sb-shadow);
+  box-shadow: var(--sb-shadow-xs);
   transition:
     transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
@@ -339,21 +304,11 @@
 
 /* Always-visible top accent bar */
 .category-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--sb-green) 0%,
-    var(--sb-brand-blue) 100%
-  );
+  display: none;
 }
 
 .category-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: var(--sb-shadow-hover);
   border-color: rgba(65, 69, 86, 0.2);
 }
@@ -365,23 +320,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    rgba(26, 127, 90, 0.12) 0%,
-    rgba(65, 69, 86, 0.08) 100%
-  );
-  color: var(--sb-brand-blue);
-  border: 1px solid rgba(26, 127, 90, 0.18);
-  border-radius: 12px;
+  background: #eaf2ed;
+  color: var(--sb-green-hover);
+  border: 1px solid #d5e2da;
+  border-radius: var(--sb-radius-sm);
   margin-bottom: 1rem;
   flex-shrink: 0;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 1px 2px rgba(20, 30, 40, 0.04);
-  transition:
-    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    background 0.25s ease,
-    border-color 0.25s ease;
 }
 
 .category-card-icon svg {
@@ -391,13 +335,7 @@
 }
 
 .category-card:hover .category-card-icon {
-  transform: scale(1.05);
-  background: linear-gradient(
-    135deg,
-    rgba(26, 127, 90, 0.18) 0%,
-    rgba(65, 69, 86, 0.1) 100%
-  );
-  border-color: rgba(26, 127, 90, 0.32);
+  border-color: #b7cdbf;
 }
 
 .category-card-title {
@@ -423,9 +361,7 @@
   font-size: 0.8125rem;
   font-weight: 700;
   color: var(--sb-green);
-  padding: 0.375rem 0.875rem;
-  border: 1.5px solid rgba(26, 127, 90, 0.3);
-  border-radius: 999px;
+  padding: 0.375rem 0;
   align-self: flex-start;
   transition:
     background 0.2s ease,
@@ -434,8 +370,7 @@
 }
 
 .category-card:hover .category-card-cta {
-  background: rgba(26, 127, 90, 0.07);
-  border-color: rgba(26, 127, 90, 0.55);
+  color: var(--sb-green-hover);
   gap: 0.5rem;
 }
 
@@ -643,7 +578,7 @@
   font-weight: 700;
   padding: 1rem 1.75rem;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(26, 127, 90, 0.25);
+  box-shadow: 0 4px 14px rgba(25, 135, 84, 0.25);
   transition:
     gap 0.2s ease,
     transform 0.2s ease,
@@ -651,7 +586,7 @@
 }
 
 .product-detail-cta-btn--primary:hover {
-  box-shadow: 0 6px 20px rgba(26, 127, 90, 0.35);
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.35);
   transform: translateY(-2px);
 }
 
@@ -710,6 +645,46 @@
   line-height: 1.6;
 }
 
+/* Secondary CTA when placed inside the description box
+   Make the CTA stretch to the width of the description section
+   while keeping a clean stacked layout and readable notes. */
+.product-detail-problem .product-detail-cta--secondary {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sb-border);
+}
+
+.product-detail-problem .product-detail-cta--secondary .product-detail-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.product-detail-problem .product-detail-cta--secondary .product-detail-cta-btn {
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 4px 14px rgba(25, 135, 84, 0.25);
+}
+
+.product-detail-problem
+  .product-detail-cta--secondary
+  .product-detail-cta-note {
+  margin: 0;
+  color: var(--sb-muted);
+  text-align: center;
+}
+
+@media (min-width: 769px) {
+  .product-detail-problem
+    .product-detail-cta--secondary
+    .product-detail-cta-note {
+    text-align: left;
+  }
+}
+
 /* Features List */
 .product-detail-features h2 {
   font-size: 1rem;
@@ -753,6 +728,30 @@
   margin-top: 0.125rem;
 }
 
+/* Notes block placed under "What's Included" */
+.product-detail-cta-notes {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.product-detail-cta-notes .product-detail-cta-note {
+  margin: 0;
+  text-align: center;
+}
+
+@media (min-width: 769px) {
+  .product-detail-cta-notes {
+    align-items: flex-start;
+  }
+
+  .product-detail-cta-notes .product-detail-cta-note {
+    text-align: left;
+  }
+}
+
 /* Secondary CTA Section - Desktop Only */
 /* Keep desktop behavior but make the secondary CTA full-width on small screens */
 
@@ -773,7 +772,7 @@
     display: inline-flex;
     justify-content: center;
     padding: 1rem 1.25rem;
-    box-shadow: 0 4px 12px rgba(26, 127, 90, 0.25);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
   }
 
   .product-detail-cta--secondary .product-detail-cta-note {
@@ -800,7 +799,7 @@
     width: auto;
     font-size: 1.125rem;
     padding: 1.125rem 2rem;
-    box-shadow: 0 4px 14px rgba(26, 127, 90, 0.25);
+    box-shadow: 0 4px 14px rgba(25, 135, 84, 0.25);
   }
 }
 
@@ -896,11 +895,11 @@
   font-weight: 700;
   padding: 0.875rem 1.5rem;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(26, 127, 90, 0.25);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
 }
 
 .product-detail-sticky-cta-btn:hover {
-  box-shadow: 0 6px 16px rgba(26, 127, 90, 0.35);
+  box-shadow: 0 6px 16px rgba(25, 135, 84, 0.35);
   transform: translateY(-1px);
 }
 

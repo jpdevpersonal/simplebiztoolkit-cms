@@ -31,27 +31,37 @@ export default function EmailCaptureForm({ source }: Props) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="d-flex flex-column flex-sm-row gap-2">
-      <input
-        className="form-control"
-        type="email"
-        required
-        placeholder="you@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        aria-label="Email address"
-      />
-      <button className="btn sb-btn-primary" disabled={status === "loading"}>
-        {status === "loading" ? "Sending..." : <>Get it now</>}
-      </button>
+    <form onSubmit={onSubmit} className="sb-email-form">
+      <div className="sb-email-form-fields">
+        <label className="visually-hidden" htmlFor={`email-${source}`}>
+          Email address
+        </label>
+        <input
+          id={`email-${source}`}
+          className="form-control"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <button className="btn sb-btn-primary" disabled={status === "loading"}>
+          {status === "loading" ? "Sending..." : <>Get it now</>}
+        </button>
+      </div>
 
       {status === "success" && (
-        <div className="sb-muted mt-2" style={{ fontSize: 13 }}>
+        <div
+          className="sb-form-feedback is-success"
+          role="status"
+          aria-live="polite"
+        >
           Success — check your inbox (placeholder flow for now).
         </div>
       )}
       {status === "error" && (
-        <div className="text-danger mt-2" style={{ fontSize: 13 }}>
+        <div className="sb-form-feedback is-error" role="alert">
           Something went wrong. Try again.
         </div>
       )}

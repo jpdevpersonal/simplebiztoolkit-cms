@@ -20,3 +20,11 @@ export const site = {
   /** Social and external profile URLs used by JSON-LD `sameAs`. */
   socialUrls: ["https://www.etsy.com/shop/simplebiztoolkit"],
 } as const;
+
+export function formatTrustCount(value: number): string {
+  return new Intl.NumberFormat("en-GB").format(value);
+}
+
+export function formatTrustRating(value: number): string {
+  return value.toFixed(1);
+}

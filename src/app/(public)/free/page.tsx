@@ -5,6 +5,7 @@ import Link from "next/link";
 import EmailCaptureForm from "@/components/EmailCaptureForm";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 import { featureFlags } from "@/config/featureFlags";
+import { formatTrustCount, site } from "@/config/site";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 
 export const metadata: Metadata = {
@@ -21,34 +22,15 @@ export const metadata: Metadata = {
 };
 
 export default function FreebiePage() {
+  const sales = formatTrustCount(site.trust.salesCount);
+
   if (!featureFlags.showFreeGuideButton) {
     return (
       <section className="sb-section">
         <div className="container">
-          <div
-            className="text-center"
-            style={{
-              maxWidth: "600px",
-              margin: "0 auto",
-              padding: "4rem 1rem",
-            }}
-          >
-            <h1
-              style={{
-                fontWeight: 900,
-                fontSize: "clamp(1.75rem, 5vw, 2.5rem)",
-                marginBottom: "1rem",
-              }}
-            >
-              Free Templates
-            </h1>
-            <p
-              className="sb-muted"
-              style={{
-                fontSize: "1.125rem",
-                marginBottom: "2rem",
-              }}
-            >
+          <div className="sb-free-empty">
+            <h1>Free Templates</h1>
+            <p className="lead">
               We are not currently offering any free templates, please try again
               soon.
             </p>
@@ -68,24 +50,10 @@ export default function FreebiePage() {
     <section className="sb-section">
       <div className="container">
         {/* Hero Header */}
-        <div className="text-center mb-5">
-          <h1
-            style={{
-              fontWeight: 900,
-              fontSize: "clamp(1.75rem, 5vw, 2.5rem)",
-              marginBottom: "0.75rem",
-            }}
-          >
-            Use AI for Your Small Business
-          </h1>
-          <p
-            className="sb-muted"
-            style={{
-              fontSize: "1.125rem",
-              maxWidth: "600px",
-              margin: "0 auto",
-            }}
-          >
+        <div className="sb-page-header">
+          <span className="sb-section-eyebrow">Free guide</span>
+          <h1>Use AI for Your Small Business</h1>
+          <p>
             Learn to Save Time, Cut Costs and Grow Your Business Smarter, no
             tech skills required.
           </p>
@@ -94,27 +62,14 @@ export default function FreebiePage() {
         <div className="row g-4 g-lg-5 align-items-start">
           {/* Left Column - Image Preview */}
           <div className="col-lg-6 order-2 order-lg-1">
-            <div
-              className="sb-card p-3 p-md-4"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%)",
-                border: "2px solid var(--accent)",
-              }}
-            >
+            <div className="sb-free-preview">
               <Image
                 src="/images/products/guides/ai-for-small-business.webp"
-                className="img-fluid rounded-3"
+                className="sb-free-preview-image"
                 alt="AI for Small Business Guide Preview"
                 width={1200}
                 height={800}
                 priority
-                style={{
-                  maxHeight: 480,
-                  width: "100%",
-                  objectFit: "contain",
-                  filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.12))",
-                }}
                 sizes="(max-width: 768px) 100vw, (max-width: 992px) 80vw, 520px"
                 unoptimized={shouldBypassNextImageOptimization(
                   "/images/products/guides/ai-for-small-business.webp",
@@ -123,33 +78,17 @@ export default function FreebiePage() {
             </div>
 
             {/* Social Proof */}
-            <div
-              className="d-flex align-items-center justify-content-center gap-3 mt-3"
-              style={{ fontSize: "0.875rem" }}
-            >
-              <span className="sb-muted">⭐⭐⭐⭐⭐</span>
-              <span className="sb-muted">
-                Loved by over 3500 buyers on Etsy
-              </span>
+            <div className="sb-free-proof">
+              <span aria-hidden="true">★★★★★</span>
+              <span>Loved by {sales} buyers on Etsy</span>
             </div>
           </div>
 
           {/* Right Column - Benefits & Form */}
           <div className="col-lg-6 order-1 order-lg-2">
             <div className="sb-card p-4">
-              <h2
-                style={{ fontWeight: 800, marginBottom: "1rem" }}
-                className="h5"
-              >
-                What&apos;s Inside This Free Guide
-              </h2>
-              <ul
-                style={{
-                  paddingLeft: 0,
-                  listStyle: "none",
-                  marginBottom: "1.5rem",
-                }}
-              >
+              <h2 className="h5">What&apos;s Inside This Free Guide</h2>
+              <ul className="sb-free-benefits">
                 {[
                   "How to use AI tools like ChatGPT effectively",
                   "Step-by-step setups that save hours every week",
@@ -158,21 +97,8 @@ export default function FreebiePage() {
                   "Cost-saving marketing strategies",
                   "Future-proof trends to stay ahead",
                 ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="d-flex align-items-start gap-2"
-                    style={{
-                      marginBottom: "0.75rem",
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "var(--accent)",
-                        fontWeight: 700,
-                        flexShrink: 0,
-                      }}
-                    >
+                  <li key={i}>
+                    <span className="sb-free-check" aria-hidden="true">
                       ✓
                     </span>
                     <span>{item}</span>
@@ -181,21 +107,9 @@ export default function FreebiePage() {
               </ul>
             </div>
 
-            <div
-              className="sb-lead-magnet-card sb-card p-4 mt-3"
-              style={{
-                border: "2px solid var(--accent)",
-                background:
-                  "linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%)",
-              }}
-            >
-              <h3
-                style={{ fontWeight: 800, marginBottom: "0.5rem" }}
-                className="h5"
-              >
-                📬 Get Instant Access
-              </h3>
-              <p className="sb-muted mb-3" style={{ fontSize: "0.9rem" }}>
+            <div className="sb-lead-magnet-card sb-free-form-card sb-card p-4 mt-3">
+              <h3 className="h5">Get instant access</h3>
+              <p className="sb-muted sb-small-copy mb-3">
                 Enter your email and we&apos;ll send the guide straight to your
                 inbox.
               </p>
@@ -214,11 +128,8 @@ export default function FreebiePage() {
                 </Link>
               </div>
 
-              <p
-                className="sb-muted text-center mt-3 mb-0"
-                style={{ fontSize: "0.75rem" }}
-              >
-                🔒 No spam, ever. Unsubscribe anytime.
+              <p className="sb-muted sb-text-xs text-center mt-3 mb-0">
+                No spam. Unsubscribe anytime.
               </p>
             </div>
           </div>
