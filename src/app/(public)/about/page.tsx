@@ -37,8 +37,9 @@ export default function AboutPage() {
       <JsonLd json={breadcrumbJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div className="products-header">
-            <h1 style={{ fontWeight: 900 }}>About Simple Biz Toolkit</h1>
+          <div className="sb-page-header">
+            <span className="sb-section-eyebrow">Our studio</span>
+            <h1>About Simple Biz Toolkit</h1>
             <p className="sb-muted sb-speakable">
               We design printable PDF templates that small business owners,
               online sellers, freelancers and landlords can download and use in
@@ -46,8 +47,8 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <div className="sb-card p-3">
+          <div className="sb-text-column">
+            <div className="sb-prose-panel">
               <section className="p-3 h-100">
                 <h2>Who we are</h2>
                 <p>
@@ -166,23 +167,7 @@ export default function AboutPage() {
             </div>
 
             <div className="mt-4 d-flex gap-2 flex-wrap">
-              <Link
-                href="/templates"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.rem",
-                  padding: "0.5rem",
-                  textDecoration: "none",
-                  fontWeight: 700,
-                  fontSize: "1rem",
-                  borderRadius: "12px",
-                  backgroundColor: "white",
-                  color: "var(--sb-green)",
-                  border: "2px solid var(--sb-green)",
-                }}
-              >
+              <Link href="/templates" className="btn sb-btn-primary">
                 Browse All Templates
               </Link>
             </div>

@@ -66,14 +66,19 @@ export default async function FaqPage() {
       <JsonLd json={breadcrumbJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div className="products-header">
-            <h1 style={{ fontWeight: 900 }}>Frequently Asked Questions</h1>
+          <div className="sb-page-header">
+            <span className="sb-section-eyebrow">Help centre</span>
+            <h1>Frequently Asked Questions</h1>
+            <p>
+              Find clear answers about downloading, printing and using Simple
+              Biz Toolkit templates.
+            </p>
           </div>
 
-          <div className="row g-4" style={{ maxWidth: 1100, margin: "0 auto" }}>
-            <main className="col-12 col-lg-8">
+          <div className="row g-4 sb-faq-layout">
+            <div className="col-12 col-lg-8">
               <FaqAccordion faqs={faqs} />
-            </main>
+            </div>
 
             <aside className="col-12 col-lg-4">
               <SupportSidebarCard

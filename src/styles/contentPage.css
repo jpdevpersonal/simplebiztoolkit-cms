@@ -42,7 +42,7 @@
 
 .content-header-image {
   margin-bottom: 36px;
-  border-radius: var(--sb-radius, 16px);
+  border-radius: var(--sb-radius);
   overflow: hidden;
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.06),
@@ -77,28 +77,15 @@
 .content-title {
   margin: 0 auto 12px;
   font-size: clamp(1.875rem, 4.5vw, 3rem);
-  font-weight: 800;
+  color: var(--sb-ink);
+  font-weight: 700;
   line-height: 1.15;
-  letter-spacing: -0.035em;
+  letter-spacing: 0;
   max-width: 860px;
-  background: linear-gradient(
-    135deg,
-    var(--sb-ink) 0%,
-    var(--sb-brand-blue-light) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .content-title::after {
-  content: "";
-  display: block;
-  width: 48px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--sb-green), var(--sb-brand-blue));
-  border-radius: 999px;
-  margin: 0.875rem auto 0;
+  display: none;
 }
 
 .content-subtitle {
@@ -109,6 +96,16 @@
   color: var(--sb-ink);
   max-width: 720px;
   line-height: 1.7;
+}
+
+/* Content column: constrain article to a readable prose width.  This keeps
+   the related-links block, CTAs, and other inline blocks inside the same
+   column as the text, matching the .content-subtitle max-width (720px). */
+.content-page article {
+  max-width: 1024px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 /* Scoped heading scale for article body — always subordinate to .content-title */
@@ -166,6 +163,12 @@
   opacity: 0.7;
 }
 
+.content-updated {
+  margin-top: 0.25rem;
+  color: var(--sb-muted);
+  font-size: 0.875rem;
+}
+
 .content-section {
   margin-top: 28px;
 }
@@ -180,7 +183,7 @@
 
 .content-callout {
   border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 16px;
+  border-radius: var(--sb-radius);
   padding: 18px;
   background: rgba(0, 0, 0, 0.02);
 }
@@ -212,7 +215,7 @@
   height: 3px;
   background: linear-gradient(
     135deg,
-    var(--sb-green, #1a7f5a),
+    var(--sb-green, #198754),
     var(--sb-brand-blue, #414556)
   );
 }
@@ -381,7 +384,7 @@
 }
 
 .content-page .related-links-block--content {
-  margin: 24px 0;
+  margin: 32px 0;
 }
 
 .content-footer p {

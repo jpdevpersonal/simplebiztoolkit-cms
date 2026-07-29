@@ -61,7 +61,7 @@ export default async function PagePreview({ params }: Props) {
         </div>
       </section>
 
-      <main className="content-page">
+      <div className="content-page">
         {parentMenuItem ? (
           <SiteBreadcrumb
             items={[
@@ -97,7 +97,7 @@ export default async function PagePreview({ params }: Props) {
         <article>
           <ContentRenderer html={page.content ?? ""} />
         </article>
-      </main>
+      </div>
     </>
   );
 }
