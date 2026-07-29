@@ -18,11 +18,15 @@ export default async function AdminLayout({
   const session = await auth();
 
   return (
-    <div className="admin-layout">
+    <div
+      className={
+        session ? "admin-layout admin-layout-authenticated" : "admin-layout"
+      }
+    >
       {session ? <AdminNav userEmail={session.user?.email || ""} /> : null}
 
       <main className="admin-content">
-        <div className="container py-4">
+        <div className="admin-content-inner">
           <div className="admin-shell">{children}</div>
         </div>
       </main>

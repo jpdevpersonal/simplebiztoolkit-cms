@@ -55,7 +55,7 @@ export default async function EditMenuItemPage({ params }: Props) {
   );
 
   return (
-    <div>
+    <div className="admin-page-shell">
       {/* Page header */}
       <div className="admin-page-header">
         <div>
@@ -68,25 +68,10 @@ export default async function EditMenuItemPage({ params }: Props) {
       <MenuItemEditor menuItem={menuItem} />
 
       {/* ── Topics ─────────────────────────────────────────── */}
-      <div
-        className="admin-page-header mt-4"
-        style={{
-          borderTop: "1px solid var(--sb-border)",
-          paddingTop: "1.5rem",
-        }}
-      >
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+      <div className="admin-page-header admin-subsection-header">
+        <h2>
           Topics
-          <span
-            style={{
-              fontWeight: 400,
-              fontSize: "0.85rem",
-              color: "var(--sb-muted)",
-              marginLeft: "0.5rem",
-            }}
-          >
-            ({categories.length})
-          </span>
+          <span className="admin-heading-count">({categories.length})</span>
         </h2>
         <Link
           href={`/cms/menu/${id}/categories/new`}
@@ -116,14 +101,16 @@ export default async function EditMenuItemPage({ params }: Props) {
             )}
             {categories.map((cat) => (
               <tr key={cat.id}>
-                <td style={{ fontWeight: 600 }}>{cat.title}</td>
-                <td>
+                <td className="admin-cell-strong" data-label="Title">
+                  {cat.title}
+                </td>
+                <td data-label="Status">
                   <StatusBadge status={cat.status} />
                 </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
+                <td className="admin-cell-muted" data-label="Pages">
                   {allPages.filter((p) => p.menuCategoryId === cat.id).length}
                 </td>
-                <td>
+                <td className="admin-cell-actions" data-label="Actions">
                   <Link
                     href={`/cms/menu/categories/${cat.id}/edit`}
                     className="admin-btn-action"
@@ -138,25 +125,10 @@ export default async function EditMenuItemPage({ params }: Props) {
       </div>
 
       {/* ── Pages ──────────────────────────────────────────────── */}
-      <div
-        className="admin-page-header mt-4"
-        style={{
-          borderTop: "1px solid var(--sb-border)",
-          paddingTop: "1.5rem",
-        }}
-      >
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>
+      <div className="admin-page-header admin-subsection-header">
+        <h2>
           Pages
-          <span
-            style={{
-              fontWeight: 400,
-              fontSize: "0.85rem",
-              color: "var(--sb-muted)",
-              marginLeft: "0.5rem",
-            }}
-          >
-            ({allPages.length})
-          </span>
+          <span className="admin-heading-count">({allPages.length})</span>
         </h2>
         <Link
           href={`/cms/pages/new?menuItemId=${id}`}
@@ -192,24 +164,22 @@ export default async function EditMenuItemPage({ params }: Props) {
                 : null;
               return (
                 <tr key={page.id}>
-                  <td style={{ fontWeight: 600 }}>{page.title}</td>
-                  <td
-                    style={{
-                      color: "var(--sb-muted)",
-                      fontSize: "0.85rem",
-                      fontFamily: "monospace",
-                    }}
-                  >
+                  <td className="admin-cell-strong" data-label="Title">
+                    {page.title}
+                  </td>
+                  <td className="admin-cell-code" data-label="Slug">
                     {page.slug}
                   </td>
-                  <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                    {catName ?? <em style={{ opacity: 0.5 }}>Direct</em>}
+                  <td className="admin-cell-muted" data-label="Topic">
+                    {catName ?? (
+                      <span className="admin-cell-italic-faded">Direct</span>
+                    )}
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <StatusBadge status={page.status} />
                   </td>
-                  <td>
-                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <td className="admin-cell-actions" data-label="Actions">
+                    <div className="admin-action-group">
                       <Link
                         href={`/cms/pages/${page.id}/edit`}
                         className="admin-btn-action"
@@ -221,8 +191,7 @@ export default async function EditMenuItemPage({ params }: Props) {
                           href={`/${page.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="admin-btn-action"
-                          style={{ opacity: 0.6 }}
+                          className="admin-btn-action admin-btn-action-muted"
                           title="Preview"
                         >
                           ↗

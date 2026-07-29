@@ -628,26 +628,25 @@ export default function AdminMenuManager({
       <div className="row g-3">
         <div className="col-12 col-xl-8">
           <AdminFormBlock icon={managerIcon} title="Menu Placement">
-            <div className="mb-3" role="tablist" aria-label="Menu locations">
-              <div className="d-flex flex-wrap gap-2">
-                {menuLocationOptions.map((option) => {
-                  const selected = option.key === selectedLocation;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      role="tab"
-                      aria-selected={selected}
-                      className={
-                        selected ? "admin-btn-save" : "admin-btn-action"
-                      }
-                      onClick={() => setSelectedLocation(option.key)}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
+            <div
+              className="admin-segmented-control admin-menu-location-tabs"
+              role="tablist"
+              aria-label="Menu locations"
+            >
+              {menuLocationOptions.map((option) => {
+                const selected = option.key === selectedLocation;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => setSelectedLocation(option.key)}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
             </div>
 
             <p className="admin-page-description mb-3">
@@ -706,11 +705,12 @@ export default function AdminMenuManager({
             )}
 
             {hiddenStaticItems.length > 0 && (
-              <div className="mt-3">
-                <p className="admin-page-meta mb-2">
-                  Hidden built-ins (soft deleted)
-                </p>
-                <div className="d-flex flex-wrap gap-2">
+              <div className="admin-menu-manager-hidden">
+                <div className="admin-menu-manager-hidden-header">
+                  <strong>Hidden built-in links</strong>
+                  <span>{hiddenStaticItems.length} hidden</span>
+                </div>
+                <div className="admin-menu-manager-hidden-actions">
                   {hiddenStaticItems.map((item) => (
                     <button
                       key={item.id}
@@ -727,7 +727,12 @@ export default function AdminMenuManager({
             )}
 
             <div className="admin-menu-manager-footer">
-              <span className="admin-page-meta">
+              <span
+                className={
+                  "admin-menu-manager-save-state" +
+                  (hasUnsavedChanges ? " is-unsaved" : "")
+                }
+              >
                 {currentLocationOption.label} · {cmsItemCount} CMS items ·{" "}
                 {visibleStaticItemCount} visible static links
                 {hiddenStaticItems.length > 0
