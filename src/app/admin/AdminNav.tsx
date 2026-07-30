@@ -18,6 +18,8 @@ import {
   ListTree,
   LogOut,
   Menu as MenuIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
   PanelTop,
   Tags,
   X,
@@ -100,6 +102,7 @@ function AdminNavContent({
   userEmail: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(false);
   const cmsPathname = toCmsPath(pathname);
 
   useEffect(() => {
@@ -167,12 +170,33 @@ function AdminNavContent({
 
       <aside
         id="admin-nav-collapse"
-        className={"admin-nav" + (menuOpen ? " is-open" : "")}
+        className={
+          "admin-nav" +
+          (menuOpen ? " is-open" : "") +
+          (navCollapsed ? " is-collapsed" : "")
+        }
         aria-label="CMS navigation"
+        hidden={navCollapsed}
       >
         <div className="admin-nav-inner">
           <div className="admin-nav-sidebar-header">
             {brand}
+            <button
+              type="button"
+              className="admin-nav-collapse-toggle"
+              aria-expanded={!navCollapsed}
+              aria-label={
+                navCollapsed ? "Expand navigation" : "Collapse navigation"
+              }
+              title={navCollapsed ? "Expand navigation" : "Collapse navigation"}
+              onClick={() => setNavCollapsed((previous) => !previous)}
+            >
+              {navCollapsed ? (
+                <PanelLeftOpen size={18} aria-hidden="true" />
+              ) : (
+                <PanelLeftClose size={18} aria-hidden="true" />
+              )}
+            </button>
             <button
               type="button"
               className="admin-nav-sidebar-close"
@@ -231,6 +255,20 @@ function AdminNavContent({
           </div>
         </div>
       </aside>
+
+      {navCollapsed ? (
+        <button
+          type="button"
+          className="admin-nav-expand-toggle"
+          aria-controls="admin-nav-collapse"
+          aria-expanded="false"
+          aria-label="Expand navigation"
+          title="Expand navigation"
+          onClick={() => setNavCollapsed(false)}
+        >
+          <PanelLeftOpen size={18} aria-hidden="true" />
+        </button>
+      ) : null}
     </>
   );
 }
