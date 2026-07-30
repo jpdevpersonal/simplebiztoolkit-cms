@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Link from "next/link";
 import type { ProductItem, ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import AdminSortIcon from "@/components/AdminSortIcon";
+import AdminTableToolbar from "@/components/AdminTableToolbar";
 import { compareSortValues, parseCurrencyValue } from "@/lib/sortUtils";
 import { toTemplatesRoute } from "@/lib/templatesRoute";
 
@@ -18,6 +25,10 @@ type SortCol = "title" | "status" | "category" | "price";
 export default function AdminProductsTable({ products, categories }: Props) {
   const [sortBy, setSortBy] = useState<SortCol>("category");
   const [dir, setDir] = useState<"asc" | "desc">("asc");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const deferredQuery = useDeferredValue(query);
 
   const [localCategories, setLocalCategories] =
     useState<ProductCategory[]>(categories);
@@ -62,8 +73,44 @@ export default function AdminProductsTable({ products, categories }: Props) {
     [localCategories],
   );
 
+  const categoryOptions = useMemo(
+    () =>
+      [...localCategories]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((category) => ({
+          label: category.name,
+          value: category.id,
+        })),
+    [localCategories],
+  );
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+
+    return localProducts.filter((product) => {
+      const categoryName = categoryNameMap[product.categoryId] ?? "";
+      const matchesQuery =
+        !normalizedQuery ||
+        `${product.title} ${categoryName}`
+          .toLowerCase()
+          .includes(normalizedQuery);
+
+      return (
+        matchesQuery &&
+        (!statusFilter || product.status === statusFilter) &&
+        (!categoryFilter || product.categoryId === categoryFilter)
+      );
+    });
+  }, [
+    categoryFilter,
+    categoryNameMap,
+    deferredQuery,
+    localProducts,
+    statusFilter,
+  ]);
+
   const sorted = useMemo(() => {
-    const copy = [...localProducts];
+    const copy = [...filtered];
     copy.sort((a, b) => {
       const va: string | number =
         sortBy === "title"
@@ -86,7 +133,7 @@ export default function AdminProductsTable({ products, categories }: Props) {
       return compareSortValues(va, vb, dir);
     });
     return copy;
-  }, [localProducts, sortBy, dir, categoryNameMap]);
+  }, [filtered, sortBy, dir, categoryNameMap]);
 
   const toggleSort = useCallback(
     (column: SortCol) => {
@@ -100,8 +147,46 @@ export default function AdminProductsTable({ products, categories }: Props) {
     [sortBy],
   );
 
+  const handleFilterChange = (key: string, value: string) => {
+    if (key === "status") setStatusFilter(value);
+    if (key === "category") setCategoryFilter(value);
+  };
+
+  const clearFilters = () => {
+    setQuery("");
+    setStatusFilter("");
+    setCategoryFilter("");
+  };
+
   return (
     <div className="admin-table-wrap">
+      <AdminTableToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchLabel="Search templates"
+        placeholder="Search title or category"
+        filters={[
+          {
+            key: "status",
+            label: "Status",
+            value: statusFilter,
+            options: [
+              { label: "Published", value: "published" },
+              { label: "Draft", value: "draft" },
+            ],
+          },
+          {
+            key: "category",
+            label: "Category",
+            value: categoryFilter,
+            options: categoryOptions,
+          },
+        ]}
+        onFilterChange={handleFilterChange}
+        visibleCount={sorted.length}
+        totalCount={localProducts.length}
+        onClear={clearFilters}
+      />
       <table className="admin-table">
         <thead>
           <tr>
@@ -149,7 +234,9 @@ export default function AdminProductsTable({ products, categories }: Props) {
           {sorted.length === 0 && (
             <tr>
               <td colSpan={6} className="admin-empty-state">
-                No templates found. Create your first template!
+                {localProducts.length === 0
+                  ? "No templates found. Create your first template!"
+                  : "No templates match the current search and filters."}
               </td>
             </tr>
           )}

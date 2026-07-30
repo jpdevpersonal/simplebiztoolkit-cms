@@ -1,138 +1,65 @@
 /**
  * Categories List Page - Admin
- * Lists all product categories
+ * Lists all product categories.
  */
 
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
+import AdminCategoriesTable from "@/components/AdminCategoriesTable";
+import AdminStatCard from "@/components/AdminStatCard";
 
 export default async function CategoriesPage() {
   const { service } = await getAdminApiService();
   const response = await service.getProductCategories();
   const categories = response.data || [];
+  const templateCount = categories.reduce(
+    (total, category) => total + (category.items?.length || 0),
+    0,
+  );
 
   return (
-    <div>
-      {/* Page header */}
+    <div className="admin-page-shell">
       <div className="admin-page-header">
-        <h1>Template Categories</h1>
-        <Link href="/cms/categories/new" className="admin-btn-save">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <line
-              x1="12"
-              y1="5"
-              x2="12"
-              y2="19"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <line
-              x1="5"
-              y1="12"
-              x2="19"
-              y2="12"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          New Category
-        </Link>
+        <div className="admin-page-header-copy">
+          <div className="admin-page-eyebrow">Catalog structure</div>
+          <h1>Template Categories</h1>
+          <p className="admin-page-description">
+            Organize templates into clear collections and review their public
+            category pages.
+          </p>
+        </div>
+        <div className="admin-page-actions">
+          <span className="admin-page-meta">{templateCount} templates</span>
+          <Link href="/cms/categories/new" className="admin-btn-save">
+            <Plus size={16} aria-hidden="true" />
+            New Category
+          </Link>
+        </div>
       </div>
 
-      {/* Category table */}
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Slug</th>
-              <th>Templates</th>
-              <th>Preview</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.length === 0 && (
-              <tr>
-                <td colSpan={5} className="admin-empty-state">
-                  No categories found. Create your first category!
-                </td>
-              </tr>
-            )}
-            {categories.map((category) => (
-              <tr key={category.id}>
-                <td style={{ fontWeight: 600 }}>{category.name}</td>
-                <td
-                  style={{
-                    color: "var(--sb-muted)",
-                    fontSize: "0.875rem",
-                    maxWidth: "180px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {category.slug}
-                </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
-                  {category.items?.length || 0}
-                </td>
-                <td>
-                  <Link
-                    href={`/templates/${category.slug}`}
-                    className="admin-btn-action"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View
-                    <svg
-                      width="11"
-                      height="11"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      style={{ marginLeft: "0.25rem" }}
-                    >
-                      <path
-                        d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <polyline
-                        points="15 3 21 3 21 9"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <line
-                        x1="10"
-                        y1="14"
-                        x2="21"
-                        y2="3"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </Link>
-                </td>
-                <td>
-                  <Link
-                    href={`/cms/categories/${category.id}/edit`}
-                    className="admin-btn-action"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="row g-3 mb-1">
+        <div className="col-6">
+          <AdminStatCard label="Categories" value={categories.length} />
+        </div>
+        <div className="col-6">
+          <AdminStatCard label="Templates" value={templateCount} />
+        </div>
       </div>
+
+      <section className="admin-section-card">
+        <div className="admin-section-card-header">
+          <div>
+            <div className="admin-section-card-eyebrow">Collections</div>
+            <h2 className="admin-section-card-title">All categories</h2>
+            <p className="admin-section-card-copy">
+              Find a category by name or slug, then open its editor or public
+              preview.
+            </p>
+          </div>
+        </div>
+        <AdminCategoriesTable categories={categories} />
+      </section>
     </div>
   );
 }
