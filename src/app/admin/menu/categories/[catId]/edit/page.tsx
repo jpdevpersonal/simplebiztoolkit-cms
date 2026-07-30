@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminBreadcrumbs from "@/components/AdminBreadcrumbs";
 import MenuCategoryEditor from "@/components/MenuCategoryEditor";
+import StatusBadge from "@/components/StatusBadge";
 
 interface Props {
   params: Promise<{ catId: string }>;
@@ -55,7 +56,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
   );
 
   return (
-    <div>
+    <div className="admin-page-shell">
       <div className="admin-page-header">
         <div>
           <AdminBreadcrumbs items={breadcrumbItems} />
@@ -70,16 +71,8 @@ export default async function EditMenuCategoryPage({ params }: Props) {
       />
 
       {/* ── Pages in this Category ─────────────────────────────── */}
-      <div
-        className="admin-page-header mt-4"
-        style={{
-          borderTop: "1px solid var(--sb-border)",
-          paddingTop: "1.5rem",
-        }}
-      >
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>
-          Pages in this Topic
-        </h2>
+      <div className="admin-page-header admin-subsection-header">
+        <h2>Pages in this Topic</h2>
         <Link
           href={`/cms/pages/new?menuItemId=${category.menuItemId}&categoryId=${catId}`}
           className="admin-btn-save"
@@ -110,32 +103,20 @@ export default async function EditMenuCategoryPage({ params }: Props) {
             )}
             {pages.map((page) => (
               <tr key={page.id}>
-                <td style={{ fontWeight: 600 }}>{page.title}</td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.875rem" }}>
+                <td className="admin-cell-strong" data-label="Title">
+                  {page.title}
+                </td>
+                <td className="admin-cell-code" data-label="Slug">
                   {page.slug}
                 </td>
-                <td>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "0.2rem 0.55rem",
-                      borderRadius: "999px",
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      background:
-                        page.status === "published" ? "#dcfce7" : "#fef9c3",
-                      color:
-                        page.status === "published" ? "#166534" : "#854d0e",
-                    }}
-                  >
-                    {page.status}
-                  </span>
+                <td data-label="Status">
+                  <StatusBadge status={page.status} />
                 </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.875rem" }}>
+                <td className="admin-cell-muted-sm" data-label="Date">
                   {page.dateISO}
                 </td>
-                <td>
-                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                <td className="admin-cell-actions" data-label="Actions">
+                  <div className="admin-action-group">
                     <Link
                       href={`/cms/pages/${page.id}/edit`}
                       className="admin-btn-action"
@@ -147,8 +128,7 @@ export default async function EditMenuCategoryPage({ params }: Props) {
                         href={`/${page.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="admin-btn-action"
-                        style={{ opacity: 0.6 }}
+                        className="admin-btn-action admin-btn-action-muted"
                         title="Preview"
                       >
                         ↗

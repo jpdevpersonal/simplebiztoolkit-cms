@@ -117,4 +117,49 @@ describe("AdminPagesTable", () => {
     fireEvent.click(slugHeader);
     expect(slugHeader).toHaveClass("sort-active");
   });
+
+  it("searches across page titles and slugs", () => {
+    render(<AdminPagesTable pages={pages} />);
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search pages" }), {
+      target: { value: "zebra-page" },
+    });
+
+    expect(screen.getByText("Zebra Page")).toBeInTheDocument();
+    expect(screen.queryByText("Apple Page")).toBeNull();
+    expect(screen.getByText("1 of 2 items")).toBeInTheDocument();
+  });
+
+  it("combines status, menu item, and topic filters", () => {
+    render(<AdminPagesTable pages={pages} />);
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Status" }), {
+      target: { value: "draft" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Menu item" }), {
+      target: { value: "Guides" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Topic" }), {
+      target: { value: "Tips" },
+    });
+
+    expect(screen.getByText("Zebra Page")).toBeInTheDocument();
+    expect(screen.queryByText("Apple Page")).toBeNull();
+  });
+
+  it("shows a filter-specific empty state and clears active controls", () => {
+    render(<AdminPagesTable pages={pages} />);
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search pages" }), {
+      target: { value: "missing page" },
+    });
+
+    expect(
+      screen.getByText("No pages match the current search and filters."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    expect(screen.getByText("Apple Page")).toBeInTheDocument();
+    expect(screen.getByText("Zebra Page")).toBeInTheDocument();
+  });
 });

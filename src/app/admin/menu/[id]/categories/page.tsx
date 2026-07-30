@@ -101,24 +101,20 @@ export default async function MenuItemCategoriesPage({ params }: Props) {
             )}
             {categories.map((cat) => (
               <tr key={cat.id}>
-                <td style={{ fontWeight: 600 }}>{cat.title}</td>
+                <td className="admin-cell-strong" data-label="Title">
+                  {cat.title}
+                </td>
                 <td
-                  style={{
-                    color: "var(--sb-muted)",
-                    fontSize: "0.875rem",
-                    maxWidth: "260px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
+                  className="admin-cell-muted admin-cell-ellipsis admin-cell-max-280"
+                  data-label="Description"
                 >
                   {cat.description || "—"}
                 </td>
-                <td style={{ color: "var(--sb-muted)", fontSize: "0.9rem" }}>
+                <td className="admin-cell-muted" data-label="Pages">
                   {cat.pages?.length ?? 0}
                 </td>
-                <td>
-                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                <td className="admin-cell-actions" data-label="Actions">
+                  <div className="admin-action-group">
                     <Link
                       href={`/cms/menu/categories/${cat.id}/edit`}
                       className="admin-btn-action"
