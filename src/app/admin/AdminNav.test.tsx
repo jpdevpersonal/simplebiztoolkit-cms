@@ -81,6 +81,27 @@ describe("AdminNav", () => {
     expect(collapse.className).not.toContain("is-open");
   });
 
+  it("hides and expands the desktop navigation panel", () => {
+    render(<AdminNav userEmail="admin@example.com" />);
+
+    const collapse = document.getElementById("admin-nav-collapse")!;
+    const toggle = screen.getByRole("button", { name: /collapse navigation/i });
+
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.click(toggle);
+
+    expect(collapse).toHaveClass("is-collapsed");
+    expect(collapse).toHaveAttribute("hidden");
+
+    const expand = screen.getByRole("button", { name: /expand navigation/i });
+    expect(expand).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(expand);
+
+    expect(collapse).not.toHaveAttribute("hidden");
+  });
+
   it("closes the drawer with Escape", () => {
     render(<AdminNav userEmail="admin@example.com" />);
 
