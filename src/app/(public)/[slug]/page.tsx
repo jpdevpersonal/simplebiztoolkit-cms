@@ -202,7 +202,7 @@ export default async function MenuItemPageView({ params }: Props) {
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={pageJsonLd} />
 
-      <main
+      <div
         className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}`}
       >
         {!isStandaloneMenuPage && <SiteBreadcrumb items={breadcrumbItems} />}
@@ -211,10 +211,7 @@ export default async function MenuItemPageView({ params }: Props) {
           <h1 className="content-title">{page.title}</h1>
           {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
           {lastUpdatedLabel && page.showLastUpdated !== false && (
-            <p
-              className="sb-muted"
-              style={{ fontSize: "0.9rem", marginTop: "0.25rem" }}
-            >
+            <p className="content-updated">
               <time dateTime={lastUpdatedDate ?? undefined}>
                 Last updated {lastUpdatedLabel}
               </time>
@@ -246,7 +243,7 @@ export default async function MenuItemPageView({ params }: Props) {
         {!isStandaloneMenuPage && (
           <SiteBreadcrumb items={breadcrumbItems} bottom />
         )}
-      </main>
+      </div>
     </>
   );
 }

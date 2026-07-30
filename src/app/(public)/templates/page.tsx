@@ -194,7 +194,8 @@ export default async function ProductsPage() {
       <JsonLd json={itemListJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div className="products-header">
+          <div className="sb-page-header">
+            <span className="sb-section-eyebrow">Template library</span>
             <h1>Printable small business templates</h1>
             <p className="sb-muted sb-speakable">
               Printable and fillable PDF templates for small business owners,

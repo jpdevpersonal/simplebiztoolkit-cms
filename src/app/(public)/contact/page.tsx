@@ -17,18 +17,19 @@ export default function ContactPage() {
   return (
     <section className="sb-section">
       <div className="container">
-        <div className="products-header">
-          <h1 style={{ fontWeight: 900 }}>Contact</h1>
+        <div className="sb-page-header">
+          <span className="sb-section-eyebrow">Support</span>
+          <h1>Contact</h1>
           <p className="sb-muted">
             Fastest support is via Etsy messages. Email is available too.
           </p>
         </div>
 
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        <div className="sb-text-column">
           <div className="row g-3 mt-2">
             <div className="col-md-6">
               <div className="sb-card p-4 h-100">
-                <div style={{ fontWeight: 900 }}>
+                <div className="sb-contact-card-title">
                   Etsy messages (recommended)
                 </div>
                 <p className="sb-muted mb-3">
@@ -46,7 +47,7 @@ export default function ContactPage() {
             </div>
             <div className="col-md-6">
               <div className="sb-card p-4 h-100">
-                <div style={{ fontWeight: 900 }}>Email</div>
+                <div className="sb-contact-card-title">Email</div>
                 <p className="sb-muted mb-0">simplebiztoolkit@gmail.com</p>
               </div>
             </div>

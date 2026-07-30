@@ -13,10 +13,14 @@ describe("EmailCaptureForm", () => {
 
     expect(screen.getByText("Sending...")).toBeInTheDocument();
 
-    expect(
-      await screen.findByText(/Success — check your inbox/i, undefined, {
+    const successMessage = await screen.findByText(
+      /Success — check your inbox/i,
+      undefined,
+      {
         timeout: 2500,
-      }),
-    ).toBeInTheDocument();
+      },
+    );
+    expect(successMessage).toHaveAttribute("role", "status");
+    expect(successMessage).toHaveAttribute("aria-live", "polite");
   });
 });
