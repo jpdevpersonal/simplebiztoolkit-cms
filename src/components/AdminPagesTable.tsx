@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import AdminSortIcon from "@/components/AdminSortIcon";
+import AdminTableToolbar from "@/components/AdminTableToolbar";
 import StatusBadge from "@/components/StatusBadge";
 import { compareSortValues } from "@/lib/sortUtils";
 
@@ -31,9 +32,62 @@ type SortCol =
 export default function AdminPagesTable({ pages }: Props) {
   const [sortBy, setSortBy] = useState<SortCol>("title");
   const [dir, setDir] = useState<"asc" | "desc">("asc");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [menuItemFilter, setMenuItemFilter] = useState("");
+  const [topicFilter, setTopicFilter] = useState("");
+  const deferredQuery = useDeferredValue(query);
+
+  const menuItemOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          pages
+            .map((page) => page.menuItemTitle.trim())
+            .filter((title) => title && title !== "—"),
+        ),
+      )
+        .sort((a, b) => a.localeCompare(b))
+        .map((title) => ({ label: title, value: title })),
+    [pages],
+  );
+
+  const topicOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          pages
+            .map((page) => page.categoryTitle?.trim())
+            .filter((title): title is string => Boolean(title)),
+        ),
+      )
+        .sort((a, b) => a.localeCompare(b))
+        .map((title) => ({ label: title, value: title })),
+    [pages],
+  );
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+
+    return pages.filter((page) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        [page.title, page.slug, page.menuItemTitle, page.categoryTitle ?? ""]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery);
+
+      return (
+        matchesQuery &&
+        (!statusFilter || page.status === statusFilter) &&
+        (!menuItemFilter || page.menuItemTitle === menuItemFilter) &&
+        (!topicFilter || page.categoryTitle === topicFilter)
+      );
+    });
+  }, [deferredQuery, menuItemFilter, pages, statusFilter, topicFilter]);
 
   const sorted = useMemo(() => {
-    const copy = [...pages];
+    const copy = [...filtered];
     copy.sort((a, b) => {
       const va: string | number =
         sortBy === "title"
@@ -64,7 +118,7 @@ export default function AdminPagesTable({ pages }: Props) {
       return compareSortValues(va, vb, dir);
     });
     return copy;
-  }, [pages, sortBy, dir]);
+  }, [filtered, sortBy, dir]);
 
   const toggleSort = useCallback(
     (column: SortCol) => {
@@ -81,8 +135,54 @@ export default function AdminPagesTable({ pages }: Props) {
   const getPreviewHref = (page: AdminPageRow) =>
     page.status === "published" ? `/${page.slug}` : `/preview/pages/${page.id}`;
 
+  const handleFilterChange = (key: string, value: string) => {
+    if (key === "status") setStatusFilter(value);
+    if (key === "menuItem") setMenuItemFilter(value);
+    if (key === "topic") setTopicFilter(value);
+  };
+
+  const clearFilters = () => {
+    setQuery("");
+    setStatusFilter("");
+    setMenuItemFilter("");
+    setTopicFilter("");
+  };
+
   return (
     <div className="admin-table-wrap">
+      <AdminTableToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchLabel="Search pages"
+        placeholder="Search title, slug, menu item, or topic"
+        filters={[
+          {
+            key: "status",
+            label: "Status",
+            value: statusFilter,
+            options: [
+              { label: "Published", value: "published" },
+              { label: "Draft", value: "draft" },
+            ],
+          },
+          {
+            key: "menuItem",
+            label: "Menu item",
+            value: menuItemFilter,
+            options: menuItemOptions,
+          },
+          {
+            key: "topic",
+            label: "Topic",
+            value: topicFilter,
+            options: topicOptions,
+          },
+        ]}
+        onFilterChange={handleFilterChange}
+        visibleCount={sorted.length}
+        totalCount={pages.length}
+        onClear={clearFilters}
+      />
       <table className="admin-table">
         <thead>
           <tr>
@@ -146,7 +246,9 @@ export default function AdminPagesTable({ pages }: Props) {
           {sorted.length === 0 && (
             <tr>
               <td colSpan={8} className="admin-empty-state">
-                No pages found. Create your first page!
+                {pages.length === 0
+                  ? "No pages found. Create your first page!"
+                  : "No pages match the current search and filters."}
               </td>
             </tr>
           )}

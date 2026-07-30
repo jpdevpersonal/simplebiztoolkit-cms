@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { ExternalLink, Save, Trash2, X } from "lucide-react";
 
 type EditorActionsProps = {
   /** True while the save API call is in-flight */
@@ -51,6 +52,7 @@ export default function EditorActions({
     <div className="admin-form-actions">
       <div className="admin-form-actions-primary">
         <button type="submit" className="admin-btn-save" disabled={saving}>
+          <Save size={15} aria-hidden="true" />
           {saveLabel}
         </button>
         {previewHref && (
@@ -60,38 +62,8 @@ export default function EditorActions({
             target="_blank"
             rel="noopener noreferrer"
           >
+            <ExternalLink size={14} aria-hidden="true" />
             {previewLabel}
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="admin-inline-icon"
-            >
-              <path
-                d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <polyline
-                points="15 3 21 3 21 9"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <line
-                x1="10"
-                y1="14"
-                x2="21"
-                y2="3"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
           </Link>
         )}
         <button
@@ -100,6 +72,7 @@ export default function EditorActions({
           onClick={onCancel}
           disabled={saving}
         >
+          <X size={15} aria-hidden="true" />
           Cancel
         </button>
       </div>
@@ -110,6 +83,7 @@ export default function EditorActions({
           onClick={onDelete}
           disabled={deleting}
         >
+          <Trash2 size={15} aria-hidden="true" />
           {deleting ? "Deleting..." : `Delete ${entityName}`}
         </button>
       )}

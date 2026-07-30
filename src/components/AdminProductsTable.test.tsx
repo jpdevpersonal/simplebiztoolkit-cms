@@ -251,4 +251,47 @@ describe("AdminProductsTable", () => {
       expect(cell.getAttribute("data-label")).toBe(expectedLabels[i]);
     });
   });
+
+  it("searches template titles and category names", () => {
+    render(<AdminProductsTable products={products} categories={categories} />);
+
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Search templates" }),
+      { target: { value: "zucchini" } },
+    );
+
+    expect(screen.getByText("Zeta")).toBeInTheDocument();
+    expect(screen.queryByText("Alpha")).toBeNull();
+    expect(screen.getByText("1 of 2 items")).toBeInTheDocument();
+  });
+
+  it("combines status and category filters", () => {
+    render(<AdminProductsTable products={products} categories={categories} />);
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Status" }), {
+      target: { value: "published" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Category" }), {
+      target: { value: "cat-1" },
+    });
+
+    expect(screen.getByText("Alpha")).toBeInTheDocument();
+    expect(screen.queryByText("Zeta")).toBeNull();
+  });
+
+  it("shows no matches and restores rows when filters are cleared", () => {
+    render(<AdminProductsTable products={products} categories={categories} />);
+
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "Search templates" }),
+      { target: { value: "missing" } },
+    );
+    expect(
+      screen.getByText("No templates match the current search and filters."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+    expect(screen.getByText("Alpha")).toBeInTheDocument();
+    expect(screen.getByText("Zeta")).toBeInTheDocument();
+  });
 });

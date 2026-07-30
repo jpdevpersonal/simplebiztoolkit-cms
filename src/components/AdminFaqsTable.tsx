@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useDeferredValue, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Faq } from "@/lib/api";
 import AdminSortIcon from "@/components/AdminSortIcon";
+import AdminTableToolbar from "@/components/AdminTableToolbar";
 import { compareSortValues } from "@/lib/sortUtils";
 import { stripHtml } from "@/lib/sanitize";
 
@@ -16,9 +17,46 @@ type SortCol = "group" | "question" | "sortOrder" | "status";
 export default function AdminFaqsTable({ faqs }: Props) {
   const [sortBy, setSortBy] = useState<SortCol>("group");
   const [dir, setDir] = useState<"asc" | "desc">("asc");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [groupFilter, setGroupFilter] = useState("");
+  const deferredQuery = useDeferredValue(query);
+
+  const groupOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          faqs
+            .map((faq) => faq.group?.trim())
+            .filter((group): group is string => Boolean(group)),
+        ),
+      )
+        .sort((a, b) => a.localeCompare(b))
+        .map((group) => ({ label: group, value: group })),
+    [faqs],
+  );
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+
+    return faqs.filter((faq) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        [faq.q, stripHtml(faq.a || ""), faq.group ?? ""]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery);
+
+      return (
+        matchesQuery &&
+        (!statusFilter || faq.status === statusFilter) &&
+        (!groupFilter || faq.group === groupFilter)
+      );
+    });
+  }, [deferredQuery, faqs, groupFilter, statusFilter]);
 
   const sorted = useMemo(() => {
-    const copy = [...faqs];
+    const copy = [...filtered];
     copy.sort((a, b) => {
       let va: string | number;
       let vb: string | number;
@@ -49,7 +87,7 @@ export default function AdminFaqsTable({ faqs }: Props) {
       return compareSortValues(va, vb, dir);
     });
     return copy;
-  }, [faqs, sortBy, dir]);
+  }, [filtered, sortBy, dir]);
 
   const toggleSort = useCallback(
     (column: SortCol) => {
@@ -63,8 +101,46 @@ export default function AdminFaqsTable({ faqs }: Props) {
     [sortBy],
   );
 
+  const handleFilterChange = (key: string, value: string) => {
+    if (key === "status") setStatusFilter(value);
+    if (key === "group") setGroupFilter(value);
+  };
+
+  const clearFilters = () => {
+    setQuery("");
+    setStatusFilter("");
+    setGroupFilter("");
+  };
+
   return (
     <div className="admin-table-wrap">
+      <AdminTableToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchLabel="Search FAQs"
+        placeholder="Search question, answer, or group"
+        filters={[
+          {
+            key: "status",
+            label: "Status",
+            value: statusFilter,
+            options: [
+              { label: "Published", value: "published" },
+              { label: "Draft", value: "draft" },
+            ],
+          },
+          {
+            key: "group",
+            label: "Group",
+            value: groupFilter,
+            options: groupOptions,
+          },
+        ]}
+        onFilterChange={handleFilterChange}
+        visibleCount={sorted.length}
+        totalCount={faqs.length}
+        onClear={clearFilters}
+      />
       <table className="admin-table">
         <thead>
           <tr>
@@ -111,7 +187,9 @@ export default function AdminFaqsTable({ faqs }: Props) {
           {sorted.length === 0 && (
             <tr>
               <td colSpan={5} className="admin-empty-state">
-                No FAQs found. Create your first FAQ!
+                {faqs.length === 0
+                  ? "No FAQs found. Create your first FAQ!"
+                  : "No FAQs match the current search and filters."}
               </td>
             </tr>
           )}
