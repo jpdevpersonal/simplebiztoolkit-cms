@@ -20,10 +20,21 @@ export type PublishedMenuItemContent = MenuItem & {
   totalPages: number;
 };
 
-export async function getPublishedMenuItems(): Promise<MenuItem[]> {
+export async function getPublishedMenuItems(
+  options: { requireComplete?: boolean } = {},
+): Promise<MenuItem[]> {
   let menuRes = await apiService.getPublishedMenuItems();
   if (menuRes.statusCode === 404) {
     menuRes = await apiService.getMenuItems();
+  }
+
+  if (menuRes.statusCode !== 200) {
+    const error = new Error(
+      `Unable to load published menu items (HTTP ${menuRes.statusCode})`,
+    );
+    if (options.requireComplete) throw error;
+    console.error("[Menu]", error.message);
+    return [];
   }
 
   return (menuRes.data ?? []).filter((item) => item.status === "published");
@@ -63,6 +74,7 @@ export async function getOrderedPublishedMenuItems(
 
 export async function getPublishedMenuItemContent(
   item: MenuItem,
+  options: { requireComplete?: boolean } = {},
 ): Promise<PublishedMenuItemContent> {
   let directPages = (item.pages ?? []).filter(
     (page) => page.status === "published" && !page.menuCategoryId,
@@ -79,8 +91,15 @@ export async function getPublishedMenuItemContent(
         directPages = (pagesRes.data ?? []).filter(
           (page) => page.status === "published" && !page.menuCategoryId,
         );
+      } else if (options.requireComplete) {
+        throw new Error(
+          `Unable to load pages for menu item ${item.id} (HTTP ${pagesRes.statusCode})`,
+        );
       }
     } catch (error) {
+      if (options.requireComplete) {
+        throw error;
+      }
       console.error(
         `[Menu] Failed to fetch direct pages for ${item.id}:`,
         error,

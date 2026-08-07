@@ -1,5 +1,6 @@
 import "@/styles/bootstrap-custom.scss";
 import "@/styles/theme.css";
+import { unstable_noStore as noStore } from "next/cache";
 
 import SiteHeader from "@/components/SiteHeader";
 import { PRIMARY_MENU_LOCATION_KEY } from "@/lib/menuLocations";
@@ -39,39 +40,30 @@ export default async function ToolsLayout({
 }) {
   const menuNavItems: MenuNavItem[] = [];
   let navOrderIds: string[] = [];
-
   try {
     const [publishedItemsRaw, layoutOrderIds] = await withTimeout(
       Promise.all([
-        getPublishedMenuItems(),
+        getPublishedMenuItems({ requireComplete: true }),
         getMenuLayoutOrderIds(PRIMARY_MENU_LOCATION_KEY),
       ]),
       NAV_FETCH_TIMEOUT_MS,
     );
-
     const publishedItems = orderMenuItemsByLayout(
       publishedItemsRaw,
       layoutOrderIds,
     );
-
     const menuContents = await withTimeout(
       Promise.all(
         publishedItems.map((item) =>
-          getPublishedMenuItemContent(item).then((content) => ({
-            item,
-            content,
-          })),
+          getPublishedMenuItemContent(item, { requireComplete: true }).then(
+            (content) => ({ item, content }),
+          ),
         ),
       ),
       NAV_FETCH_TIMEOUT_MS,
     );
 
-    // Only commit navOrderIds after all content fetches succeed so that a
-    // partial failure does not leave navOrderIds set while menuNavItems stays
-    // empty — which would cause CMS items (Guides, Tools) to disappear and
-    // strip static items like FAQ via hidden-static tokens.
     navOrderIds = layoutOrderIds;
-
     for (const { item, content } of menuContents) {
       if (content.totalPages === 0) continue;
       menuNavItems.push({
@@ -81,8 +73,8 @@ export default async function ToolsLayout({
       });
     }
   } catch (error) {
+    noStore();
     console.error("Failed to load tools navigation", error);
-    // Navigation not critical — render header without nav items
   }
 
   return (
