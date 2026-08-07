@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { site } from "@/config/site";
 
 import "@/styles/bootstrap-public.scss";
@@ -112,7 +113,6 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Build dynamic navigation items from published menu items.
   const menuNavItems: MenuNavItem[] = [];
   let navOrderIds: string[] = [];
   let footerOrderIds: string[] = [];
@@ -120,7 +120,7 @@ export default async function PublicLayout({
     const [publishedItemsRaw, layoutOrderIds, footerLayoutOrderIds] =
       await withTimeout(
         Promise.all([
-          getPublishedMenuItems(),
+          getPublishedMenuItems({ requireComplete: true }),
           getMenuLayoutOrderIds(PRIMARY_MENU_LOCATION_KEY),
           getMenuLayoutOrderIds(FOOTER_MENU_LOCATION_KEY),
         ]),
@@ -131,30 +131,21 @@ export default async function PublicLayout({
       publishedItemsRaw,
       layoutOrderIds,
     );
-
     const menuContents = await withTimeout(
       Promise.all(
         publishedItems.map((item) =>
-          getPublishedMenuItemContent(item).then((content) => ({
-            item,
-            content,
-          })),
+          getPublishedMenuItemContent(item, { requireComplete: true }).then(
+            (content) => ({ item, content }),
+          ),
         ),
       ),
       NAV_FETCH_TIMEOUT_MS,
     );
 
-    // Only commit the ordering IDs once both fetches succeed so that a
-    // partial failure (layout order OK but content fetch timed out) does not
-    // leave navOrderIds set to a value that hides static items while
-    // menuNavItems stays empty – which previously caused the nav to show
-    // only Templates / Reviews / FAQ instead of the full set.
     navOrderIds = layoutOrderIds;
     footerOrderIds = footerLayoutOrderIds;
-
     for (const { item, content } of menuContents) {
       if (content.totalPages === 0) continue;
-
       menuNavItems.push({
         id: item.id,
         title: item.title,
@@ -162,7 +153,7 @@ export default async function PublicLayout({
       });
     }
   } catch (err) {
-    // Navigation data not critical – fall back to static items only
+    noStore();
     console.warn("[Nav] Falling back to static nav items:", err);
   }
 

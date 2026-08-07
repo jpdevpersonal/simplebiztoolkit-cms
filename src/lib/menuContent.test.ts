@@ -172,6 +172,19 @@ describe("menuContent", () => {
     ]);
   });
 
+  it("rejects menu-tree failures when complete navigation is required", async () => {
+    const { getPublishedMenuItems } = await import("./menuContent");
+
+    apiServiceMock.getPublishedMenuItems.mockResolvedValueOnce({
+      statusCode: 500,
+      error: "Backend unavailable",
+    });
+
+    await expect(
+      getPublishedMenuItems({ requireComplete: true }),
+    ).rejects.toThrow("Unable to load published menu items (HTTP 500)");
+  });
+
   it("returns slug landing href when a menu item has published categories", async () => {
     const { getMenuItemLandingHref } = await import("./menuContent");
 
@@ -207,6 +220,28 @@ describe("menuContent", () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it("rejects incomplete page hydration when complete navigation is required", async () => {
+    const { getPublishedMenuItemContent } = await import("./menuContent");
+
+    apiServiceMock.getMenuItemPages.mockResolvedValueOnce({
+      statusCode: 503,
+      error: "Service unavailable",
+    });
+
+    await expect(
+      getPublishedMenuItemContent(
+        {
+          id: "item-1",
+          title: "Guides",
+          status: "published",
+          categories: [],
+          pages: [],
+        },
+        { requireComplete: true },
+      ),
+    ).rejects.toThrow("Unable to load pages for menu item item-1 (HTTP 503)");
   });
 
   it("orders published menu items using persisted layout ids", async () => {
