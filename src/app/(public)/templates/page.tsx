@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
+import TrackedLink from "@/components/TrackedLink";
 import "@/styles/products.css";
 import { apiService } from "@/lib/api";
 import {
@@ -207,10 +207,17 @@ export default async function ProductsPage() {
 
           <div className="category-grid">
             {categories.map((c) => (
-              <Link
+              <TrackedLink
                 href={`/templates/${c.slug}`}
                 className="category-card-link"
                 key={c.slug}
+                eventName="select_item"
+                eventParams={{
+                  placement: "templates_categories",
+                  destination_type: "template_category",
+                  category_slug: c.slug,
+                  item_name: c.name,
+                }}
               >
                 <article className="category-card">
                   <div className="category-card-icon" aria-hidden="true">
@@ -237,7 +244,7 @@ export default async function ProductsPage() {
                     </svg>
                   </span>
                 </article>
-              </Link>
+              </TrackedLink>
             ))}
           </div>
         </div>

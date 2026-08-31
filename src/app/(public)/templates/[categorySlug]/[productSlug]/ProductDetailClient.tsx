@@ -1,7 +1,9 @@
 "use client";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
+import { trackPublicEvent } from "@/lib/analytics";
 import type { Product } from "@/types/product";
 import { sanitizePublicContentHtml } from "@/lib/sanitize";
 import "@/styles/bootstrap-public-components.scss";
@@ -9,6 +11,8 @@ import "@/styles/products.css";
 
 type Props = {
   product: Product;
+  enableStickyCta?: boolean;
+  enableAnalytics?: boolean;
 };
 
 type ProductDescriptionContent = {
@@ -117,9 +121,58 @@ function ProductDescription({ description }: { description: string }) {
   );
 }
 
-export default function ProductDetailClient({ product }: Props) {
+export default function ProductDetailClient({
+  product,
+  enableStickyCta = true,
+  enableAnalytics = true,
+}: Props) {
   const contentSource = product.description || product.problem;
   const { html: descriptionContent } = splitDescriptionContent(contentSource);
+  const primaryCtaRef = useRef<HTMLAnchorElement>(null);
+  const closingCtaRef = useRef<HTMLAnchorElement>(null);
+  const ctaVisibility = useRef({ primary: true, closing: false });
+  const [showStickyCta, setShowStickyCta] = useState(false);
+  const productSlug =
+    "slug" in product && typeof product.slug === "string"
+      ? product.slug
+      : product.productPageUrl?.split("/").filter(Boolean).at(-1);
+
+  const trackEtsyClick = (placement: string) => {
+    if (!enableAnalytics) return;
+
+    trackPublicEvent("outbound_etsy_click", {
+      placement,
+      destination_type: "etsy",
+      product_slug: productSlug,
+      item_name: product.title,
+    });
+  };
+
+  useEffect(() => {
+    if (!enableStickyCta || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === primaryCtaRef.current) {
+          ctaVisibility.current.primary = entry.isIntersecting;
+        }
+        if (entry.target === closingCtaRef.current) {
+          ctaVisibility.current.closing = entry.isIntersecting;
+        }
+      }
+
+      setShowStickyCta(
+        !ctaVisibility.current.primary && !ctaVisibility.current.closing,
+      );
+    });
+
+    if (primaryCtaRef.current) observer.observe(primaryCtaRef.current);
+    if (closingCtaRef.current) observer.observe(closingCtaRef.current);
+
+    return () => observer.disconnect();
+  }, [enableStickyCta]);
 
   // Compute medium (resized) image path
   const mediumSrc = (src: string) => {
@@ -199,12 +252,14 @@ export default function ProductDetailClient({ product }: Props) {
                   </span>
                 </div>
                 <a
+                  ref={primaryCtaRef}
                   href={product.etsyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackEtsyClick("product_detail_primary")}
                   className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
                 >
-                  <span>Get It Now</span>
+                  <span>Get it on Etsy</span>
                   <svg
                     width="18"
                     height="18"
@@ -319,12 +374,14 @@ export default function ProductDetailClient({ product }: Props) {
             <div className="product-detail-cta--secondary">
               <div className="product-detail-cta">
                 <a
+                  ref={closingCtaRef}
                   href={product.etsyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackEtsyClick("product_detail_closing")}
                   className="btn sb-btn-primary product-detail-cta-btn product-detail-cta-btn--primary"
                 >
-                  <span>Get It Now</span>
+                  <span>Get this template on Etsy</span>
                   <svg
                     width="18"
                     height="18"
@@ -349,25 +406,29 @@ export default function ProductDetailClient({ product }: Props) {
         {/* Related links are rendered at the page level for templates */}
       </div>
 
-      {/* Sticky Mobile CTA */}
-      {/* <div className="product-detail-sticky-cta">
-        <div className="product-detail-sticky-cta-content">
-          <div className="product-detail-sticky-price">
-            <span className="product-detail-sticky-price-label">Price:</span>
-            <span className="product-detail-sticky-price-value">
-              See our shop for pricing
-            </span>
+      {enableStickyCta && showStickyCta ? (
+        <div className="product-detail-sticky-cta">
+          <div className="product-detail-sticky-cta-content">
+            <div className="product-detail-sticky-price">
+              <span className="product-detail-sticky-price-label">
+                {product.price ? "From" : "Price"}
+              </span>
+              <span className="product-detail-sticky-price-value">
+                {product.price || "See on Etsy"}
+              </span>
+            </div>
+            <a
+              href={product.etsyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackEtsyClick("product_detail_sticky")}
+              className="btn sb-btn-primary product-detail-sticky-cta-btn"
+            >
+              Get it on Etsy
+            </a>
           </div>
-          <a
-            href={product.etsyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn sb-btn-primary product-detail-sticky-cta-btn"
-          >
-            Get It Now
-          </a>
         </div>
-      </div> */}
+      ) : null}
     </>
   );
 }

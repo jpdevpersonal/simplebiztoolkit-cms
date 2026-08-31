@@ -171,6 +171,29 @@ describe("RelatedLinksEditor", () => {
     ] as never);
   });
 
+  it("uses the fixed card controls for template related items", async () => {
+    renderControlledEditor(
+      {
+        title: "More useful resources",
+        items: [],
+      },
+      { previewVariant: "template" },
+    );
+
+    await waitFor(() => {
+      expect(clientApi.getMenuItemPages).toHaveBeenCalled();
+    });
+
+    expect(screen.getByText("Related items section")).toBeInTheDocument();
+    expect(screen.getByText("Choose related items")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add item" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("Background")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Border width")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Image size")).not.toBeInTheDocument();
+  });
+
   it("loads published destinations and updates a page link selection", async () => {
     const { user, onChange } = renderControlledEditor({
       items: [makeItem()],

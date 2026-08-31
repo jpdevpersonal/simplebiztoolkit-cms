@@ -156,7 +156,10 @@ export default async function CategoryPage({ params }: Props) {
           </div>
 
           <div id="items" className="mt-4">
-            <ProductGrid products={category.items || []} />
+            <ProductGrid
+              products={category.items || []}
+              placement="category_templates"
+            />
           </div>
           <div className="mt-3 d-flex gap-2 flex-wrap">
             <a

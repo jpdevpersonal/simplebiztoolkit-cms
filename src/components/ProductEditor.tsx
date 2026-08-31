@@ -420,12 +420,12 @@ export default function ProductEditor({
             />
           </svg>
         }
-        title="Related Links"
+        title="Related Items"
       >
         <div className="related-links-section-intro">
-          Build the links that appear beneath the template image. They stay out
-          of the description editor, use optional thumbnails, and always open in
-          the same window.
+          Choose the cards shown in the Related Items section beneath the
+          template description. Items stay out of the description editor and
+          always open in the same window.
         </div>
         <RelatedLinksEditor
           value={relatedLinks}
@@ -434,7 +434,7 @@ export default function ProductEditor({
             setRelatedLinks(value);
           }}
           previewVariant="template"
-          previewHint="This block is shown beneath the main template image on the public template page."
+          previewHint="This card section is shown beneath the template description on the public page."
         />
       </AdminFormBlock>
 

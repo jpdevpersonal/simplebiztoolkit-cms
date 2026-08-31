@@ -371,6 +371,25 @@ button:focus-visible {
   background: var(--sb-soft);
 }
 
+.sb-info-tile-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  color: var(--sb-green);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.sb-info-tile-cta svg {
+  transition: transform 0.2s ease;
+}
+
+.sb-content-link:hover .sb-info-tile-cta svg,
+.sb-content-link:focus-visible .sb-info-tile-cta svg {
+  transform: translateX(2px);
+}
+
 .sb-muted {
   color: var(--sb-muted);
 }
