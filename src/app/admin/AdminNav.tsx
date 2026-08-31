@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
+  BarChart3,
   CircleHelp,
   FileText,
   LayoutDashboard,
@@ -51,6 +52,12 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/cms/pages", label: "Pages", exact: false, icon: FileText },
       { href: "/cms/faqs", label: "FAQs", exact: false, icon: CircleHelp },
+      {
+        href: "/cms/stats",
+        label: "Site Statistics",
+        exact: false,
+        icon: BarChart3,
+      },
     ],
   },
   {
