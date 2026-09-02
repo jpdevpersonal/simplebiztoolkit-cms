@@ -13,28 +13,59 @@ import EtsyCtaButton from "@/components/EtsyCtaButton";
 import { featuredProducts } from "@/data/featured";
 import { featuredTools } from "@/data/featuredTools";
 import { featureFlags } from "@/config/featureFlags";
-import { formatTrustCount, formatTrustRating, site } from "@/config/site";
+import { apiService } from "@/lib/api";
+import {
+  getStarSellerLabel,
+  toVisibleStatMap,
+  type StatValueMap,
+} from "@/lib/stats";
 import { createFaqJsonLd } from "@/lib/seo";
 
 // Matches getMenuItemLandingHref() for the "Tools" menu item.
 const TOOLS_LANDING_HREF = "/pages/tools";
 
-const rating = formatTrustRating(site.trust.ratingValue);
-const reviews = formatTrustCount(site.trust.reviewCount);
-const sales = formatTrustCount(site.trust.salesCount);
+export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title:
-    "Printable Small Business Templates & Tools | Invoices, Time Sheets, Ledgers",
-  description: `Printable templates for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, accounting ledgers, rent trackers and planners — instant PDF downloads via Etsy. ${rating} rated Etsy Star Seller with ${sales} sales.`,
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Printable Small Business Templates & Tools | Simple Biz Toolkit",
-    description:
-      "Printable invoices, time sheets, ledgers and planners for small business owners, freelancers and online sellers. Instant downloads via Etsy.",
-    url: "/",
-  },
-};
+const listFormatter = new Intl.ListFormat("en-GB", {
+  style: "long",
+  type: "conjunction",
+});
+
+async function getVisibleStats(): Promise<StatValueMap> {
+  const response = await apiService.getStats();
+  return toVisibleStatMap(response.data);
+}
+
+/** Comma-separated trust summary appended to the meta description. */
+function buildTrustSummary(stats: StatValueMap): string {
+  const fragments: string[] = [];
+
+  if (stats.rating) fragments.push(`${stats.rating} average rating`);
+  if (stats.reviews) fragments.push(`${stats.reviews} reviews`);
+  if (stats.sales) fragments.push(`${stats.sales} sales`);
+
+  const starSeller = getStarSellerLabel(stats["star-seller"]);
+  if (starSeller) fragments.push(starSeller);
+
+  return fragments.length > 0 ? ` ${fragments.join(", ")}.` : "";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const stats = await getVisibleStats();
+
+  return {
+    title:
+      "Printable Small Business Templates & Tools | Invoices, Time Sheets, Ledgers",
+    description: `Printable templates for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, accounting ledgers, rent trackers and planners — instant PDF downloads via Etsy.${buildTrustSummary(stats)}`,
+    alternates: { canonical: "/" },
+    openGraph: {
+      title: "Printable Small Business Templates & Tools | Simple Biz Toolkit",
+      description:
+        "Printable invoices, time sheets, ledgers and planners for small business owners, freelancers and online sellers. Instant downloads via Etsy.",
+      url: "/",
+    },
+  };
+}
 
 const homeFaqItems = [
   {
@@ -69,14 +100,26 @@ const homeFaqItems = [
   },
 ];
 
-export default function HomePage() {
-  const trust = [
-    `${rating} average Etsy rating`,
-    `${reviews} customer reviews`,
-    `${sales} sales`,
-    "Etsy Star Seller",
-    "Secure checkout via Etsy",
-  ];
+export default async function HomePage() {
+  const stats = await getVisibleStats();
+  const starSellerLabel = getStarSellerLabel(stats["star-seller"]);
+
+  const trust: string[] = [];
+  if (stats.rating) trust.push(`${stats.rating} average Etsy rating`);
+  if (stats.reviews) trust.push(`${stats.reviews} customer reviews`);
+  if (stats.sales) trust.push(`${stats.sales} sales`);
+  if (starSellerLabel) trust.push(starSellerLabel);
+  trust.push("Secure checkout via Etsy");
+
+  const aboutTrustClauses: string[] = [];
+  if (stats.sales) aboutTrustClauses.push(`${stats.sales} sales`);
+  if (stats.rating) aboutTrustClauses.push(`a ${stats.rating} average rating`);
+  if (starSellerLabel) aboutTrustClauses.push(`${starSellerLabel} status`);
+
+  const aboutTrustSentence =
+    aboutTrustClauses.length > 0
+      ? `With ${listFormatter.format(aboutTrustClauses)}, we focus on creating simple solutions that make everyday business tasks easier.`
+      : "We focus on creating simple solutions that make everyday business tasks easier.";
 
   const homeFaqJsonLd = createFaqJsonLd(homeFaqItems);
 
@@ -112,19 +155,18 @@ export default function HomePage() {
         <div className="container">
           <div className="sb-hero-inner">
             <span className="sb-hero-eyebrow">
-              Simple solutions for everyday business
+              Practical tools for independent businesses
             </span>
 
             <h1 className="sb-hero-title">
-              <div>Simple tools</div> <div>Less admin</div>{" "}
-              <div>More business</div>
+              Simple business templates &amp; tools that keep work moving
             </h1>
 
             <p className="sb-hero-subtitle sb-speakable">
-              Practical templates and free business tools for small business
-              owners, online sellers, freelancers and landlords. Stay organised,
-              save time and get everyday business tasks done without unnecessary
-              complexity.
+              Instant-download invoices, time sheets, accounting ledgers, rent
+              trackers and planners for small business owners, online sellers,
+              freelancers and landlords. Print on A4 or US Letter, or fill in
+              digitally — no software subscription needed.
             </p>
 
             <div className="sb-hero-actions">
@@ -639,11 +681,17 @@ export default function HomePage() {
             <span className="sb-section-eyebrow">About</span>
             <h2 id="sb-about-heading">About Simple Biz Toolkit</h2>
             <p className="sb-muted">
-              Simple Biz Toolkit creates practical templates and free tools for
-              independent businesses. No complicated software or unnecessary
-              subscriptions — just straightforward tools that help small
-              business owners, online sellers, freelancers and landlords get
-              everyday admin done.
+              Simple Biz Toolkit provides practical business tools and
+              ready-to-use templates designed to help small business owners and
+              online sellers stay organised and save time. {aboutTrustSentence}
+            </p>
+            <p className="sb-muted">
+              Our collection includes printable PDFs, fillable PDFs, and
+              easy-to-use business tools covering accounting ledgers, invoices,
+              estimates and quotes, timesheets, rent payment records, expense
+              trackers, petty cash logs, sign-in sheets, meeting notes, order
+              forms, business trackers, and service records. Everything is
+              designed to be straightforward, reusable, and available instantly.
             </p>
             <p className="mb-0">
               <Link href="/about" className="sb-content-link">

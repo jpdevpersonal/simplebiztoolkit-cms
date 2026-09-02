@@ -15,6 +15,7 @@ import {
   sendHttpRequest,
   unwrapDataEnvelope,
 } from "@/lib/httpTransport";
+import type { BulkStatInput, SiteStat, StatInput } from "@/lib/stats";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE";
 type ApiScope = "public" | "admin";
@@ -431,6 +432,35 @@ export const adminApi = {
   deleteFaq(id: string) {
     return request<void>("admin", buildAdminPath("faqs", id), {
       method: "DELETE",
+    });
+  },
+
+  getStats() {
+    return request<SiteStat[]>("admin", buildAdminPath("stats"));
+  },
+
+  getStat(name: string) {
+    return request<SiteStat>(
+      "admin",
+      buildAdminPath("stats", encodeURIComponent(name)),
+    );
+  },
+
+  updateStat(name: string, stat: StatInput) {
+    return request<SiteStat>(
+      "admin",
+      buildAdminPath("stats", encodeURIComponent(name)),
+      {
+        method: "PUT",
+        body: stat,
+      },
+    );
+  },
+
+  updateStats(stats: BulkStatInput[]) {
+    return request<SiteStat[]>("admin", buildAdminPath("stats"), {
+      method: "PUT",
+      body: stats,
     });
   },
 };
