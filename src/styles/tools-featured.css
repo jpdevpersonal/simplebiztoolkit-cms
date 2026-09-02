@@ -83,6 +83,25 @@
   color: inherit;
 }
 
+.tool-card-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tool-card-title-link:hover,
+.tool-card:hover .tool-card-title-link {
+  color: var(--sb-brand-blue);
+  text-decoration: underline;
+}
+
+.tool-card-title-link:focus-visible,
+.tool-card-link:focus-visible,
+.tool-thumb-link:focus-visible {
+  outline: 2px solid var(--sb-brand-blue);
+  outline-offset: 2px;
+  border-radius: var(--sb-radius-sm);
+}
+
 .tool-card {
   cursor: pointer;
   transition:
@@ -99,6 +118,11 @@
 
 .tool-card:hover {
   transform: translateY(-2px);
+  border-color: var(--sb-border-strong);
+  box-shadow: var(--sb-shadow-hover);
+}
+
+.tool-card:focus-within {
   border-color: var(--sb-border-strong);
   box-shadow: var(--sb-shadow-hover);
 }
