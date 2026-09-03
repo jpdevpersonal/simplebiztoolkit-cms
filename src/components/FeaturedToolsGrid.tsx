@@ -30,7 +30,11 @@ export default function FeaturedToolsGrid({ tools }: { tools: Tool[] }) {
               </Link>
             </div>
             <div className="tool-card-content">
-              <h3 className="tool-card-title">{tool.title}</h3>
+              <h3 className="tool-card-title">
+                <Link href={tool.href} className="tool-card-title-link">
+                  {tool.title}
+                </Link>
+              </h3>
               <p className="tool-card-tagline">{tool.tagline}</p>
               <ul className="tool-card-bullets">
                 {tool.bullets.map((bullet) => (

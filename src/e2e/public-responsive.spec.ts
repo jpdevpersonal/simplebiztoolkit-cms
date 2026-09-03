@@ -43,11 +43,14 @@ test.describe("Public responsive design", () => {
       await expect(
         page.getByRole("heading", {
           level: 1,
-          name: /simple business templates & tools\s+that keep work moving/i,
+          name: /simple business templates\s+&\s+tools that keep work moving/i,
         }),
       ).toBeVisible();
       await expect(
-        page.getByRole("link", { name: /browse all templates/i }).first(),
+        page.getByRole("link", { name: /^browse templates$/i }).first(),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /try free tools/i }).first(),
       ).toBeVisible();
       await expect(page.locator(".sb-site-header")).toBeVisible();
       await expectNoHorizontalOverflow(page);

@@ -36,7 +36,14 @@ export default function ProductGrid({ products }: { products: Product[] }) {
               <div className="product-card-content">
                 {p && (
                   <>
-                    <h3 className="product-card-title">{p.title}</h3>
+                    <h3 className="product-card-title">
+                      <Link
+                        href={toTemplatesRoute(p.productPageUrl) || "#"}
+                        className="product-card-title-link"
+                      >
+                        {p.title}
+                      </Link>
+                    </h3>
                     {/<[a-z][\s\S]*>/i.test(p.problem ?? "") ? (
                       <div
                         className="product-card-problem"
