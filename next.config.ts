@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
   },
-  // REMOVED: output: 'export' - Now using dynamic mode with ISR
+  output: "standalone",
   trailingSlash: false,
 
   // isomorphic-dompurify and jsdom use fs.readFileSync internally —
