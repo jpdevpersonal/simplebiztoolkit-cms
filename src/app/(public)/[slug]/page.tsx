@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import JsonLd from "@/components/JsonLd";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { slugify } from "@/lib/slugify";
 import Image from "next/image";
@@ -9,6 +10,7 @@ import { ContentRenderer } from "@/components/ContentRenderer";
 import "@/styles/bootstrap-public-components.scss";
 import { apiService } from "@/lib/api";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
+import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import {
   getPublishedMenuItemContent,
   getPublishedMenuItems,
@@ -20,6 +22,7 @@ import {
   normalizePublicUrl,
 } from "@/lib/seo";
 import "@/styles/contentPage.css";
+import "@/styles/products.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -197,6 +200,9 @@ export default async function MenuItemPageView({ params }: Props) {
       })
     : null;
 
+  const { htmlWithoutRelatedLinks, blocks: relatedLinksBlocks } =
+    extractRelatedLinksBlocksFromHtml(page.content ?? "");
+
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
@@ -237,8 +243,24 @@ export default async function MenuItemPageView({ params }: Props) {
 
         {/* Page content */}
         <article>
-          <ContentRenderer html={page.content ?? ""} />
+          <ContentRenderer html={htmlWithoutRelatedLinks} />
         </article>
+
+        {relatedLinksBlocks.length > 0 ? (
+          <div style={{ paddingTop: "1.5rem" }}>
+            {relatedLinksBlocks.map((block, index) => (
+              <RelatedLinksBlock
+                key={`${block.title}-${index}`}
+                title={block.title}
+                items={block.items}
+                backgroundColor={block.backgroundColor}
+                borderWidth={block.borderWidth}
+                imageSize={block.imageSize}
+                variant="template"
+              />
+            ))}
+          </div>
+        ) : null}
 
         {!isStandaloneMenuPage && (
           <SiteBreadcrumb items={breadcrumbItems} bottom />

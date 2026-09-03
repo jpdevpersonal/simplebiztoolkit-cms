@@ -303,6 +303,40 @@ describe("ContentRenderer", () => {
     ).toHaveClass("related-links-block__link--no-image");
   });
 
+  it("renders page related links with the template related-items layout when requested", () => {
+    const html = `<section data-sbt-block="related-links" data-title="Keep reading" data-items="${encodeRelatedLinksItems(
+      [
+        {
+          uid: "link-1",
+          kind: "page",
+          refId: "page-1",
+          href: "/startup-checklist",
+          destinationTitle: "Startup checklist",
+          label: null,
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+      ],
+    )}"></section>`;
+
+    const { container } = render(
+      <ContentRenderer html={html} relatedLinksVariant="template" />,
+    );
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Keep reading" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Related items")).toBeInTheDocument();
+    expect(screen.getByText("Read more")).toBeInTheDocument();
+    expect(container.querySelector(".related-links-block")).toHaveClass(
+      "related-links-block--template",
+    );
+    expect(
+      container.querySelector(".related-links-block__media--placeholder"),
+    ).not.toBeNull();
+  });
+
   it("removes the image column entirely when a block has no thumbnails", () => {
     const html = `<section data-sbt-block="related-links" data-items="${encodeRelatedLinksItems(
       [
