@@ -11,6 +11,7 @@ import {
   unwrapDataEnvelope,
 } from "@/lib/httpTransport";
 import { getApiBaseUrl } from "@/config/apiBaseUrl";
+import type { SiteStat } from "@/lib/stats";
 
 // API Response Types
 export interface ApiResponse<T> {
@@ -804,6 +805,30 @@ class ApiService {
     return this.fetchApi<void>(
       `/api/admin/faqs/${id}`,
       { method: "DELETE" },
+      undefined,
+      true,
+    );
+  }
+
+  // ==================== SITE STATS ENDPOINTS ====================
+
+  /**
+   * Get visible site stats (public). Hidden stats are omitted by the backend.
+   */
+  async getStats(): Promise<ApiResponse<SiteStat[]>> {
+    return this.fetchApi<SiteStat[]>("/api/stats", { method: "GET" }, [
+      "stats",
+    ]);
+  }
+
+  /**
+   * Get all site stats including hidden ones (admin only)
+   */
+  async getStatsAdmin(): Promise<ApiResponse<SiteStat[]>> {
+    noStore();
+    return this.fetchApi<SiteStat[]>(
+      "/api/admin/stats",
+      { method: "GET" },
       undefined,
       true,
     );

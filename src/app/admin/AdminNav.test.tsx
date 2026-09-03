@@ -24,6 +24,7 @@ describe("AdminNav", () => {
     expect(screen.getByText("Menu Manager")).toBeInTheDocument();
     expect(screen.getByText("Menu Items")).toBeInTheDocument();
     expect(screen.getByText("Pages")).toBeInTheDocument();
+    expect(screen.getByText("Site Statistics")).toBeInTheDocument();
   });
 
   it("groups navigation into clear workspace sections", () => {

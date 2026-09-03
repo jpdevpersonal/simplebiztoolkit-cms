@@ -43,7 +43,7 @@ test.describe("Public responsive design", () => {
       await expect(
         page.getByRole("heading", {
           level: 1,
-          name: /simple tools\s+less admin\s+more business/i,
+          name: /simple business templates\s+&\s+tools that keep work moving/i,
         }),
       ).toBeVisible();
       await expect(
