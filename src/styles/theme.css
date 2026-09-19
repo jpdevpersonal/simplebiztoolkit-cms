@@ -471,7 +471,8 @@ h3 {
   font-size: clamp(1.125rem, 3vw, 1.375rem);
 }
 
-.sb-btn-primary {
+.sb-btn-primary,
+.btn.sb-btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -482,6 +483,7 @@ h3 {
   background: var(--sb-btn-bg, var(--sb-gradient-primary)) !important;
   font-weight: 600;
   font-size: 1.0625rem;
+  line-height: 1.2;
   padding: var(--sb-btn-padding, 0.875rem 1.75rem);
   transition:
     transform 0.2s ease,
@@ -491,7 +493,8 @@ h3 {
   min-height: var(--sb-control-height);
   letter-spacing: 0;
 }
-.sb-btn-primary:hover {
+.sb-btn-primary:hover,
+.btn.sb-btn-primary:hover {
   background: var(
     --sb-btn-bg-hover,
     var(--sb-gradient-primary-hover)
@@ -499,12 +502,14 @@ h3 {
   transform: translateY(-1px);
   box-shadow: var(--sb-shadow-glow);
 }
-.sb-btn-primary:active {
+.sb-btn-primary:active,
+.btn.sb-btn-primary:active {
   transform: translateY(0);
   box-shadow: none;
 }
 
-.sb-btn-ghost {
+.sb-btn-ghost,
+.btn.sb-btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -514,6 +519,7 @@ h3 {
   border-radius: var(--sb-radius-sm);
   font-weight: 600;
   font-size: 1.0625rem;
+  line-height: 1.2;
   padding: 0.75rem 1.5rem;
   transition:
     transform 0.2s ease,
@@ -524,7 +530,8 @@ h3 {
   background: transparent !important;
   letter-spacing: 0;
 }
-.sb-btn-ghost:hover {
+.sb-btn-ghost:hover,
+.btn.sb-btn-ghost:hover {
   background: var(--sb-brand-blue) !important;
   color: #fff !important;
   box-shadow: var(--sb-shadow-xs);
