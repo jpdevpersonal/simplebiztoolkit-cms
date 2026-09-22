@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { links } from "@/config/links";
 import type { AnchorHTMLAttributes } from "react";
+import { trackPublicEvent } from "@/lib/analytics";
 
 interface EtsyCtaButtonProps extends Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -12,6 +13,7 @@ interface EtsyCtaButtonProps extends Omit<
   href?: string;
   className?: string;
   hideOnHome?: boolean;
+  analyticsPlacement?: string;
 }
 
 export default function EtsyCtaButton({
@@ -19,6 +21,8 @@ export default function EtsyCtaButton({
   href = links.etsyShopUrl,
   className,
   hideOnHome = true,
+  analyticsPlacement = "etsy_cta",
+  onClick,
   ...rest
 }: EtsyCtaButtonProps) {
   const pathname = usePathname();
@@ -32,6 +36,13 @@ export default function EtsyCtaButton({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={(event) => {
+        trackPublicEvent("outbound_etsy_click", {
+          placement: analyticsPlacement,
+          destination_type: "etsy",
+        });
+        onClick?.(event);
+      }}
       {...rest}
     >
       {label}

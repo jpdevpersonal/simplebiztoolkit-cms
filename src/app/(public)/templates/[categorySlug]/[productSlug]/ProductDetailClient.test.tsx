@@ -1,8 +1,14 @@
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { encodeRelatedLinksItems } from "@/lib/relatedLinks";
 
 import ProductDetailClient from "./ProductDetailClient";
+
+const trackPublicEventMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/analytics", () => ({
+  trackPublicEvent: trackPublicEventMock,
+}));
 
 vi.mock("next/image", () => ({
   __esModule: true,
@@ -35,6 +41,86 @@ const product = {
 };
 
 describe("ProductDetailClient", () => {
+  it("shows an exact-product sticky CTA only while both in-flow CTAs are offscreen", () => {
+    let observerCallback: IntersectionObserverCallback = () => {};
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+
+    class MockIntersectionObserver {
+      constructor(callback: IntersectionObserverCallback) {
+        observerCallback = callback;
+      }
+
+      observe = observe;
+      disconnect = disconnect;
+      unobserve = vi.fn();
+      takeRecords = vi.fn();
+      root = null;
+      rootMargin = "0px";
+      thresholds = [0];
+    }
+
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
+    const { container } = render(<ProductDetailClient product={product} />);
+
+    const inFlowCtas = screen.getAllByRole("link", { name: /etsy/i });
+    expect(inFlowCtas).toHaveLength(2);
+
+    act(() => {
+      observerCallback(
+        inFlowCtas.map(
+          (target) =>
+            ({ target, isIntersecting: false }) as IntersectionObserverEntry,
+        ),
+        {} as IntersectionObserver,
+      );
+    });
+
+    const stickyCta = container.querySelector(".product-detail-sticky-cta-btn");
+    expect(stickyCta).not.toBeNull();
+    expect(stickyCta).toHaveAttribute("href", product.etsyUrl);
+
+    act(() => {
+      observerCallback(
+        [
+          {
+            target: inFlowCtas[1],
+            isIntersecting: true,
+          } as IntersectionObserverEntry,
+        ],
+        {} as IntersectionObserver,
+      );
+    });
+
+    expect(
+      container.querySelector(".product-detail-sticky-cta-btn"),
+    ).toBeNull();
+  });
+
+  it("does not create sticky CTA behavior in preview mode", () => {
+    const observer = vi.fn();
+    vi.stubGlobal("IntersectionObserver", observer);
+
+    render(<ProductDetailClient product={product} enableStickyCta={false} />);
+
+    expect(observer).not.toHaveBeenCalled();
+    expect(screen.getAllByRole("link", { name: /etsy/i })).toHaveLength(2);
+  });
+
+  it("tracks the primary exact-product Etsy exit without PII", () => {
+    render(<ProductDetailClient product={product} />);
+
+    fireEvent.click(screen.getByRole("link", { name: "Get it on Etsy" }));
+
+    expect(trackPublicEventMock).toHaveBeenCalledWith("outbound_etsy_click", {
+      placement: "product_detail_primary",
+      destination_type: "etsy",
+      product_slug: "budget-planner",
+      item_name: "Budget Planner",
+    });
+  });
+
   it("renders a single page-level H1", () => {
     const { container } = render(<ProductDetailClient product={product} />);
 

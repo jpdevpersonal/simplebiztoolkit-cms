@@ -494,7 +494,11 @@ function parseContent(html: string): ContentBlock[] {
 /**
  * Render a single content block
  */
-function renderBlock(block: ContentBlock, index: number): React.ReactNode {
+function renderBlock(
+  block: ContentBlock,
+  index: number,
+  relatedLinksVariant: "content" | "template" = "content",
+): React.ReactNode {
   switch (block.type) {
     case "section":
       return (
@@ -855,7 +859,7 @@ function renderBlock(block: ContentBlock, index: number): React.ReactNode {
           backgroundColor={block.relatedLinksBackgroundColor}
           borderWidth={block.relatedLinksBorderWidth}
           imageSize={block.relatedLinksImageSize}
-          variant="content"
+          variant={relatedLinksVariant}
         />
       );
 
@@ -892,13 +896,21 @@ export function DynamicContentRenderer({ html }: { html: string }) {
  * Server-safe Content Renderer (Recommended)
  * Uses regex parsing to avoid DOMParser on server
  */
-export function ContentRenderer({ html }: { html: string }) {
+export function ContentRenderer({
+  html,
+  relatedLinksVariant = "content",
+}: {
+  html: string;
+  relatedLinksVariant?: "content" | "template";
+}) {
   const sanitized = sanitizePublicContentHtml(html);
   const blocks = parseContentServer(sanitized);
 
   return (
     <>
-      {blocks.map((block, index) => renderBlock(block, index))}
+      {blocks.map((block, index) =>
+        renderBlock(block, index, relatedLinksVariant),
+      )}
       <ContentFooter />
     </>
   );

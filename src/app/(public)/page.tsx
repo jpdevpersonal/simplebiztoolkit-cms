@@ -10,6 +10,7 @@ import TestimonialGrid from "@/components/TestimonialGrid";
 import ProductGrid from "@/components/ProductGrid";
 import FeaturedToolsGrid from "@/components/FeaturedToolsGrid";
 import EtsyCtaButton from "@/components/EtsyCtaButton";
+import TrackedLink from "@/components/TrackedLink";
 import { featuredProducts } from "@/data/featured";
 import { featuredTools } from "@/data/featuredTools";
 import { featureFlags } from "@/config/featureFlags";
@@ -170,7 +171,15 @@ export default async function HomePage() {
             </p>
 
             <div className="sb-hero-actions">
-              <Link href="/templates" className="btn sb-btn-primary sb-btn-lg">
+              <TrackedLink
+                href="/templates"
+                className="btn sb-btn-primary sb-btn-lg"
+                eventName="cta_click"
+                eventParams={{
+                  placement: "homepage_hero_primary",
+                  destination_type: "template_category",
+                }}
+              >
                 Browse Templates
                 <svg
                   className="sb-btn-arrow"
@@ -188,10 +197,18 @@ export default async function HomePage() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </Link>
-              <Link href={TOOLS_LANDING_HREF} className="sb-btn-ghost-hero">
+              </TrackedLink>
+              <TrackedLink
+                href={TOOLS_LANDING_HREF}
+                className="sb-btn-ghost-hero"
+                eventName="cta_click"
+                eventParams={{
+                  placement: "homepage_hero_secondary",
+                  destination_type: "tool",
+                }}
+              >
                 Try Free Tools
-              </Link>
+              </TrackedLink>
             </div>
 
             <p className="sb-hero-reassurance">
@@ -234,7 +251,10 @@ export default async function HomePage() {
               print and use.
             </p>
           </div>
-          <ProductGrid products={featuredProducts} />
+          <ProductGrid
+            products={featuredProducts}
+            placement="homepage_popular_templates"
+          />
           <div className="text-center mt-4">
             <Link href="/templates" className="btn sb-btn-ghost">
               Browse all templates
@@ -309,15 +329,40 @@ export default async function HomePage() {
               },
             ].map((cat) => (
               <div className="col-md-6 col-lg-3" key={cat.href}>
-                <Link
+                <TrackedLink
                   href={cat.href}
                   className="sb-content-link d-block h-100 text-reset text-decoration-none"
+                  eventName="select_item"
+                  eventParams={{
+                    placement: "homepage_template_categories",
+                    destination_type: "template_category",
+                    category_slug: cat.href.split("/").at(-1),
+                    item_name: cat.title,
+                  }}
                 >
                   <article className="sb-info-tile h-100">
                     <h3 className="sb-tile-title">{cat.title}</h3>
                     <p className="sb-muted sb-small-copy mb-0">{cat.blurb}</p>
+                    <span className="sb-info-tile-cta">
+                      Browse
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M3 8h10M9 4l4 4-4 4"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
                   </article>
-                </Link>
+                </TrackedLink>
               </div>
             ))}
           </div>
@@ -373,7 +418,11 @@ export default async function HomePage() {
           </div>
 
           <div className="text-center mt-4">
-            <EtsyCtaButton label="Browse the full shop" hideOnHome={false} />
+            <EtsyCtaButton
+              label="Browse the full shop"
+              hideOnHome={false}
+              analyticsPlacement="homepage_testimonials"
+            />
           </div>
         </div>
       </section>
@@ -711,9 +760,17 @@ export default async function HomePage() {
             fit for your business in minutes.
           </p>
           <div className="d-flex justify-content-center flex-wrap gap-3">
-            <Link href="/templates" className="btn sb-btn-primary sb-btn-lg">
+            <TrackedLink
+              href="/templates"
+              className="btn sb-btn-primary sb-btn-lg"
+              eventName="cta_click"
+              eventParams={{
+                placement: "homepage_final",
+                destination_type: "template_category",
+              }}
+            >
               Browse Templates
-            </Link>
+            </TrackedLink>
             <Link href="/faq" className="btn sb-btn-ghost">
               Read the FAQ
             </Link>

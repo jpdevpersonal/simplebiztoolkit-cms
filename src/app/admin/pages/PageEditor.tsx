@@ -895,26 +895,26 @@ export default function PageEditor({
 
           <AdminFormBlock
             icon={contentIcon}
-            title="Related Links"
+            title="Related Items"
             className={
               collapsedSections.relatedLinks
                 ? "admin-form-block--collapsed"
                 : undefined
             }
-            headerActions={renderSectionToggle("relatedLinks", "Related Links")}
+            headerActions={renderSectionToggle("relatedLinks", "Related Items")}
           >
             {!collapsedSections.relatedLinks && (
               <>
                 <div className="related-links-section-intro">
-                  Build the links that appear inline within the page content.
-                  They are managed separately from the content editor, with the
-                  saved block appended after the main page content.
+                  Choose the cards shown in the Related Items section beneath
+                  the page content. Items stay out of the content editor and
+                  always open in the same window.
                 </div>
                 <RelatedLinksEditor
                   value={relatedLinks}
                   onChange={handleRelatedLinksChange}
-                  previewVariant="content"
-                  previewHint="This block is rendered inline in the public page content flow."
+                  previewVariant="template"
+                  previewHint="This card section is shown beneath the page content on the public page."
                 />
               </>
             )}

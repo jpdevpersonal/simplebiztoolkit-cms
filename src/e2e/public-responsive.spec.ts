@@ -122,4 +122,58 @@ test.describe("Public responsive design", () => {
       });
     }
   }
+
+  test("mobile product detail keeps the exact purchase path visible", async ({
+    page,
+    request,
+  }) => {
+    test.skip(
+      !(await isApiAvailable(request)),
+      "Backend API is unavailable through the local Next.js proxy",
+    );
+
+    await page.setViewportSize(viewports[1]);
+    await page.goto("/templates/accounting-ledger");
+
+    const firstProductLink = page.locator(".product-card-title-link").first();
+    const productHref = await firstProductLink.getAttribute("href");
+    expect(productHref).toMatch(/^\/templates\/[^/]+\/[^/]+$/);
+
+    await page.goto(productHref!);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator(".sb-sticky-cta")).toHaveCount(0);
+
+    const primaryCta = page.locator(".product-detail-cta-btn--primary").first();
+    const etsyHref = await primaryCta.getAttribute("href");
+    expect(etsyHref).toMatch(/^https:\/\//);
+
+    await page.locator(".product-detail-features").scrollIntoViewIfNeeded();
+    const stickyCta = page.locator(".product-detail-sticky-cta-btn");
+    await expect(stickyCta).toBeVisible();
+    await expect(stickyCta).toHaveAttribute("href", etsyHref!);
+
+    const closingCta = page
+      .locator(".product-detail-cta--secondary .product-detail-cta-btn")
+      .first();
+    await closingCta.scrollIntoViewIfNeeded();
+    await expect(stickyCta).toBeHidden();
+
+    await expect(page.getByText("Keep browsing", { exact: true })).toHaveCount(
+      0,
+    );
+
+    const relatedSections = page.locator(".related-links-block--template");
+    const relatedSectionCount = await relatedSections.count();
+    if (relatedSectionCount > 0) {
+      const relatedSection = relatedSections.first();
+      await expect(relatedSection).toBeVisible();
+      await expect(
+        relatedSection.locator(".related-links-block__item"),
+      ).not.toHaveCount(0);
+      await expect(
+        relatedSection.locator(".related-links-block__cta").first(),
+      ).toBeVisible();
+    }
+    await expectNoHorizontalOverflow(page);
+  });
 });

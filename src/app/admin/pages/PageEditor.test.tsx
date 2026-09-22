@@ -39,8 +39,17 @@ vi.mock("@/components/RichContentField", () => ({
 
 vi.mock("@/components/RelatedLinksEditor", () => ({
   __esModule: true,
-  default: ({ value }: { value?: { items?: unknown[] } }) => (
-    <div data-testid="related-links-editor">
+  default: ({
+    value,
+    previewVariant,
+  }: {
+    value?: { items?: unknown[] };
+    previewVariant?: string;
+  }) => (
+    <div
+      data-testid="related-links-editor"
+      data-preview-variant={previewVariant}
+    >
       {(value?.items ?? []).length} related link(s)
     </div>
   ),
@@ -529,7 +538,7 @@ describe("PageEditor", () => {
     expect(contentRow).toContainElement(contentToggle);
   });
 
-  it("renders a dedicated related links section and keeps it out of the content editor", async () => {
+  it("renders template-style related items and keeps them out of the content editor", async () => {
     const relatedLinksHtml = serializeRelatedLinksBlockToHtml({
       title: "Related to this",
       items: [
@@ -572,9 +581,13 @@ describe("PageEditor", () => {
 
     await waitForMenuCategoriesLoad();
 
-    expect(screen.getByText("Related Links")).toBeInTheDocument();
+    expect(screen.getByText("Related Items")).toBeInTheDocument();
     expect(screen.getByTestId("related-links-editor")).toHaveTextContent(
       "1 related link(s)",
+    );
+    expect(screen.getByTestId("related-links-editor")).toHaveAttribute(
+      "data-preview-variant",
+      "template",
     );
     expect(
       screen.getByTestId("rich-content-page-content-mode"),
