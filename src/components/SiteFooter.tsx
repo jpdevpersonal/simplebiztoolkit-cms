@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { links } from "@/config/links";
 import { formatTrustCount, formatTrustRating, site } from "@/config/site";
+import { apiService } from "@/lib/api";
+import { toVisibleStatMap, getStarSellerLabel } from "@/lib/stats";
 import {
   composeOrderedMenuEntries,
   getOrderedMenuEntryHref,
@@ -18,14 +20,40 @@ type Props = {
   navOrderIds?: string[];
 };
 
-export default function SiteFooter({
+export default async function SiteFooter({
   menuNavItems = [],
   navOrderIds = [],
 }: Props) {
   const year = new Date().getFullYear();
-  const rating = formatTrustRating(site.trust.ratingValue);
-  const reviews = formatTrustCount(site.trust.reviewCount);
-  const sales = formatTrustCount(site.trust.salesCount);
+
+  // Attempt to fetch live, visible stats from the API. Fall back to
+  // the static `site` config when the API is unavailable or returns
+  // no visible values.
+  let rating = formatTrustRating(site.trust.ratingValue);
+  let reviews = formatTrustCount(site.trust.reviewCount);
+  let sales = formatTrustCount(site.trust.salesCount);
+  let starSellerDefault = "Etsy Star Seller";
+
+  try {
+    const resp = await apiService.getStats();
+    const visible = toVisibleStatMap(resp.data);
+
+    if (visible.rating) rating = visible.rating;
+    if (visible.reviews) reviews = visible.reviews;
+    if (visible.sales) sales = visible.sales;
+
+    // If the API includes an explicit star-seller stat, use it (may be
+    // a custom label or intentionally hidden). Otherwise fall back to
+    // the static site default.
+    if (Object.prototype.hasOwnProperty.call(visible, "star-seller")) {
+      starSellerDefault = getStarSellerLabel(visible["star-seller"]);
+    }
+  } catch (err) {
+    // Ignore and use site config values as fallback.
+    // Keep console logging for visibility during server renders.
+    // eslint-disable-next-line no-console
+    console.warn("[SiteFooter] Failed to fetch live stats:", err);
+  }
   const managedFooterEntries = composeOrderedMenuEntries(
     menuNavItems,
     navOrderIds,
@@ -85,9 +113,11 @@ export default function SiteFooter({
               <span aria-hidden="true">✓</span> {sales} sales
             </span>
             <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> Etsy Star Seller
-            </span>
+            {starSellerDefault ? (
+              <span className="sb-footer-trust-item">
+                <span aria-hidden="true">✓</span> {starSellerDefault}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
