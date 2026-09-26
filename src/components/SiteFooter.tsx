@@ -1,11 +1,8 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { links } from "@/config/links";
-import { formatTrustCount, formatTrustRating, site } from "@/config/site";
-import { apiService } from "@/lib/api";
-import { toVisibleStatMap, getStarSellerLabel } from "@/lib/stats";
+import { site } from "@/config/site";
+import { getPublicVisibleStats } from "@/lib/publicStats";
+import { getStarSellerLabel } from "@/lib/stats";
 import {
   composeOrderedMenuEntries,
   getOrderedMenuEntryHref,
@@ -23,53 +20,19 @@ type Props = {
   navOrderIds?: string[];
 };
 
-export default function SiteFooter({
+export default async function SiteFooter({
   menuNavItems = [],
   navOrderIds = [],
 }: Props) {
   const year = new Date().getFullYear();
+  const stats = await getPublicVisibleStats();
 
-  // Local state for stats so the component renders synchronously.
-  const [rating, setRating] = useState<string>(
-    formatTrustRating(site.trust.ratingValue),
-  );
-  const [reviews, setReviews] = useState<string>(
-    formatTrustCount(site.trust.reviewCount),
-  );
-  const [sales, setSales] = useState<string>(
-    formatTrustCount(site.trust.salesCount),
-  );
-  const [starSellerDefault, setStarSellerDefault] = useState<string | null>(
-    "Etsy Star Seller",
-  );
-
-  // Fetch live stats asynchronously on the client; don't block initial render.
-  useEffect(() => {
-    let mounted = true;
-
-    apiService
-      .getStats()
-      .then((resp) => {
-        if (!mounted) return;
-        const visible = toVisibleStatMap(resp.data);
-
-        if (visible.rating) setRating(visible.rating);
-        if (visible.reviews) setReviews(visible.reviews);
-        if (visible.sales) setSales(visible.sales);
-
-        if (Object.prototype.hasOwnProperty.call(visible, "star-seller")) {
-          setStarSellerDefault(getStarSellerLabel(visible["star-seller"]));
-        }
-      })
-      .catch((err) => {
-        // Ignore and keep defaults; log for visibility.
-        console.warn("[SiteFooter] Failed to fetch live stats:", err);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const trustItems: string[] = [];
+  if (stats.rating) trustItems.push(`${stats.rating} average rating`);
+  if (stats.reviews) trustItems.push(`${stats.reviews} Etsy reviews`);
+  if (stats.sales) trustItems.push(`${stats.sales} sales`);
+  const starSellerLabel = getStarSellerLabel(stats["star-seller"]);
+  if (starSellerLabel) trustItems.push(starSellerLabel);
 
   const managedFooterEntries = composeOrderedMenuEntries(
     menuNavItems,
@@ -115,29 +78,27 @@ export default function SiteFooter({
   return (
     <footer className="sb-footer">
       {/* Top bar with trust signals */}
-      <div className="sb-footer-trust-bar">
-        <div className="container">
-          <div className="sb-footer-trust-inner">
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> {rating} average rating
-            </span>
-            <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> {reviews} Etsy reviews
-            </span>
-            <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> {sales} sales
-            </span>
-            <span className="sb-footer-trust-divider" aria-hidden="true" />
-            {starSellerDefault ? (
-              <span className="sb-footer-trust-item">
-                <span aria-hidden="true">✓</span> {starSellerDefault}
-              </span>
-            ) : null}
+      {trustItems.length > 0 ? (
+        <div className="sb-footer-trust-bar">
+          <div className="container">
+            <div className="sb-footer-trust-inner">
+              {trustItems.map((item, index) => (
+                <div key={item} className="d-inline-flex align-items-center">
+                  <span className="sb-footer-trust-item">
+                    <span aria-hidden="true">✓</span> {item}
+                  </span>
+                  {index < trustItems.length - 1 ? (
+                    <span
+                      className="sb-footer-trust-divider"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Main footer content */}
       <div className="sb-footer-main">

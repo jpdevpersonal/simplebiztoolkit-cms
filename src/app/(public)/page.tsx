@@ -14,12 +14,8 @@ import TrackedLink from "@/components/TrackedLink";
 import { featuredProducts } from "@/data/featured";
 import { featuredTools } from "@/data/featuredTools";
 import { featureFlags } from "@/config/featureFlags";
-import { apiService } from "@/lib/api";
-import {
-  getStarSellerLabel,
-  toVisibleStatMap,
-  type StatValueMap,
-} from "@/lib/stats";
+import { getPublicVisibleStats } from "@/lib/publicStats";
+import { getStarSellerLabel, type StatValueMap } from "@/lib/stats";
 import { createFaqJsonLd } from "@/lib/seo";
 
 // Matches getMenuItemLandingHref() for the "Tools" menu item.
@@ -33,8 +29,7 @@ const listFormatter = new Intl.ListFormat("en-GB", {
 });
 
 async function getVisibleStats(): Promise<StatValueMap> {
-  const response = await apiService.getStats();
-  return toVisibleStatMap(response.data);
+  return getPublicVisibleStats();
 }
 
 /** Comma-separated trust summary appended to the meta description. */
