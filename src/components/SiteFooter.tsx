@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { links } from "@/config/links";
 import { formatTrustCount, formatTrustRating, site } from "@/config/site";
@@ -20,40 +23,54 @@ type Props = {
   navOrderIds?: string[];
 };
 
-export default async function SiteFooter({
+export default function SiteFooter({
   menuNavItems = [],
   navOrderIds = [],
 }: Props) {
   const year = new Date().getFullYear();
 
-  // Attempt to fetch live, visible stats from the API. Fall back to
-  // the static `site` config when the API is unavailable or returns
-  // no visible values.
-  let rating = formatTrustRating(site.trust.ratingValue);
-  let reviews = formatTrustCount(site.trust.reviewCount);
-  let sales = formatTrustCount(site.trust.salesCount);
-  let starSellerDefault = "Etsy Star Seller";
+  // Local state for stats so the component renders synchronously.
+  const [rating, setRating] = useState<string>(
+    formatTrustRating(site.trust.ratingValue),
+  );
+  const [reviews, setReviews] = useState<string>(
+    formatTrustCount(site.trust.reviewCount),
+  );
+  const [sales, setSales] = useState<string>(
+    formatTrustCount(site.trust.salesCount),
+  );
+  const [starSellerDefault, setStarSellerDefault] = useState<string | null>(
+    "Etsy Star Seller",
+  );
 
-  try {
-    const resp = await apiService.getStats();
-    const visible = toVisibleStatMap(resp.data);
+  // Fetch live stats asynchronously on the client; don't block initial render.
+  useEffect(() => {
+    let mounted = true;
 
-    if (visible.rating) rating = visible.rating;
-    if (visible.reviews) reviews = visible.reviews;
-    if (visible.sales) sales = visible.sales;
+    apiService
+      .getStats()
+      .then((resp) => {
+        if (!mounted) return;
+        const visible = toVisibleStatMap(resp.data);
 
-    // If the API includes an explicit star-seller stat, use it (may be
-    // a custom label or intentionally hidden). Otherwise fall back to
-    // the static site default.
-    if (Object.prototype.hasOwnProperty.call(visible, "star-seller")) {
-      starSellerDefault = getStarSellerLabel(visible["star-seller"]);
-    }
-  } catch (err) {
-    // Ignore and use site config values as fallback.
-    // Keep console logging for visibility during server renders.
-    // eslint-disable-next-line no-console
-    console.warn("[SiteFooter] Failed to fetch live stats:", err);
-  }
+        if (visible.rating) setRating(visible.rating);
+        if (visible.reviews) setReviews(visible.reviews);
+        if (visible.sales) setSales(visible.sales);
+
+        if (Object.prototype.hasOwnProperty.call(visible, "star-seller")) {
+          setStarSellerDefault(getStarSellerLabel(visible["star-seller"]));
+        }
+      })
+      .catch((err) => {
+        // Ignore and keep defaults; log for visibility.
+        console.warn("[SiteFooter] Failed to fetch live stats:", err);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const managedFooterEntries = composeOrderedMenuEntries(
     menuNavItems,
     navOrderIds,
