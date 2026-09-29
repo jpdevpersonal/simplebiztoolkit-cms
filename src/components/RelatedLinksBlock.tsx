@@ -59,6 +59,8 @@ function getImageObjectPosition(item: RelatedLinkItem): string {
 }
 
 function getTemplateItemCta(item: RelatedLinkItem): string {
+  const custom = item.linkText?.trim();
+  if (custom) return custom;
   if (item.kind === "template") return "View template";
   if (item.kind === "page") return "Read more";
   return "Open link";
