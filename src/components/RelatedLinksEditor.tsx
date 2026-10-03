@@ -292,6 +292,14 @@ export default function RelatedLinksEditor({
     );
   };
 
+  const handleLinkTextChange = (uid: string, linkText: string) => {
+    updateItems(
+      block.items.map((item) =>
+        item.uid === uid ? { ...item, linkText } : item,
+      ),
+    );
+  };
+
   const handleImageChange = (uid: string, image: ImageAsset | null) => {
     updateItems(
       block.items.map((item) =>
@@ -369,6 +377,7 @@ export default function RelatedLinksEditor({
         href: "",
         destinationTitle: "",
         label: null,
+        linkText: null,
         imageId: null,
         imageUrl: null,
         imageAlt: null,
@@ -753,6 +762,34 @@ export default function RelatedLinksEditor({
                             (item.kind === "custom"
                               ? "Enter a URL first"
                               : "Select a destination first")}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          className="related-links-editor-label"
+                          htmlFor={`${item.uid}-link-text`}
+                        >
+                          Custom link text
+                        </label>
+                        <input
+                          id={`${item.uid}-link-text`}
+                          type="text"
+                          value={item.linkText || ""}
+                          onChange={(event) =>
+                            handleLinkTextChange(item.uid, event.target.value)
+                          }
+                          disabled={disabled}
+                          className="related-links-editor-field"
+                        />
+                        <div className="related-links-editor-helper">
+                          Shown next to the arrow. Leave blank for the default (
+                          {item.kind === "template"
+                            ? "View template"
+                            : item.kind === "page"
+                              ? "Read more"
+                              : "Open link"}
+                          ).
                         </div>
                       </div>
                     </div>
