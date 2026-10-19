@@ -108,6 +108,7 @@ export default function RelatedLinksEditor({
   className,
 }: RelatedLinksEditorProps) {
   const block = normalizeEditorBlock(value);
+  const isTemplatePreview = previewVariant === "template";
   const previewItems = sanitizeRelatedLinksItems(block.items);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -291,6 +292,14 @@ export default function RelatedLinksEditor({
     );
   };
 
+  const handleLinkTextChange = (uid: string, linkText: string) => {
+    updateItems(
+      block.items.map((item) =>
+        item.uid === uid ? { ...item, linkText } : item,
+      ),
+    );
+  };
+
   const handleImageChange = (uid: string, image: ImageAsset | null) => {
     updateItems(
       block.items.map((item) =>
@@ -368,6 +377,7 @@ export default function RelatedLinksEditor({
         href: "",
         destinationTitle: "",
         label: null,
+        linkText: null,
         imageId: null,
         imageUrl: null,
         imageAlt: null,
@@ -420,10 +430,14 @@ export default function RelatedLinksEditor({
             <div>
               <div className="related-links-editor-eyebrow">Block Settings</div>
               <h3 className="related-links-editor-panel-title">
-                Section styling
+                {isTemplatePreview
+                  ? "Related items section"
+                  : "Section styling"}
               </h3>
               <p className="related-links-editor-panel-copy">
-                Links always open in the same window.
+                {isTemplatePreview
+                  ? "The template page uses a fixed responsive card layout."
+                  : "Links always open in the same window."}
               </p>
             </div>
           </div>
@@ -444,59 +458,65 @@ export default function RelatedLinksEditor({
               />
             </label>
 
-            <label className="related-links-editor-control">
-              <span className="related-links-editor-label">Background</span>
-              <input
-                type="color"
-                value={
-                  block.backgroundColor || RELATED_LINKS_DEFAULT_BACKGROUND
-                }
-                onChange={(event) =>
-                  updateBlock({ backgroundColor: event.target.value })
-                }
-                disabled={disabled}
-                className="related-links-editor-color"
-              />
-            </label>
+            {!isTemplatePreview ? (
+              <>
+                <label className="related-links-editor-control">
+                  <span className="related-links-editor-label">Background</span>
+                  <input
+                    type="color"
+                    value={
+                      block.backgroundColor || RELATED_LINKS_DEFAULT_BACKGROUND
+                    }
+                    onChange={(event) =>
+                      updateBlock({ backgroundColor: event.target.value })
+                    }
+                    disabled={disabled}
+                    className="related-links-editor-color"
+                  />
+                </label>
 
-            <label className="related-links-editor-control">
-              <span className="related-links-editor-label">Border width</span>
-              <input
-                type="number"
-                min={0}
-                max={12}
-                value={String(
-                  block.borderWidth ?? RELATED_LINKS_DEFAULT_BORDER_WIDTH,
-                )}
-                onChange={(event) =>
-                  updateBlock({ borderWidth: Number(event.target.value) })
-                }
-                disabled={disabled}
-                className="related-links-editor-field"
-              />
-            </label>
+                <label className="related-links-editor-control">
+                  <span className="related-links-editor-label">
+                    Border width
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={12}
+                    value={String(
+                      block.borderWidth ?? RELATED_LINKS_DEFAULT_BORDER_WIDTH,
+                    )}
+                    onChange={(event) =>
+                      updateBlock({ borderWidth: Number(event.target.value) })
+                    }
+                    disabled={disabled}
+                    className="related-links-editor-field"
+                  />
+                </label>
 
-            <label className="related-links-editor-control">
-              <span className="related-links-editor-label">Image size</span>
-              <select
-                value={block.imageSize || RELATED_LINKS_DEFAULT_IMAGE_SIZE}
-                onChange={(event) =>
-                  updateBlock({
-                    imageSize: normalizeRelatedLinksImageSize(
-                      event.target.value,
-                    ),
-                  })
-                }
-                disabled={disabled}
-                className="related-links-editor-field"
-              >
-                {IMAGE_SIZE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <label className="related-links-editor-control">
+                  <span className="related-links-editor-label">Image size</span>
+                  <select
+                    value={block.imageSize || RELATED_LINKS_DEFAULT_IMAGE_SIZE}
+                    onChange={(event) =>
+                      updateBlock({
+                        imageSize: normalizeRelatedLinksImageSize(
+                          event.target.value,
+                        ),
+                      })
+                    }
+                    disabled={disabled}
+                    className="related-links-editor-field"
+                  >
+                    {IMAGE_SIZE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            ) : null}
           </div>
         </section>
       </div>
@@ -504,13 +524,17 @@ export default function RelatedLinksEditor({
       <section className="related-links-editor-panel related-links-editor-panel--items">
         <div className="related-links-editor-toolbar">
           <div className="related-links-editor-toolbar-copy">
-            <div className="related-links-editor-eyebrow">Links</div>
+            <div className="related-links-editor-eyebrow">
+              {isTemplatePreview ? "Related items" : "Links"}
+            </div>
             <h3 className="related-links-editor-panel-title">
-              Manage destinations
+              {isTemplatePreview
+                ? "Choose related items"
+                : "Manage destinations"}
             </h3>
             <p className="related-links-editor-panel-copy">
               Add up to {RELATED_LINKS_MAX_ITEMS} internal pages, templates, or
-              custom URLs, then optionally attach a thumbnail.
+              custom URLs, then attach a thumbnail for the card grid.
             </p>
           </div>
           <button
@@ -523,7 +547,7 @@ export default function RelatedLinksEditor({
             }
             className="related-links-editor-add"
           >
-            Add link
+            {isTemplatePreview ? "Add item" : "Add link"}
           </button>
         </div>
 
@@ -738,6 +762,34 @@ export default function RelatedLinksEditor({
                             (item.kind === "custom"
                               ? "Enter a URL first"
                               : "Select a destination first")}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label
+                          className="related-links-editor-label"
+                          htmlFor={`${item.uid}-link-text`}
+                        >
+                          Custom link text
+                        </label>
+                        <input
+                          id={`${item.uid}-link-text`}
+                          type="text"
+                          value={item.linkText || ""}
+                          onChange={(event) =>
+                            handleLinkTextChange(item.uid, event.target.value)
+                          }
+                          disabled={disabled}
+                          className="related-links-editor-field"
+                        />
+                        <div className="related-links-editor-helper">
+                          Shown next to the arrow. Leave blank for the default (
+                          {item.kind === "template"
+                            ? "View template"
+                            : item.kind === "page"
+                              ? "Read more"
+                              : "Open link"}
+                          ).
                         </div>
                       </div>
                     </div>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { links } from "@/config/links";
-import { formatTrustCount, formatTrustRating, site } from "@/config/site";
+import { site } from "@/config/site";
+import { getPublicVisibleStats } from "@/lib/publicStats";
+import { getStarSellerLabel } from "@/lib/stats";
 import {
   composeOrderedMenuEntries,
   getOrderedMenuEntryHref,
@@ -18,14 +20,20 @@ type Props = {
   navOrderIds?: string[];
 };
 
-export default function SiteFooter({
+export default async function SiteFooter({
   menuNavItems = [],
   navOrderIds = [],
 }: Props) {
   const year = new Date().getFullYear();
-  const rating = formatTrustRating(site.trust.ratingValue);
-  const reviews = formatTrustCount(site.trust.reviewCount);
-  const sales = formatTrustCount(site.trust.salesCount);
+  const stats = await getPublicVisibleStats();
+
+  const trustItems: string[] = [];
+  if (stats.rating) trustItems.push(`${stats.rating} average rating`);
+  if (stats.reviews) trustItems.push(`${stats.reviews} Etsy reviews`);
+  if (stats.sales) trustItems.push(`${stats.sales} sales`);
+  const starSellerLabel = getStarSellerLabel(stats["star-seller"]);
+  if (starSellerLabel) trustItems.push(starSellerLabel);
+
   const managedFooterEntries = composeOrderedMenuEntries(
     menuNavItems,
     navOrderIds,
@@ -70,27 +78,27 @@ export default function SiteFooter({
   return (
     <footer className="sb-footer">
       {/* Top bar with trust signals */}
-      <div className="sb-footer-trust-bar">
-        <div className="container">
-          <div className="sb-footer-trust-inner">
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> {rating} average rating
-            </span>
-            <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> {reviews} Etsy reviews
-            </span>
-            <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> {sales} sales
-            </span>
-            <span className="sb-footer-trust-divider" aria-hidden="true" />
-            <span className="sb-footer-trust-item">
-              <span aria-hidden="true">✓</span> Etsy Star Seller
-            </span>
+      {trustItems.length > 0 ? (
+        <div className="sb-footer-trust-bar">
+          <div className="container">
+            <div className="sb-footer-trust-inner">
+              {trustItems.map((item, index) => (
+                <div key={item} className="d-inline-flex align-items-center">
+                  <span className="sb-footer-trust-item">
+                    <span aria-hidden="true">✓</span> {item}
+                  </span>
+                  {index < trustItems.length - 1 ? (
+                    <span
+                      className="sb-footer-trust-divider"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Main footer content */}
       <div className="sb-footer-main">

@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { serializeRelatedLinksBlockToHtml } from "@/lib/relatedLinks";
 
 const apiServiceMock = vi.hoisted(() => ({
   getMenuItemPageBySlug: vi.fn(),
@@ -115,6 +116,53 @@ describe("MenuItemPageView", () => {
     await expect(
       generateMetadata({ params: Promise.resolve({ slug: "missing" }) }),
     ).resolves.toEqual({});
+  });
+
+  it("renders related items beneath the article with the template card layout", async () => {
+    const relatedItemsHtml = serializeRelatedLinksBlockToHtml({
+      title: "Keep reading",
+      items: [
+        {
+          uid: "related-page-1",
+          kind: "page",
+          refId: "page-2",
+          href: "/startup-checklist",
+          destinationTitle: "Startup checklist",
+          label: null,
+          imageId: null,
+          imageUrl: null,
+          imageAlt: null,
+        },
+      ],
+    });
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({
+      data: {
+        id: "page-1",
+        title: "Guide",
+        slug: "guide",
+        status: "published",
+        content: `<p>Guide body</p>${relatedItemsHtml}`,
+      },
+    });
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([]);
+
+    const { default: MenuItemPageView } = await import("./page");
+    const { container } = render(
+      await MenuItemPageView({
+        params: Promise.resolve({ slug: "guide" }),
+      }),
+    );
+
+    expect(screen.getByText("Guide body").closest("article")).not.toBeNull();
+    const relatedItems = container.querySelector(
+      ".related-links-block--template",
+    );
+    expect(relatedItems).not.toBeNull();
+    expect(relatedItems?.closest("article")).toBeNull();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Keep reading" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Read more")).toBeInTheDocument();
   });
 
   it("shows a link back to the topic page when page data only has a partial topic object", async () => {

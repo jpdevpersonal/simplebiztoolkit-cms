@@ -869,7 +869,7 @@
   background: white;
   border-top: 1px solid var(--sb-border);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-  padding: 0.875rem 1rem;
+  padding: 0.875rem 1rem calc(0.875rem + env(safe-area-inset-bottom));
   z-index: 100;
   transform: translateY(0);
   transition: transform 0.3s ease;
@@ -878,6 +878,12 @@
 @media (min-width: 992px) {
   .product-detail-sticky-cta {
     display: none;
+  }
+}
+
+@media (max-width: 991px) {
+  body:has(.product-detail-sticky-cta) {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -929,7 +935,7 @@
 
 @media (min-width: 576px) {
   .product-detail-sticky-cta {
-    padding: 1rem 1.5rem;
+    padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom));
   }
 
   .product-detail-sticky-cta-btn {
@@ -1108,30 +1114,139 @@
 }
 
 .related-links-block--template {
-  --related-links-image-base-size: 64px;
-  margin: 0;
-  padding: 0.875rem 1rem;
+  margin: 3rem 0 0;
+  padding: 0.75rem 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
 }
 
 .related-links-block--template .related-links-block__title {
-  font-size: 0.875rem;
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  margin: 0 0 0.5rem;
+  color: var(--sb-brand-blue);
+  font-size: clamp(1.875rem, 3.5vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
-.related-links-block--template .related-links-block__link--has-image {
-  grid-template-columns: var(--related-links-image-size) minmax(0, 1fr);
-  gap: 0.75rem;
-  padding: 0.625rem;
+.related-links-block--template .related-links-block__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-.related-links-block--template .related-links-block__link--no-image {
-  padding: 0.625rem;
+.related-links-block--template .related-links-block__item {
+  min-width: 0;
+  border: 1px solid var(--sb-border);
+  border-radius: var(--sb-radius);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--sb-shadow);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.related-links-block--template .related-links-block__item:hover,
+.related-links-block--template .related-links-block__item:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--sb-border-strong);
+  box-shadow: var(--sb-shadow-hover);
+}
+
+.related-links-block--template .related-links-block__link {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  border-radius: 0;
+  background: #fff;
+  color: var(--sb-ink);
+}
+
+.related-links-block--template .related-links-block__link:hover {
+  background: #fff;
+  color: var(--sb-ink);
+  transform: none;
+}
+
+.related-links-block--template .related-links-block__link:focus-visible {
+  outline: 3px solid var(--sb-focus-ring);
+  outline-offset: -3px;
 }
 
 .related-links-block--template .related-links-block__media {
-  width: var(--related-links-image-size);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border: 0;
+  border-bottom: 1px solid var(--sb-border);
+  border-radius: 0;
+  background: linear-gradient(180deg, #f6f7f9 0%, #eef0f3 100%);
+}
+
+.related-links-block--template .related-links-block__media--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sb-muted);
+}
+
+.related-links-block--template .related-links-block__body {
+  display: flex;
+  min-height: 8.5rem;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.related-links-block--template .related-links-block__text {
+  color: var(--sb-ink);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.related-links-block--template .related-links-block__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--sb-green);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.related-links-block--template .related-links-block__cta svg {
+  transition: transform 0.2s ease;
+}
+
+.related-links-block--template
+  .related-links-block__link:hover
+  .related-links-block__cta
+  svg {
+  transform: translateX(2px);
+}
+
+@media (max-width: 991px) {
+  .related-links-block--template .related-links-block__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .related-links-block--template {
+    margin-top: 2.25rem;
+  }
+
+  .related-links-block--template .related-links-block__list {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* First paragraph gets special emphasis */

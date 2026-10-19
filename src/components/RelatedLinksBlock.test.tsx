@@ -107,4 +107,46 @@ describe("RelatedLinksBlock", () => {
     expect(imgs[1].style.objectPosition).toBe("center 0%");
     expect(imgs[2].style.objectPosition).toBe("center 100%");
   });
+
+  it("renders template related items as a card section with destination-specific actions", () => {
+    const items = [
+      makeItem({
+        uid: "template",
+        kind: "template",
+        href: "/templates/finance/budget-sheet",
+        destinationTitle: "Budget Sheet",
+        imageUrl: "/budget.webp",
+      }),
+      makeItem({
+        uid: "page",
+        kind: "page",
+        href: "/guide-a",
+        destinationTitle: "Guide A",
+      }),
+    ];
+
+    const { container } = render(
+      <RelatedLinksBlock
+        title="More useful resources"
+        items={items}
+        variant="template"
+      />,
+    );
+
+    expect(
+      screen.getByRole("region", { name: "More useful resources" }),
+    ).toHaveClass("related-links-block--template");
+    expect(
+      screen.getByRole("heading", {
+        level: 2,
+        name: "More useful resources",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Related items")).toBeInTheDocument();
+    expect(screen.getByText("View template")).toBeInTheDocument();
+    expect(screen.getByText("Read more")).toBeInTheDocument();
+    expect(
+      container.querySelector(".related-links-block__media--placeholder"),
+    ).toBeInTheDocument();
+  });
 });

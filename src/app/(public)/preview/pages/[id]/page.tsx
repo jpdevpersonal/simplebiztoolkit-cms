@@ -5,11 +5,14 @@ import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import { ContentRenderer } from "@/components/ContentRenderer";
+import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
+import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import { normalizePublicUrl } from "@/lib/seo";
 import { slugify } from "@/lib/slugify";
 import "@/styles/bootstrap-public-components.scss";
 import "@/styles/contentPage.css";
+import "@/styles/products.css";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -35,6 +38,8 @@ export default async function PagePreview({ params }: Props) {
 
   const page = pageResponse.data;
   const headerImage = normalizePublicUrl(page.headerImage);
+  const { htmlWithoutRelatedLinks, blocks: relatedLinksBlocks } =
+    extractRelatedLinksBlocksFromHtml(page.content ?? "");
 
   let parentMenuItem = page.menuItem ?? page.menuCategory?.menuItem;
   if (!parentMenuItem && page.menuItemId) {
@@ -95,8 +100,24 @@ export default async function PagePreview({ params }: Props) {
         )}
 
         <article>
-          <ContentRenderer html={page.content ?? ""} />
+          <ContentRenderer html={htmlWithoutRelatedLinks} />
         </article>
+
+        {relatedLinksBlocks.length > 0 ? (
+          <div style={{ paddingTop: "1.5rem" }}>
+            {relatedLinksBlocks.map((block, index) => (
+              <RelatedLinksBlock
+                key={`${block.title}-${index}`}
+                title={block.title}
+                items={block.items}
+                backgroundColor={block.backgroundColor}
+                borderWidth={block.borderWidth}
+                imageSize={block.imageSize}
+                variant="template"
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
     </>
   );

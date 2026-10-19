@@ -67,7 +67,11 @@ export default async function ProductPreviewPage({ params }: Props) {
             />
           ) : null}
 
-          <ProductDetailClient product={product} />
+          <ProductDetailClient
+            product={product}
+            enableStickyCta={false}
+            enableAnalytics={false}
+          />
           {relatedLinksBlocks.length > 0 ? (
             <div style={{ paddingTop: "1rem" }}>
               {relatedLinksBlocks.map((block, index) => (

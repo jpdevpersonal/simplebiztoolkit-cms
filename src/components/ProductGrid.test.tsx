@@ -81,7 +81,8 @@ describe("ProductGrid", () => {
         "href",
         "/templates/test-category/test-product-1",
       );
-      expect(ctaAnchors[0]).toHaveAttribute("rel", "noopener noreferrer");
+      expect(ctaAnchors[0]).toHaveClass("product-card-cta");
+      expect(ctaAnchors[0]?.querySelectorAll("svg")).toHaveLength(2);
     });
 
     it("should render product page links for each product thumbnail", () => {

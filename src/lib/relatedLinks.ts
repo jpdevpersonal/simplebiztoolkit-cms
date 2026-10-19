@@ -56,6 +56,7 @@ export interface RelatedLinkItem {
   href: string;
   destinationTitle: string;
   label?: string | null;
+  linkText?: string | null;
   imageId?: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
@@ -242,6 +243,7 @@ function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
       ? value.destinationTitle.trim()
       : "";
   const label = typeof value.label === "string" ? value.label : null;
+  const linkText = typeof value.linkText === "string" ? value.linkText : null;
   const imageId = normalizeNullableString(value.imageId);
   const imageUrl = normalizeNullableString(value.imageUrl);
   const imageAlt = normalizeNullableString(value.imageAlt);
@@ -267,6 +269,7 @@ function sanitizeDraftRelatedLinkItem(value: unknown): RelatedLinkItem | null {
     href,
     destinationTitle,
     label,
+    linkText,
     imageId,
     imageUrl,
     imageAlt,
@@ -313,6 +316,8 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
           `${kind}|${refId}|${href}|${destinationTitle}|${imageUrl ?? ""}`,
         );
   const label = typeof value.label === "string" ? value.label.trim() : "";
+  const linkText =
+    typeof value.linkText === "string" ? value.linkText.trim() : "";
   const imageId =
     typeof value.imageId === "string" && value.imageId.trim()
       ? value.imageId.trim()
@@ -338,6 +343,7 @@ function sanitizeRelatedLinkItem(value: unknown): RelatedLinkItem | null {
       destinationTitle ||
       (kind === "custom" ? label || customHref || href : ""),
     label: label || null,
+    linkText: linkText || null,
     imageId,
     imageUrl,
     imageAlt,

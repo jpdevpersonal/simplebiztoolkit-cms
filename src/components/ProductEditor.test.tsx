@@ -363,7 +363,7 @@ describe("ProductEditor", () => {
       />,
     );
 
-    expect(screen.getByText("Related Links")).toBeInTheDocument();
+    expect(screen.getByText("Related Items")).toBeInTheDocument();
     const descriptionField = container.querySelectorAll("textarea")[1];
     expect(descriptionField).toBeTruthy();
     expect((descriptionField as HTMLTextAreaElement).value).toBe(
