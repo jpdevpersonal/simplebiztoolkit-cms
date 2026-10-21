@@ -51,8 +51,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cleanSummary = (category.summary ?? "").replace(/\s+/g, " ").trim();
 
   const description = cleanSummary
-    ? `${cleanSummary} Browse ${itemCount > 0 ? `${itemCount} ` : ""}printable ${category.name.toLowerCase()} templates from Simple Biz Toolkit — instant PDF download via Etsy, A4 and US Letter included.`
-    : `Printable ${category.name.toLowerCase()} templates from Simple Biz Toolkit — instant PDF download via Etsy, A4 and US Letter included.`;
+    ? `${cleanSummary} Browse ${itemCount > 0 ? `${itemCount} ` : ""}${category.name.toLowerCase()} templates from Simple Biz Toolkit. Check each product for file and delivery details.`
+    : `${category.name} templates from Simple Biz Toolkit. Check each product for file and delivery details.`;
 
   return createPageMetadata({
     title: `${category.name} Templates`,
@@ -141,7 +141,7 @@ export default async function CategoryPage({ params }: Props) {
                 <div className="sb-card p-3">
                   <Image
                     src={category.heroImage}
-                    alt={`${category.name} printable templates preview`}
+                    alt={`${category.name} templates preview`}
                     className="img-fluid rounded-4"
                     width={900}
                     height={630}

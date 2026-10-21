@@ -9,7 +9,6 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import StickyMobileCta from "@/components/StickyMobileCta";
 import JsonLd from "@/components/JsonLd";
-import GoogleAnalytics from "../GoogleAnalytics";
 import ScrollToTop from "../ScrollToTop";
 import {
   FOOTER_MENU_LOCATION_KEY,
@@ -159,7 +158,6 @@ export default async function PublicLayout({
 
   return (
     <>
-      <GoogleAnalytics />
       <ScrollToTop />
 
       <JsonLd json={createWebsiteJsonLd()} />

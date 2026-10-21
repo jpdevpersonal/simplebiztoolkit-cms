@@ -1,0 +1,15 @@
+// ==========================================================================
+// Bootstrap accordion only
+// --------------------------------------------------------------------------
+// Minimal Bootstrap CSS for FaqAccordion on routes (e.g. the homepage) that do
+// not load bootstrap-public-components.scss.
+// ==========================================================================
+
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/accordion";

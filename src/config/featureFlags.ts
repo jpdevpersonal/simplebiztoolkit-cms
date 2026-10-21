@@ -11,12 +11,6 @@
  */
 
 export const featureFlags = {
-  /**
-   * Show "Get Your Free Guide" button across the site
-   * Environment variable: NEXT_PUBLIC_NEXT_PUBLIC_ SHOW_FREE_GUIDE_BUTTON
-   * Default: true (shown)
-   * Set to 'false' in Azure to hide the button
-   */
-  showFreeGuideButton:
-    process.env.NEXT_PUBLIC_SHOW_FREE_GUIDE_BUTTON !== "false",
+  /** The free-guide route remains a placeholder until a real delivery flow exists. */
+  freeGuideAvailable: false,
 } as const;

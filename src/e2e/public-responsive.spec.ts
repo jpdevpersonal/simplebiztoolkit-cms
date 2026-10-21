@@ -147,15 +147,24 @@ test.describe("Public responsive design", () => {
     const etsyHref = await primaryCta.getAttribute("href");
     expect(etsyHref).toMatch(/^https:\/\//);
 
-    await page.locator(".product-detail-features").scrollIntoViewIfNeeded();
+    // Showing the features alone can leave the primary CTA in the viewport.
+    await page.locator(".product-detail-features").evaluate((element) => {
+      element.scrollIntoView({ block: "start", behavior: "instant" });
+    });
+    await expect(primaryCta).not.toBeInViewport();
+    const closingCta = page
+      .locator(".product-detail-cta--secondary .product-detail-cta-btn")
+      .first();
+    await expect(closingCta).not.toBeInViewport();
+
     const stickyCta = page.locator(".product-detail-sticky-cta-btn");
     await expect(stickyCta).toBeVisible();
     await expect(stickyCta).toHaveAttribute("href", etsyHref!);
 
-    const closingCta = page
-      .locator(".product-detail-cta--secondary .product-detail-cta-btn")
-      .first();
-    await closingCta.scrollIntoViewIfNeeded();
+    await closingCta.evaluate((element) => {
+      element.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+    await expect(closingCta).toBeInViewport();
     await expect(stickyCta).toBeHidden();
 
     await expect(page.getByText("Keep browsing", { exact: true })).toHaveCount(

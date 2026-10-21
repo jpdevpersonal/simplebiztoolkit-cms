@@ -22,6 +22,10 @@ type MetadataInput = {
 const DEFAULT_OG_IMAGE = "/images/hero-image-desk.webp";
 const ABSOLUTE_HTTP_URL_REGEX = /^https?:\/\//i;
 const DISALLOWED_URL_SCHEME_REGEX = /^[a-z][a-z\d+\-.]*:/i;
+const SUPPORTED_CURRENCIES =
+  typeof Intl.supportedValuesOf === "function"
+    ? new Set(Intl.supportedValuesOf("currency"))
+    : new Set(["GBP", "USD", "EUR"]);
 
 function ensureLeadingSlash(value: string): string {
   if (!value) {
@@ -67,6 +71,27 @@ export function normalizePublicUrl(
   try {
     const normalized = new URL(ensureLeadingSlash(trimmed), site.url);
     return `${normalized.pathname}${normalized.search}${normalized.hash}`;
+  } catch {
+    return undefined;
+  }
+}
+
+export function normalizeSameSitePublicUrl(
+  pathOrUrl?: string | null,
+): string | undefined {
+  const normalized = normalizePublicUrl(pathOrUrl);
+  if (!normalized) return undefined;
+
+  try {
+    const resolved = new URL(normalized, site.url);
+    if (
+      resolved.origin !== new URL(site.url).origin ||
+      resolved.search ||
+      resolved.hash
+    ) {
+      return undefined;
+    }
+    return resolved.pathname;
   } catch {
     return undefined;
   }
@@ -139,23 +164,10 @@ export function createWebsiteJsonLd(): JsonLd {
       name: site.name,
       url: site.url,
     },
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${site.url}/templates?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
   };
 }
 
-/**
- * Organization JSON-LD emitted on every page. Includes the Etsy-sourced
- * AggregateRating used as an Etsy-seller signal (Organization-level only — we
- * do not attach AggregateRating to individual Products to avoid Google's
- * self-serving review-spam penalty).
- */
+/** Organization identity shared across public pages. */
 export function createOrganizationJsonLd(): JsonLd {
   return {
     "@context": "https://schema.org",
@@ -166,13 +178,6 @@ export function createOrganizationJsonLd(): JsonLd {
     description: site.description,
     email: site.contactEmail,
     sameAs: [...site.socialUrls],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: site.trust.ratingValue.toFixed(1),
-      bestRating: "5",
-      worstRating: "1",
-      reviewCount: site.trust.reviewCount,
-    },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
@@ -342,7 +347,7 @@ export function createProductJsonLd(input: {
   description?: string;
   href: string;
   image?: string | null;
-  price?: string;
+  priceAmount?: number;
   currency?: string;
   offerUrl?: string;
   sku?: string;
@@ -355,6 +360,19 @@ export function createProductJsonLd(input: {
 }): JsonLd {
   const image = normalizePublicUrl(input.image);
   const absoluteImage = image ? toAbsoluteUrl(image) : undefined;
+  const offerPrice = input.priceAmount;
+  let currency: string | undefined;
+  if (
+    typeof input.currency === "string" &&
+    SUPPORTED_CURRENCIES.has(input.currency)
+  ) {
+    currency = input.currency;
+  }
+  const hasReliableOffer =
+    typeof offerPrice === "number" &&
+    Number.isFinite(offerPrice) &&
+    offerPrice > 0 &&
+    currency !== undefined;
 
   return {
     "@context": "https://schema.org",
@@ -374,11 +392,11 @@ export function createProductJsonLd(input: {
       name: attr.name,
       value: attr.value,
     })),
-    offers: input.price
+    offers: hasReliableOffer
       ? {
           "@type": "Offer",
-          price: input.price.replace("$", ""),
-          priceCurrency: input.currency ?? "USD",
+          price: offerPrice.toFixed(2),
+          priceCurrency: currency,
           availability: "https://schema.org/InStock",
           url: input.offerUrl,
           seller: {

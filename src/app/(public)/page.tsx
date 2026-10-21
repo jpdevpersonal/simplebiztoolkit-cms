@@ -3,9 +3,11 @@ import Link from "next/link";
 
 import JsonLd from "@/components/JsonLd";
 import TrustBar from "@/components/TrustBar";
-import EmailCaptureForm from "@/components/EmailCaptureForm";
+import FaqAccordion from "@/components/FaqAccordion";
 import "@/styles/home.css";
 import "@/styles/tools-featured.css";
+import "@/styles/bootstrap-accordion.scss";
+import "@/styles/faq.css";
 import TestimonialGrid from "@/components/TestimonialGrid";
 import ProductGrid from "@/components/ProductGrid";
 import FeaturedToolsGrid from "@/components/FeaturedToolsGrid";
@@ -13,9 +15,10 @@ import EtsyCtaButton from "@/components/EtsyCtaButton";
 import TrackedLink from "@/components/TrackedLink";
 import { featuredProducts } from "@/data/featured";
 import { featuredTools } from "@/data/featuredTools";
-import { featureFlags } from "@/config/featureFlags";
 import { getPublicVisibleStats } from "@/lib/publicStats";
 import { getStarSellerLabel, type StatValueMap } from "@/lib/stats";
+import { apiService, type Faq } from "@/lib/api";
+import { stripHtml } from "@/lib/sanitize";
 import { createFaqJsonLd } from "@/lib/seo";
 
 // Matches getMenuItemLandingHref() for the "Tools" menu item.
@@ -50,54 +53,24 @@ export async function generateMetadata(): Promise<Metadata> {
   const stats = await getVisibleStats();
 
   return {
-    title:
-      "Printable Small Business Templates & Tools | Invoices, Time Sheets, Ledgers",
-    description: `Printable templates for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, accounting ledgers, rent trackers and planners — instant PDF downloads via Etsy.${buildTrustSummary(stats)}`,
+    title: "Small Business Templates & Tools | Invoices, Ledgers & More",
+    description: `Business templates and browser-based tools for small business owners, online sellers, freelancers and landlords. Template purchases are completed through Etsy.${buildTrustSummary(stats)}`,
     alternates: { canonical: "/" },
     openGraph: {
-      title: "Printable Small Business Templates & Tools | Simple Biz Toolkit",
+      title: "Small Business Templates & Tools | Simple Biz Toolkit",
       description:
-        "Printable invoices, time sheets, ledgers and planners for small business owners, freelancers and online sellers. Instant downloads via Etsy.",
+        "Business templates and free browser-based tools for small business owners, freelancers and online sellers. Template purchases are completed through Etsy.",
       url: "/",
     },
   };
 }
 
-const homeFaqItems = [
-  {
-    question: "Who are these templates for?",
-    answer:
-      "Simple Biz Toolkit templates are designed for small business owners, online sellers (Etsy, eBay, Shopify), freelancers, landlords, and anyone who needs a clear, printable system to run their business without subscription software. The same template typically works for both digital fill-in (Adobe Reader, GoodNotes, or your browser) and printing on A4 or US Letter paper.",
-  },
-  {
-    question: "How do I receive my templates?",
-    answer:
-      "Every template is an instant digital download delivered through Etsy. After checkout you'll find a Download Files button under your Etsy Purchases and Reviews page. There is no shipping wait — most customers print or open their first copy within a few minutes of buying.",
-  },
-  {
-    question: "Are the templates printable and editable?",
-    answer:
-      "All templates are designed for clean printing on A4 and US Letter paper. Fillable PDF versions can be typed into using your browser, Adobe Acrobat Reader, or Apple Preview before printing. Printable-only versions are intended to be printed first and then completed by hand.",
-  },
-  {
-    question: "What software do I need?",
-    answer:
-      "A free PDF reader such as Adobe Acrobat Reader, your web browser (Chrome, Edge, Safari, Firefox), or Apple Preview is enough. No subscription, account or special software is required to use the templates.",
-  },
-  {
-    question: "Do you offer refunds on digital downloads?",
-    answer:
-      "Because the templates are delivered immediately as digital downloads, Etsy's standard policy is that all sales are final. If you have a problem with a file or the wrong template was supplied, message us through Etsy and we will fix it or refund you.",
-  },
-  {
-    question: "Why buy a printable template instead of using software?",
-    answer:
-      "Printable templates have no monthly fee, no learning curve and no data lock-in. They suit small businesses, side hustles and landlords who want a quick, paper-friendly system for tracking income, expenses, hours, invoices and payments without committing to a SaaS tool.",
-  },
-];
-
 export default async function HomePage() {
-  const stats = await getVisibleStats();
+  const [stats, faqResponse] = await Promise.all([
+    getVisibleStats(),
+    apiService.getFaqs(),
+  ]);
+  const homeFaqs: Faq[] = (faqResponse.data ?? []).slice(0, 6);
   const starSellerLabel = getStarSellerLabel(stats["star-seller"]);
 
   const trust: string[] = [];
@@ -117,11 +90,16 @@ export default async function HomePage() {
       ? `With ${listFormatter.format(aboutTrustClauses)}, we focus on creating simple solutions that make everyday business tasks easier.`
       : "We focus on creating simple solutions that make everyday business tasks easier.";
 
-  const homeFaqJsonLd = createFaqJsonLd(homeFaqItems);
+  const homeFaqJsonLd = createFaqJsonLd(
+    homeFaqs.map((faq) => ({
+      question: faq.q,
+      answer: stripHtml(faq.a || ""),
+    })),
+  );
 
   return (
     <>
-      <JsonLd json={homeFaqJsonLd} />
+      {homeFaqs.length > 0 && <JsonLd json={homeFaqJsonLd} />}
 
       <section className="sb-hero">
         <div className="sb-hero-bg" aria-hidden="true">
@@ -159,10 +137,9 @@ export default async function HomePage() {
             </h1>
 
             <p className="sb-hero-subtitle sb-speakable">
-              Instant-download invoices, time sheets, accounting ledgers, rent
-              trackers and planners for small business owners, online sellers,
-              freelancers and landlords. Print on A4 or US Letter, or fill in
-              digitally — no software subscription needed.
+              Business templates and browser-based tools for small business
+              owners, online sellers, freelancers and landlords. Review each
+              Etsy listing for current file, compatibility and delivery details.
             </p>
 
             <div className="sb-hero-actions">
@@ -220,8 +197,7 @@ export default async function HomePage() {
               >
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              Secure checkout &middot; Instant download &middot; No account
-              needed
+              Checkout via Etsy &middot; Product details on each listing
             </p>
           </div>
         </div>
@@ -242,8 +218,7 @@ export default async function HomePage() {
             <span className="sb-section-eyebrow">Best Sellers</span>
             <h2>Our Popular Templates</h2>
             <p>
-              Our best selling and most popular templates. Ready to download,
-              print and use.
+              A selection of templates for common small-business tasks.
             </p>
           </div>
           <ProductGrid
@@ -268,8 +243,7 @@ export default async function HomePage() {
             <span className="sb-section-eyebrow">Browse by need</span>
             <h2 id="sb-categories-heading">Find the template you need</h2>
             <p>
-              Jump straight to the workflow you need. Every category includes
-              both A4 and US Letter formats.
+              Browse template categories by the task you need to manage.
             </p>
           </div>
           <div className="row g-3">
@@ -278,19 +252,18 @@ export default async function HomePage() {
                 href: "/templates/accounting-ledger",
                 title: "Accounting ledger templates",
                 blurb:
-                  "Track income, expenses and running balances on printable monthly or yearly sheets.",
+                  "Browse accounting ledger products and check each listing for included fields and formats.",
               },
               {
                 href: "/templates/invoices",
                 title: "Invoice templates",
-                blurb:
-                  "Send clean, professional invoices in minutes — printable and fillable PDF options.",
+                blurb: "Templates for preparing and organizing invoices.",
               },
               {
                 href: "/templates/estimates",
                 title: "Estimate & quote templates",
                 blurb:
-                  "Quick fillable PDF quotes for service businesses, freelancers and contractors.",
+                  "Templates for preparing estimates and quotes for clients.",
               },
               {
                 href: "/templates/time-sheet",
@@ -429,8 +402,8 @@ export default async function HomePage() {
             <span className="sb-section-eyebrow">Why Simple Biz Toolkit?</span>
             <h2>Designed to be simple</h2>
             <p>
-              Clear layouts, printable formats, and essential categories,
-              everything a small business needs.
+              Browse templates and browser-based tools for common small-business
+              tasks. Product details vary by listing.
             </p>
           </div>
 
@@ -480,7 +453,7 @@ export default async function HomePage() {
                 </div>
                 <h3 className="sb-tile-title">Simple systems</h3>
                 <p className="sb-muted sb-small-copy mb-0">
-                  Repeatable formats that keep you consistent and efficient.
+                  Tools and templates for recurring record-keeping tasks.
                 </p>
               </div>
             </div>
@@ -526,8 +499,8 @@ export default async function HomePage() {
               Built for the people running the business
             </h2>
             <p>
-              Our customers tell us they reach for a printable template when
-              software feels like overkill. Here&apos;s who that usually is.
+              Explore templates and tools for common small-business and
+              record-keeping tasks.
             </p>
           </div>
 
@@ -536,8 +509,8 @@ export default async function HomePage() {
               <div className="sb-info-tile h-100">
                 <h3 className="sb-tile-title">Small business owners</h3>
                 <p className="sb-muted sb-small-copy mb-0">
-                  Track income, expenses and invoices on paper or PDF — without
-                  paying for accounting software you only half-use.
+                  Browse tools and templates that may support your bookkeeping
+                  and record-keeping workflows.
                 </p>
               </div>
             </div>
@@ -545,9 +518,8 @@ export default async function HomePage() {
               <div className="sb-info-tile h-100">
                 <h3 className="sb-tile-title">Online sellers</h3>
                 <p className="sb-muted sb-small-copy mb-0">
-                  Etsy, eBay and Shopify sellers use our order forms, profit
-                  trackers and ledgers to stay on top of fees, shipping costs
-                  and monthly margins.
+                  Review available resources for order, fee, shipping and
+                  profit tracking.
                 </p>
               </div>
             </div>
@@ -557,8 +529,7 @@ export default async function HomePage() {
                   Freelancers &amp; solopreneurs
                 </h3>
                 <p className="sb-muted sb-small-copy mb-0">
-                  Send estimates, log time sheets and produce simple invoices
-                  without rebuilding a document for every client.
+                  Explore resources for estimates, time tracking and invoicing.
                 </p>
               </div>
             </div>
@@ -566,8 +537,8 @@ export default async function HomePage() {
               <div className="sb-info-tile h-100">
                 <h3 className="sb-tile-title">Landlords &amp; managers</h3>
                 <p className="sb-muted sb-small-copy mb-0">
-                  Rent payment ledgers, attendance records and sign-in sheets
-                  for properties, clubs, schools, salons and small teams.
+                  Browse record-keeping resources and check product listings
+                  for their intended use.
                 </p>
               </div>
             </div>
@@ -645,50 +616,15 @@ export default async function HomePage() {
               <div className="sb-step-number" aria-hidden="true">
                 3
               </div>
-              <h3>Download &amp; use today</h3>
+              <h3>Review product details</h3>
               <p className="sb-muted">
-                Instant PDF or editable file — print it or fill it in digitally,
-                right away.
+                Check the product page and Etsy listing for included files,
+                delivery details and usage terms.
               </p>
             </div>
           </div>
         </div>
       </section>
-
-      {featureFlags.showFreeGuideButton && (
-        <section className="sb-section sb-section-alt">
-          <div className="container">
-            <div className="sb-lead-magnet-card sb-card p-4">
-              <div className="row align-items-center g-4">
-                <div className="col-lg-6">
-                  <h2>Get your free guide</h2>
-                  <p className="sb-muted mb-3">
-                    AI for Small Business, Learn to Save Time, Cut Costs and
-                    Grow Your Business Smarter.
-                  </p>
-                  <ul className="sb-check-list">
-                    <li>✓ Instant download link</li>
-                    <li>✓ How to use AI tools like Chat GPT</li>
-                    <li>
-                      ✓ Simple, step-by-step setups that could save hours every
-                      week
-                    </li>
-                    <li>✓ No spam — just helpful tips & new releases</li>
-                    <li>✓ Occasional subscriber-only discounts</li>
-                  </ul>
-                </div>
-                <div className="col-lg-6">
-                  <EmailCaptureForm source="home-lead-magnet" />
-                  <div className="sb-form-disclaimer">
-                    By subscribing you agree to receive emails. Unsubscribe
-                    anytime.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ====== FAQ (Schema-rich) ====== */}
       <section className="sb-section" aria-labelledby="sb-home-faq-heading">
@@ -698,14 +634,11 @@ export default async function HomePage() {
             <h2 id="sb-home-faq-heading">Frequently asked questions</h2>
           </div>
           <div className="sb-home-faq-list">
-            {homeFaqItems.map((item) => (
-              <details key={item.question} className="sb-home-faq-item">
-                <summary className="sb-home-faq-summary">
-                  {item.question}
-                </summary>
-                <p className="sb-muted mb-0 mt-2">{item.answer}</p>
-              </details>
-            ))}
+            <FaqAccordion
+              faqs={homeFaqs}
+              showSearchAndIntro={false}
+              expandFirst={false}
+            />
             <div className="text-center mt-3">
               <Link href="/faq" className="btn sb-btn-ghost">
                 See all FAQs
@@ -730,12 +663,8 @@ export default async function HomePage() {
               online sellers stay organised and save time. {aboutTrustSentence}
             </p>
             <p className="sb-muted">
-              Our collection includes printable PDFs, fillable PDFs, and
-              easy-to-use business tools covering accounting ledgers, invoices,
-              estimates and quotes, timesheets, rent payment records, expense
-              trackers, petty cash logs, sign-in sheets, meeting notes, order
-              forms, business trackers, and service records. Everything is
-              designed to be straightforward, reusable, and available instantly.
+              Product formats, features, availability and delivery details vary.
+              Check each product page and Etsy listing for current information.
             </p>
             <p className="mb-0">
               <Link href="/about" className="sb-content-link">
@@ -751,8 +680,8 @@ export default async function HomePage() {
         <div className="container text-center">
           <h2>Ready to get organised?</h2>
           <p className="sb-section-intro sb-final-cta-copy">
-            Browse the full collection of printable templates and find the right
-            fit for your business in minutes.
+            Browse available templates and tools, and review each listing to
+            decide whether it fits your needs.
           </p>
           <div className="d-flex justify-content-center flex-wrap gap-3">
             <TrackedLink

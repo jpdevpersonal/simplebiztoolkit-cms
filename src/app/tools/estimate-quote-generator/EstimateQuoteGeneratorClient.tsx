@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useRef } from "react";
+import { trackPublicEvent } from "@/lib/analytics";
 
 const TOOLS_PAGES_HREF = "/pages/tools";
 
@@ -1408,6 +1409,11 @@ function setupEstimateQuoteGenerator(root: HTMLElement) {
     const num = (docNumber || "001").replace(/[^a-zA-Z0-9\-_]/g, "");
     const filename = `${docType.toLowerCase()}-${num}.pdf`;
     doc.save(filename);
+    trackPublicEvent("file_export", {
+      placement: "quote_generator_download",
+      tool_name: "quote_generator",
+      export_type: "pdf",
+    });
   }
 
   // ---------- Reset ----------

@@ -2,29 +2,11 @@ export const site = {
   name: "Simple Biz Toolkit",
   url: "https://www.simplebiztoolkit.com",
   description:
-    "Printable templates and tools for small business owners, online sellers, freelancers and landlords. Invoices, time sheets, ledgers, rent trackers and planners — instant PDF downloads via Etsy.",
+    "Business templates and browser-based tools for small business owners, online sellers, freelancers and landlords. Template purchases are completed on Etsy.",
   locale: "en_GB",
   contactEmail: "simplebiztoolkit@gmail.com",
   defaultOgImage: "/images/hero-image-desk.webp",
   logoPath: "/images/simple-biz-toolkit-logo.png",
-  /**
-   * Public-facing trust figures sourced from the Etsy shop. Used in
-   * Organization JSON-LD and visible site copy so that values stay in sync.
-   */
-  trust: {
-    ratingValue: 4.8,
-    reviewCount: 240,
-    salesCount: 3850,
-    etsyShop: "simplebiztoolkit",
-  },
   /** Social and external profile URLs used by JSON-LD `sameAs`. */
   socialUrls: ["https://www.etsy.com/shop/simplebiztoolkit"],
 } as const;
-
-export function formatTrustCount(value: number): string {
-  return new Intl.NumberFormat("en-GB").format(value);
-}
-
-export function formatTrustRating(value: number): string {
-  return value.toFixed(1);
-}

@@ -12,9 +12,9 @@ import {
 } from "@/lib/seo";
 
 const productsTitle =
-  "Printable Small Business Templates — Invoices, Ledgers, Time Sheets & More";
+  "Small Business Templates — Invoices, Ledgers, Time Sheets & More";
 const productsDescription =
-  "Browse every Simple Biz Toolkit template category: accounting ledgers, invoices, estimates, time sheets, rent payment ledgers, order forms, sign-in sheets and more. Every template prints on A4 and US Letter and downloads instantly via Etsy.";
+  "Browse Simple Biz Toolkit template categories, including accounting ledgers, invoices, estimates, time sheets, rent payment ledgers, order forms and sign-in sheets. Check each product for file and delivery details.";
 
 export const revalidate = 300;
 
@@ -196,12 +196,11 @@ export default async function ProductsPage() {
         <div className="container">
           <div className="sb-page-header">
             <span className="sb-section-eyebrow">Template library</span>
-            <h1>Printable small business templates</h1>
+            <h1>Small business templates</h1>
             <p className="sb-muted sb-speakable">
-              Printable and fillable PDF templates for small business owners,
-              freelancers and landlords — invoices, estimates, ledgers, time
-              sheets, order forms and more. Every template comes in A4 and US
-              Letter sizes with instant Etsy download.
+              Templates for small business owners, freelancers and landlords —
+              invoices, estimates, ledgers, time sheets, order forms and more.
+              Check each product for file and delivery details.
             </p>
           </div>
 

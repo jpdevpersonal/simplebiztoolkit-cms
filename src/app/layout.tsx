@@ -1,4 +1,5 @@
 import { Poppins, Roboto } from "next/font/google";
+import GoogleAnalytics from "./GoogleAnalytics";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -26,7 +27,10 @@ export default function RootLayout({
       className={`${poppins.variable} ${roboto.variable}`}
     >
       <head />
-      <body>{children}</body>
+      <body>
+        <GoogleAnalytics />
+        {children}
+      </body>
     </html>
   );
 }

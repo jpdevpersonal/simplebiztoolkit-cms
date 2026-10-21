@@ -13,7 +13,18 @@ export type ProductCategory = {
     etsyUrl: string;
     price: string;
     productPageUrl?: string;
+    fileFormats?: ProductFileFormat[];
+    printable?: boolean;
+    fillable?: boolean;
+    supportedApplications?: string[];
+    paperSizes?: string[];
+    priceAmount?: number;
+    priceCurrency?: string;
+    licenseDescription?: string;
+    licenseReference?: string;
   }>;
 };
 
 export type Product = ProductCategory["items"][number];
+
+export type ProductFileFormat = "PDF" | "Excel" | "Word" | "CSV" | "Other";

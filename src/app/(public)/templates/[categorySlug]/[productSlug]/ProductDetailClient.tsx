@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import { trackPublicEvent } from "@/lib/analytics";
+import { normalizePublicUrl } from "@/lib/seo";
+import { getProductSpecifications } from "@/lib/productSpecifications";
 import type { Product } from "@/types/product";
 import { sanitizePublicContentHtml } from "@/lib/sanitize";
 import "@/styles/bootstrap-public-components.scss";
@@ -128,6 +130,8 @@ export default function ProductDetailClient({
 }: Props) {
   const contentSource = product.description || product.problem;
   const { html: descriptionContent } = splitDescriptionContent(contentSource);
+  const licenseReference = normalizePublicUrl(product.licenseReference);
+  const productSpecifications = getProductSpecifications(product);
   const primaryCtaRef = useRef<HTMLAnchorElement>(null);
   const closingCtaRef = useRef<HTMLAnchorElement>(null);
   const ctaVisibility = useRef({ primary: true, closing: false });
@@ -350,6 +354,32 @@ export default function ProductDetailClient({
                   </li>
                 ))}
               </ul>
+              {productSpecifications.length > 0 && (
+                <dl className="product-detail-specifications">
+                  {productSpecifications.map((specification) => (
+                    <div key={specification.name}>
+                      <dt>{specification.name}</dt>
+                      <dd>
+                        {specification.value}
+                        {specification.name === "License" &&
+                        licenseReference ? (
+                          <>
+                            {" "}
+                            (see{" "}
+                            <a
+                              href={licenseReference}
+                              rel="noopener noreferrer"
+                            >
+                              license details
+                            </a>
+                            )
+                          </>
+                        ) : null}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
             </div>
             {/* Notes about checkout and pricing placed under "What's Included" */}
             <div className="product-detail-cta-notes">
