@@ -546,31 +546,6 @@
   margin: 0 auto;
 }
 
-.sb-home-faq-item {
-  border-top: 1px solid var(--sb-border);
-}
-
-.sb-home-faq-item:last-of-type {
-  border-bottom: 1px solid var(--sb-border);
-}
-
-.sb-home-faq-summary {
-  padding: 1.125rem 2.5rem 1.125rem 0;
-  color: var(--sb-ink);
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.sb-home-faq-summary:focus-visible {
-  outline: 3px solid var(--sb-focus-ring);
-  outline-offset: 3px;
-}
-
-.sb-home-faq-item > p {
-  padding: 0 2.5rem 1.25rem 0;
-}
-
 .sb-final-cta {
   color: #fff;
   background: #253129;

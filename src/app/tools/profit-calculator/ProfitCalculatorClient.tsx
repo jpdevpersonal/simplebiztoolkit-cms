@@ -3,6 +3,14 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
+import TrackedLink from "@/components/TrackedLink";
+import { trackPublicEvent } from "@/lib/analytics";
+import {
+  ETSY_FEE_ASSUMPTIONS,
+  ETSY_FEE_SOURCES,
+  ETSY_FEE_VERIFIED_AS_OF,
+  type SellerCountry,
+} from "@/data/etsyFeeAssumptions";
 
 const TOOLS_PAGES_HREF = "/pages/tools";
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT;
@@ -26,12 +34,15 @@ interface FeeSettings {
   paymentFixed: number;
   listingFee: number;
   offsitePct: number;
+  regulatoryPct: number;
 }
 
 interface FormValues extends FeeSettings {
   mode: CalculatorMode;
   currency: string;
+  sellerCountry: SellerCountry;
   sellingPrice: number;
+  shippingCharged: number;
   materials: number;
   packaging: number;
   labour: number;
@@ -45,11 +56,13 @@ interface FormValues extends FeeSettings {
 
 interface CalcResult {
   sellingPrice: number;
+  totalRevenue: number;
   totalProductCost: number;
   transactionFee: number;
   paymentProcessingFee: number;
   listingFee: number;
   offsiteFee: number;
+  regulatoryFee: number;
   totalFees: number;
   profit: number;
   margin: number;
@@ -81,7 +94,9 @@ function totalProductCost(v: FormValues): number {
 
 /** Combined percentage fee rate as a decimal (e.g. 0.105 for 10.5%). */
 function percentageFeeRate(v: FeeSettings): number {
-  return (v.transactionPct + v.paymentPct + v.offsitePct) / 100;
+  return (
+    v.transactionPct + v.paymentPct + v.offsitePct + v.regulatoryPct
+  ) / 100;
 }
 
 function fixedFees(v: FeeSettings): number {
@@ -90,11 +105,43 @@ function fixedFees(v: FeeSettings): number {
 
 /** Validate inputs shared by all modes. Returns an error message or null. */
 function validateCommon(v: FormValues): string | null {
+  const numericValues: Array<[string, number]> = [
+    ["Selling price", v.sellingPrice],
+    ["Shipping charged to the buyer", v.shippingCharged],
+    ["Materials cost", v.materials],
+    ["Packaging cost", v.packaging],
+    ["Labour cost", v.labour],
+    ["Postage cost", v.postage],
+    ["Other cost", v.other],
+    ["Transaction fee", v.transactionPct],
+    ["Payment processing", v.paymentPct],
+    ["Payment fixed fee", v.paymentFixed],
+    ["Listing fee", v.listingFee],
+    ["Offsite ads", v.offsitePct],
+    ["Regulatory operating fee", v.regulatoryPct],
+    ["Desired profit", v.desiredProfit],
+    ["Desired margin", v.desiredMargin],
+    ["Monthly fixed costs", v.monthlyFixed],
+    ["Target monthly profit", v.targetMonthly],
+  ];
+  for (const [label, value] of numericValues) {
+    if (!Number.isFinite(value)) {
+      return `${label} must be a finite number.`;
+    }
+  }
+  if (
+    (v.sellerCountry === "GB" && v.currency !== "£") ||
+    (v.sellerCountry === "US" && v.currency !== "$")
+  ) {
+    return "The selected country preset is in a different currency. Select its matching currency or choose custom assumptions and update the fixed fees.";
+  }
+
   const costs: Array<[string, number]> = [
     ["Materials cost", v.materials],
     ["Packaging cost", v.packaging],
     ["Labour cost", v.labour],
     ["Postage / shipping cost", v.postage],
+    ["Shipping charged to the buyer", v.shippingCharged],
     ["Other cost", v.other],
     ["Selling price", v.sellingPrice],
     ["Monthly fixed costs", v.monthlyFixed],
@@ -110,6 +157,7 @@ function validateCommon(v: FormValues): string | null {
     ["Transaction fee", v.transactionPct],
     ["Payment processing", v.paymentPct],
     ["Offsite ads", v.offsitePct],
+    ["Regulatory operating fee", v.regulatoryPct],
     ["Payment fixed fee", v.paymentFixed],
     ["Listing fee", v.listingFee],
   ];
@@ -146,25 +194,34 @@ function salesTargets(
 
 /** Compute the full result for a known selling price. */
 function computeForPrice(v: FormValues, price: number): CalcResult {
+  const totalRevenue = price + v.shippingCharged;
   const cost = totalProductCost(v);
-  const transactionFee = price * (v.transactionPct / 100);
-  const paymentProcessingFee = price * (v.paymentPct / 100) + v.paymentFixed;
-  const offsiteFee = price * (v.offsitePct / 100);
+  const transactionFee = totalRevenue * (v.transactionPct / 100);
+  const paymentProcessingFee =
+    totalRevenue * (v.paymentPct / 100) + v.paymentFixed;
+  const offsiteFee = totalRevenue * (v.offsitePct / 100);
+  const regulatoryFee = totalRevenue * (v.regulatoryPct / 100);
   const listingFee = v.listingFee;
   const totalFees =
-    transactionFee + paymentProcessingFee + offsiteFee + listingFee;
-  const profit = price - cost - totalFees;
-  const margin = price > 0 ? (profit / price) * 100 : 0;
+    transactionFee +
+    paymentProcessingFee +
+    offsiteFee +
+    regulatoryFee +
+    listingFee;
+  const profit = totalRevenue - cost - totalFees;
+  const margin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
   const markup = cost > 0 ? (profit / cost) * 100 : 0;
   const { breakEvenSales, targetSales } = salesTargets(v, profit);
 
   return {
     sellingPrice: price,
+    totalRevenue,
     totalProductCost: cost,
     transactionFee,
     paymentProcessingFee,
     listingFee,
     offsiteFee,
+    regulatoryFee,
     totalFees,
     profit,
     margin,
@@ -183,6 +240,34 @@ function calculate(v: FormValues): CalcOutcome {
   const cost = totalProductCost(v);
   const rate = percentageFeeRate(v);
   const fixed = fixedFees(v);
+  const success = (price: number): CalcOutcome => {
+    if (
+      !Number.isFinite(price) ||
+      price <= 0 ||
+      price > Number.MAX_VALUE / 120
+    ) {
+      return {
+        ok: false,
+        error: {
+          message:
+            "These inputs do not produce a positive selling price. Check shipping revenue, fees, and costs.",
+        },
+      };
+    }
+
+    const result = computeForPrice(v, price);
+    if (
+      Object.values(result).some(
+        (value) => typeof value === "number" && !Number.isFinite(value),
+      )
+    ) {
+      return {
+        ok: false,
+        error: { message: "The result is outside the calculator's numeric range." },
+      };
+    }
+    return { ok: true, result };
+  };
 
   if (v.mode === "profit") {
     if (v.sellingPrice <= 0) {
@@ -191,7 +276,7 @@ function calculate(v: FormValues): CalcOutcome {
         error: { message: "Enter a selling price greater than 0." },
       };
     }
-    return { ok: true, result: computeForPrice(v, v.sellingPrice) };
+    return success(v.sellingPrice);
   }
 
   if (v.mode === "target-profit") {
@@ -201,8 +286,8 @@ function calculate(v: FormValues): CalcOutcome {
         error: { message: "Enter a desired profit per sale greater than 0." },
       };
     }
-    const price = (cost + v.desiredProfit + fixed) / (1 - rate);
-    return { ok: true, result: computeForPrice(v, price) };
+    const price = (cost + v.desiredProfit + fixed) / (1 - rate) - v.shippingCharged;
+    return success(price);
   }
 
   // target-margin
@@ -223,8 +308,8 @@ function calculate(v: FormValues): CalcOutcome {
       },
     };
   }
-  const price = (cost + fixed) / denominator;
-  return { ok: true, result: computeForPrice(v, price) };
+  const price = (cost + fixed) / denominator - v.shippingCharged;
+  return success(price);
 }
 
 function buildScenarios(v: FormValues, basePrice: number): ScenarioRow[] {
@@ -254,32 +339,13 @@ function buildScenarios(v: FormValues, basePrice: number): ScenarioRow[] {
   });
 }
 
-/**
- * Region-specific Etsy fee defaults, keyed by currency symbol.
- * The transaction fee (6.5%) is the same worldwide, so only the
- * payment-processing rate, the fixed payment fee and the listing fee
- * (a flat $0.20 USD, shown in local currency) change per region.
- */
-interface CurrencyFeeDefaults {
-  paymentPct: string;
-  paymentFixed: string;
-  listingFee: string;
-}
-
-const CURRENCY_FEE_DEFAULTS: Record<string, CurrencyFeeDefaults> = {
-  // United Kingdom (GBP)
-  "£": { paymentPct: "4", paymentFixed: "0.20", listingFee: "0.16" },
-  // United States (USD)
-  $: { paymentPct: "3", paymentFixed: "0.25", listingFee: "0.20" },
-  // Eurozone (EUR)
-  "€": { paymentPct: "4", paymentFixed: "0.30", listingFee: "0.18" },
-};
-
-const DEFAULT_CURRENCY = "£";
-
 function money(currency: string, amount: number): string {
   const sign = amount < 0 ? "-" : "";
-  return `${sign}${currency}${Math.abs(amount).toFixed(2)}`;
+  const absoluteAmount = Math.abs(amount);
+  const roundedCents = Math.round(
+    (absoluteAmount + Number.EPSILON * absoluteAmount) * 100,
+  );
+  return `${sign}${currency}${(roundedCents / 100).toFixed(2)}`;
 }
 
 function percent(value: number): string {
@@ -312,14 +378,21 @@ function setupProfitCalculator(root: HTMLElement) {
     cleanupFns.push(() => target.removeEventListener(type, handler, options));
   };
 
-  /** Read a numeric input value, treating blanks as 0. */
+  /** Read blank optional numeric fields as zero while preserving invalid numbers. */
   const num = (id: string): number => {
-    const value = parseFloat($<HTMLInputElement>(id).value);
-    return Number.isFinite(value) ? value : 0;
+    const rawValue = $<HTMLInputElement>(id).value.trim();
+    return rawValue === "" ? 0 : Number(rawValue);
   };
 
   const getString = (id: string): string =>
     $<HTMLInputElement | HTMLSelectElement>(id).value;
+
+  const getSellerCountry = (): SellerCountry => {
+    const selectedCountry = getString("sellerCountry");
+    return selectedCountry === "GB" || selectedCountry === "US"
+      ? selectedCountry
+      : "custom";
+  };
 
   const getMode = (): CalculatorMode => {
     const checked = root.querySelector<HTMLInputElement>(
@@ -331,7 +404,9 @@ function setupProfitCalculator(root: HTMLElement) {
   const readForm = (): FormValues => ({
     mode: getMode(),
     currency: getString("currency") || "£",
+    sellerCountry: getSellerCountry(),
     sellingPrice: num("sellingPrice"),
+    shippingCharged: num("shippingCharged"),
     materials: num("materials"),
     packaging: num("packaging"),
     labour: num("labour"),
@@ -342,6 +417,7 @@ function setupProfitCalculator(root: HTMLElement) {
     paymentFixed: num("paymentFixed"),
     listingFee: num("listingFee"),
     offsitePct: num("offsitePct"),
+    regulatoryPct: num("regulatoryPct"),
     desiredProfit: num("desiredProfit"),
     desiredMargin: num("desiredMargin"),
     monthlyFixed: num("monthlyFixed"),
@@ -358,6 +434,7 @@ function setupProfitCalculator(root: HTMLElement) {
     $("results-placeholder").hidden = show;
     $("results-content").hidden = !show;
     $("scenario-section").hidden = !show;
+    $("product-next-step").hidden = !show;
   };
 
   const showError = (message: string): void => {
@@ -437,10 +514,12 @@ function setupProfitCalculator(root: HTMLElement) {
     headlineValue.classList.toggle("value-negative", isPriceMode && value < 0);
 
     setText("r-cost", money(c, result.totalProductCost));
+    setText("r-revenue", money(c, result.totalRevenue));
     setText("r-transaction", money(c, result.transactionFee));
     setText("r-payment", money(c, result.paymentProcessingFee));
     setText("r-listing", money(c, result.listingFee));
     setText("r-offsite", money(c, result.offsiteFee));
+    setText("r-regulatory", money(c, result.regulatoryFee));
     setText("r-fees", money(c, result.totalFees));
     setText("r-profit", money(c, result.profit), result.profit < 0);
     setText("r-margin", percent(result.margin), result.margin < 0);
@@ -471,16 +550,26 @@ function setupProfitCalculator(root: HTMLElement) {
       mode === "target-margin" ? "" : "none";
   };
 
-  /**
-   * Switch the region-specific Etsy fee fields (payment processing %,
-   * fixed payment fee and listing fee) to match the selected currency.
-   */
-  const applyCurrencyFees = (currency: string): void => {
-    const fees = CURRENCY_FEE_DEFAULTS[currency];
+  const applyCountryFees = (country: SellerCountry): void => {
+    if (country === "custom") {
+      [
+        "transactionPct",
+        "paymentPct",
+        "paymentFixed",
+        "listingFee",
+        "regulatoryPct",
+      ].forEach((id) => {
+        $<HTMLInputElement>(id).value = "";
+      });
+      return;
+    }
+    const fees = ETSY_FEE_ASSUMPTIONS[country];
     if (!fees) return;
-    $<HTMLInputElement>("paymentPct").value = fees.paymentPct;
-    $<HTMLInputElement>("paymentFixed").value = fees.paymentFixed;
-    $<HTMLInputElement>("listingFee").value = fees.listingFee;
+    $<HTMLInputElement>("transactionPct").value = String(fees.transactionPct);
+    $<HTMLInputElement>("paymentPct").value = String(fees.paymentPct);
+    $<HTMLInputElement>("paymentFixed").value = String(fees.paymentFixed);
+    $<HTMLInputElement>("listingFee").value = String(fees.listingFee);
+    $<HTMLInputElement>("regulatoryPct").value = String(fees.regulatoryPct);
   };
 
   root
@@ -490,8 +579,8 @@ function setupProfitCalculator(root: HTMLElement) {
     });
   updateFieldVisibility();
 
-  on($("currency"), "change", () => {
-    applyCurrencyFees(getString("currency"));
+  on($("sellerCountry"), "change", () => {
+    applyCountryFees(getSellerCountry());
   });
 
   const form = $<HTMLFormElement>("calc-form");
@@ -499,10 +588,30 @@ function setupProfitCalculator(root: HTMLElement) {
   on(form, "submit", (event) => {
     event.preventDefault();
     clearError();
+    if (
+      getSellerCountry() === "custom" &&
+      [
+        "transactionPct",
+        "paymentPct",
+        "paymentFixed",
+        "listingFee",
+        "regulatoryPct",
+      ].some((id) => !$<HTMLInputElement>(id).value.trim())
+    ) {
+      showError(
+        "Enter each custom fee assumption, using 0 where a fee does not apply.",
+      );
+      return;
+    }
     const values = readForm();
     const outcome = calculate(values);
     if (outcome.ok) {
       renderResult(values, outcome.result);
+      trackPublicEvent("tool_complete", {
+        placement: "profit_calculator_result",
+        destination_type: "tool",
+        tool_name: "profit_calculator",
+      });
     } else {
       showError(outcome.error.message);
     }
@@ -513,11 +622,8 @@ function setupProfitCalculator(root: HTMLElement) {
     toggleResults(false);
     // Restore default fee values after the native reset clears them.
     windowRef.setTimeout(() => {
-      $<HTMLInputElement>("transactionPct").value = "6.5";
       $<HTMLInputElement>("offsitePct").value = "0";
-      // The currency select returns to its default, so re-apply the
-      // region-specific payment and listing fees to match.
-      applyCurrencyFees(getString("currency") || DEFAULT_CURRENCY);
+      applyCountryFees(getSellerCountry() || "GB");
       updateFieldVisibility();
     }, 0);
   });
@@ -755,6 +861,14 @@ export default function ProfitCalculatorClient() {
 
               <div className="grid-2">
                 <div className="field">
+                  <label htmlFor="sellerCountry">Seller account country</label>
+                  <select id="sellerCountry" name="sellerCountry" defaultValue="GB">
+                    <option value="GB">United Kingdom</option>
+                    <option value="US">United States</option>
+                    <option value="custom">Other / custom assumptions</option>
+                  </select>
+                </div>
+                <div className="field">
                   <label htmlFor="currency">Currency</label>
                   <select id="currency" name="currency" defaultValue="£">
                     <option value="£">£ (GBP)</option>
@@ -762,6 +876,13 @@ export default function ProfitCalculatorClient() {
                     <option value="€">€ (EUR)</option>
                   </select>
                 </div>
+              </div>
+              <p className="hint">
+                Seller country selects a fee assumption; calculation currency is
+                separate. Fixed fees must be entered in the calculation
+                currency. Currency conversion fees are not included.
+              </p>
+              <div className="grid-2">
                 <div className="field" id="price-field">
                   <label htmlFor="sellingPrice">Selling price</label>
                   <input
@@ -772,6 +893,21 @@ export default function ProfitCalculatorClient() {
                     step="0.01"
                     inputMode="decimal"
                     placeholder="0.00"
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="shippingCharged">
+                    Shipping charged to buyer
+                  </label>
+                  <input
+                    type="number"
+                    id="shippingCharged"
+                    name="shippingCharged"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    defaultValue="0"
                   />
                 </div>
               </div>
@@ -845,9 +981,10 @@ export default function ProfitCalculatorClient() {
               <fieldset className="field-group">
                 <legend>Etsy fee settings</legend>
                 <p className="hint">
-                  These update to the standard Etsy rates for the currency you
-                  pick. Fees vary by country and can change over time, so edit
-                  them to match your account.
+                  UK and US country presets were checked on{" "}
+                  {ETSY_FEE_VERIFIED_AS_OF}. Rates may change and other
+                  countries are not preset. Choosing custom clears country
+                  defaults so you can enter your own assumptions.
                 </p>
                 <div className="grid-2">
                   <div className="field">
@@ -875,7 +1012,9 @@ export default function ProfitCalculatorClient() {
                     />
                   </div>
                   <div className="field">
-                    <label htmlFor="paymentFixed">Payment fixed fee</label>
+                    <label htmlFor="paymentFixed">
+                      Payment fixed fee per order
+                    </label>
                     <input
                       type="number"
                       id="paymentFixed"
@@ -887,7 +1026,9 @@ export default function ProfitCalculatorClient() {
                     />
                   </div>
                   <div className="field">
-                    <label htmlFor="listingFee">Listing fee</label>
+                    <label htmlFor="listingFee">
+                      Listing fee per item / renewal
+                    </label>
                     <input
                       type="number"
                       id="listingFee"
@@ -896,6 +1037,20 @@ export default function ProfitCalculatorClient() {
                       step="0.01"
                       inputMode="decimal"
                       defaultValue="0.16"
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="regulatoryPct">
+                      Regulatory operating fee (%)
+                    </label>
+                    <input
+                      type="number"
+                      id="regulatoryPct"
+                      name="regulatoryPct"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      defaultValue="0.48"
                     />
                   </div>
                   <div className="field">
@@ -913,6 +1068,34 @@ export default function ProfitCalculatorClient() {
                     />
                   </div>
                 </div>
+                <p className="hint">
+                  Official sources:{" "}
+                  <a href={ETSY_FEE_SOURCES.paymentProcessing} target="_blank" rel="noreferrer">
+                    payment processing
+                  </a>
+                  ,{" "}
+                  <a href={ETSY_FEE_SOURCES.transactionAndOtherFees} target="_blank" rel="noreferrer">
+                    transaction fees
+                  </a>
+                  ,{" "}
+                  <a href={ETSY_FEE_SOURCES.listing} target="_blank" rel="noreferrer">
+                    listing fees
+                  </a>
+                  ,{" "}
+                  <a href={ETSY_FEE_SOURCES.regulatoryOperating} target="_blank" rel="noreferrer">
+                    regulatory fee
+                  </a>
+                  , and{" "}
+                  <a href={ETSY_FEE_SOURCES.offsiteAds} target="_blank" rel="noreferrer">
+                    Offsite Ads
+                  </a>
+                  . The UK listing fee is a converted estimate; Etsy bills listing
+                  fees in USD and converts them. VAT on Etsy fees, buyer taxes,
+                  Offsite Ads caps, refunds, multi-item renewals, currency
+                  conversion and other charges are excluded. This is a
+                  single-item-order estimate: the fixed processing fee is per
+                  order and the listing fee is modeled once per item.
+                </p>
               </fieldset>
 
               <fieldset className="field-group">
@@ -1009,6 +1192,10 @@ export default function ProfitCalculatorClient() {
             aria-labelledby="results-heading"
           >
             <h2 id="results-heading">Results</h2>
+            <p className="hint">
+              Profit margin is profit divided by item-plus-shipping revenue,
+              excluding tax. Markup is profit divided by product costs.
+            </p>
 
             <div id="results" aria-live="polite">
               <p className="placeholder" id="results-placeholder">
@@ -1029,6 +1216,10 @@ export default function ProfitCalculatorClient() {
 
                 <dl className="breakdown">
                   <div className="row">
+                    <dt>Item + buyer-paid shipping revenue (tax excluded)</dt>
+                    <dd id="r-revenue">—</dd>
+                  </div>
+                  <div className="row">
                     <dt>Total product cost</dt>
                     <dd id="r-cost">—</dd>
                   </div>
@@ -1047,6 +1238,10 @@ export default function ProfitCalculatorClient() {
                   <div className="row">
                     <dt>Offsite ads fee</dt>
                     <dd id="r-offsite">—</dd>
+                  </div>
+                  <div className="row">
+                    <dt>Regulatory operating fee</dt>
+                    <dd id="r-regulatory">—</dd>
                   </div>
                   <div className="row total">
                     <dt>Total Etsy fees</dt>
@@ -1077,6 +1272,55 @@ export default function ProfitCalculatorClient() {
             </div>
           </section>
         </div>
+
+        <section
+          className="card link-card"
+          id="product-next-step"
+          aria-labelledby="ledger-next-step-heading"
+          hidden
+        >
+          <h2 id="ledger-next-step-heading">
+            Keep a monthly record of your results
+          </h2>
+          <p>
+            This calculator is free to use on its own. If a printable monthly
+            ledger would help you record income and expenses, view this existing
+            template.
+          </p>
+          <div className="d-flex gap-2 flex-wrap">
+            <TrackedLink
+              className="btn btn-secondary"
+              href="/templates/accounting-ledger/printable-monthly-accounting-ledger-start-end-balance"
+              eventName="cta_click"
+              eventParams={{
+                placement: "profit_calculator_next_step",
+                destination_type: "template",
+                category_slug: "accounting-ledger",
+                product_slug:
+                  "printable-monthly-accounting-ledger-start-end-balance",
+              }}
+            >
+              View the monthly ledger template
+            </TrackedLink>
+            <a
+              className="btn btn-primary"
+              href="https://www.etsy.com/listing/1194290286/printable-accounting-ledger-general"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                trackPublicEvent("outbound_etsy_click", {
+                  placement: "profit_calculator_next_step",
+                  destination_type: "etsy",
+                  category_slug: "accounting-ledger",
+                  product_slug:
+                    "printable-monthly-accounting-ledger-start-end-balance",
+                })
+              }
+            >
+              View on Etsy
+            </a>
+          </div>
+        </section>
 
         <div className="stack">
           {/* Pricing scenario table */}
@@ -1118,27 +1362,25 @@ export default function ProfitCalculatorClient() {
               a meaningful slice of every order goes back to the platform. Add
               your materials, packaging, postage, and the value of your own
               time, and a sale that looks healthy can leave you with very
-              little. This Etsy profit calculator separates revenue from real
-              take-home profit so you know exactly where you stand.
+              little. This calculator estimates fees and profit using the
+              assumptions you enter.
             </p>
 
             <h3>How Etsy fees affect your pricing</h3>
             <p>
               Etsy fees are a mix of percentages and fixed amounts. Percentage
-              fees grow with your price, while fixed fees (like the listing fee
-              and the fixed part of payment processing) hit low-priced items
-              hardest. That is why cheap items often feel impossible to make
-              money on. Use the Etsy fee calculator above to see the true cost
-              of each fee for any price point.
+              fees grow with item and shipping revenue, while fixed fees (like
+              the listing fee and fixed payment processing amount) affect
+              low-priced orders more. Use the calculator above to compare
+              estimates at different prices.
             </p>
 
             <h3>Why underpricing is so common</h3>
             <p>
               Many sellers set a price by glancing at competitors or doubling
               their material cost. This usually ignores labour, packaging,
-              postage, and fees entirely. The result is steady sales with almost
-              no profit. An Etsy profit margin calculator helps you set a price
-              based on the margin you actually want to keep.
+              postage and fees entirely. A margin estimate can help you compare
+              prices against the margin you want to achieve.
             </p>
 
             <h3>How to use this calculator</h3>

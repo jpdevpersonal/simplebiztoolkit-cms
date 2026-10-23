@@ -1,6 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
+const trackPublicEventMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/analytics", () => ({
+  trackPublicEvent: trackPublicEventMock,
+}));
+
 import CsvProfitCalculatorClient from "./CsvProfitCalculatorClient";
 
 beforeAll(() => {
@@ -83,6 +89,48 @@ describe("CsvProfitCalculatorClient", () => {
     expect(screen.getAllByText("$100.00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("-$10.00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("$70.00").length).toBeGreaterThan(0);
+  });
+
+  it("tracks CSV exports after a generated report downloads", async () => {
+    const createObjectURLDescriptor = Object.getOwnPropertyDescriptor(
+      URL,
+      "createObjectURL",
+    );
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: vi.fn(() => "blob:report"),
+    });
+    trackPublicEventMock.mockClear();
+
+    try {
+      const { container } = render(<CsvProfitCalculatorClient />);
+      await uploadFile(container, {
+        name: "export-report.csv",
+        content: [
+          "Date,Type,Amount,Fee,Net,Description",
+          "2026-01-05,Sale,$100.00,-$10.00,$90.00,Order 1",
+        ].join("\n"),
+      });
+
+      await screen.findByText(/export-report\.csv/i);
+      fireEvent.click(
+        screen.getByRole("button", { name: /Generate Profit Breakdown/i }),
+      );
+      await screen.findAllByText("2026-01");
+      fireEvent.click(screen.getByRole("button", { name: "Save as CSV" }));
+
+      expect(trackPublicEventMock).toHaveBeenCalledWith("file_export", {
+        placement: "csv_profit_calculator_download",
+        tool_name: "csv_profit_calculator",
+        export_type: "csv",
+      });
+    } finally {
+      if (createObjectURLDescriptor) {
+        Object.defineProperty(URL, "createObjectURL", createObjectURLDescriptor);
+      } else {
+        Reflect.deleteProperty(URL, "createObjectURL");
+      }
+    }
   });
 
   it("shows a money-format error when rows contain invalid currency values", async () => {

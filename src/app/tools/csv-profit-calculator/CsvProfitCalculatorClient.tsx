@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLayoutEffect, useRef } from "react";
 
 import { CSV_CALCULATOR_FAQS } from "./faqContent";
+import { trackPublicEvent } from "@/lib/analytics";
 
 const TOOLS_PAGES_HREF = "/pages/tools";
 
@@ -471,8 +472,13 @@ function setupCsvProfitCalculator(root: HTMLElement) {
       .trim();
   }
 
-  function handleSuccessfulDownload() {
+  function handleSuccessfulDownload(exportType: "csv" | "xlsx") {
     state.hasDownloadedFile = true;
+    trackPublicEvent("file_export", {
+      placement: "csv_profit_calculator_download",
+      tool_name: "csv_profit_calculator",
+      export_type: exportType,
+    });
     submitAnotherButton.classList.remove("hidden");
     setDownloadReadyMessage(
       "Your report has been downloaded. Check your Downloads folder.",
@@ -2314,7 +2320,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
       buildDownloadName("csv"),
       "text/csv;charset=utf-8;",
     );
-    handleSuccessfulDownload();
+    handleSuccessfulDownload("csv");
   }
 
   function handleDownloadXlsxClick() {
@@ -2328,7 +2334,7 @@ function setupCsvProfitCalculator(root: HTMLElement) {
       buildDownloadName("xlsx"),
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
-    handleSuccessfulDownload();
+    handleSuccessfulDownload("xlsx");
   }
 
   function handleVisibilityChange() {

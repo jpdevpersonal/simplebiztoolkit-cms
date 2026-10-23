@@ -23,7 +23,7 @@ describe("Templates page", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Printable small business templates",
+        name: "Small business templates",
         level: 1,
       }),
     ).toBeInTheDocument();
@@ -48,7 +48,7 @@ describe("Templates page", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Printable small business templates",
+        name: "Small business templates",
         level: 1,
       }),
     ).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("Templates page", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Printable small business templates",
+        name: "Small business templates",
         level: 1,
       }),
     ).toBeInTheDocument();

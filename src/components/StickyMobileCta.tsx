@@ -54,7 +54,7 @@ export default function StickyMobileCta() {
     <div className="sb-sticky-cta">
       <div className="container d-flex gap-2 justify-content-center">
         <EtsyCtaButton analyticsPlacement="sticky_general" />
-        {featureFlags.showFreeGuideButton && (
+        {featureFlags.freeGuideAvailable && (
           <Link className="btn sb-btn-ghost" href={links.freebiePath}>
             Get your free guide
           </Link>

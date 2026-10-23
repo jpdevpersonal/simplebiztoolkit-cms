@@ -10,7 +10,9 @@ function toValidSitemapDate(value: SitemapLastModifiedInput): Date | undefined {
   }
 
   if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? undefined : value;
+    return Number.isNaN(value.getTime()) || value.getTime() > Date.now()
+      ? undefined
+      : value;
   }
 
   if (typeof value !== "string") {
@@ -29,7 +31,15 @@ function toValidSitemapDate(value: SitemapLastModifiedInput): Date | undefined {
   }
 
   const parsedDate = new Date(trimmedValue);
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
+  if (
+    ISO_DATE_ONLY.test(trimmedValue) &&
+    parsedDate.toISOString().slice(0, 10) !== trimmedValue
+  ) {
+    return undefined;
+  }
+  return Number.isNaN(parsedDate.getTime()) || parsedDate.getTime() > Date.now()
+    ? undefined
+    : parsedDate;
 }
 
 export function toSitemapLastModified(
@@ -43,4 +53,16 @@ export function toSitemapLastModified(
   }
 
   return undefined;
+}
+
+export function isSitemapEligiblePath(pathname: string): boolean {
+  if (
+    !pathname.startsWith("/") ||
+    pathname.includes("?") ||
+    pathname.includes("#")
+  ) {
+    return false;
+  }
+
+  return !/^\/(?:admin|api|auth|preview|free|products)(?:\/|$)/i.test(pathname);
 }

@@ -5,10 +5,10 @@ export const featuredTools: Tool[] = [
     slug: "profit-calculator",
     title: "Profit Calculator for Etsy",
     tagline:
-      "Work out Etsy fees, costs and the exact price you need to charge to make a real profit.",
+      "Estimate selected Etsy fees and costs, compare profit scenarios, and explore pricing.",
     bullets: [
-      "Breaks down every Etsy fee",
-      "Finds your ideal selling price",
+      "Estimates selected Etsy fees",
+      "Compares selling price scenarios",
       "Free \u2014 runs in your browser",
     ],
     image: "/images/tools/featured/profit-calculator.webp",
@@ -18,11 +18,11 @@ export const featuredTools: Tool[] = [
     slug: "estimate-quote-generator",
     title: "Estimate & Quote PDF Generator",
     tagline:
-      "Build a professional estimate or quote and download it as a polished PDF in seconds.",
+      "Prepare an estimate or quote and download it as a PDF.",
     bullets: [
       "Custom logo & branding",
       "Multi-line itemized totals",
-      "Instant print-ready PDF",
+      "PDF download",
     ],
     image: "/images/tools/featured/estimate-quote-generator.webp",
     href: "/tools/estimate-quote-generator",

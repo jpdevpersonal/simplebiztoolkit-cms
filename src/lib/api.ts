@@ -32,6 +32,15 @@ export interface ProductItem {
   etsyUrl: string;
   productPageUrl?: string;
   price: string;
+  fileFormats?: Array<"PDF" | "Excel" | "Word" | "CSV" | "Other">;
+  printable?: boolean;
+  fillable?: boolean;
+  supportedApplications?: string[];
+  paperSizes?: string[];
+  priceAmount?: number;
+  priceCurrency?: string;
+  licenseDescription?: string;
+  licenseReference?: string;
   categoryId: string;
   status: "draft" | "published";
 }

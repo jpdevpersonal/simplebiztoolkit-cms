@@ -1,4 +1,5 @@
 import { site } from "@/config/site";
+import { featuredTools } from "@/data/featuredTools";
 import { getApiService } from "@/lib/api";
 import {
   getMenuItemLandingHref,
@@ -39,7 +40,7 @@ export async function GET() {
   lines.push(`> ${site.description}`);
   lines.push("");
   lines.push(
-    "Simple Biz Toolkit is a small-business template shop run on Etsy. Every template is a printable or fillable PDF delivered as an instant digital download. We are an Etsy Star Seller with a 4.8 average rating across 3,700+ reviews and 3,500+ sales.",
+    "Simple Biz Toolkit offers business templates and browser-based tools for small business owners, online sellers, freelancers and landlords. Template purchases are completed through Etsy; check each listing for its current file details.",
   );
   lines.push("");
   lines.push("## Key pages");
@@ -48,16 +49,16 @@ export async function GET() {
     `- [Home](${site.url}/): Overview of who we are and what we sell.`,
   );
   lines.push(
-    `- [About](${site.url}/about): Background of the shop and how the templates are designed.`,
+    `- [About](${site.url}/about): Background on the shop, templates, and tools.`,
   );
   lines.push(
-    `- [All templates](${site.url}/templates): Complete catalogue of printable templates by category.`,
+    `- [All templates](${site.url}/templates): Browse template categories and available products.`,
   );
   lines.push(
-    `- [FAQ](${site.url}/faq): How downloads, printing, refunds and software requirements work.`,
+    `- [FAQ](${site.url}/faq): Product, file, delivery, and purchase information.`,
   );
   lines.push(
-    `- [Testimonials](${site.url}/testimonials): Verified Etsy buyer reviews.`,
+    `- [Testimonials](${site.url}/testimonials): Selected customer feedback.`,
   );
   lines.push(
     `- [Contact](${site.url}/contact): How to reach the shop for support.`,
@@ -116,9 +117,11 @@ export async function GET() {
 
   lines.push("## Tools");
   lines.push("");
-  lines.push(
-    `- [CSV Profit Calculator](${site.url}/tools/csv-profit-calculator): Free Etsy CSV profit & fees calculator.`,
-  );
+  for (const tool of featuredTools) {
+    lines.push(
+      `- [${tool.title}](${toAbsoluteUrl(tool.href)}): ${tool.tagline}`,
+    );
+  }
   lines.push("");
   lines.push("## Support");
   lines.push("");

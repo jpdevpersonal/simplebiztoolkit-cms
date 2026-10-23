@@ -1,7 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import ProfitCalculatorClient from "./ProfitCalculatorClient";
+
+const trackPublicEventMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/analytics", () => ({
+  trackPublicEvent: (...args: unknown[]) => trackPublicEventMock(...args),
+}));
 
 beforeAll(() => {
   Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
@@ -9,6 +15,10 @@ beforeAll(() => {
     value: vi.fn(),
     writable: true,
   });
+});
+
+afterEach(() => {
+  trackPublicEventMock.mockClear();
 });
 
 describe("ProfitCalculatorClient", () => {
@@ -55,10 +65,18 @@ describe("ProfitCalculatorClient", () => {
     expect(
       (container.querySelector("#results-content") as HTMLElement).hidden,
     ).toBe(false);
-    // Defaults: 6.5% + 4% of 20 + 0.20 fixed + 0.16 listing = 2.46 total fees.
-    expect(container.querySelector("#r-fees")?.textContent).toBe("£2.46");
-    // Profit = 20 - 5 (materials) - 2.46 fees = 12.54.
-    expect(container.querySelector("#r-profit")?.textContent).toBe("£12.54");
+    // Fees: 6.5% + 4% + 0.48% of £20, plus £0.20 + £0.16 = £2.56.
+    expect(container.querySelector("#r-fees")?.textContent).toBe("£2.56");
+    // Profit = £20 - £5 materials - £2.56 modeled fees = £12.44.
+    expect(container.querySelector("#r-profit")?.textContent).toBe("£12.44");
+    expect(trackPublicEventMock).toHaveBeenCalledWith("tool_complete", {
+      placement: "profit_calculator_result",
+      destination_type: "tool",
+      tool_name: "profit_calculator",
+    });
+    expect(
+      (container.querySelector("#product-next-step") as HTMLElement).hidden,
+    ).toBe(false);
     expect(
       (container.querySelector("#scenario-section") as HTMLElement).hidden,
     ).toBe(false);
@@ -75,11 +93,15 @@ describe("ProfitCalculatorClient", () => {
     expect(
       (container.querySelector("#results-content") as HTMLElement).hidden,
     ).toBe(true);
+    expect(trackPublicEventMock).not.toHaveBeenCalled();
   });
 
-  it("switches the payment and listing fees to the region rates on currency change", () => {
+  it("changes rates by seller country, not by currency selection", () => {
     const { container } = render(<ProfitCalculatorClient />);
 
+    const country = container.querySelector(
+      "#sellerCountry",
+    ) as HTMLSelectElement;
     const currency = container.querySelector("#currency") as HTMLSelectElement;
     const paymentPct = container.querySelector(
       "#paymentPct",
@@ -96,17 +118,51 @@ describe("ProfitCalculatorClient", () => {
     expect(paymentFixed.value).toBe("0.20");
     expect(listingFee.value).toBe("0.16");
 
-    // Switching to USD applies the US Etsy rates.
+    fireEvent.change(country, { target: { value: "US" } });
+    expect(paymentPct.value).toBe("3");
+    expect(paymentFixed.value).toBe("0.25");
+    expect(listingFee.value).toBe("0.2");
+    expect(
+      (container.querySelector("#regulatoryPct") as HTMLInputElement).value,
+    ).toBe("0");
+    expect(currency.value).toBe("£");
+
     fireEvent.change(currency, { target: { value: "$" } });
     expect(paymentPct.value).toBe("3");
     expect(paymentFixed.value).toBe("0.25");
-    expect(listingFee.value).toBe("0.20");
+    expect(listingFee.value).toBe("0.2");
 
-    // Switching to EUR applies the Eurozone Etsy rates.
+    fireEvent.change(country, { target: { value: "custom" } });
     fireEvent.change(currency, { target: { value: "€" } });
-    expect(paymentPct.value).toBe("4");
-    expect(paymentFixed.value).toBe("0.30");
-    expect(listingFee.value).toBe("0.18");
+    expect(paymentPct.value).toBe("");
+    expect(paymentFixed.value).toBe("");
+  });
+
+  it("separates item revenue, buyer-paid shipping, postage cost, and fee bases", () => {
+    const { container } = render(<ProfitCalculatorClient />);
+    fireEvent.input(container.querySelector("#sellingPrice") as HTMLElement, {
+      target: { value: "20" },
+    });
+    fireEvent.input(container.querySelector("#shippingCharged") as HTMLElement, {
+      target: { value: "5" },
+    });
+    fireEvent.input(container.querySelector("#materials") as HTMLElement, {
+      target: { value: "5" },
+    });
+    fireEvent.input(container.querySelector("#postage") as HTMLElement, {
+      target: { value: "3" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
+
+    // The 10.98% modeled percentage fees use £25 item-plus-shipping revenue.
+    expect(container.querySelector("#r-revenue")?.textContent).toBe("£25.00");
+    expect(container.querySelector("#r-cost")?.textContent).toBe("£8.00");
+    expect(container.querySelector("#r-transaction")?.textContent).toBe("£1.63");
+    expect(container.querySelector("#r-payment")?.textContent).toBe("£1.20");
+    expect(container.querySelector("#r-regulatory")?.textContent).toBe("£0.12");
+    expect(container.querySelector("#r-fees")?.textContent).toBe("£3.11");
+    expect(container.querySelector("#r-profit")?.textContent).toBe("£13.90");
+    expect(container.querySelector("#r-margin")?.textContent).toBe("55.6%");
   });
 
   describe("Math correctness — profit mode", () => {
@@ -121,14 +177,17 @@ describe("ProfitCalculatorClient", () => {
       });
       fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
 
-      // transaction = 20 × 6.5% = £1.30
+      // transaction = £20 × 6.5% = £1.30
       expect(container.querySelector("#r-transaction")?.textContent).toBe(
         "£1.30",
       );
-      // payment processing = 20 × 4% + £0.20 fixed = £1.00
+      // payment processing = £20 × 4% + £0.20 fixed = £1.00
       expect(container.querySelector("#r-payment")?.textContent).toBe("£1.00");
       // listing fee = £0.16 (GBP default)
       expect(container.querySelector("#r-listing")?.textContent).toBe("£0.16");
+      expect(container.querySelector("#r-regulatory")?.textContent).toBe(
+        "£0.10",
+      );
       // offsite ads = 0% (default off)
       expect(container.querySelector("#r-offsite")?.textContent).toBe("£0.00");
     });
@@ -144,10 +203,9 @@ describe("ProfitCalculatorClient", () => {
       });
       fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
 
-      // profit = £12.54; margin = 12.54 / 20 × 100 = 62.7%
-      expect(container.querySelector("#r-margin")?.textContent).toBe("62.7%");
-      // markup = 12.54 / 5 × 100 = 250.8%
-      expect(container.querySelector("#r-markup")?.textContent).toBe("250.8%");
+      // Margin uses total revenue; markup uses total product costs.
+      expect(container.querySelector("#r-margin")?.textContent).toBe("62.2%");
+      expect(container.querySelector("#r-markup")?.textContent).toBe("248.9%");
     });
 
     it("sums all five cost components into total product cost", () => {
@@ -175,8 +233,9 @@ describe("ProfitCalculatorClient", () => {
 
       // 5 + 3 + 8 + 4 + 2 = £22.00
       expect(container.querySelector("#r-cost")?.textContent).toBe("£22.00");
-      // profit = 50 – 22 – (3.25 + 2.20 + 0.16) = £22.39
-      expect(container.querySelector("#r-profit")?.textContent).toBe("£22.39");
+      // Fees are £3.25 + £2.20 + £0.16 + £0.24 regulatory = £5.85.
+      expect(container.querySelector("#r-fees")?.textContent).toBe("£5.85");
+      expect(container.querySelector("#r-profit")?.textContent).toBe("£22.15");
     });
 
     it("applies the offsite-ads fee at the configured percentage", () => {
@@ -195,10 +254,12 @@ describe("ProfitCalculatorClient", () => {
 
       // offsite = 40 × 12% = £4.80
       expect(container.querySelector("#r-offsite")?.textContent).toBe("£4.80");
-      // total fees = 2.60 + 1.80 + 0.16 + 4.80 = £9.36
-      expect(container.querySelector("#r-fees")?.textContent).toBe("£9.36");
-      // profit = 40 – 10 – 9.36 = £20.64
-      expect(container.querySelector("#r-profit")?.textContent).toBe("£20.64");
+      // Fees include 0.48% regulatory fee on £40 revenue.
+      expect(container.querySelector("#r-regulatory")?.textContent).toBe(
+        "£0.19",
+      );
+      expect(container.querySelector("#r-fees")?.textContent).toBe("£9.55");
+      expect(container.querySelector("#r-profit")?.textContent).toBe("£20.45");
     });
 
     it("flags negative profit and margin with the value-negative CSS class", () => {
@@ -212,13 +273,13 @@ describe("ProfitCalculatorClient", () => {
       });
       fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
 
-      // profit = 10 – 30 – 1.41 = -£21.41
+      // Fees are £1.46 after including the 0.48% regulatory fee.
       const profitEl = container.querySelector("#r-profit") as HTMLElement;
-      expect(profitEl.textContent).toBe("-£21.41");
+      expect(profitEl.textContent).toBe("-£21.46");
       expect(profitEl.classList.contains("value-negative")).toBe(true);
-      // margin = -21.41 / 10 × 100 = -214.1%
+      // margin = -£21.46 / £10 × 100 = -214.6%
       const marginEl = container.querySelector("#r-margin") as HTMLElement;
-      expect(marginEl.textContent).toBe("-214.1%");
+      expect(marginEl.textContent).toBe("-214.6%");
       expect(marginEl.classList.contains("value-negative")).toBe(true);
     });
 
@@ -240,13 +301,13 @@ describe("ProfitCalculatorClient", () => {
       );
       fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
 
-      // profit ≈ £12.54; ceil(100 / 12.54) = 8
+      // profit ≈ £12.44; ceil(100 / 12.44) = 9
       expect(container.querySelector("#r-breakeven")?.textContent).toBe(
-        "8 sales",
+        "9 sales",
       );
-      // ceil((500 + 100) / 12.54) = 48
+      // ceil((500 + 100) / 12.44) = 49
       expect(container.querySelector("#r-target-sales")?.textContent).toBe(
-        "48 sales",
+        "49 sales",
       );
     });
   });
@@ -269,7 +330,31 @@ describe("ProfitCalculatorClient", () => {
       });
       fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
 
-      // price = (5 + 10 + 0.36) / (1 – 0.105); profit by construction = £10.00
+      // Inverse pricing includes the 0.48% UK regulatory percentage fee.
+      expect(container.querySelector("#r-profit")?.textContent).toBe("£10.00");
+    });
+
+    it("finds a target-profit price after adding shipping revenue and postage cost", () => {
+      const { container } = render(<ProfitCalculatorClient />);
+      fireEvent.click(
+        container.querySelector(
+          'input[name="mode"][value="target-profit"]',
+        ) as HTMLInputElement,
+      );
+      fireEvent.input(container.querySelector("#desiredProfit") as HTMLElement, {
+        target: { value: "10" },
+      });
+      fireEvent.input(container.querySelector("#shippingCharged") as HTMLElement, {
+        target: { value: "5" },
+      });
+      fireEvent.input(container.querySelector("#materials") as HTMLElement, {
+        target: { value: "5" },
+      });
+      fireEvent.input(container.querySelector("#postage") as HTMLElement, {
+        target: { value: "3" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
+
       expect(container.querySelector("#r-profit")?.textContent).toBe("£10.00");
     });
   });
@@ -294,6 +379,27 @@ describe("ProfitCalculatorClient", () => {
 
       // price = (5 + 0.36) / (1 – 0.105 – 0.50); margin by construction = 50.0%
       expect(container.querySelector("#r-margin")?.textContent).toBe("50.0%");
+    });
+
+    it("rejects an unattainable target margin without displaying an invalid result", () => {
+      const { container } = render(<ProfitCalculatorClient />);
+      fireEvent.click(
+        container.querySelector(
+          'input[name="mode"][value="target-margin"]',
+        ) as HTMLInputElement,
+      );
+      fireEvent.input(container.querySelector("#desiredMargin") as HTMLElement, {
+        target: { value: "95" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
+
+      expect(container.querySelector("#form-error")).toHaveTextContent(
+        /impossible/i,
+      );
+      expect(
+        (container.querySelector("#results-content") as HTMLElement).hidden,
+      ).toBe(true);
+      expect(trackPublicEventMock).not.toHaveBeenCalled();
     });
   });
 });
