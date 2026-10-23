@@ -138,8 +138,7 @@ export default async function HomePage() {
 
             <p className="sb-hero-subtitle sb-speakable">
               Business templates and browser-based tools for small business
-              owners, online sellers, freelancers and landlords. Review each
-              Etsy listing for current file, compatibility and delivery details.
+              owners, online sellers, freelancers and landlords.
             </p>
 
             <div className="sb-hero-actions">
@@ -197,7 +196,7 @@ export default async function HomePage() {
               >
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              Checkout via Etsy &middot; Product details on each listing
+              Secure Checkout via Etsy
             </p>
           </div>
         </div>
@@ -217,9 +216,7 @@ export default async function HomePage() {
           <div className="sb-section-header sb-products-head">
             <span className="sb-section-eyebrow">Best Sellers</span>
             <h2>Our Popular Templates</h2>
-            <p>
-              A selection of templates for common small-business tasks.
-            </p>
+            <p>A selection of templates for common small-business tasks.</p>
           </div>
           <ProductGrid
             products={featuredProducts}
@@ -242,9 +239,7 @@ export default async function HomePage() {
           <div className="sb-section-header">
             <span className="sb-section-eyebrow">Browse by need</span>
             <h2 id="sb-categories-heading">Find the template you need</h2>
-            <p>
-              Browse template categories by the task you need to manage.
-            </p>
+            <p>Browse template categories by the task you need to manage.</p>
           </div>
           <div className="row g-3">
             {[
@@ -518,8 +513,8 @@ export default async function HomePage() {
               <div className="sb-info-tile h-100">
                 <h3 className="sb-tile-title">Online sellers</h3>
                 <p className="sb-muted sb-small-copy mb-0">
-                  Review available resources for order, fee, shipping and
-                  profit tracking.
+                  Review available resources for order, fee, shipping and profit
+                  tracking.
                 </p>
               </div>
             </div>
@@ -537,8 +532,8 @@ export default async function HomePage() {
               <div className="sb-info-tile h-100">
                 <h3 className="sb-tile-title">Landlords &amp; managers</h3>
                 <p className="sb-muted sb-small-copy mb-0">
-                  Browse record-keeping resources and check product listings
-                  for their intended use.
+                  Browse record-keeping resources and check product listings for
+                  their intended use.
                 </p>
               </div>
             </div>
