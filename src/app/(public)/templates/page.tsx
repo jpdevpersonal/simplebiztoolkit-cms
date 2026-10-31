@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 
+import Image from "next/image";
+import Link from "next/link";
+
+import EtsyCtaButton from "@/components/EtsyCtaButton";
 import JsonLd from "@/components/JsonLd";
 import TrackedLink from "@/components/TrackedLink";
 import "@/styles/products.css";
+import "@/styles/templatesBrowse.css";
 import { apiService } from "@/lib/api";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
+import {
+  formatTemplateCount,
+  getTemplateCategoryStats,
+} from "@/lib/templateCategoryStats";
 import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
@@ -167,8 +177,18 @@ export const metadata: Metadata = createPageMetadata({
   pathname: "/templates",
 });
 
+const templateBenefits = [
+  "Instant digital download",
+  "Printable & fillable options",
+  "Secure checkout via Etsy",
+];
+
 export default async function ProductsPage() {
   const categories = (await apiService.getProductCategories()).data || [];
+  const totalTemplates = categories.reduce(
+    (sum, c) => sum + (c.items?.length ?? 0),
+    0,
+  );
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
     { name: "Templates", href: "/templates" },
@@ -202,50 +222,116 @@ export default async function ProductsPage() {
               invoices, estimates, ledgers, time sheets, order forms and more.
               Check each product for file and delivery details.
             </p>
+            {totalTemplates > 0 && (
+              <p className="templates-hero-count">
+                {formatTemplateCount(totalTemplates)} across{" "}
+                {categories.length}{" "}
+                {categories.length === 1 ? "category" : "categories"}
+              </p>
+            )}
+            <ul
+              className="templates-benefits"
+              aria-label="Why buyers choose us"
+            >
+              {templateBenefits.map((benefit) => (
+                <li key={benefit}>
+                  <span aria-hidden="true">✓</span>
+                  {benefit}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="category-grid">
-            {categories.map((c) => (
-              <TrackedLink
-                href={`/templates/${c.slug}`}
-                className="category-card-link"
-                key={c.slug}
-                eventName="select_item"
-                eventParams={{
-                  placement: "templates_categories",
-                  destination_type: "template_category",
-                  category_slug: c.slug,
-                  item_name: c.name,
-                }}
-              >
-                <article className="category-card">
-                  <div className="category-card-icon" aria-hidden="true">
-                    {getCategoryIcon(c.slug)}
-                  </div>
-                  <h2 className="category-card-title">{c.name}</h2>
-                  <p className="category-card-summary">{c.summary}</p>
-                  <span className="category-card-cta">
-                    Browse templates
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M6 3l5 5-5 5"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </article>
-              </TrackedLink>
-            ))}
+            {categories.map((c, index) => {
+              const stats = getTemplateCategoryStats(c.items);
+              const previewImage = c.heroImage || stats.previewImage;
+
+              return (
+                <TrackedLink
+                  href={`/templates/${c.slug}`}
+                  className="category-card-link"
+                  key={c.slug}
+                  eventName="select_item"
+                  eventParams={{
+                    placement: "templates_categories",
+                    destination_type: "template_category",
+                    category_slug: c.slug,
+                    item_name: c.name,
+                  }}
+                >
+                  <article
+                    className={`category-card${previewImage ? " has-media" : ""}`}
+                  >
+                    {previewImage && (
+                      <div className="category-card-media">
+                        <Image
+                          src={previewImage}
+                          alt=""
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 300px"
+                          priority={index < 3}
+                          unoptimized={shouldBypassNextImageOptimization(
+                            previewImage,
+                          )}
+                        />
+                      </div>
+                    )}
+                    <div className="category-card-icon" aria-hidden="true">
+                      {getCategoryIcon(c.slug)}
+                    </div>
+                    <h2 className="category-card-title">{c.name}</h2>
+                    <p className="category-card-summary">{c.summary}</p>
+                    {stats.count > 0 && (
+                      <p className="category-card-meta">
+                        <span>{formatTemplateCount(stats.count)}</span>
+                        {stats.fromPrice && <span>From {stats.fromPrice}</span>}
+                      </p>
+                    )}
+                    <span className="category-card-cta">
+                      Browse templates
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M6 3l5 5-5 5"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </article>
+                </TrackedLink>
+              );
+            })}
           </div>
+
+          <aside className="templates-help-band">
+            <div>
+              <h2>Not sure which template you need?</h2>
+              <p>
+                Our free guides explain simple systems for tracking money,
+                payments and time – and which templates fit each one.
+              </p>
+            </div>
+            <div className="templates-help-actions">
+              <Link href="/pages/guides" className="btn sb-btn-primary">
+                Read the guides
+              </Link>
+              <EtsyCtaButton
+                label="Browse the Etsy shop"
+                className="templates-help-etsy"
+                hideOnHome={false}
+                analyticsPlacement="templates_help_band"
+              />
+            </div>
+          </aside>
         </div>
       </section>
     </>
