@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import GuideCard, { getReadingMinutes } from "@/components/GuideCard";
+import { HelpContactPanel, HelpHero } from "@/components/HelpCentre";
 import JsonLd from "@/components/JsonLd";
 import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
@@ -12,6 +13,7 @@ import { ContentRenderer } from "@/components/ContentRenderer";
 import "@/styles/bootstrap-public-components.scss";
 import { apiService } from "@/lib/api";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
+import { addHelpTopicAnchors } from "@/lib/helpTopics";
 import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import {
   getPublishedMenuItemContent,
@@ -26,6 +28,7 @@ import {
 import "@/styles/contentPage.css";
 import "@/styles/products.css";
 import "@/styles/guides.css";
+import "@/styles/help.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -173,7 +176,7 @@ export default async function MenuItemPageView({ params }: Props) {
   // Hide breadcrumb when this page is the sole direct page of its menu item
   // (no topics, single page — menu links straight here).
   let isStandaloneMenuPage = false;
-  let moreGuides: typeof page[] = [];
+  let moreGuides: (typeof page)[] = [];
   if (parentMenuItem && (!page.menuCategoryId || isGuide)) {
     const parentContent = await getPublishedMenuItemContent(parentMenuItem);
     if (!page.menuCategoryId && parentContent) {
@@ -217,34 +220,47 @@ export default async function MenuItemPageView({ params }: Props) {
   const { htmlWithoutRelatedLinks, blocks: relatedLinksBlocks } =
     extractRelatedLinksBlocksFromHtml(page.content ?? "");
 
+  const isHelp = page.slug === "help" || parentMenuItemSlug === "help";
+  const help = isHelp ? addHelpTopicAnchors(htmlWithoutRelatedLinks) : null;
+
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={pageJsonLd} />
 
       <div
-        className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}${isGuide ? " content-page--guide" : ""}`}
+        className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}${isGuide ? " content-page--guide" : ""}${isHelp ? " content-page--help" : ""}`}
       >
         {!isStandaloneMenuPage && <SiteBreadcrumb items={breadcrumbItems} />}
 
-        <header className="content-header">
-          {isGuide && (
-            <p className="sb-guide-eyebrow">
-              <span className="sb-section-eyebrow">Guide</span>
-              {readingMinutes && <span>{readingMinutes} min read</span>}
-            </p>
-          )}
-          <h1 className="content-title">{page.title}</h1>
-          {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
-          {lastUpdatedLabel && page.showLastUpdated !== false && (
-            <p className="content-updated">
-              <time dateTime={lastUpdatedDate ?? undefined}>
-                Last updated {lastUpdatedLabel}
-              </time>
-              {" · "}By Simple Biz Toolkit
-            </p>
-          )}
-        </header>
+        {help ? (
+          <HelpHero
+            title={page.title}
+            subtitle={page.subtitle}
+            topics={help.topics}
+          />
+        ) : (
+          <header className="content-header">
+            {isGuide && (
+              <p className="sb-guide-eyebrow">
+                <span className="sb-section-eyebrow">Guide</span>
+                {readingMinutes && <span>{readingMinutes} min read</span>}
+              </p>
+            )}
+            <h1 className="content-title">{page.title}</h1>
+            {page.subtitle && (
+              <p className="content-subtitle">{page.subtitle}</p>
+            )}
+            {lastUpdatedLabel && page.showLastUpdated !== false && (
+              <p className="content-updated">
+                <time dateTime={lastUpdatedDate ?? undefined}>
+                  Last updated {lastUpdatedLabel}
+                </time>
+                {" · "}By Simple Biz Toolkit
+              </p>
+            )}
+          </header>
+        )}
 
         {/* Header image */}
         {headerImage && (
@@ -263,11 +279,14 @@ export default async function MenuItemPageView({ params }: Props) {
 
         {/* Page content */}
         <article>
-          <ContentRenderer html={htmlWithoutRelatedLinks} />
+          <ContentRenderer html={help?.html ?? htmlWithoutRelatedLinks} />
         </article>
 
         {relatedLinksBlocks.length > 0 ? (
-          <div style={{ paddingTop: "1.5rem" }}>
+          <div
+            className="content-related-links"
+            style={{ paddingTop: "1.5rem" }}
+          >
             {relatedLinksBlocks.map((block, index) => (
               <RelatedLinksBlock
                 key={`${block.title}-${index}`}
@@ -281,6 +300,8 @@ export default async function MenuItemPageView({ params }: Props) {
             ))}
           </div>
         ) : null}
+
+        {isHelp && <HelpContactPanel />}
 
         {isGuide && (
           <>
