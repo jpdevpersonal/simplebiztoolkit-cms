@@ -5,13 +5,12 @@
  */
 
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import GuideCard from "@/components/GuideCard";
 import JsonLd from "@/components/JsonLd";
 import { sanitizeHtml, sanitizePublicContentHtml } from "@/lib/sanitize";
 import { slugify } from "@/lib/slugify";
-import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
   getPublishedMenuItemContent,
   getPublishedMenuItems,
@@ -20,11 +19,11 @@ import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
   createPageMetadata,
-  normalizePublicUrl,
 } from "@/lib/seo";
 import "@/styles/bootstrap-public-components.scss";
 import "@/styles/contentCards.css";
 import "@/styles/pages.css";
+import "@/styles/guides.css";
 
 type Props = {
   params: Promise<{ menuItemSlug: string }>;
@@ -97,6 +96,7 @@ export default async function MenuItemLandingPage({ params }: Props) {
   const directPages = content.directPages;
   const showDirectPageCards = directPages.length > 0;
   const showToolContentCards = menuItemSlug === "tools";
+  const isGuides = menuItemSlug === "guides";
 
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
@@ -146,33 +146,37 @@ export default async function MenuItemLandingPage({ params }: Props) {
     </svg>
   );
 
-  const formatPageDate = (dateISO?: string) => {
-    if (!dateISO) return null;
-    const parsedDate = new Date(dateISO);
-    if (Number.isNaN(parsedDate.getTime())) return dateISO;
-
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(parsedDate);
-  };
-
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={collectionJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div className="pages-header">
+          <div className={`pages-header${isGuides ? " sb-guides-header" : ""}`}>
+            {isGuides && (
+              <span className="sb-section-eyebrow">Free business guides</span>
+            )}
             <h1>{item.title}</h1>
-            {item.description && (
+            {item.description ? (
               <div
                 className="pages-header-richtext"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(item.description),
                 }}
               />
+            ) : (
+              isGuides && (
+                <p>
+                  Practical, plain-English guides to help you track your money,
+                  save time and run a calmer small business.
+                </p>
+              )
+            )}
+            {isGuides && directPages.length > 0 && (
+              <p className="sb-guides-count">
+                {directPages.length} guide
+                {directPages.length === 1 ? "" : "s"} · Free to read
+              </p>
             )}
           </div>
 
@@ -268,84 +272,16 @@ export default async function MenuItemLandingPage({ params }: Props) {
                   })}
                 </div>
               ) : showDirectPageCards ? (
-                <div className="row g-3 mt-2">
-                  {directPages.map((page) => {
-                    const imageSrc =
-                      normalizePublicUrl(page.featuredImage) ??
-                      normalizePublicUrl(page.headerImage);
-                    const pageDate = formatPageDate(page.dateISO);
-
-                    return (
-                      <div className="col-lg-6" key={page.id}>
-                        <Link
-                          href={`/${page.slug}`}
-                          className="sb-content-link d-block h-100 text-reset text-decoration-none"
-                          aria-label={`Open ${page.title}`}
-                        >
-                          <article className="sb-card p-3 h-100">
-                            {imageSrc && (
-                              <div className="content-card-image">
-                                <Image
-                                  src={imageSrc}
-                                  alt={page.title}
-                                  width={800}
-                                  height={450}
-                                  sizes="(max-width: 768px) 100vw, 50vw"
-                                  loading="lazy"
-                                  unoptimized={shouldBypassNextImageOptimization(
-                                    imageSrc,
-                                  )}
-                                  style={{
-                                    width: "100%",
-                                    height: "auto",
-                                    borderRadius: "8px",
-                                    marginBottom: "12px",
-                                    objectFit: "cover",
-                                    backgroundColor: "#f8f9fa",
-                                  }}
-                                />
-                              </div>
-                            )}
-
-                            <div className="d-flex justify-content-between gap-2 flex-wrap">
-                              <div
-                                className="sb-muted"
-                                style={{ fontSize: 13 }}
-                              >
-                                {/* {page.category || item.title} */}
-                              </div>
-                            </div>
-
-                            <div
-                              className="mt-1"
-                              style={{ fontWeight: 900, fontSize: 18 }}
-                            >
-                              {page.title}
-                            </div>
-
-                            {(page.description || page.subtitle) && (
-                              <div className="sb-muted mt-1">
-                                {page.description || page.subtitle}
-                              </div>
-                            )}
-
-                            {pageDate && (
-                              <div
-                                className="sb-muted"
-                                style={{ fontSize: 13, marginTop: "8px" }}
-                              >
-                                {pageDate}
-                              </div>
-                            )}
-
-                            <div className="mt-3 d-flex justify-content-end text-success">
-                              {openContentIcon}
-                            </div>
-                          </article>
-                        </Link>
-                      </div>
-                    );
-                  })}
+                <div
+                  className={`sb-guide-grid${directPages.length >= 3 ? " has-featured" : ""}`}
+                >
+                  {directPages.map((page, index) => (
+                    <GuideCard
+                      key={page.id}
+                      page={page}
+                      featured={directPages.length >= 3 && index === 0}
+                    />
+                  ))}
                 </div>
               ) : (
                 <div className="pages-grid">
@@ -376,6 +312,21 @@ export default async function MenuItemLandingPage({ params }: Props) {
                 </div>
               )}
             </>
+          )}
+
+          {isGuides && directPages.length > 0 && (
+            <aside className="sb-guides-cta">
+              <div>
+                <h2>Put these guides into practice</h2>
+                <p>
+                  Ready-made printable and fillable templates that make the
+                  systems in these guides easy to keep up.
+                </p>
+              </div>
+              <Link href="/templates" className="btn sb-btn-primary">
+                Browse templates {arrowIcon}
+              </Link>
+            </aside>
           )}
 
           {publishedCats.length === 0 && directPages.length === 0 && (

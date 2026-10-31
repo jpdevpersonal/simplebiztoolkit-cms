@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import GuideCard, { getReadingMinutes } from "@/components/GuideCard";
 import JsonLd from "@/components/JsonLd";
 import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { slugify } from "@/lib/slugify";
 import Image from "next/image";
+import Link from "next/link";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import "@/styles/bootstrap-public-components.scss";
 import { apiService } from "@/lib/api";
@@ -23,6 +25,7 @@ import {
 } from "@/lib/seo";
 import "@/styles/contentPage.css";
 import "@/styles/products.css";
+import "@/styles/guides.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -165,15 +168,26 @@ export default async function MenuItemPageView({ params }: Props) {
 
   breadcrumbItems.push({ name: page.title, href: `/${page.slug}` });
 
+  const isGuide = parentMenuItemSlug === "guides";
+
   // Hide breadcrumb when this page is the sole direct page of its menu item
   // (no topics, single page — menu links straight here).
   let isStandaloneMenuPage = false;
-  if (parentMenuItem && !page.menuCategoryId) {
+  let moreGuides: typeof page[] = [];
+  if (parentMenuItem && (!page.menuCategoryId || isGuide)) {
     const parentContent = await getPublishedMenuItemContent(parentMenuItem);
-    isStandaloneMenuPage =
-      parentContent.publishedCategories.length === 0 &&
-      parentContent.directPages.length === 1;
+    if (!page.menuCategoryId && parentContent) {
+      isStandaloneMenuPage =
+        parentContent.publishedCategories.length === 0 &&
+        parentContent.directPages.length === 1;
+    }
+    if (isGuide) {
+      moreGuides = (parentContent?.directPages ?? [])
+        .filter((guide) => guide.slug !== page.slug)
+        .slice(0, 3);
+    }
   }
+  const readingMinutes = isGuide ? getReadingMinutes(page.content) : null;
 
   const pageJsonLd = createArticleJsonLd({
     headline: page.title,
@@ -209,11 +223,17 @@ export default async function MenuItemPageView({ params }: Props) {
       <JsonLd json={pageJsonLd} />
 
       <div
-        className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}`}
+        className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}${isGuide ? " content-page--guide" : ""}`}
       >
         {!isStandaloneMenuPage && <SiteBreadcrumb items={breadcrumbItems} />}
 
         <header className="content-header">
+          {isGuide && (
+            <p className="sb-guide-eyebrow">
+              <span className="sb-section-eyebrow">Guide</span>
+              {readingMinutes && <span>{readingMinutes} min read</span>}
+            </p>
+          )}
           <h1 className="content-title">{page.title}</h1>
           {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
           {lastUpdatedLabel && page.showLastUpdated !== false && (
@@ -261,6 +281,40 @@ export default async function MenuItemPageView({ params }: Props) {
             ))}
           </div>
         ) : null}
+
+        {isGuide && (
+          <>
+            <aside className="sb-guides-cta sb-guides-cta--article">
+              <div>
+                <h2>Make this easier with a ready-made template</h2>
+                <p>
+                  Printable and fillable templates that turn this guide into a
+                  simple routine you can actually keep up.
+                </p>
+              </div>
+              <Link href="/templates" className="btn sb-btn-primary">
+                Browse templates
+              </Link>
+            </aside>
+
+            {moreGuides.length > 0 && (
+              <section
+                className="sb-more-guides"
+                aria-labelledby="more-guides-heading"
+              >
+                <div className="sb-more-guides-header">
+                  <h2 id="more-guides-heading">More guides</h2>
+                  <Link href="/pages/guides">View all guides</Link>
+                </div>
+                <div className="sb-guide-grid">
+                  {moreGuides.map((guide) => (
+                    <GuideCard key={guide.id} page={guide} headingLevel="h3" />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        )}
 
         {!isStandaloneMenuPage && (
           <SiteBreadcrumb items={breadcrumbItems} bottom />
