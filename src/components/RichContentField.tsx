@@ -15,7 +15,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import HtmlCodeEditor from "@/components/HtmlCodeEditor";
+import CodeMirrorHtmlEditor from "@/components/CodeMirrorHtmlEditor";
 import TiptapEditor from "@/components/TiptapEditor";
 import type { EditorPolicy } from "@/editor/EditorToolbar";
 import { formatHtmlForEditing } from "@/lib/htmlFormatter";
@@ -307,7 +307,7 @@ export default function RichContentField({
           <ModeToggle mode={mode} onChange={handleModeChange} />
           {hasRawHtmlBlocks && (
             <span
-              title="This content contains raw HTML blocks (section, div with inline styles, svg, etc.). They round-trip safely through Tiptap but can only be edited in HTML view."
+              title="This content contains custom HTML blocks (section, div with inline styles, svg, etc.). They are preserved exactly in Tiptap and can be edited via each block's Edit HTML button or in HTML view."
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -357,7 +357,7 @@ export default function RichContentField({
       {mode === "html" ? (
         <>
           {htmlEditorVariant === "code" ? (
-            <HtmlCodeEditor
+            <CodeMirrorHtmlEditor
               value={value}
               onChange={onChange}
               rows={htmlRows}
@@ -392,7 +392,7 @@ export default function RichContentField({
         <>
           {hasRawHtmlBlocks && (
             <div
-              role="alert"
+              role="note"
               style={{
                 display: "flex",
                 alignItems: "flex-start",
@@ -400,21 +400,23 @@ export default function RichContentField({
                 padding: "0.625rem 0.875rem",
                 marginBottom: "0.5rem",
                 borderRadius: 6,
-                background: "rgba(255, 193, 7, 0.12)",
-                border: "1px solid rgba(255, 193, 7, 0.45)",
-                color: "#664d03",
+                background: "rgba(13, 92, 63, 0.06)",
+                border: "1px solid rgba(13, 92, 63, 0.2)",
+                color: "#0d5c3f",
                 fontSize: "0.8125rem",
                 lineHeight: 1.5,
               }}
             >
               <span aria-hidden="true" style={{ flexShrink: 0, marginTop: 1 }}>
-                ⚠️
+                ℹ️
               </span>
               <span>
-                This content contains raw HTML (e.g.{" "}
+                This content mixes rich text with custom HTML blocks (e.g.{" "}
                 <code style={{ fontSize: "0.75rem" }}>&lt;section&gt;</code>,{" "}
-                <code style={{ fontSize: "0.75rem" }}>styled &lt;div&gt;</code>)
-                that cannot be edited in Tiptap mode.{" "}
+                <code style={{ fontSize: "0.75rem" }}>styled &lt;div&gt;</code>).
+                Edit text normally here; custom blocks are kept exactly as
+                written — use a block&apos;s <strong>Edit HTML</strong> button
+                to change it, or{" "}
                 <button
                   type="button"
                   onClick={() => handleModeChange("html")}
@@ -423,15 +425,15 @@ export default function RichContentField({
                     border: "none",
                     padding: 0,
                     fontWeight: 600,
-                    color: "#664d03",
+                    color: "#0d5c3f",
                     textDecoration: "underline",
                     cursor: "pointer",
                     fontSize: "inherit",
                   }}
                 >
-                  Switch to HTML mode
-                </button>{" "}
-                to make changes.
+                  switch to HTML mode
+                </button>
+                .
               </span>
             </div>
           )}
@@ -444,22 +446,19 @@ export default function RichContentField({
             onPreview={onPreview}
             policy={policy}
             stickyToolbar={stickyToolbar}
-            readOnly={hasRawHtmlBlocks}
           />
           {/* Hidden input keeps native form "required" validation working */}
           {required && <input type="hidden" required value={value} />}
-          {!hasRawHtmlBlocks && (
-            <small
-              style={{
-                color: "var(--sb-muted)",
-                fontSize: "0.8125rem",
-                marginTop: "0.25rem",
-                display: "block",
-              }}
-            >
-              Rich-text editor — content is saved as HTML.
-            </small>
-          )}
+          <small
+            style={{
+              color: "var(--sb-muted)",
+              fontSize: "0.8125rem",
+              marginTop: "0.25rem",
+              display: "block",
+            }}
+          >
+            Rich-text editor — content is saved as HTML.
+          </small>
         </>
       )}
     </div>

@@ -33,17 +33,17 @@ export default async function StatsPage() {
       </div>
 
       <div className="row g-3 mb-4">
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard
             label="Tracked statistics"
             value={STAT_NAMES.length}
             valueSize="lg"
           />
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard label="Visible" value={visibleCount} valueSize="lg" />
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard
             label="Hidden"
             value={STAT_NAMES.length - visibleCount}

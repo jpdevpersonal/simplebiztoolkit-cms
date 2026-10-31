@@ -14,9 +14,11 @@ vi.mock("@/components/TiptapEditor", () => ({
     onSave,
     onPreview,
     policy,
+    readOnly,
   }: any) => (
     <div
       data-testid="tiptap-editor"
+      data-read-only={readOnly ? "yes" : "no"}
       data-min-height={String(minHeight)}
       data-placeholder={placeholder}
       data-policy={policy ? "present" : "missing"}
@@ -54,6 +56,12 @@ vi.mock("@/components/HtmlCodeEditor", () => ({
       </button>
     </div>
   ),
+}));
+
+// Render the fallback editor directly; CodeMirror itself needs a real browser.
+vi.mock("@/components/CodeMirrorHtmlEditor", async () => ({
+  __esModule: true,
+  default: (await import("@/components/HtmlCodeEditor")).default,
 }));
 
 describe("RichContentField", () => {
@@ -375,6 +383,26 @@ describe("RichContentField", () => {
     );
 
     expect(screen.getByText(/raw html/i)).toBeInTheDocument();
+  });
+
+  it("keeps Tiptap editable when the value contains raw HTML blocks", () => {
+    localStorage.setItem("body-mode", "tiptap");
+    render(
+      <RichContentField
+        label="Body"
+        value={`<section style="padding:1rem;"><p>Hi</p></section><p>Prose</p>`}
+        onChange={vi.fn()}
+        storageKey="body-mode"
+      />,
+    );
+
+    return waitFor(() => {
+      expect(screen.getByTestId("tiptap-editor")).toHaveAttribute(
+        "data-read-only",
+        "no",
+      );
+      expect(screen.getByRole("note")).toHaveTextContent(/Edit HTML/);
+    });
   });
 
   it("hides the 'Raw HTML' info pill for plain prose values", () => {

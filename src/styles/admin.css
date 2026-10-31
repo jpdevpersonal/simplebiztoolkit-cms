@@ -372,6 +372,42 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+.admin-revalidate-btn:disabled {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.admin-nav-logout.admin-revalidate-btn {
+  color: #9be3bd;
+  border-color: rgba(72, 189, 130, 0.35);
+}
+
+.admin-nav-logout.admin-revalidate-btn.is-done {
+  color: #9be3bd;
+  border-color: rgba(72, 189, 130, 0.6);
+}
+
+.admin-nav-logout.admin-revalidate-btn.is-error {
+  color: #ffb4b4;
+  border-color: rgba(255, 140, 140, 0.5);
+}
+
+.admin-spin {
+  animation: admin-spin 0.9s linear infinite;
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-spin {
+    animation: none;
+  }
+}
+
 @media (min-width: 769px) {
   .admin-nav,
   .admin-layout-authenticated {
@@ -3480,5 +3516,192 @@
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
     }
+  }
+}
+
+/* ---- VS Code-style HTML editor (CodeMirrorHtmlEditor) ---- */
+.admin-code-editor .cm-editor {
+  border: 1px solid #1f242c;
+}
+
+.admin-code-editor-hint {
+  margin: 0.4rem 0 0;
+  color: var(--sb-muted);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+
+.admin-code-editor-hint kbd {
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--sb-border);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--sb-ink);
+  font-size: 0.6875rem;
+  box-shadow: none;
+}
+
+/* ---- Phone refinements: denser cards, side-by-side actions ---- */
+@media (max-width: 576px) {
+  .admin-content {
+    padding: 1rem 0.75rem 3rem;
+  }
+
+  .admin-stat {
+    padding: 0.8rem 0.85rem 0.7rem;
+    gap: 0.2rem;
+  }
+
+  .admin-stat-label {
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+  }
+
+  .admin-stat-value,
+  .admin-stat-value-md {
+    font-size: 1.4rem;
+  }
+
+  .admin-stat-note {
+    font-size: 0.72rem;
+  }
+
+  .admin-table-toolbar-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-table-search {
+    grid-column: 1 / -1;
+  }
+
+  .admin-table tbody {
+    gap: 0.65rem;
+    padding: 0.65rem;
+  }
+
+  .admin-table tbody tr {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 36, 0.05);
+  }
+
+  .admin-table tbody td {
+    grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr);
+    gap: 0.6rem;
+    padding: 0.5rem 0.9rem;
+  }
+
+  /* The record's name/title reads as the card heading. */
+  .admin-table tbody td.admin-cell-strong {
+    grid-template-columns: minmax(0, 1fr);
+    font-size: 1rem;
+  }
+
+  .admin-table tbody td.admin-cell-strong::before {
+    display: none;
+  }
+
+  .admin-table tbody td.admin-cell-max-280,
+  .admin-table tbody td.admin-cell-max-180 {
+    max-width: none;
+  }
+
+  .admin-table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .admin-table tbody td {
+    flex: 0 0 100%;
+  }
+
+  .admin-table tbody td > .admin-badge {
+    justify-self: start;
+  }
+
+  /* Preview + Actions cells share one row of buttons. */
+  .admin-table tbody td.admin-cell-actions {
+    display: flex;
+    flex: 1 1 0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-width: 0;
+    border-bottom: none;
+    padding: 0.6rem 0.45rem 0.8rem;
+  }
+
+  .admin-table tbody td.admin-cell-actions:not(.admin-cell-actions + td) {
+    padding-left: 0.9rem;
+  }
+
+  .admin-table tbody td.admin-cell-actions:last-child {
+    padding-right: 0.9rem;
+  }
+
+  .admin-table tbody td.admin-cell-actions > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+}
+
+/* ---- Feedback banners: icon cue ---- */
+.admin-feedback-success::before,
+.admin-feedback-error::before {
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-weight: 800;
+}
+
+.admin-feedback-success::before {
+  content: "✓";
+}
+
+.admin-feedback-error::before {
+  content: "!";
+}
+
+/* ---- Tablet & phone: keep editor actions reachable ----
+   One sticky row: full-width Save plus icon-only secondary actions
+   (their text stays available to screen readers via font-size: 0). */
+@media (max-width: 768px) {
+  .admin-form-actions {
+    position: sticky;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .admin-form-actions-primary {
+    flex: 1 1 auto;
+    flex-direction: row;
+    min-width: 0;
+  }
+
+  .admin-form-actions .admin-btn-save {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .admin-form-actions .admin-btn-preview,
+  .admin-form-actions .admin-btn-cancel,
+  .admin-form-actions .admin-btn-danger {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 44px;
+    padding: 0 0.75rem;
+    justify-content: center;
+  }
+
+  .admin-form-actions
+    :is(.admin-btn-preview, .admin-btn-cancel, .admin-btn-danger):has(> svg) {
+    flex-basis: 44px;
+    width: 44px;
+    padding: 0;
+    gap: 0;
+    font-size: 0;
   }
 }

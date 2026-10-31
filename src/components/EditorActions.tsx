@@ -61,6 +61,7 @@ export default function EditorActions({
             className="admin-btn-preview"
             target="_blank"
             rel="noopener noreferrer"
+            title={`${previewLabel} (opens in a new tab)`}
           >
             <ExternalLink size={14} aria-hidden="true" />
             {previewLabel}
@@ -71,6 +72,7 @@ export default function EditorActions({
           className="admin-btn-cancel"
           onClick={onCancel}
           disabled={saving}
+          title="Cancel"
         >
           <X size={15} aria-hidden="true" />
           Cancel
@@ -82,6 +84,7 @@ export default function EditorActions({
           className="admin-btn-danger"
           onClick={onDelete}
           disabled={deleting}
+          title={`Delete ${entityName}`}
         >
           <Trash2 size={15} aria-hidden="true" />
           {deleting ? "Deleting..." : `Delete ${entityName}`}

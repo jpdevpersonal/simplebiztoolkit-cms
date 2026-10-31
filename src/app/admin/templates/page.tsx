@@ -57,14 +57,14 @@ export default async function ProductsPage() {
       </div>
 
       <div className="row g-3 mb-4">
-        <div className="col-12 col-md-6">
+        <div className="col-6">
           <AdminStatCard
             label="Total Templates"
             value={products.length}
             valueSize="lg"
           />
         </div>
-        <div className="col-12 col-md-6">
+        <div className="col-6">
           <AdminStatCard
             label="Categories"
             value={categories.length}

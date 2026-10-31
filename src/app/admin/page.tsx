@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { getAdminApiService } from "@/app/admin/_lib/getAdminApiService";
 import AdminStatCard from "@/components/AdminStatCard";
+import AdminRevalidateButton from "@/components/AdminRevalidateButton";
 
 function PlusIcon() {
   return (
@@ -98,6 +99,7 @@ export default async function AdminDashboard() {
           <Link href="/" className="admin-btn-cancel">
             View Site
           </Link>
+          <AdminRevalidateButton className="admin-btn-cancel" />
         </div>
       </div>
 
