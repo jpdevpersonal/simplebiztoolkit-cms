@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 
+import Image from "next/image";
+
 import JsonLd from "@/components/JsonLd";
+import { ActionPanel, HeroChips, PageHero } from "@/components/PageHero";
 import TrackedLink from "@/components/TrackedLink";
 import "@/styles/products.css";
+import "@/styles/templatesBrowse.css";
+import { links } from "@/config/links";
 import { apiService } from "@/lib/api";
+import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
+import {
+  formatTemplateCount,
+  getTemplateCategoryStats,
+} from "@/lib/templateCategoryStats";
 import {
   createBreadcrumbJsonLd,
   createCollectionPageJsonLd,
@@ -12,9 +22,9 @@ import {
 } from "@/lib/seo";
 
 const productsTitle =
-  "Printable Small Business Templates — Invoices, Ledgers, Time Sheets & More";
+  "Small Business Templates — Invoices, Ledgers, Time Sheets & More";
 const productsDescription =
-  "Browse every Simple Biz Toolkit template category: accounting ledgers, invoices, estimates, time sheets, rent payment ledgers, order forms, sign-in sheets and more. Every template prints on A4 and US Letter and downloads instantly via Etsy.";
+  "Browse Simple Biz Toolkit template categories, including accounting ledgers, invoices, estimates, time sheets, rent payment ledgers, order forms and sign-in sheets. Check each product for file and delivery details.";
 
 export const revalidate = 300;
 
@@ -167,8 +177,18 @@ export const metadata: Metadata = createPageMetadata({
   pathname: "/templates",
 });
 
+const templateBenefits = [
+  "Instant digital download",
+  "Printable & fillable options",
+  "Secure checkout via Etsy",
+];
+
 export default async function ProductsPage() {
   const categories = (await apiService.getProductCategories()).data || [];
+  const totalTemplates = categories.reduce(
+    (sum, c) => sum + (c.items?.length ?? 0),
+    0,
+  );
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
     { name: "Templates", href: "/templates" },
@@ -194,59 +214,123 @@ export default async function ProductsPage() {
       <JsonLd json={itemListJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div className="sb-page-header">
-            <span className="sb-section-eyebrow">Template library</span>
-            <h1>Printable small business templates</h1>
-            <p className="sb-muted sb-speakable">
-              Printable and fillable PDF templates for small business owners,
-              freelancers and landlords — invoices, estimates, ledgers, time
-              sheets, order forms and more. Every template comes in A4 and US
-              Letter sizes with instant Etsy download.
-            </p>
-          </div>
+          <PageHero
+            badge="🗂️"
+            eyebrow="Template library"
+            title="Small business templates"
+            intro={
+              <p className="sb-speakable">
+                Templates for small business owners, freelancers and landlords —
+                invoices, estimates, ledgers, time sheets, order forms and more.
+                Check each product for file and delivery details.
+              </p>
+            }
+            meta={
+              totalTemplates > 0
+                ? `${formatTemplateCount(totalTemplates)} across ${categories.length} ${categories.length === 1 ? "category" : "categories"}`
+                : undefined
+            }
+          >
+            <HeroChips items={templateBenefits} label="Why buyers choose us" />
+          </PageHero>
 
           <div className="category-grid">
-            {categories.map((c) => (
-              <TrackedLink
-                href={`/templates/${c.slug}`}
-                className="category-card-link"
-                key={c.slug}
-                eventName="select_item"
-                eventParams={{
-                  placement: "templates_categories",
-                  destination_type: "template_category",
-                  category_slug: c.slug,
-                  item_name: c.name,
-                }}
-              >
-                <article className="category-card">
-                  <div className="category-card-icon" aria-hidden="true">
-                    {getCategoryIcon(c.slug)}
-                  </div>
-                  <h2 className="category-card-title">{c.name}</h2>
-                  <p className="category-card-summary">{c.summary}</p>
-                  <span className="category-card-cta">
-                    Browse templates
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M6 3l5 5-5 5"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </article>
-              </TrackedLink>
-            ))}
+            {categories.map((c, index) => {
+              const stats = getTemplateCategoryStats(c.items);
+              const previewImage = c.heroImage || stats.previewImage;
+
+              return (
+                <TrackedLink
+                  href={`/templates/${c.slug}`}
+                  className="category-card-link"
+                  key={c.slug}
+                  eventName="select_item"
+                  eventParams={{
+                    placement: "templates_categories",
+                    destination_type: "template_category",
+                    category_slug: c.slug,
+                    item_name: c.name,
+                  }}
+                >
+                  <article
+                    className={`category-card${previewImage ? " has-media" : ""}`}
+                  >
+                    {previewImage && (
+                      <div className="category-card-media">
+                        <Image
+                          src={previewImage}
+                          alt=""
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 300px"
+                          priority={index < 3}
+                          unoptimized={shouldBypassNextImageOptimization(
+                            previewImage,
+                          )}
+                        />
+                      </div>
+                    )}
+                    <div className="category-card-icon" aria-hidden="true">
+                      {getCategoryIcon(c.slug)}
+                    </div>
+                    <h2 className="category-card-title">{c.name}</h2>
+                    <p className="category-card-summary">{c.summary}</p>
+                    {stats.count > 0 && (
+                      <p className="category-card-meta">
+                        <span>{formatTemplateCount(stats.count)}</span>
+                        {stats.fromPrice && <span>From {stats.fromPrice}</span>}
+                      </p>
+                    )}
+                    <span className="category-card-cta">
+                      Browse templates
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M6 3l5 5-5 5"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </article>
+                </TrackedLink>
+              );
+            })}
           </div>
+
+          <ActionPanel
+            id="templates-next-heading"
+            title="Not sure which template you need?"
+            text="Our guides explain simple systems for tracking money, payments and time – and which templates fit each one."
+            options={[
+              {
+                href: "/pages/guides",
+                title: "Read the guides",
+                text: "Plain-English tips for running your business",
+                icon: "book",
+              },
+              {
+                href: "/pages/tools",
+                title: "Try the free tools",
+                text: "Profit calculators and quote generator – no sign-up",
+                icon: "tool",
+              },
+              {
+                href: links.etsyShopUrl,
+                title: "Shop on Etsy",
+                text: "See the full range and secure checkout",
+                icon: "bag",
+                external: true,
+                etsyPlacement: "templates_help_band",
+              },
+            ]}
+          />
         </div>
       </section>
     </>

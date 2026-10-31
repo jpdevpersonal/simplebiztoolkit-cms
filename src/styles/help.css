@@ -1,0 +1,61 @@
+/* ==============================================
+   Help centre (/help)
+   ============================================== */
+
+/* ---- Content sections as cards ---- */
+.content-page--help > article {
+  max-width: 880px;
+  margin-inline: auto;
+}
+
+/* Plain section wrappers (callouts keep their own inline styling). */
+.content-page--help > article div:has(> h3) {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background: #fff;
+  border: 1px solid var(--sb-border);
+  border-radius: 18px;
+  box-shadow: var(--sb-shadow-xs);
+  scroll-margin-top: 96px;
+  transition:
+    box-shadow 300ms ease,
+    border-color 300ms ease;
+}
+
+.content-page--help > article div:has(> h3:target) {
+  border-color: rgba(25, 135, 84, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(25, 135, 84, 0.14),
+    var(--sb-shadow);
+}
+
+.content-page--help > article h3 {
+  scroll-margin-top: 96px;
+}
+
+.content-page--help > article ol li,
+.content-page--help > article ul li {
+  margin-bottom: 0.4rem;
+}
+
+/* Checklist items in the CMS content use inline `display:flex`, which splits
+   bold words into separate columns. Lay them out as text with a hanging tick. */
+.content-page--help > article li:has(> span:first-child) {
+  position: relative;
+  display: block !important;
+  padding-left: 1.5rem;
+}
+
+.content-page--help > article li:has(> span:first-child) > span:first-child {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.content-page--help .content-related-links {
+  max-width: 880px;
+  margin-inline: auto;
+}
+
+.content-page--help .sb-action-panel {
+  max-width: 880px;
+}

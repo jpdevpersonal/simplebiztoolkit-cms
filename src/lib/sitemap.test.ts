@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { toSitemapLastModified } from "./sitemap";
+import {
+  isSitemapEligiblePath,
+  toSitemapLastModified,
+} from "./sitemap";
 
 describe("toSitemapLastModified", () => {
   it("returns a Date for ISO date-only strings", () => {
@@ -66,5 +69,22 @@ describe("toSitemapLastModified", () => {
     );
 
     expect(lastModified).toBeUndefined();
+  });
+
+  it("omits future modification dates", () => {
+    expect(toSitemapLastModified("2999-01-01")).toBeUndefined();
+  });
+
+  it.each([
+    ["/guides/payroll", true],
+    ["/tools/profit-calculator", true],
+    ["/free", false],
+    ["/products/category/item", false],
+    ["/preview/templates/123", false],
+    ["/admin/login", false],
+    ["/guides/payroll?source=nav", false],
+    ["/guides/payroll#top", false],
+  ])("determines sitemap eligibility for %s", (pathname, expected) => {
+    expect(isSitemapEligiblePath(pathname)).toBe(expected);
   });
 });

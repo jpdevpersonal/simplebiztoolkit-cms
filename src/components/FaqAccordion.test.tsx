@@ -26,6 +26,21 @@ describe("FaqAccordion", () => {
   it("renders FAQ search input and supplied questions", () => {
     render(<FaqAccordion faqs={sampleFaqs} />);
     expect(screen.getByLabelText("Search FAQs")).toBeInTheDocument();
+    expect(
+      screen.getByText("Answers to common questions about downloads and usage."),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/How do I receive my files/i)).toBeInTheDocument();
+  });
+
+  it("can hide the search and intro while keeping the supplied questions", () => {
+    render(<FaqAccordion faqs={sampleFaqs} showSearchAndIntro={false} />);
+
+    expect(screen.queryByLabelText("Search FAQs")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        "Answers to common questions about downloads and usage.",
+      ),
+    ).not.toBeInTheDocument();
     expect(screen.getByText(/How do I receive my files/i)).toBeInTheDocument();
   });
 

@@ -9,7 +9,7 @@ const TOOLS_PAGES_URL = "https://www.simplebiztoolkit.com/pages/tools";
 export const metadata: Metadata = {
   title: "Free Profit Calculator — Etsy Fee, Pricing & Margin Tool",
   description:
-    "Free Profit Calculator to work out Etsy fees, product costs, profit margin, and the selling price you need to charge to make a real profit. No sign-up, runs in your browser.",
+    "Free Etsy profit calculator for estimating costs, fees, margins, and pricing. Runs in your browser; fee assumptions can be edited.",
   keywords: [
     "etsy profit calculator",
     "etsy pricing calculator",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Free Profit Calculator for Etsy — Fee & Pricing Tool",
     description:
-      "Calculate Etsy fees, product costs, profit margin, and the price you need to charge to make a real profit. Free, private, no sign-up.",
+      "Estimate Etsy fees, product costs, profit margin, and a selling price. Free and runs in your browser.",
     url: PAGE_URL,
     siteName: "Simple Biz Toolkit",
     type: "website",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Free Profit Calculator for Etsy",
     description:
-      "Calculate Etsy fees, product costs, profit margin, and the price you need to charge to make a real profit. Free, private, no sign-up.",
+      "Estimate Etsy fees, product costs, profit margin, and a selling price. Free and runs in your browser.",
   },
   robots: {
     index: true,
@@ -69,7 +69,7 @@ const softwareApplicationLd = {
     "Calculate profit from a selling price",
     "Find the price for a target profit per sale",
     "Find the price for a target profit margin",
-    "Breaks down Etsy transaction, payment, listing and offsite ad fees",
+    "Estimates Etsy transaction, payment, listing, regulatory and optional offsite ad fees",
     "Shows profit, margin, markup and break-even sales",
     "Pricing scenario table comparing prices above and below your target",
     "Runs entirely in your browser — no upload",

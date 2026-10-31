@@ -1,6 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
+const trackPublicEventMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/analytics", () => ({
+  trackPublicEvent: trackPublicEventMock,
+}));
+
 import EstimateQuoteGeneratorClient from "./EstimateQuoteGeneratorClient";
 
 beforeAll(() => {
@@ -72,6 +78,58 @@ describe("EstimateQuoteGeneratorClient", () => {
     expect(errEl.style.display).not.toBe("none");
     expect(errEl.textContent).toMatch(/Enter a company name/i);
     expect(errEl.textContent).toMatch(/client name or client business name/i);
+  });
+
+  it("tracks a PDF export after generating a valid quote", () => {
+    const save = vi.fn();
+    const document = new Proxy(
+      {
+        internal: {
+          pageSize: {
+            getWidth: () => 595,
+            getHeight: () => 842,
+          },
+        },
+        splitTextToSize: (text: string) => [text],
+        save,
+      },
+      {
+        get(target, property) {
+          if (property in target) {
+            return target[property as keyof typeof target];
+          }
+          return vi.fn();
+        },
+      },
+    );
+    const JsPdfMock = vi.fn(function JsPdfMock() {
+      return document;
+    });
+    Object.defineProperty(window, "jspdf", {
+      configurable: true,
+      value: { jsPDF: JsPdfMock },
+    });
+    trackPublicEventMock.mockClear();
+
+    const { container } = render(<EstimateQuoteGeneratorClient />);
+    fireEvent.input(container.querySelector("#bizName")!, {
+      target: { value: "Example Studio" },
+    });
+    fireEvent.input(container.querySelector("#clientName")!, {
+      target: { value: "Example Client" },
+    });
+    fireEvent.input(container.querySelector("#itemsBody .li-desc")!, {
+      target: { value: "Design work" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Download PDF/i }));
+
+    expect(save).toHaveBeenCalledWith("estimate-001.pdf");
+    expect(trackPublicEventMock).toHaveBeenCalledWith("file_export", {
+      placement: "quote_generator_download",
+      tool_name: "quote_generator",
+      export_type: "pdf",
+    });
   });
 
   it("adds and removes line item rows", () => {

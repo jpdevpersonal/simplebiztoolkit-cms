@@ -333,6 +333,49 @@ describe("MenuItemPageView", () => {
     ).toHaveAttribute("href", "/pages/parent-menu/sub-topic");
   });
 
+  it("renders the help centre with topic links generated from headings", async () => {
+    apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({
+      data: {
+        id: "help-page",
+        title: "Help",
+        slug: "help",
+        status: "published",
+        content:
+          "<section><div><h3>Where to find your download</h3><p>Steps</p></div><div><h3>Printing your templates</h3><p>Tips</p></div></section>",
+        menuItemId: "menu-help",
+      },
+    });
+    apiServiceMock.getMenuItemById.mockResolvedValueOnce({
+      data: { id: "menu-help", title: "Help" },
+    });
+    menuContentMock.getPublishedMenuItems.mockResolvedValueOnce([
+      { id: "menu-help", title: "Help", status: "published", categories: [] },
+    ]);
+    menuContentMock.getPublishedMenuItemContent.mockResolvedValueOnce({
+      publishedCategories: [],
+      directPages: [{ id: "help-page", slug: "help" }],
+    });
+
+    const { default: MenuItemPageView } = await import("./page");
+    const { container } = render(
+      await MenuItemPageView({ params: Promise.resolve({ slug: "help" }) }),
+    );
+
+    expect(screen.getByRole("heading", { level: 1, name: "Help" })).toBeInTheDocument();
+    const nav = screen.getByRole("navigation", { name: "Help topics" });
+    expect(nav.querySelectorAll("a")).toHaveLength(2);
+    expect(
+      screen.getByRole("link", { name: /Printing your templates/ }),
+    ).toHaveAttribute("href", "#help-printing-your-templates");
+    expect(
+      container.querySelector("#help-printing-your-templates"),
+    ).toHaveTextContent("Printing your templates");
+    expect(
+      screen.getByRole("heading", { name: "Still need a hand?" }),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".content-page--help")).not.toBeNull();
+  });
+
   it("calls notFound when page data is not returned", async () => {
     apiServiceMock.getMenuItemPageBySlug.mockResolvedValueOnce({ data: null });
 

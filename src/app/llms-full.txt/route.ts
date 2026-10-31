@@ -1,4 +1,5 @@
 import { site } from "@/config/site";
+import { featuredTools } from "@/data/featuredTools";
 import { getApiService } from "@/lib/api";
 import {
   getMenuItemLandingHref,
@@ -49,7 +50,7 @@ export async function GET() {
   lines.push(`> ${site.description}`);
   lines.push("");
   lines.push(
-    "Simple Biz Toolkit sells printable and fillable PDF templates for small business owners, online sellers, freelancers and landlords. Every template is delivered as an instant digital download through Etsy. The shop holds Etsy Star Seller status with a 4.8 average rating across 3,700+ reviews and 3,500+ sales.",
+    "Simple Biz Toolkit offers business templates and browser-based tools for small business owners, online sellers, freelancers and landlords. Template purchases are completed through Etsy; check each listing for its current file details.",
   );
   lines.push("");
   lines.push(
@@ -74,7 +75,7 @@ export async function GET() {
       if (!route) continue;
       lines.push(`### ${p.title}`);
       lines.push(`URL: ${site.url}${route}`);
-      lines.push(`Price: ${p.price}`);
+      lines.push("See the Etsy listing for current price, file, and purchase details.");
       lines.push(`Etsy: ${p.etsyUrl}`);
       const desc = stripHtml(p.description, 800) || stripHtml(p.problem, 400);
       if (desc) {
@@ -134,9 +135,14 @@ export async function GET() {
   lines.push(`- Testimonials: ${site.url}/testimonials`);
   lines.push(`- Contact: ${site.url}/contact`);
   lines.push(`- All templates: ${site.url}/templates`);
-  lines.push(
-    `- CSV Profit Calculator: ${site.url}/tools/csv-profit-calculator`,
-  );
+  lines.push("");
+  lines.push("## Tools");
+  lines.push("");
+  for (const tool of featuredTools) {
+    lines.push(
+      `- [${tool.title}](${toAbsoluteUrl(tool.href)}): ${tool.tagline}`,
+    );
+  }
   lines.push("");
 
   return new Response(lines.join("\n"), {

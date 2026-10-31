@@ -25,13 +25,6 @@ export const TrustBar = vi.fn(({ items }: { items: string[] }) => (
   </div>
 ));
 
-// Mock EmailCaptureForm component - renders a simple form placeholder
-export const EmailCaptureForm = vi.fn(({ source }: { source: string }) => (
-  <div data-testid="email-capture-form-mock" data-source={source}>
-    Email Form
-  </div>
-));
-
 // Mock TestimonialGrid component - renders a placeholder
 export const TestimonialGrid = vi.fn(() => (
   <div data-testid="testimonial-grid-mock">Testimonials</div>

@@ -15,7 +15,8 @@
  *    `dangerouslySetInnerHTML` so authors see their styled markup live, with
  *    a small hover toolbar (badge / copy / delete) for management.
  *
- * The block is atomic and non-editable in Tiptap; tweaks happen in HTML view.
+ * The block is atomic in Tiptap; its markup can be changed via the node
+ * view's "Edit HTML" panel or in the HTML view.
  */
 
 import { Node, mergeAttributes } from "@tiptap/core";
@@ -121,9 +122,15 @@ interface RawHtmlBlockAttrs {
   html: string;
 }
 
-function RawHtmlBlockView({ node, editor, deleteNode }: NodeViewProps) {
+function RawHtmlBlockView({
+  node,
+  editor,
+  deleteNode,
+  updateAttributes,
+}: NodeViewProps) {
   const html = (node.attrs as RawHtmlBlockAttrs).html ?? "";
   const [copied, setCopied] = useState(false);
+  const [draft, setDraft] = useState<string | null>(null);
   const isEditable = editor.isEditable;
   const label = getTagLabel(html);
 
@@ -139,6 +146,25 @@ function RawHtmlBlockView({ node, editor, deleteNode }: NodeViewProps) {
     } catch {
       // ignore – clipboard unavailable or write failed
     }
+  };
+
+  const applyDraft = () => {
+    if (draft === null) return;
+    if (draft.trim() === "") {
+      deleteNode();
+      return;
+    }
+    if (draft !== html) updateAttributes({ html: draft });
+    setDraft(null);
+  };
+
+  const toolbarButtonStyle: React.CSSProperties = {
+    border: "none",
+    background: "transparent",
+    color: "#fff",
+    cursor: "pointer",
+    padding: "0 4px",
+    fontSize: "0.7rem",
   };
 
   return (
@@ -160,7 +186,7 @@ function RawHtmlBlockView({ node, editor, deleteNode }: NodeViewProps) {
         e.currentTarget.style.borderColor = "transparent";
       }}
     >
-      {isEditable && (
+      {isEditable && draft === null && (
         <div
           contentEditable={false}
           style={{
@@ -182,20 +208,20 @@ function RawHtmlBlockView({ node, editor, deleteNode }: NodeViewProps) {
             opacity: 0.9,
             userSelect: "none",
           }}
-          title="This block can only be edited in HTML view"
+          title="Custom HTML block – kept exactly as written"
         >
           <span style={{ fontWeight: 600 }}>raw {label}</span>
           <button
             type="button"
+            onClick={() => setDraft(html)}
+            style={toolbarButtonStyle}
+          >
+            Edit HTML
+          </button>
+          <button
+            type="button"
             onClick={handleCopy}
-            style={{
-              border: "none",
-              background: "transparent",
-              color: "#fff",
-              cursor: "pointer",
-              padding: "0 4px",
-              fontSize: "0.7rem",
-            }}
+            style={toolbarButtonStyle}
           >
             {copied ? "Copied" : "Copy HTML"}
           </button>
@@ -216,11 +242,81 @@ function RawHtmlBlockView({ node, editor, deleteNode }: NodeViewProps) {
           </button>
         </div>
       )}
+      {draft !== null && (
+        <div
+          contentEditable={false}
+          style={{
+            padding: 8,
+            borderRadius: 6,
+            background: "#0f1724",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+          }}
+        >
+          <textarea
+            aria-label={`Edit ${label} HTML`}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              // Keep keystrokes inside the textarea instead of ProseMirror.
+              e.stopPropagation();
+              if (e.key === "Escape") setDraft(null);
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                applyDraft();
+              }
+            }}
+            spellCheck={false}
+            rows={Math.min(24, Math.max(6, draft.split("\n").length + 1))}
+            autoFocus
+            style={{
+              width: "100%",
+              resize: "vertical",
+              border: "1px solid #334155",
+              borderRadius: 4,
+              background: "#0b1220",
+              color: "#e2e8f0",
+              padding: "8px 10px",
+              fontFamily:
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              fontSize: "0.8125rem",
+              lineHeight: 1.6,
+              tabSize: 2,
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 8,
+            }}
+          >
+            <button
+              type="button"
+              className="btn btn-sm btn-success"
+              onClick={applyDraft}
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-light"
+              onClick={() => setDraft(null)}
+            >
+              Cancel
+            </button>
+            <span style={{ color: "#94a3b8", fontSize: "0.72rem" }}>
+              Ctrl/⌘ + Enter to apply · Esc to cancel
+            </span>
+          </div>
+        </div>
+      )}
       <div
         // Render the captured HTML verbatim so authors see their styled
         // markup live. Safe: this content is authored by the same admin who
         // is currently editing it (admin-only surface, not user input).
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: draft ?? html }}
       />
     </NodeViewWrapper>
   );

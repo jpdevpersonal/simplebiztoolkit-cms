@@ -11,6 +11,7 @@ import {
   createWebPageJsonLd,
   createWebsiteJsonLd,
   normalizePublicUrl,
+  normalizeSameSitePublicUrl,
   toAbsoluteUrl,
 } from "./seo";
 
@@ -57,6 +58,24 @@ describe("seo", () => {
     expect(normalizePublicUrl("file:///tmp/example.pdf")).toBeUndefined();
   });
 
+  it("rejects external, queried and fragmented sitemap canonicals", () => {
+    expect(normalizeSameSitePublicUrl("/guides/payroll")).toBe(
+      "/guides/payroll",
+    );
+    expect(
+      normalizeSameSitePublicUrl(
+        "https://www.simplebiztoolkit.com/guides/payroll",
+      ),
+    ).toBe("/guides/payroll");
+    expect(
+      normalizeSameSitePublicUrl("https://example.com/guides/payroll"),
+    ).toBeUndefined();
+    expect(
+      normalizeSameSitePublicUrl("/guides/payroll?utm_source=mail"),
+    ).toBeUndefined();
+    expect(normalizeSameSitePublicUrl("/guides/payroll#section")).toBeUndefined();
+  });
+
   it("creates breadcrumb structured data", () => {
     const jsonLd = createBreadcrumbJsonLd([
       { name: "Home", href: "/" },
@@ -72,7 +91,8 @@ describe("seo", () => {
       name: "Budget Planner",
       description: "A simple planner",
       href: "/templates/planners/budget-planner",
-      price: "$12.00",
+      priceAmount: 12,
+      currency: "USD",
       offerUrl: "https://etsy.example/listing/123",
     });
     const anyJson = jsonLd as any;
@@ -131,31 +151,62 @@ describe("seo", () => {
     expect(anyJson.image).toBeUndefined();
   });
 
-  it("emits a WebSite node with SearchAction and publisher", () => {
+  it("emits a WebSite node without an unsupported search action", () => {
     const jsonLd = createWebsiteJsonLd();
     const anyJson = jsonLd as any;
 
     expect(anyJson["@type"]).toBe("WebSite");
     expect(anyJson.inLanguage).toBe("en-GB");
-    expect(anyJson.potentialAction).toMatchObject({
-      "@type": "SearchAction",
-    });
-    expect(anyJson.potentialAction.target.urlTemplate).toContain(
-      "/templates?q={search_term_string}",
-    );
+    expect(anyJson.potentialAction).toBeUndefined();
     expect(anyJson.publisher?.["@type"]).toBe("Organization");
   });
 
-  it("emits an Organization node with aggregateRating and contact", () => {
+  it("emits Organization identity without a self-serving aggregate rating", () => {
     const jsonLd = createOrganizationJsonLd();
     const anyJson = jsonLd as any;
 
     expect(anyJson["@type"]).toBe("Organization");
-    expect(anyJson.aggregateRating?.ratingValue).toBe("4.8");
-    expect(anyJson.aggregateRating?.reviewCount).toBeGreaterThanOrEqual(1);
+    expect(anyJson.aggregateRating).toBeUndefined();
     expect(Array.isArray(anyJson.sameAs)).toBe(true);
     expect(anyJson.logo).toBeDefined();
     expect(anyJson.email).toBeDefined();
+  });
+
+  it("rejects external CMS canonicals when selecting sitemap URLs", () => {
+    expect(normalizeSameSitePublicUrl("/guides/payroll")).toBe(
+      "/guides/payroll",
+    );
+    expect(
+      normalizeSameSitePublicUrl("https://www.simplebiztoolkit.com/guides/payroll"),
+    ).toBe("/guides/payroll");
+    expect(
+      normalizeSameSitePublicUrl("https://example.com/guides/payroll"),
+    ).toBeUndefined();
+  });
+
+  it.each([
+    { priceAmount: 12.5, currency: "GBP", expectedPrice: "12.50" },
+    { priceAmount: 0, currency: "USD" },
+    { priceAmount: -2, currency: "USD" },
+    { priceAmount: Number.NaN, currency: "USD" },
+    { priceAmount: 12, currency: "US" },
+    { priceAmount: 12, currency: "ZZZ" },
+    { priceAmount: 12, currency: undefined },
+  ])("adds only valid machine-readable offers %#", (fixture) => {
+    const schema = createProductJsonLd({
+      name: "Template",
+      href: "/templates/category/template",
+      ...fixture,
+    }) as { offers?: { price?: string; priceCurrency?: string } };
+
+    if (fixture.expectedPrice) {
+      expect(schema.offers).toMatchObject({
+        price: fixture.expectedPrice,
+        priceCurrency: fixture.currency,
+      });
+    } else {
+      expect(schema.offers).toBeUndefined();
+    }
   });
 
   it("emits FAQPage with each Q&A", () => {
@@ -225,7 +276,8 @@ describe("seo", () => {
       name: "Budget Planner",
       description: "A simple planner",
       href: "/templates/planners/budget-planner",
-      price: "$12.00",
+      priceAmount: 12,
+      currency: "USD",
       offerUrl: "https://etsy.example/listing/123",
       sku: "SBT-BP-001",
       category: "Planners",

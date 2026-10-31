@@ -13,7 +13,7 @@ interface ContentCtaProps {
 
 export function ContentCta({
   title = "Ready to get started?",
-  description = "Get your free guide, then shop securely on Etsy when you're ready.",
+  description = "Browse the available templates and tools, and check each listing for current details.",
   primaryLabel = "",
   primaryHref = "https://www.etsy.com/shop/simplebiztoolkit",
   showEtsyLink = false,

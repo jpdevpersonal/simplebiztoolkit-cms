@@ -2,21 +2,18 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getStatsMock = vi.hoisted(() => vi.fn());
+const getFaqsMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/api", () => ({
   apiService: {
     getStats: getStatsMock,
+    getFaqs: getFaqsMock,
   },
 }));
 
 vi.mock("@/components/TestimonialGrid", () => ({
   __esModule: true,
   default: () => <div data-testid="testimonial-grid" />,
-}));
-
-vi.mock("@/components/EmailCaptureForm", () => ({
-  __esModule: true,
-  default: () => <div data-testid="email-capture-form" />,
 }));
 
 const ALL_STATS = [
@@ -35,6 +32,7 @@ describe("Home page trust statistics", () => {
   beforeEach(() => {
     vi.resetModules();
     getStatsMock.mockReset();
+    getFaqsMock.mockReset().mockResolvedValue({ data: [] });
   });
 
   it("renders the visible stats returned by the public API", async () => {
@@ -95,6 +93,47 @@ describe("Home page trust statistics", () => {
       }),
     ).toBeInTheDocument();
   });
+
+  it("shows only the first six FAQs returned by the FAQ API", async () => {
+    getStatsMock.mockResolvedValueOnce({ data: [], statusCode: 200 });
+    getFaqsMock.mockResolvedValueOnce({
+      data: Array.from({ length: 7 }, (_, index) => ({
+        id: String(index + 1),
+        q: `Home FAQ question ${index + 1}`,
+        a: `<p>Home FAQ answer ${index + 1}</p>`,
+        sortOrder: index + 1,
+        status: "published" as const,
+      })),
+    });
+
+    await renderHome();
+
+    expect(screen.queryByLabelText("Search FAQs")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        "Answers to common questions about downloads and usage.",
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: /Home FAQ question/ }),
+    ).toHaveLength(6);
+    for (const button of screen.getAllByRole("button", {
+      name: /Home FAQ question/,
+    })) {
+      expect(button).toHaveAttribute("aria-expanded", "false");
+    }
+    for (let index = 1; index <= 6; index += 1) {
+      expect(
+        screen.getByRole("button", {
+          name: `Home FAQ question ${index}`,
+        }),
+      ).toBeInTheDocument();
+      expect(screen.getByText(`Home FAQ answer ${index}`)).toBeInTheDocument();
+    }
+    expect(
+      screen.queryByRole("button", { name: "Home FAQ question 7" }),
+    ).not.toBeInTheDocument();
+  });
 });
 
 describe("Home page metadata", () => {
@@ -120,6 +159,8 @@ describe("Home page metadata", () => {
     const { generateMetadata } = await import("./page");
     const metadata = await generateMetadata();
 
-    expect(metadata.description).toMatch(/instant PDF downloads via Etsy\.$/);
+    expect(metadata.description).toContain(
+      "Template purchases are completed through Etsy.",
+    );
   });
 });

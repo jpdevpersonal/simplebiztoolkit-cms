@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Save, Trash2, X } from "lucide-react";
 import type { ProductCategory } from "@/lib/api";
 import { clientApi } from "@/lib/clientApi";
 import { useUnsavedChangesWarning } from "@/lib/useUnsavedChangesWarning";
@@ -231,13 +232,16 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
       <div className="admin-form-actions">
         <div className="admin-form-actions-primary">
           <button type="submit" className="admin-btn-save" disabled={saving}>
+            <Save size={15} aria-hidden="true" />
             {saving ? "Saving..." : isNew ? "Create Category" : "Save Changes"}
           </button>
           <button
             type="button"
             className="admin-btn-cancel"
             onClick={() => router.back()}
+            title="Cancel"
           >
+            <X size={15} aria-hidden="true" />
             Cancel
           </button>
         </div>
@@ -247,7 +251,9 @@ export default function CategoryEditor({ category, isNew = false }: Props) {
             className="admin-btn-danger"
             onClick={() => setConfirmDeleteOpen(true)}
             disabled={deleting}
+            title="Delete Category"
           >
+            <Trash2 size={15} aria-hidden="true" />
             {deleting ? "Deleting..." : "Delete Category"}
           </button>
         )}

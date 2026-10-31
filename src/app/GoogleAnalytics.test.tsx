@@ -1,8 +1,16 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import GoogleAnalytics from "./GoogleAnalytics";
+
+const mocks = vi.hoisted(() => ({
+  pathname: "/",
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => mocks.pathname,
+}));
 
 vi.mock("next/script", () => ({
   __esModule: true,
@@ -18,6 +26,21 @@ vi.mock("next/script", () => ({
 }));
 
 describe("GoogleAnalytics", () => {
+  beforeEach(() => {
+    mocks.pathname = "/";
+  });
+
+  it.each(["/cms", "/cms/", "/cms/faqs", "/CMS/templates"])(
+    "does not load analytics scripts for CMS route %s",
+    (pathname) => {
+      mocks.pathname = pathname;
+
+      const { container } = render(<GoogleAnalytics />);
+
+      expect(container).toBeEmptyDOMElement();
+    },
+  );
+
   it("renders Google's recommended gtag scripts after the page is interactive", () => {
     render(<GoogleAnalytics />);
 
@@ -38,15 +61,11 @@ describe("GoogleAnalytics", () => {
     );
     expect(inlineScript.textContent).toContain("gtag('js', new Date());");
     expect(inlineScript.textContent).toContain(
-      "gtag('config', 'G-3ZQY64S5JJ');",
+      "gtag('config', 'G-3ZQY64S5JJ', { send_page_view: false });",
     );
   });
 
-  it("is mounted only by the public layout, not root or admin layouts", () => {
-    const publicLayout = readFileSync(
-      join(process.cwd(), "src/app/(public)/layout.tsx"),
-      "utf8",
-    );
+  it("is mounted at the root and excludes private layouts", () => {
     const rootLayout = readFileSync(
       join(process.cwd(), "src/app/layout.tsx"),
       "utf8",
@@ -56,10 +75,12 @@ describe("GoogleAnalytics", () => {
       "utf8",
     );
 
-    expect(publicLayout).toContain("import GoogleAnalytics");
-    expect(publicLayout).toContain("<GoogleAnalytics />");
-    expect(rootLayout).not.toContain("GoogleAnalytics");
+    expect(rootLayout).toContain("import GoogleAnalytics");
+    expect(rootLayout).toContain("<GoogleAnalytics />");
     expect(adminLayout).not.toContain("GoogleAnalytics");
     expect(adminLayout).toContain('robots: "noindex, nofollow"');
+    expect(
+      readFileSync(join(process.cwd(), "src/app/(public)/layout.tsx"), "utf8"),
+    ).not.toContain("<GoogleAnalytics />");
   });
 });

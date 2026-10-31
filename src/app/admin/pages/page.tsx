@@ -102,13 +102,13 @@ export default async function AdminPagesListPage() {
       </div>
 
       <div className="row g-3 mb-4">
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard label="Total Pages" value={enrichedPages.length} />
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard label="Published" value={published.length} />
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard label="Drafts" value={drafts.length} />
         </div>
       </div>

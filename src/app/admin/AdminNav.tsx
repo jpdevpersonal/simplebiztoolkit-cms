@@ -27,6 +27,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { CMS_LOGIN_PATH, CMS_HOME_PATH, toCmsPath } from "@/lib/adminRoutes";
+import AdminRevalidateButton from "@/components/AdminRevalidateButton";
 
 type NavItem = {
   href: string;
@@ -251,6 +252,7 @@ function AdminNavContent({
                 <span className="admin-nav-email">{userEmail}</span>
               </span>
             </div>
+            <AdminRevalidateButton />
             <button
               type="button"
               className="admin-nav-logout"

@@ -56,21 +56,21 @@ export default async function FaqsPage() {
       </div>
 
       <div className="row g-3 mb-4">
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard
             label="Total FAQs"
             value={faqs.length}
             valueSize="lg"
           />
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard
             label="Published"
             value={publishedCount}
             valueSize="lg"
           />
         </div>
-        <div className="col-12 col-md-4">
+        <div className="col-4">
           <AdminStatCard label="Groups" value={groupCount} valueSize="lg" />
         </div>
       </div>

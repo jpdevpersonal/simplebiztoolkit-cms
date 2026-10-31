@@ -19,13 +19,13 @@ describe("StickyMobileCta", () => {
     mocks.pathname = "/faq";
   });
 
-  it("renders the general Etsy and free guide actions on public content pages", () => {
+  it("renders the general Etsy action without an unavailable free guide", () => {
     render(<StickyMobileCta />);
 
     expect(screen.getByRole("link", { name: "Etsy CTA" })).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Get your free guide/i }),
-    ).toHaveAttribute("href", "/free");
+      screen.queryByRole("link", { name: /Get your free guide/i }),
+    ).not.toBeInTheDocument();
   });
 
   it.each([

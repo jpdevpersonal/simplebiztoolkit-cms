@@ -9,7 +9,8 @@ export async function getPublicVisibleStats(): Promise<StatValueMap> {
   try {
     const response = await apiService.getStats();
     return toVisibleStatMap(response.data);
-  } catch {
+  } catch (error) {
+    console.warn("[Public stats] Unable to load current statistics:", error);
     return {};
   }
 }

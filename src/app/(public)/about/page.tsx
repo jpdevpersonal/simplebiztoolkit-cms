@@ -8,12 +8,12 @@ import "@/styles/aboutStyle.css";
 export const metadata: Metadata = {
   title: "About Simple Biz Toolkit",
   description:
-    "Simple Biz Toolkit is a small independent studio that designs printable PDF templates for small businesses, online sellers, freelancers and landlords — sold instantly via Etsy.",
+    "Simple Biz Toolkit offers business templates and browser-based tools for small businesses, online sellers, freelancers and landlords. Template purchases are completed through Etsy.",
   alternates: { canonical: "/about" },
   openGraph: {
     title: "About | Simple Biz Toolkit",
     description:
-      "Simple Biz Toolkit is a small independent studio that designs printable PDF templates for small businesses, online sellers, freelancers and landlords — sold instantly via Etsy.",
+      "Simple Biz Toolkit offers business templates and browser-based tools for small businesses, online sellers, freelancers and landlords. Template purchases are completed through Etsy.",
     url: "/about",
   },
 };
@@ -22,7 +22,7 @@ export default function AboutPage() {
   const aboutJsonLd = createAboutPageJsonLd({
     name: "About Simple Biz Toolkit",
     description:
-      "Simple Biz Toolkit is a small independent studio designing printable PDF business templates sold via Etsy. We focus on clean, affordable forms that small business owners, online sellers, freelancers and landlords can use immediately — no software, no subscription.",
+      "Simple Biz Toolkit offers business templates and browser-based tools for small business owners, online sellers, freelancers and landlords.",
     href: "/about",
   });
 
@@ -41,9 +41,8 @@ export default function AboutPage() {
             <span className="sb-section-eyebrow">Our studio</span>
             <h1>About Simple Biz Toolkit</h1>
             <p className="sb-muted sb-speakable">
-              We design printable PDF templates that small business owners,
-              online sellers, freelancers and landlords can download and use in
-              minutes — no software, no subscription, no surprises.
+              We offer business templates and browser-based tools for small
+              business owners, online sellers, freelancers and landlords.
             </p>
           </div>
 
@@ -52,41 +51,23 @@ export default function AboutPage() {
               <section className="p-3 h-100">
                 <h2>Who we are</h2>
                 <p>
-                  Simple Biz Toolkit is a small independent design studio. We
-                  make practical printable business templates — invoices,
-                  receipts, ledgers, attendance sheets, rent records, order
-                  forms and more — and we sell them as instant digital downloads
-                  through our Etsy shop. Every template is built and tested
-                  in-house before it goes on sale.
-                </p>
-                <p>
-                  We started Simple Biz Toolkit after seeing how many small
-                  businesses, side-hustlers and household landlords struggle
-                  with software they don&apos;t need: monthly subscriptions,
-                  steep learning curves, and tools designed for much bigger
-                  companies. A clean printable form is often all you need to
-                  keep your records straight, prove what you sold or received,
-                  and look professional in front of customers.
+                  Simple Biz Toolkit offers business templates and
+                  browser-based tools. Template purchases are completed through
+                  Etsy; check individual listings for product details and terms.
                 </p>
               </section>
 
               <section className="p-3 h-100">
                 <h2>What we make</h2>
                 <p>
-                  Every product on this site is a printable PDF that has been
-                  laid out for both A4 and US Letter paper, so it works wherever
-                  you are. Many listings include a fillable version you can type
-                  into using any free PDF reader, alongside a print-and-write
-                  version. Once you buy a template you own your copy permanently
-                  — re-download or re-print it as often as you need to.
+                  File formats, paper sizes, compatibility and usage rights can
+                  differ between products. Review the product page and Etsy
+                  listing before purchase.
                 </p>
                 <p>
-                  Categories include accounting ledgers, business ledger
-                  bundles, invoices, receipts, estimates, expense and spending
-                  trackers, payment trackers, petty cash records, rent payment
-                  ledgers, attendance and sign-in sheets, time sheets, order
-                  forms, meeting notes, tips and service records, and free
-                  guides.
+                  Available categories and products may change. Browse the
+                  current collection and review each listing for included
+                  formats, features and intended use.
                 </p>
               </section>
 
@@ -94,24 +75,11 @@ export default function AboutPage() {
                 <h2>Why choose us</h2>
                 <ul>
                   <li>
-                    <strong>Time-saving solutions</strong> — pre-built layouts
-                    that you can use straight away.
+                    Product formats, features and usage rights vary; confirm
+                    them on the listing before purchase.
                   </li>
                   <li>
-                    <strong>Affordable</strong> — professional templates without
-                    subscriptions or complex software.
-                  </li>
-                  <li>
-                    <strong>Original designs</strong> — every template is
-                    designed in-house, not resold stock.
-                  </li>
-                  <li>
-                    <strong>Versatile</strong> — bookkeeping, planning,
-                    customer-facing forms, internal records.
-                  </li>
-                  <li>
-                    <strong>Quality assurance</strong> — clean layouts,
-                    print-tested on home and office printers.
+                    Template purchases are completed through Etsy.
                   </li>
                 </ul>
               </section>
@@ -121,21 +89,15 @@ export default function AboutPage() {
                 <p>We sell exclusively through Etsy. That means:</p>
                 <ul>
                   <li>
-                    <strong>Secure checkout</strong> handled by Etsy — we never
-                    see your card details.
+                    Checkout and order access are handled through Etsy.
                   </li>
                   <li>
-                    <strong>Instant download</strong> straight after payment
-                    from your Etsy Purchases and Reviews page.
+                    Product availability and delivery details are shown on the
+                    Etsy listing.
                   </li>
                   <li>
-                    <strong>Permanent access</strong> — your files stay
-                    available on your Etsy account so you can re-download any
-                    time.
-                  </li>
-                  <li>
-                    <strong>Direct support</strong> — message us through Etsy
-                    and we usually reply within one business day.
+                    Use the contact options on the listing or order page for
+                    product questions.
                   </li>
                 </ul>
               </section>
@@ -143,11 +105,8 @@ export default function AboutPage() {
               <section className="p-3 h-100">
                 <h2>Our commitment</h2>
                 <p>
-                  We&apos;re a small team and we read every message. If a
-                  template doesn&apos;t print well, doesn&apos;t open, or
-                  doesn&apos;t quite fit what you need, message us through Etsy
-                  and we will fix it. Your feedback is the most important driver
-                  of which templates we build next.
+                  For questions about a product, its files or its terms, contact
+                  the shop through Etsy before purchasing.
                 </p>
 
                 <p className="mb-0">

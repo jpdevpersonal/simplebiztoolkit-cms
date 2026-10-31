@@ -246,7 +246,7 @@ export default function SiteNavigation({
           </nav>
 
           <div className="sb-mobile-menu-actions">
-            {featureFlags.showFreeGuideButton && (
+            {featureFlags.freeGuideAvailable && (
               <Link
                 href={links.freebiePath}
                 onClick={closeMenu}

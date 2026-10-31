@@ -59,7 +59,9 @@ export default function EditorFeedback({
   return (
     <div ref={containerRef}>
       {message && (
-        <div className="admin-feedback admin-feedback-success">{message}</div>
+        <div role="status" className="admin-feedback admin-feedback-success">
+          {message}
+        </div>
       )}
       {error && (
         <div role="alert" className="admin-feedback admin-feedback-error">

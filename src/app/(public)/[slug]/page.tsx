@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import GuideCard, { getReadingMinutes } from "@/components/GuideCard";
+import { HelpContactPanel, HelpHero } from "@/components/HelpCentre";
 import JsonLd from "@/components/JsonLd";
 import RelatedLinksBlock from "@/components/RelatedLinksBlock";
 import SiteBreadcrumb from "@/components/SiteBreadcrumb";
 import { slugify } from "@/lib/slugify";
 import Image from "next/image";
+import Link from "next/link";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import "@/styles/bootstrap-public-components.scss";
 import { apiService } from "@/lib/api";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
+import { addHelpTopicAnchors } from "@/lib/helpTopics";
 import { extractRelatedLinksBlocksFromHtml } from "@/lib/relatedLinks";
 import {
   getPublishedMenuItemContent,
@@ -23,6 +27,8 @@ import {
 } from "@/lib/seo";
 import "@/styles/contentPage.css";
 import "@/styles/products.css";
+import "@/styles/guides.css";
+import "@/styles/help.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -165,15 +171,26 @@ export default async function MenuItemPageView({ params }: Props) {
 
   breadcrumbItems.push({ name: page.title, href: `/${page.slug}` });
 
+  const isGuide = parentMenuItemSlug === "guides";
+
   // Hide breadcrumb when this page is the sole direct page of its menu item
   // (no topics, single page — menu links straight here).
   let isStandaloneMenuPage = false;
-  if (parentMenuItem && !page.menuCategoryId) {
+  let moreGuides: (typeof page)[] = [];
+  if (parentMenuItem && (!page.menuCategoryId || isGuide)) {
     const parentContent = await getPublishedMenuItemContent(parentMenuItem);
-    isStandaloneMenuPage =
-      parentContent.publishedCategories.length === 0 &&
-      parentContent.directPages.length === 1;
+    if (!page.menuCategoryId && parentContent) {
+      isStandaloneMenuPage =
+        parentContent.publishedCategories.length === 0 &&
+        parentContent.directPages.length === 1;
+    }
+    if (isGuide) {
+      moreGuides = (parentContent?.directPages ?? [])
+        .filter((guide) => guide.slug !== page.slug)
+        .slice(0, 3);
+    }
   }
+  const readingMinutes = isGuide ? getReadingMinutes(page.content) : null;
 
   const pageJsonLd = createArticleJsonLd({
     headline: page.title,
@@ -203,28 +220,47 @@ export default async function MenuItemPageView({ params }: Props) {
   const { htmlWithoutRelatedLinks, blocks: relatedLinksBlocks } =
     extractRelatedLinksBlocksFromHtml(page.content ?? "");
 
+  const isHelp = page.slug === "help" || parentMenuItemSlug === "help";
+  const help = isHelp ? addHelpTopicAnchors(htmlWithoutRelatedLinks) : null;
+
   return (
     <>
       <JsonLd json={breadcrumbJsonLd} />
       <JsonLd json={pageJsonLd} />
 
       <div
-        className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}`}
+        className={`content-page${isStandaloneMenuPage ? " content-page--standalone" : ""}${isGuide ? " content-page--guide" : ""}${isHelp ? " content-page--help" : ""}`}
       >
         {!isStandaloneMenuPage && <SiteBreadcrumb items={breadcrumbItems} />}
 
-        <header className="content-header">
-          <h1 className="content-title">{page.title}</h1>
-          {page.subtitle && <p className="content-subtitle">{page.subtitle}</p>}
-          {lastUpdatedLabel && page.showLastUpdated !== false && (
-            <p className="content-updated">
-              <time dateTime={lastUpdatedDate ?? undefined}>
-                Last updated {lastUpdatedLabel}
-              </time>
-              {" · "}By Simple Biz Toolkit
-            </p>
-          )}
-        </header>
+        {help ? (
+          <HelpHero
+            title={page.title}
+            subtitle={page.subtitle}
+            topics={help.topics}
+          />
+        ) : (
+          <header className="content-header">
+            {isGuide && (
+              <p className="sb-guide-eyebrow">
+                <span className="sb-section-eyebrow">Guide</span>
+                {readingMinutes && <span>{readingMinutes} min read</span>}
+              </p>
+            )}
+            <h1 className="content-title">{page.title}</h1>
+            {page.subtitle && (
+              <p className="content-subtitle">{page.subtitle}</p>
+            )}
+            {lastUpdatedLabel && page.showLastUpdated !== false && (
+              <p className="content-updated">
+                <time dateTime={lastUpdatedDate ?? undefined}>
+                  Last updated {lastUpdatedLabel}
+                </time>
+                {" · "}By Simple Biz Toolkit
+              </p>
+            )}
+          </header>
+        )}
 
         {/* Header image */}
         {headerImage && (
@@ -243,11 +279,14 @@ export default async function MenuItemPageView({ params }: Props) {
 
         {/* Page content */}
         <article>
-          <ContentRenderer html={htmlWithoutRelatedLinks} />
+          <ContentRenderer html={help?.html ?? htmlWithoutRelatedLinks} />
         </article>
 
         {relatedLinksBlocks.length > 0 ? (
-          <div style={{ paddingTop: "1.5rem" }}>
+          <div
+            className="content-related-links"
+            style={{ paddingTop: "1.5rem" }}
+          >
             {relatedLinksBlocks.map((block, index) => (
               <RelatedLinksBlock
                 key={`${block.title}-${index}`}
@@ -261,6 +300,42 @@ export default async function MenuItemPageView({ params }: Props) {
             ))}
           </div>
         ) : null}
+
+        {isHelp && <HelpContactPanel />}
+
+        {isGuide && (
+          <>
+            <aside className="sb-guides-cta sb-guides-cta--article">
+              <div>
+                <h2>Make this easier with a ready-made template</h2>
+                <p>
+                  Printable and fillable templates that turn this guide into a
+                  simple routine you can actually keep up.
+                </p>
+              </div>
+              <Link href="/templates" className="btn sb-btn-primary">
+                Browse templates
+              </Link>
+            </aside>
+
+            {moreGuides.length > 0 && (
+              <section
+                className="sb-more-guides"
+                aria-labelledby="more-guides-heading"
+              >
+                <div className="sb-more-guides-header">
+                  <h2 id="more-guides-heading">More guides</h2>
+                  <Link href="/pages/guides">View all guides</Link>
+                </div>
+                <div className="sb-guide-grid">
+                  {moreGuides.map((guide) => (
+                    <GuideCard key={guide.id} page={guide} headingLevel="h3" />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        )}
 
         {!isStandaloneMenuPage && (
           <SiteBreadcrumb items={breadcrumbItems} bottom />

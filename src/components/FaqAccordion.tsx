@@ -3,12 +3,22 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { Faq } from "@/lib/api";
 import { sanitizeHtml, stripHtml } from "@/lib/sanitize";
+import { faqGroupId, faqGroupName, groupFaqs } from "@/lib/faqGroups";
 
 type FaqAccordionProps = {
   faqs?: Faq[];
+  showSearchAndIntro?: boolean;
+  expandFirst?: boolean;
+  /** Orders questions by group and shows a heading (with an anchor id) per group. */
+  groupHeadings?: boolean;
 };
 
-export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
+export default function FaqAccordion({
+  faqs = [],
+  showSearchAndIntro = true,
+  expandFirst = true,
+  groupHeadings = false,
+}: FaqAccordionProps) {
   const [query, setQuery] = useState("");
 
   // Bootstrap's collapse JS drives the accordion. Load it only where it is
@@ -22,11 +32,14 @@ export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
   // while preserving the original HTML for rendering.
   const indexed = useMemo(
     () =>
-      faqs.map((f) => ({
+      (groupHeadings
+        ? groupFaqs(faqs).flatMap((group) => group.faqs)
+        : faqs
+      ).map((f) => ({
         faq: f,
         answerText: stripHtml(f.a || ""),
       })),
-    [faqs],
+    [faqs, groupHeadings],
   );
 
   const items = useMemo(() => {
@@ -102,53 +115,57 @@ export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
   return (
     <div className="sb-faq-panel">
       <div className="sb-faq-panel-body">
-        <div className="d-flex align-items-start justify-content-between mb-3">
-          <div>
-            <p className="sb-muted mb-0">
-              Answers to common questions about downloads and usage.
-            </p>
-          </div>
-        </div>
+        {showSearchAndIntro && (
+          <>
+            <div className="d-flex align-items-start justify-content-between mb-3">
+              <div>
+                <p className="sb-muted mb-0">
+                  Answers to common questions about downloads and usage.
+                </p>
+              </div>
+            </div>
 
-        <div className="mb-3 sb-search">
-          <svg
-            className="sb-search-icon"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden
-          >
-            <path
-              d="M21 21l-4.35-4.35"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle
-              cx="11"
-              cy="11"
-              r="6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          </svg>
-          <label className="visually-hidden" htmlFor="faq-search">
-            Search FAQs
-          </label>
-          <input
-            id="faq-search"
-            type="search"
-            className="form-control"
-            placeholder="Search questions and answers..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
+            <div className="mb-3 sb-search">
+              <svg
+                className="sb-search-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+              >
+                <path
+                  d="M21 21l-4.35-4.35"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
+              <label className="visually-hidden" htmlFor="faq-search">
+                Search FAQs
+              </label>
+              <input
+                id="faq-search"
+                type="search"
+                className="form-control"
+                placeholder="Search questions and answers..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+          </>
+        )}
 
         <div className="accordion sb-accordion" id="faqAcc">
           {indexed.length === 0 && (
@@ -167,36 +184,48 @@ export default function FaqAccordion({ faqs = [] }: FaqAccordionProps) {
             const id = `faq-${faq.id || idx}`;
             const q = query.trim().toLowerCase();
             const searching = q.length > 0;
-            const shouldExpand = searching ? true : idx === 0;
+            const shouldExpand = searching || (expandFirst && idx === 0);
             const safeAnswerHtml = sanitizeHtml(faq.a || "");
+            const group = faqGroupName(faq);
+            const startsGroup =
+              groupHeadings &&
+              (idx === 0 || faqGroupName(items[idx - 1].faq) !== group);
+            const HeaderTag = groupHeadings ? "h3" : "h2";
 
             return (
-              <div className="accordion-item" key={id}>
-                <h2 className="accordion-header" id={`${id}-header`}>
-                  <button
-                    className={`accordion-button ${shouldExpand ? "" : "collapsed"} sb-accordion-button`}
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target={`#${id}`}
-                    aria-expanded={shouldExpand ? "true" : "false"}
-                    aria-controls={id}
-                  >
-                    <span className="sb-accordion-title">
-                      {highlightText(String(faq.q), true)}
-                    </span>
-                  </button>
-                </h2>
-                <div
-                  id={id}
-                  className={`accordion-collapse collapse ${shouldExpand ? "show" : ""}`}
-                  data-bs-parent="#faqAcc"
-                >
+              <React.Fragment key={id}>
+                {startsGroup && (
+                  <h2 className="sb-faq-group-title" id={faqGroupId(group)}>
+                    {group}
+                  </h2>
+                )}
+                <div className="accordion-item">
+                  <HeaderTag className="accordion-header" id={`${id}-header`}>
+                    <button
+                      className={`accordion-button ${shouldExpand ? "" : "collapsed"} sb-accordion-button`}
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#${id}`}
+                      aria-expanded={shouldExpand ? "true" : "false"}
+                      aria-controls={id}
+                    >
+                      <span className="sb-accordion-title">
+                        {highlightText(String(faq.q), true)}
+                      </span>
+                    </button>
+                  </HeaderTag>
                   <div
-                    className="accordion-body sb-muted"
-                    dangerouslySetInnerHTML={{ __html: safeAnswerHtml }}
-                  />
+                    id={id}
+                    className={`accordion-collapse collapse ${shouldExpand ? "show" : ""}`}
+                    data-bs-parent="#faqAcc"
+                  >
+                    <div
+                      className="accordion-body sb-muted"
+                      dangerouslySetInnerHTML={{ __html: safeAnswerHtml }}
+                    />
+                  </div>
                 </div>
-              </div>
+              </React.Fragment>
             );
           })}
         </div>
