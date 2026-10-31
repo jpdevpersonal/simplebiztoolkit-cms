@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import EtsyCtaButton from "@/components/EtsyCtaButton";
 import JsonLd from "@/components/JsonLd";
+import { HeroChips, PageHero } from "@/components/PageHero";
 import ProductGrid from "@/components/ProductGrid";
 import TrackedLink from "@/components/TrackedLink";
 import { featuredProducts } from "@/data/featured";
@@ -205,49 +206,24 @@ export default async function TestimonialsPage() {
     <>
       <JsonLd json={breadcrumbJsonLd} />
 
-      {/* ====== HERO + RATING SUMMARY ====== */}
-      <section className="sb-reviews-hero">
+      {/* ====== HERO + RATING SUMMARY + FEATURED REVIEW ====== */}
+      <section className="sb-section sb-reviews-featured-section">
         <div className="container">
-          <div className="sb-reviews-hero-grid">
-            <div className="sb-reviews-hero-copy">
-              <span className="sb-section-eyebrow">Etsy feedback</span>
-              <h1>Customer reviews</h1>
+          <PageHero
+            badge="⭐"
+            eyebrow="Etsy feedback"
+            title="Customer reviews"
+            intro={
               <p className="sb-speakable">
-                Selected feedback about Simple Biz Toolkit templates from
-                buyers – small business owners, landlords and Etsy sellers who
-                wanted a simpler way to stay organised.
+                Selected feedback about Simple Biz Toolkit templates from buyers
+                – small business owners, landlords and Etsy sellers who wanted a
+                simpler way to stay organised.
               </p>
-              <div className="sb-reviews-hero-actions">
-                <Link href="/templates" className="btn sb-btn-primary">
-                  Browse all templates
-                  <svg
-                    className="sb-btn-arrow"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M3 8h10M9 4l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Link>
-                <EtsyCtaButton
-                  label="Visit our Etsy shop"
-                  className="sb-reviews-etsy-link"
-                  hideOnHome={false}
-                  analyticsPlacement="reviews_hero"
-                />
-              </div>
-            </div>
-
-            <aside
+            }
+          >
+            <div
               className="sb-reviews-summary"
+              role="group"
               aria-label="Customer rating summary"
             >
               {hasRating ? (
@@ -256,37 +232,54 @@ export default async function TestimonialsPage() {
                     {stats.rating}
                     <span>/ 5</span>
                   </div>
-                  <RatingStars rating={ratingValue} />
-                  <p className="sb-reviews-summary-caption">
-                    Average Etsy rating
-                  </p>
+                  <div>
+                    <RatingStars rating={ratingValue} />
+                    <p className="sb-reviews-summary-caption">
+                      Average Etsy rating
+                    </p>
+                  </div>
                 </>
               ) : (
-                <>
+                <div>
                   <Stars count={5} label="Customer reviews" />
                   <p className="sb-reviews-summary-caption">
                     Loved by small business owners
                   </p>
-                </>
+                </div>
               )}
-              {highlights.length > 0 && (
-                <ul className="sb-reviews-summary-list">
-                  {highlights.map((item) => (
-                    <li key={item}>
-                      <span aria-hidden="true">✓</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </aside>
-          </div>
-        </div>
-      </section>
+            </div>
+            {highlights.length > 0 && (
+              <HeroChips items={highlights} label="Shop highlights" />
+            )}
+            <div className="sb-reviews-hero-actions">
+              <Link href="/templates" className="btn sb-btn-primary">
+                Browse all templates
+                <svg
+                  className="sb-btn-arrow"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 8h10M9 4l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
+              <EtsyCtaButton
+                label="Visit our Etsy shop"
+                className="sb-reviews-etsy-link"
+                hideOnHome={false}
+                analyticsPlacement="reviews_hero"
+              />
+            </div>
+          </PageHero>
 
-      {/* ====== FEATURED REVIEW ====== */}
-      <section className="sb-section sb-reviews-featured-section">
-        <div className="container">
           <figure className="sb-review-featured">
             <span className="sb-review-featured-mark" aria-hidden="true">
               &ldquo;
@@ -308,9 +301,7 @@ export default async function TestimonialsPage() {
           {/* ====== ALL REVIEWS ====== */}
           <div className="sb-section-header sb-reviews-list-header">
             <h2>What buyers are saying</h2>
-            <p>
-              Each review links to the template that customer bought.
-            </p>
+            <p>Each review links to the template that customer bought.</p>
           </div>
 
           <div className="sb-reviews-masonry">
