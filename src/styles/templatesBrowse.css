@@ -2,42 +2,6 @@
    Template browsing: /templates and /templates/[category]
    ============================================== */
 
-/* ---- Index hero extras ---- */
-.sb-page-header .templates-hero-count {
-  margin-top: 1rem;
-  color: var(--sb-green);
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
-
-.templates-benefits {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.templates-benefits li {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.85rem;
-  color: var(--sb-ink);
-  background: var(--sb-soft);
-  border: 1px solid var(--sb-border);
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.templates-benefits li span {
-  color: var(--sb-green);
-  font-weight: 800;
-}
-
 /* ---- Category cards with preview image ---- */
 .category-card.has-media {
   padding-top: 0;

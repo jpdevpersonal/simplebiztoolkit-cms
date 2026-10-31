@@ -3,17 +3,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { Faq } from "@/lib/api";
 import { sanitizeHtml, stripHtml } from "@/lib/sanitize";
+import { faqGroupId, faqGroupName, groupFaqs } from "@/lib/faqGroups";
 
 type FaqAccordionProps = {
   faqs?: Faq[];
   showSearchAndIntro?: boolean;
   expandFirst?: boolean;
+  /** Orders questions by group and shows a heading (with an anchor id) per group. */
+  groupHeadings?: boolean;
 };
 
 export default function FaqAccordion({
   faqs = [],
   showSearchAndIntro = true,
   expandFirst = true,
+  groupHeadings = false,
 }: FaqAccordionProps) {
   const [query, setQuery] = useState("");
 
@@ -28,11 +32,14 @@ export default function FaqAccordion({
   // while preserving the original HTML for rendering.
   const indexed = useMemo(
     () =>
-      faqs.map((f) => ({
+      (groupHeadings
+        ? groupFaqs(faqs).flatMap((group) => group.faqs)
+        : faqs
+      ).map((f) => ({
         faq: f,
         answerText: stripHtml(f.a || ""),
       })),
-    [faqs],
+    [faqs, groupHeadings],
   );
 
   const items = useMemo(() => {
@@ -179,34 +186,46 @@ export default function FaqAccordion({
             const searching = q.length > 0;
             const shouldExpand = searching || (expandFirst && idx === 0);
             const safeAnswerHtml = sanitizeHtml(faq.a || "");
+            const group = faqGroupName(faq);
+            const startsGroup =
+              groupHeadings &&
+              (idx === 0 || faqGroupName(items[idx - 1].faq) !== group);
+            const HeaderTag = groupHeadings ? "h3" : "h2";
 
             return (
-              <div className="accordion-item" key={id}>
-                <h2 className="accordion-header" id={`${id}-header`}>
-                  <button
-                    className={`accordion-button ${shouldExpand ? "" : "collapsed"} sb-accordion-button`}
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target={`#${id}`}
-                    aria-expanded={shouldExpand ? "true" : "false"}
-                    aria-controls={id}
-                  >
-                    <span className="sb-accordion-title">
-                      {highlightText(String(faq.q), true)}
-                    </span>
-                  </button>
-                </h2>
-                <div
-                  id={id}
-                  className={`accordion-collapse collapse ${shouldExpand ? "show" : ""}`}
-                  data-bs-parent="#faqAcc"
-                >
+              <React.Fragment key={id}>
+                {startsGroup && (
+                  <h2 className="sb-faq-group-title" id={faqGroupId(group)}>
+                    {group}
+                  </h2>
+                )}
+                <div className="accordion-item">
+                  <HeaderTag className="accordion-header" id={`${id}-header`}>
+                    <button
+                      className={`accordion-button ${shouldExpand ? "" : "collapsed"} sb-accordion-button`}
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#${id}`}
+                      aria-expanded={shouldExpand ? "true" : "false"}
+                      aria-controls={id}
+                    >
+                      <span className="sb-accordion-title">
+                        {highlightText(String(faq.q), true)}
+                      </span>
+                    </button>
+                  </HeaderTag>
                   <div
-                    className="accordion-body sb-muted"
-                    dangerouslySetInnerHTML={{ __html: safeAnswerHtml }}
-                  />
+                    id={id}
+                    className={`accordion-collapse collapse ${shouldExpand ? "show" : ""}`}
+                    data-bs-parent="#faqAcc"
+                  >
+                    <div
+                      className="accordion-body sb-muted"
+                      dangerouslySetInnerHTML={{ __html: safeAnswerHtml }}
+                    />
+                  </div>
                 </div>
-              </div>
+              </React.Fragment>
             );
           })}
         </div>

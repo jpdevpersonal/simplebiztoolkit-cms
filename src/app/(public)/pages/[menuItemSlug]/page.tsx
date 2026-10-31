@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import GuideCard from "@/components/GuideCard";
+import { ActionPanel, PageHero, TopicCards } from "@/components/PageHero";
 import JsonLd from "@/components/JsonLd";
 import { sanitizeHtml, sanitizePublicContentHtml } from "@/lib/sanitize";
 import { slugify } from "@/lib/slugify";
@@ -97,6 +98,25 @@ export default async function MenuItemLandingPage({ params }: Props) {
   const showDirectPageCards = directPages.length > 0;
   const showToolContentCards = menuItemSlug === "tools";
   const isGuides = menuItemSlug === "guides";
+  const pageCount =
+    directPages.length +
+    publishedCats.reduce((sum, cat) => sum + cat.publishedPages.length, 0);
+  const plural = (count: number, word: string) =>
+    `${count} ${word}${count === 1 ? "" : "s"}`;
+  const heroBadge = isGuides ? "📘" : showToolContentCards ? "🧰" : "📄";
+  const heroEyebrow = isGuides
+    ? "Free business guides"
+    : showToolContentCards
+      ? "Free online tools"
+      : "Explore";
+  const heroMeta =
+    pageCount === 0
+      ? undefined
+      : isGuides
+        ? `${plural(pageCount, "guide")} · Free to read`
+        : showToolContentCards
+          ? `${plural(pageCount, "free tool")} · No sign-up · Private`
+          : plural(pageCount, "page");
 
   const breadcrumbJsonLd = createBreadcrumbJsonLd([
     { name: "Home", href: "/" },
@@ -152,33 +172,39 @@ export default async function MenuItemLandingPage({ params }: Props) {
       <JsonLd json={collectionJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div className={`pages-header${isGuides ? " sb-guides-header" : ""}`}>
-            {isGuides && (
-              <span className="sb-section-eyebrow">Free business guides</span>
-            )}
-            <h1>{item.title}</h1>
-            {item.description ? (
-              <div
-                className="pages-header-richtext"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(item.description),
-                }}
-              />
-            ) : (
-              isGuides && (
+          <PageHero
+            badge={heroBadge}
+            eyebrow={heroEyebrow}
+            title={item.title}
+            intro={
+              item.description ? (
+                <div
+                  className="pages-header-richtext"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(item.description),
+                  }}
+                />
+              ) : isGuides ? (
                 <p>
                   Practical, plain-English guides to help you track your money,
                   save time and run a calmer small business.
                 </p>
-              )
+              ) : undefined
+            }
+            meta={heroMeta}
+          >
+            {showToolContentCards && (
+              <TopicCards
+                ariaLabel="Tools on this page"
+                label="Choose a tool"
+                topics={directPages.map((page) => ({
+                  href: `#tool-${page.slug}`,
+                  title: page.title,
+                  note: "Free · runs in your browser",
+                }))}
+              />
             )}
-            {isGuides && directPages.length > 0 && (
-              <p className="sb-guides-count">
-                {directPages.length} guide
-                {directPages.length === 1 ? "" : "s"} · Free to read
-              </p>
-            )}
-          </div>
+          </PageHero>
 
           {/* Categories grid */}
           {publishedCats.length > 0 && (
@@ -240,7 +266,11 @@ export default async function MenuItemLandingPage({ params }: Props) {
                       : "";
 
                     return (
-                      <article className="tool-content-card" key={page.id}>
+                      <article
+                        className="tool-content-card"
+                        key={page.id}
+                        id={`tool-${page.slug}`}
+                      >
                         {toolContentHtml ? (
                           <div
                             className="tool-content-card-body"
@@ -315,18 +345,59 @@ export default async function MenuItemLandingPage({ params }: Props) {
           )}
 
           {isGuides && directPages.length > 0 && (
-            <aside className="sb-guides-cta">
-              <div>
-                <h2>Put these guides into practice</h2>
-                <p>
-                  Ready-made printable and fillable templates that make the
-                  systems in these guides easy to keep up.
-                </p>
-              </div>
-              <Link href="/templates" className="btn sb-btn-primary">
-                Browse templates {arrowIcon}
-              </Link>
-            </aside>
+            <ActionPanel
+              id="guides-next-heading"
+              title="Put these guides into practice"
+              text="Ready-made templates and free tools make the systems in these guides easy to keep up."
+              options={[
+                {
+                  href: "/templates",
+                  title: "Browse templates",
+                  text: "Printable & fillable ledgers, trackers and forms",
+                  icon: "grid",
+                },
+                {
+                  href: "/pages/tools",
+                  title: "Try the free tools",
+                  text: "Profit calculators and quote generator – no sign-up",
+                  icon: "tool",
+                },
+                {
+                  href: "/faq",
+                  title: "Got a question?",
+                  text: "Quick answers in the FAQ",
+                  icon: "help",
+                },
+              ]}
+            />
+          )}
+
+          {showToolContentCards && directPages.length > 0 && (
+            <ActionPanel
+              id="tools-next-heading"
+              title="Want something you can print and keep?"
+              text="Pair the free tools with ready-made templates, or learn the basics in our guides."
+              options={[
+                {
+                  href: "/templates",
+                  title: "Browse templates",
+                  text: "Printable & fillable ledgers, trackers and forms",
+                  icon: "grid",
+                },
+                {
+                  href: "/pages/guides",
+                  title: "Read the guides",
+                  text: "Plain-English tips for running your business",
+                  icon: "book",
+                },
+                {
+                  href: "/help",
+                  title: "Need help?",
+                  text: "Friendly answers to common questions",
+                  icon: "chat",
+                },
+              ]}
+            />
           )}
 
           {publishedCats.length === 0 && directPages.length === 0 && (

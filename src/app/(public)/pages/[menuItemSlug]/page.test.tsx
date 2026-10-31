@@ -221,6 +221,13 @@ describe("Menu item landing page", () => {
       screen.getByRole("link", { name: "Create your estimate now" }),
     ).toHaveAttribute("href", "/tools/estimate-quote-generator");
     expect(screen.queryByText("Old summary card copy")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Estimate & Quote PDF Generator/ }),
+    ).toHaveAttribute("href", "#tool-estimate-quote-generator");
+    expect(
+      container.querySelector("#tool-estimate-quote-generator"),
+    ).toHaveClass("tool-content-card");
+    expect(screen.getByText("2 free tools · No sign-up · Private")).toBeInTheDocument();
   });
 
   it("falls back to a valid header image when a featured image is a local file path", async () => {

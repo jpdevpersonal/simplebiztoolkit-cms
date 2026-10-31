@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 import Image from "next/image";
-import Link from "next/link";
 
-import EtsyCtaButton from "@/components/EtsyCtaButton";
 import JsonLd from "@/components/JsonLd";
+import { ActionPanel, HeroChips, PageHero } from "@/components/PageHero";
 import TrackedLink from "@/components/TrackedLink";
 import "@/styles/products.css";
 import "@/styles/templatesBrowse.css";
+import { links } from "@/config/links";
 import { apiService } from "@/lib/api";
 import { shouldBypassNextImageOptimization } from "@/lib/imageOptimization";
 import {
@@ -214,33 +214,25 @@ export default async function ProductsPage() {
       <JsonLd json={itemListJsonLd} />
       <section className="sb-section">
         <div className="container">
-          <div className="sb-page-header">
-            <span className="sb-section-eyebrow">Template library</span>
-            <h1>Small business templates</h1>
-            <p className="sb-muted sb-speakable">
-              Templates for small business owners, freelancers and landlords —
-              invoices, estimates, ledgers, time sheets, order forms and more.
-              Check each product for file and delivery details.
-            </p>
-            {totalTemplates > 0 && (
-              <p className="templates-hero-count">
-                {formatTemplateCount(totalTemplates)} across{" "}
-                {categories.length}{" "}
-                {categories.length === 1 ? "category" : "categories"}
+          <PageHero
+            badge="🗂️"
+            eyebrow="Template library"
+            title="Small business templates"
+            intro={
+              <p className="sb-speakable">
+                Templates for small business owners, freelancers and landlords —
+                invoices, estimates, ledgers, time sheets, order forms and more.
+                Check each product for file and delivery details.
               </p>
-            )}
-            <ul
-              className="templates-benefits"
-              aria-label="Why buyers choose us"
-            >
-              {templateBenefits.map((benefit) => (
-                <li key={benefit}>
-                  <span aria-hidden="true">✓</span>
-                  {benefit}
-                </li>
-              ))}
-            </ul>
-          </div>
+            }
+            meta={
+              totalTemplates > 0
+                ? `${formatTemplateCount(totalTemplates)} across ${categories.length} ${categories.length === 1 ? "category" : "categories"}`
+                : undefined
+            }
+          >
+            <HeroChips items={templateBenefits} label="Why buyers choose us" />
+          </PageHero>
 
           <div className="category-grid">
             {categories.map((c, index) => {
@@ -312,26 +304,33 @@ export default async function ProductsPage() {
             })}
           </div>
 
-          <aside className="templates-help-band">
-            <div>
-              <h2>Not sure which template you need?</h2>
-              <p>
-                Our free guides explain simple systems for tracking money,
-                payments and time – and which templates fit each one.
-              </p>
-            </div>
-            <div className="templates-help-actions">
-              <Link href="/pages/guides" className="btn sb-btn-primary">
-                Read the guides
-              </Link>
-              <EtsyCtaButton
-                label="Browse the Etsy shop"
-                className="templates-help-etsy"
-                hideOnHome={false}
-                analyticsPlacement="templates_help_band"
-              />
-            </div>
-          </aside>
+          <ActionPanel
+            id="templates-next-heading"
+            title="Not sure which template you need?"
+            text="Our guides explain simple systems for tracking money, payments and time – and which templates fit each one."
+            options={[
+              {
+                href: "/pages/guides",
+                title: "Read the guides",
+                text: "Plain-English tips for running your business",
+                icon: "book",
+              },
+              {
+                href: "/pages/tools",
+                title: "Try the free tools",
+                text: "Profit calculators and quote generator – no sign-up",
+                icon: "tool",
+              },
+              {
+                href: links.etsyShopUrl,
+                title: "Shop on Etsy",
+                text: "See the full range and secure checkout",
+                icon: "bag",
+                external: true,
+                etsyPlacement: "templates_help_band",
+              },
+            ]}
+          />
         </div>
       </section>
     </>

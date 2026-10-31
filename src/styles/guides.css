@@ -2,23 +2,6 @@
    Guides: listing cards (/pages/guides) and guide articles
    ============================================== */
 
-/* ---- Listing header ---- */
-.sb-guides-header .sb-section-eyebrow {
-  display: inline-block;
-  margin-bottom: 0.75rem;
-}
-
-.sb-guides-header p {
-  max-width: 560px;
-}
-
-.sb-guides-header .sb-guides-count {
-  margin-top: 0.75rem;
-  color: var(--sb-green);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
 /* ---- Card grid ---- */
 .sb-guide-grid {
   display: grid;
